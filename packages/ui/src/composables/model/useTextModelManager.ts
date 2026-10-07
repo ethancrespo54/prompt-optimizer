@@ -109,7 +109,7 @@ export function useTextModelManager() {
     return providers.value.find(p => p.id === form.value.providerId) || null
   })
 
-  // 简化后的接口:直接传入必要的参数
+  // Simplified interface: pass in the necessary parameters directly
   const advancedParameters = useModelAdvancedParameters({
     mode: 'text',
     registry: computed(() => textAdapterRegistry),
@@ -165,13 +165,13 @@ export function useTextModelManager() {
   })
 
   const canTestFormConnection = computed(() => {
-    // 测试期间禁用
+    // Disabled during testing
     if (isTestingFormConnection.value) return false
-    // 必须有必需的连接配置
+    // Must have the required connection config
     if (!isConnectionConfigured.value) return false
-    // 必须有模型 ID（发送请求所需）
+    // Must have a model ID (needed to send the request)
     if (!form.value.modelId?.trim()) return false
-    // 必须有 provider
+    // Must have a provider
     if (!form.value.providerId) return false
 
     return true
@@ -211,7 +211,7 @@ export function useTextModelManager() {
       providers.value = textAdapterRegistry?.getAllProviders?.() || []
       providersLoaded.value = true
     } catch (error) {
-      console.error('加载文本模型提供商失败:', error)
+      console.error('Failed to load text model providers:', error)
       toast.error(t('modelManager.loadFailed'))
       providers.value = []
     } finally {
@@ -231,7 +231,7 @@ export function useTextModelManager() {
         label: model.name || model.id
       }))
     } catch (error) {
-      console.error('加载 Provider 模型失败:', error)
+      console.error('Failed to load Provider models:', error)
       modelOptions.value = []
     }
   }
@@ -254,7 +254,7 @@ export function useTextModelManager() {
           return a.name.localeCompare(b.name)
         })
     } catch (error) {
-      console.error('加载模型失败:', error)
+      console.error('Failed to load models:', error)
       toast.error(t('modelManager.loadFailed'))
     } finally {
       loadingModels.value = false
@@ -272,7 +272,7 @@ export function useTextModelManager() {
       await llmService.testConnection(id)
       toast.success(t('modelManager.testSuccess', { provider: model.name }))
     } catch (error) {
-      console.error('连接测试失败:', error)
+      console.error('Connection test failed:', error)
       const model = await modelManager.getModel(id)
       const modelName = model?.name || id
       const errorMessage = getI18nErrorMessage(error, 'Unknown error')
@@ -293,7 +293,7 @@ export function useTextModelManager() {
       await loadModels()
       toast.success(t('modelManager.enableSuccess'))
     } catch (error: unknown) {
-      console.error('启用模型失败:', error)
+      console.error('Failed to enable model:', error)
       const message = getI18nErrorMessage(error, 'Unknown error')
       toast.error(t('modelManager.enableFailed', { error: message }))
     }
@@ -307,7 +307,7 @@ export function useTextModelManager() {
       await loadModels()
       toast.success(t('modelManager.disableSuccess'))
     } catch (error: unknown) {
-      console.error('禁用模型失败:', error)
+      console.error('Failed to disable model:', error)
       const message = getI18nErrorMessage(error, 'Unknown error')
       toast.error(t('modelManager.disableFailed', { error: message }))
     }
@@ -319,7 +319,7 @@ export function useTextModelManager() {
       await loadModels()
       toast.success(t('modelManager.deleteSuccess'))
     } catch (error: unknown) {
-      console.error('删除模型失败:', error)
+      console.error('Failed to delete model:', error)
       const message = getI18nErrorMessage(error, 'Unknown error')
       toast.error(t('modelManager.deleteFailed', { error: message }))
     }
@@ -356,7 +356,7 @@ export function useTextModelManager() {
 
     loadStaticModelsForProvider(providerId)
 
-    // 使用共享函数处理连接配置
+    // Use the shared function to handle the connection config
     const providerMeta = providers.value.find(p => p.id === providerId)
     form.value.connectionConfig = computeConnectionConfig(
       form.value.connectionConfig,
@@ -368,7 +368,7 @@ export function useTextModelManager() {
       const firstModelId = modelOptions.value[0].value
       form.value.modelId = firstModelId
       form.value.defaultModel = firstModelId
-      // 切换提供商后自动应用第一个模型的默认参数
+      // After switching providers, automatically apply the default parameters of the first model
       if (firstModelId && providerId) {
         advancedParameters.applyDefaultsFromModel(false)
       }
@@ -385,7 +385,7 @@ export function useTextModelManager() {
         autoSelectFirstModel: true,
         resetOverrides: true
       })
-      // 创建模式：自动应用第一个模型的默认参数
+      // Create mode: automatically apply the default parameters of the first model
       if (form.value.modelId && form.value.providerId) {
         advancedParameters.applyDefaultsFromModel(false)
       }
@@ -395,7 +395,7 @@ export function useTextModelManager() {
   }
 
   const prepareForEdit = async (id: string, forceReload = true) => {
-    // 如果已经在编辑同一个模型且不强制重新加载，则跳过
+    // If already editing the same model and a forced reload is not required, skip
   if (!forceReload && editingModelId.value === id && formReady.value) {
     return
   }
@@ -441,10 +441,10 @@ export function useTextModelManager() {
         modelOptions.value.push({ value: form.value.modelId, label: form.value.modelId })
       }
 
-      // 编辑时不自动刷新模型列表，避免不必要的网络请求和延迟
-      // 用户可以通过手动点击刷新按钮来获取最新模型列表
+      // Do not automatically refresh the model list when editing, to avoid unnecessary network requests and delays
+      // The user can click the refresh button manually to get the latest model list
     } catch (error) {
-      console.error('加载模型失败:', error)
+      console.error('Failed to load models:', error)
       toast.error(t('modelManager.loadFailed'))
     } finally {
       formReady.value = true
@@ -515,7 +515,7 @@ export function useTextModelManager() {
         form.value.modelId = fetchedModels[0].value
       }
     } catch (error: unknown) {
-      console.error('获取模型列表失败:', error)
+      console.error('Failed to get the model list:', error)
 
       // Keep UX consistent: if dynamic fetch fails, fall back to static models
       // but surface the failure to avoid a misleading "success" toast.
@@ -560,12 +560,12 @@ export function useTextModelManager() {
 
   const updateExistingModel = async () => {
     if (!form.value.originalId) {
-      throw new Error('编辑会话无效')
+      throw new Error('Invalid edit session')
     }
 
     const existingConfig = await modelManager.getModel(form.value.originalId)
     if (!existingConfig) {
-      throw new Error('模型不存在')
+      throw new Error('Model does not exist')
     }
 
     const connectionConfig: TextConnectionConfig = {
@@ -650,7 +650,7 @@ export function useTextModelManager() {
   }
 
   const testFormConnection = async () => {
-    // 使用 canTestFormConnection 的完整校验逻辑
+    // Use the full validation logic of canTestFormConnection
     if (!canTestFormConnection.value) return
 
     isTestingFormConnection.value = true
@@ -658,10 +658,10 @@ export function useTextModelManager() {
 
     try {
       if (!form.value.providerId || !form.value.modelId) {
-        throw new Error('模型未选择')
+        throw new Error('No model selected')
       }
 
-      // 编辑模式下获取现有配置，新增模式下为 undefined
+      // In edit mode get the existing config; in create mode it is undefined
       const existingConfig = editingModelId.value ? await modelManager.getModel(editingModelId.value) : undefined
 
       const providerMeta = ensureProviderMeta(form.value.providerId, existingConfig?.providerMeta)
@@ -693,22 +693,22 @@ export function useTextModelManager() {
       await modelManager.addModel(tempConfig.id, tempConfig)
 
       try {
-        // 测试临时模型
+        // Test the temporary model
         await llmService.testConnection(tempConfig.id)
         const displayName = form.value.name || form.value.modelId
         formConnectionStatus.value = { type: 'success', message: t('modelManager.testSuccess', { provider: displayName }) }
         toast.success(t('modelManager.testSuccess', { provider: displayName }))
       } finally {
-        // 清理临时模型
+        // Clean up the temporary model
         try {
           await modelManager.deleteModel(tempConfig.id)
         } catch (cleanupError) {
-          console.warn('清理临时测试模型失败:', cleanupError)
+          console.warn('Failed to clean up the temporary test model:', cleanupError)
         }
       }
 
     } catch (error) {
-      console.error('连接测试失败:', error)
+      console.error('Connection test failed:', error)
       const displayName = form.value.name || form.value.modelId
       formConnectionStatus.value = {
         type: 'error',
@@ -735,8 +735,8 @@ export function useTextModelManager() {
     form.value.defaultModel = modelId || ''
 
     if (modelId && form.value.providerId) {
-      // 编辑模式：合并参数（保留用户已有配置）
-      // 创建模式：替换参数（使用新模型的默认值）
+      // Edit mode: merge parameters (keep the user's existing config)
+      // Create mode: replace parameters (use the new model's default values)
       const isEditing = !!editingModelId.value
       advancedParameters.applyDefaultsFromModel(isEditing)
     }

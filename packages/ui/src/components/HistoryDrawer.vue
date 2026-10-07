@@ -46,14 +46,14 @@
                 <NText depth="3" style="font-size: 14px;">
                   {{ t('common.createdAt') }} {{ formatDate(chain.rootRecord.timestamp) }}
                 </NText>
-                <!-- 功能模式标签 -->
+                <!-- Function mode tag -->
                 <NTag
                   :type="getFunctionModeTagType(chain.rootRecord.type)"
                   size="small"
                 >
                   {{ getFunctionModeLabel(chain.rootRecord.type) }}
                 </NTag>
-                <!-- 优化模式标签 -->
+                <!-- Optimization mode tag -->
                 <NTag
                   v-if="chain.rootRecord.type === 'optimize'"
                   type="info"
@@ -68,7 +68,7 @@
                 >
                   {{ t('common.user') }}
                 </NTag>
-                <!-- 上下文模式优化标签 -->
+                <!-- Context mode optimization tag -->
                 <NTag
                   v-if="isMessageOptimizationType(chain.rootRecord.type)"
                   type="warning"
@@ -83,7 +83,7 @@
                 >
                   {{ t('contextMode.optimizationMode.variable') }}
                 </NTag>
-                <!-- 图像模式优化类型标签 -->
+                <!-- Image mode optimization type tag -->
                 <NTag
                   v-if="chain.rootRecord.type === 'text2imageOptimize'"
                   type="success"
@@ -116,7 +116,7 @@
           </NText>
 
           
-          <!-- 版本列表 -->
+          <!-- Version list -->
           <NDivider style="margin: 16px 0;" />
           <NSpace vertical :size="12">
             <NCollapse
@@ -250,8 +250,8 @@ const close = () => {
   emit('update:show', false)
 }
 
-// 修改排序后的历史记录计算属性，使用props.history而不是直接调用historyManager.getAllChains()
-// 按照最后修改时间排序，与getAllChains()保持一致
+// Modify the sorted history computed property to use props.history instead of calling historyManager.getAllChains() directly
+// Sort by last modified time, consistent with getAllChains()
 const sortedHistory = computed(() => {
   return props.history.sort((a, b) => b.currentRecord.timestamp - a.currentRecord.timestamp)
 })
@@ -261,10 +261,10 @@ const filteredHistory = computed(() => {
   
   const query = searchQuery.value.toLowerCase()
   return sortedHistory.value.filter(chain => {
-    // 匹配原始提示词
+    // Match the original prompt
     if (chain.rootRecord.originalPrompt.toLowerCase().includes(query)) return true
     
-    // 匹配版本中的内容
+    // Match the content in the versions
     return chain.versions.some(record => {
       if (record.optimizedPrompt.toLowerCase().includes(query)) return true
       if (record.iterationNote && record.iterationNote.toLowerCase().includes(query)) return true
@@ -273,7 +273,7 @@ const filteredHistory = computed(() => {
   })
 })
 
-// 切换版本展开/收起状态
+// Toggle the version expanded/collapsed state
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
 const _toggleVersion = (recordId: string) => {
   expandedVersions.value = {
@@ -282,18 +282,18 @@ const _toggleVersion = (recordId: string) => {
   }
 }
 
-// 清空历史记录
+// Clear the history
 const handleClear = async () => {
   if (confirm(t('history.confirmClear'))) {
     emit('clear')
-    // 不需要强制刷新，因为现在使用props.history
+    // No forced refresh needed, since props.history is used now
   }
 }
 
-// 监听显示状态变化
+// Watch display state changes
 watch(() => props.show, (newShow) => {
   if (!newShow) {
-    // 关闭时重置所有展开状态和搜索词
+    // On close, reset all expanded states and the search term
     expandedVersions.value = {}
     searchQuery.value = ''
   }
@@ -313,7 +313,7 @@ const reuse = (record: PromptRecord, chain: PromptRecordChain) => {
   emit('update:show', false)
 }
 
-// 添加文本截断函数
+// Add a text truncation function
 const truncateText = (text: string, maxLength: number) => {
   if (text.length <= maxLength) return text;
   return text.slice(0, maxLength) + '...'
@@ -323,7 +323,7 @@ const isMessageOptimizationType = (recordType: string) => {
   return recordType === 'conversationMessageOptimize' || recordType === 'contextSystemOptimize'
 }
 
-// 获取功能模式标签类型
+// Get the function mode tag type
 const getFunctionModeTagType = (recordType: string) => {
   if (recordType.includes('image')) {
     return 'warning'
@@ -334,11 +334,11 @@ const getFunctionModeTagType = (recordType: string) => {
   }
 }
 
-// 获取功能模式标签文本
+// Get the function mode tag text
 const getFunctionModeLabel = (recordType: string) => {
-  // 图像模式类型
+  // Image mode types
   const imageTypes = ['imageOptimize', 'contextImageOptimize', 'imageIterate', 'text2imageOptimize', 'image2imageOptimize']
-  // 上下文模式类型（包含新旧类型名以支持向后兼容）
+  // Context mode types (includes both new and old type names for backward compatibility)
   const contextTypes = ['conversationMessageOptimize', 'contextSystemOptimize', 'contextUserOptimize', 'contextIterate']
 
   if (imageTypes.includes(recordType)) {
@@ -350,11 +350,11 @@ const getFunctionModeLabel = (recordType: string) => {
   }
 }
 
-// 添加删除单条记录的方法
+// Add a method for deleting a single record
 const deleteChain = (chainId: string) => {
   if (confirm(t('history.confirmDeleteChain'))) {
     emit('deleteChain', chainId)
-    // 不需要强制刷新，因为现在使用props.history
+    // No forced refresh needed, since props.history is used now
   }
 }
 </script>

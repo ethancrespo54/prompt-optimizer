@@ -6,12 +6,12 @@
     :on-update:show="handleUpdateShow"
   >
     <NDrawerContent :title="panelTitle" closable>
-      <!-- 加载状态 -->
+      <!-- Loading state -->
       <template v-if="isEvaluating">
         <div class="evaluation-loading">
           <NSpin size="large" />
           <NText depth="3" class="loading-text">{{ t('evaluation.loading') }}</NText>
-          <!-- 流式内容预览 -->
+          <!-- Streaming content preview -->
           <div v-if="streamContent" class="stream-preview">
             <NText depth="3" class="stream-label">{{ t('evaluation.analyzing') }}</NText>
             <NScrollbar ref="streamScrollbarRef" style="max-height: 200px;">
@@ -21,7 +21,7 @@
         </div>
       </template>
 
-      <!-- 错误状态 -->
+      <!-- Error state -->
       <template v-else-if="error">
         <NResult status="error" :title="t('evaluation.error.title')">
           <template #default>
@@ -33,11 +33,11 @@
         </NResult>
       </template>
 
-      <!-- 评估结果 -->
+      <!-- Evaluation results -->
       <template v-else-if="result">
         <NScrollbar style="max-height: calc(100vh - 120px);">
           <NSpace vertical :size="20">
-            <!-- 总分展示 -->
+            <!-- Total score display -->
             <div class="score-section">
               <div class="overall-score" :class="scoreLevelClass">
                 <div class="score-value">{{ result.score.overall }}</div>
@@ -49,12 +49,12 @@
             </div>
 
 
-            <!-- 一句话总结 -->
+            <!-- One-sentence summary -->
             <NCard v-if="result.summary" size="small">
               <NText>{{ result.summary }}</NText>
             </NCard>
 
-            <!-- 四维度分数 -->
+            <!-- Four-dimension scores -->
             <NCard :title="t('evaluation.dimensions')" size="small">
               <NSpace vertical :size="12">
                 <div v-for="dim in result.score.dimensions" :key="dim.key" class="dimension-item">
@@ -72,7 +72,7 @@
               </NSpace>
             </NCard>
 
-            <!-- 精准修复（patchPlan） -->
+            <!-- Precise fixes (patchPlan) -->
             <NCard
               v-if="result.patchPlan && result.patchPlan.length > 0"
               :title="t('evaluation.diagnose.title')"
@@ -98,7 +98,7 @@
               </NList>
             </NCard>
 
-            <!-- 改进建议 -->
+            <!-- Improvement suggestions -->
             <NCard v-if="result.improvements && result.improvements.length > 0" :title="t('evaluation.improvements')" size="small">
               <NList>
                 <NListItem v-for="(item, index) in result.improvements" :key="index">
@@ -112,7 +112,7 @@
               </NList>
             </NCard>
 
-            <!-- 反馈输入（可选） -->
+            <!-- Feedback input (optional) -->
             <NCard
               v-if="currentType"
               size="small"
@@ -136,7 +136,7 @@
         </NScrollbar>
       </template>
 
-      <!-- 空状态 -->
+      <!-- Empty state -->
       <template v-else>
         <NSpace vertical :size="12" style="width: 100%;">
           <NEmpty :description="t('evaluation.noResult')">
@@ -169,7 +169,7 @@
         </NSpace>
       </template>
 
-      <!-- 底部操作栏 -->
+      <!-- Bottom action bar -->
       <template #footer>
         <NSpace justify="space-between" style="width: 100%;">
           <NButton v-if="result" @click="handleClear" quaternary>
@@ -248,11 +248,11 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 
-// 流式内容滚动条引用
+// Streaming content scrollbar reference
 const streamScrollbarRef = ref<ScrollbarInst | null>(null)
 const feedbackDraft = ref('')
 
-// 监听流式内容变化，自动滚动到底部
+// Watch streaming content changes and automatically scroll to the bottom
 watch(() => props.streamContent, () => {
   nextTick(() => {
     streamScrollbarRef.value?.scrollTo({ top: 999999, behavior: 'smooth' })
@@ -264,7 +264,7 @@ const tOr = (key: string, fallback: string): string => {
   return translated === key ? fallback : translated
 }
 
-// 面板标题
+// Panel title
 const panelTitle = computed(() => {
   switch (props.currentType) {
     case 'original':
@@ -282,13 +282,13 @@ const panelTitle = computed(() => {
   }
 })
 
-// 评分等级样式类
+// Score grade style class
 const scoreLevelClass = computed(() => {
   if (!props.scoreLevel) return ''
   return `score-${props.scoreLevel}`
 })
 
-// 评分等级文本
+// Score grade text
 const scoreLevelText = computed(() => {
   switch (props.scoreLevel) {
     case 'excellent':
@@ -306,7 +306,7 @@ const scoreLevelText = computed(() => {
   }
 })
 
-// 获取维度分数样式类
+// Get the dimension score style class
 const getDimensionScoreClass = (score: number): string => {
   if (score >= 90) return 'score-excellent'
   if (score >= 80) return 'score-good'
@@ -315,34 +315,34 @@ const getDimensionScoreClass = (score: number): string => {
   return 'score-very-poor'
 }
 
-// 获取进度条状态
+// Get the progress bar status
 const getDimensionStatus = (score: number): 'success' | 'warning' | 'error' | 'default' => {
   if (score >= 80) return 'success'
   if (score >= 60) return 'warning'
   return 'error'
 }
 
-// 处理显示更新
+// Handle display updates
 const handleUpdateShow = (value: boolean) => {
   emit('update:show', value)
 }
 
-// 关闭面板
+// Close the panel
 const handleClose = () => {
   emit('update:show', false)
 }
 
-// 清除结果
+// Clear results
 const handleClear = () => {
   emit('clear')
 }
 
-// 重试评估
+// Retry the evaluation
 const handleRetry = () => {
   emit('retry')
 }
 
-// 重新评估
+// Re-evaluate
 const handleReEvaluateClick = () => {
   const trimmed = feedbackDraft.value.trim()
 
@@ -355,7 +355,7 @@ const handleReEvaluateClick = () => {
   emit('re-evaluate')
 }
 
-// 应用改进建议到迭代
+// Apply improvement suggestions to the iteration
 const handleApplyImprovement = (improvement: string) => {
   emit('apply-improvement', {
     improvement,
@@ -363,9 +363,9 @@ const handleApplyImprovement = (improvement: string) => {
   })
 }
 
-// ===== patchPlan 相关逻辑 =====
+// ===== patchPlan-related logic =====
 
-// 获取操作类型样式
+// Get the operation type style
 const getOperationType = (op: string): 'success' | 'warning' | 'error' | 'info' => {
   switch (op) {
     case 'insert': return 'success'
@@ -459,7 +459,7 @@ watch(() => props.show, (visible) => {
   font-size: 14px;
 }
 
-/* 评分等级颜色 */
+/* Score grade colors */
 .score-excellent {
   color: #18a058;
 }
@@ -496,7 +496,7 @@ watch(() => props.show, (visible) => {
   line-height: 1.6;
 }
 
-/* 改进建议项 */
+/* Improvement suggestion items */
 .improvement-item {
   display: flex;
   justify-content: space-between;
@@ -510,7 +510,7 @@ watch(() => props.show, (visible) => {
   word-break: break-word;
 }
 
-/* patchPlan 相关样式 */
+/* patchPlan-related styles */
 .patch-item {
   display: flex;
   flex-direction: column;

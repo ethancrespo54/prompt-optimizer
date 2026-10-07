@@ -1,6 +1,6 @@
 /**
- * 剪贴板操作 Composable
- * 提供跨平台的剪贴板读写功能
+ * Clipboard operations composable
+ * Provides cross-platform clipboard read/write features
  */
 
 import { ref, type Ref } from 'vue'
@@ -15,20 +15,20 @@ export interface ClipboardHooks {
 }
 
 /**
- * 使用剪贴板功能
+ * Use the clipboard feature
  */
 export function useClipboard(): ClipboardHooks {
   const isLoading = ref(false)
   const error = ref<string | null>(null)
   
-  // 检查浏览器支持
+  // Check browser support
   const isSupported = !!(
     typeof navigator?.clipboard?.writeText === 'function' && 
     typeof navigator?.clipboard?.readText === 'function'
   )
   
   /**
-   * 复制文本到剪贴板
+   * Copy text to the clipboard
    */
   const copyText = async (text: string): Promise<void> => {
     if (!isSupported) {
@@ -51,7 +51,7 @@ export function useClipboard(): ClipboardHooks {
   }
   
   /**
-   * 从剪贴板读取文本
+   * Read text from the clipboard
    */
   const readText = async (): Promise<string> => {
     if (!isSupported) {

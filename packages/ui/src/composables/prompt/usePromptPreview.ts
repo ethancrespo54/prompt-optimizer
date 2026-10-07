@@ -9,13 +9,13 @@ import {
 } from "../../utils/prompt-variables";
 
 /**
- * 提示词预览 Composable
+ * Prompt preview composable
  *
- * 用于实时计算提示词渲染结果并检测缺失变量
+ * Used to compute the prompt rendering result in real time and detect missing variables
  *
- * @param content - 提示词内容（响应式）
- * @param variables - 变量对象（响应式）
- * @param contextMode - 上下文模式（响应式，已保留但在渲染层面无差异）
+ * @param content - Prompt content (reactive)
+ * @param variables - Variables object (reactive)
+ * @param contextMode - Context mode (reactive, kept but with no difference at the rendering level)
  */
 export function usePromptPreview(
   content: Ref<string>,
@@ -23,7 +23,7 @@ export function usePromptPreview(
   contextMode: Ref<ContextMode>,
 ) {
   /**
-   * 解析模板中的变量
+   * Parse the variables in the template
    */
   const parsedVariables = computed(() => {
     if (!content.value) {
@@ -49,20 +49,20 @@ export function usePromptPreview(
   });
 
   /**
-   * 缺失的变量
+   * Missing variables
    */
   const missingVariables = computed(() => {
     return findMissingVariables(content.value || "", variables.value || {});
   });
 
   /**
-   * 渲染后的预览内容
+   * Rendered preview content
    *
-   * 简化版本：统一使用简单替换逻辑
-   * 注意：这里使用简单的正则替换而不是 Mustache，因为：
-   * 1. UI 预览不需要 Mustache 的条件渲染等高级特性
-   * 2. 简单替换性能更好，适合实时预览
-   * 3. 与后端 Mustache 行为一致（都会保留值中的占位符）
+   * Simplified version: uses simple replacement logic uniformly
+   * Note: simple regex replacement is used here rather than Mustache, because:
+   * 1. The UI preview does not need advanced Mustache features such as conditional rendering
+   * 2. Simple replacement performs better and suits real-time previews
+   * 3. It is consistent with the backend Mustache behavior (both keep placeholders in values)
    */
   const previewContent = computed(() => {
     if (!content.value) {
@@ -90,12 +90,12 @@ export function usePromptPreview(
   });
 
   /**
-   * 是否有缺失变量
+   * Whether there are missing variables
    */
   const hasMissingVariables = computed(() => missingVariables.value.length > 0);
 
   /**
-   * 变量统计信息
+   * Variable statistics
    */
   const variableStats = computed(() => ({
     total: parsedVariables.value.allVars.size,
@@ -107,15 +107,15 @@ export function usePromptPreview(
   }));
 
   return {
-    /** 解析的变量信息 */
+    /** Parsed variable info */
     parsedVariables,
-    /** 缺失的变量列表 */
+    /** List of missing variables */
     missingVariables,
-    /** 渲染后的预览内容 */
+    /** Rendered preview content */
     previewContent,
-    /** 是否有缺失变量 */
+    /** Whether there are missing variables */
     hasMissingVariables,
-    /** 变量统计信息 */
+    /** Variable statistics */
     variableStats,
   };
 }

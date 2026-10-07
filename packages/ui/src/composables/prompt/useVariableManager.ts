@@ -1,6 +1,6 @@
 /**
- * 变量管理器 Composable
- * 提供变量管理的响应式接口
+ * Variable manager composable
+ * Provides a reactive interface for variable management
  */
 
 import { ref, computed, watch, onMounted, onUnmounted, type Ref, type ComputedRef } from 'vue'
@@ -10,15 +10,15 @@ import type { IVariableManager, ConversationMessage } from '../../types/variable
 import { VariableManager, createVariableManager } from '../../services/VariableManager'
 
 export interface VariableManagerOptions {
-  autoSync?: boolean  // 是否自动同步变量状态
-  context?: Record<string, unknown>  // 用于解析预定义变量的上下文
+  autoSync?: boolean  // Whether to sync the variable state automatically
+  context?: Record<string, unknown>  // Context used to resolve predefined variables
 }
 
 export interface VariableManagerHooks {
-  // 变量管理器实例
+  // Variable manager instance
   variableManager: Ref<IVariableManager | null>
   
-  // 状态
+  // State
   isReady: Ref<boolean>
   isAdvancedMode: Ref<boolean>
   customVariables: Ref<Record<string, string>>
@@ -30,7 +30,7 @@ export interface VariableManagerHooks {
     advancedModeEnabled: boolean
   }>
   
-  // 方法
+  // Methods
   setAdvancedMode: (enabled: boolean) => void
   addVariable: (name: string, value: string) => void
   updateVariable: (name: string, value: string) => void
@@ -41,22 +41,22 @@ export interface VariableManagerHooks {
   replaceVariables: (content: string, variables?: Record<string, string>) => string
   detectMissingVariables: (content: string | ConversationMessage[]) => string[]
   
-  // 会话管理
+  // Session management
   getConversationMessages: () => ConversationMessage[]
   setConversationMessages: (messages: ConversationMessage[]) => void
   
-  // 导入导出
+  // Import/export
   exportVariables: () => string
   importVariables: (data: string) => void
   
-  // 刷新状态
+  // Refresh state
   refresh: () => void
 }
 
 /**
- * 使用变量管理器
- * @param services - 服务实例，支持 Ref 或 ComputedRef
- * @param options - 配置选项
+ * Use the variable manager
+ * @param services - Service instance, supports Ref or ComputedRef
+ * @param options - Config options
  */
 export function useVariableManager(
   services: Ref<AppServices | null> | ComputedRef<AppServices | null>,
@@ -66,12 +66,12 @@ export function useVariableManager(
   const variableManager = ref<IVariableManager | null>(null)
   const isReady = ref(false)
   
-  // 响应式状态
+  // Reactive state
   const isAdvancedMode = ref(false)
   const customVariables = ref<Record<string, string>>({})
   const allVariables = ref<Record<string, string>>({})
   
-  // 统计信息
+  // Statistics
   const statistics = computed(() => {
     if (!variableManager.value) {
       return {
@@ -84,7 +84,7 @@ export function useVariableManager(
     return variableManager.value.getStatistics()
   })
   
-  // 初始化变量管理器
+  // Initialize the variable manager
   const initializeVariableManager = async () => {
     if (!services.value?.preferenceService) {
       isReady.value = false
@@ -92,7 +92,7 @@ export function useVariableManager(
     }
 
     try {
-      // 使用工厂函数，自动等待初始化完成
+      // Use the factory function, which waits for initialization to complete automatically
       const manager = await createVariableManager(services.value.preferenceService)
       variableManager.value = manager
       refreshState()
@@ -103,7 +103,7 @@ export function useVariableManager(
     }
   }
   
-  // 刷新状态
+  // Refresh state
   const refreshState = () => {
     if (!variableManager.value) {
       return
@@ -118,7 +118,7 @@ export function useVariableManager(
     }
   }
   
-  // 方法实现
+  // Method implementations
   const setAdvancedMode = (enabled: boolean) => {
     if (!variableManager.value) return
     
@@ -188,7 +188,7 @@ export function useVariableManager(
     return variableManager.value.detectMissingVariables(content)
   }
   
-  // 会话管理方法
+  // Session management methods
   const getConversationMessages = (): ConversationMessage[] => {
     return variableManager.value?.getLastConversationMessages() ?? []
   }
@@ -203,7 +203,7 @@ export function useVariableManager(
     }
   }
   
-  // 导入导出方法
+  // Import/export methods
   const exportVariables = (): string => {
     return variableManager.value?.exportVariables() ?? ''
   }
@@ -220,7 +220,7 @@ export function useVariableManager(
     }
   }
   
-  // 监听服务变化
+  // Watch service changes
   watch(services, (newServices) => {
     if (newServices?.preferenceService) {
       initializeVariableManager()
@@ -230,7 +230,7 @@ export function useVariableManager(
     }
   }, { immediate: true })
   
-  // 监听上下文变化，自动刷新allVariables
+  // Watch context changes and refresh allVariables automatically
   if (options.autoSync) {
     watch(() => options.context, () => {
       if (variableManager.value) {
@@ -239,7 +239,7 @@ export function useVariableManager(
     }, { deep: true })
   }
   
-  // 生命周期
+  // Lifecycle
   onMounted(() => {
     if (services.value?.preferenceService) {
       initializeVariableManager()
@@ -247,13 +247,13 @@ export function useVariableManager(
   })
   
   onUnmounted(() => {
-    // 清理资源
+    // Clean up resources
     variableManager.value = null
     isReady.value = false
   })
   
   return {
-    // 状态
+    // State
     variableManager,
     isReady,
     isAdvancedMode,
@@ -261,7 +261,7 @@ export function useVariableManager(
     allVariables,
     statistics,
     
-    // 方法
+    // Methods
     setAdvancedMode,
     addVariable,
     updateVariable,
@@ -272,15 +272,15 @@ export function useVariableManager(
     replaceVariables,
     detectMissingVariables,
     
-    // 会话管理
+    // Session management
     getConversationMessages,
     setConversationMessages,
     
-    // 导入导出
+    // Import/export
     exportVariables,
     importVariables,
     
-    // 工具方法
+    // Utility methods
     refresh: refreshState
   }
 }

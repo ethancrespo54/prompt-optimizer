@@ -1,5 +1,5 @@
 /*
- * Prompt Optimizer - AI提示词优化工具
+ * Prompt Optimizer - AI prompt optimization tool
  * Copyright (C) 2025 linshenkx
  *
  * This program is free software: you can redistribute it and/or modify
@@ -15,13 +15,13 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-// 纯Naive UI样式导入 - 移除theme.css依赖
+// Pure Naive UI style imports - theme.css dependency removed
 import "./styles/index.css";
 import "./styles/scrollbar.css";
 import "./styles/common.css";
-// 已移除: import './styles/theme.css' - 完全使用Naive UI主题系统
+// Removed: import './styles/theme.css' - fully using the Naive UI theme system
 
-// 导出插件
+// Export plugins
 export {
   installI18n,
   installI18nOnly,
@@ -32,7 +32,7 @@ export {
 
 export { pinia, installPinia, setPiniaServices } from "./plugins/pinia";
 
-// 导出Naive UI配置
+// Export Naive UI config
 export {
   currentNaiveTheme as naiveTheme,
   currentThemeOverrides as themeOverrides,
@@ -43,13 +43,13 @@ export {
   initializeNaiveTheme,
 } from "./config/naive-theme";
 
-// 导出主题相关 Composables
+// Export theme-related composables
 export { useNaiveTheme } from "./composables/ui/useNaiveTheme";
 
 /**
- * 组件导出
- * 注意：所有组件导出时都添加了UI后缀，以便与其他库的组件区分
- * 例如：Toast.vue 导出为 ToastUI
+ * Component exports
+ * Note: all components are exported with a UI suffix to distinguish them from components of other libraries
+ * For example: Toast.vue is exported as ToastUI
  */
 // Components
 export { default as ToastUI } from "./components/Toast.vue";
@@ -65,7 +65,7 @@ export { default as MainLayoutUI } from "./components/MainLayout.vue";
 export { default as ContentCardUI } from "./components/ContentCard.vue";
 export { default as ActionButtonUI } from "./components/ActionButton.vue";
 export { default as ThemeToggleUI } from "./components/ThemeToggleUI.vue";
-// TestPanel.vue - 已替换为TestAreaPanel
+// TestPanel.vue - replaced by TestAreaPanel
 export { default as ModalUI } from "./components/Modal.vue";
 export { default as PanelUI } from "./components/Panel.vue";
 
@@ -102,21 +102,21 @@ export { default as ContextUserTestPanel } from "./components/context-mode/Conte
 export { default as ConversationTestPanel } from "./components/context-mode/ConversationTestPanel.vue";
 export { default as FunctionModelManagerUI } from "./components/FunctionModelManager.vue";
 
-// 基础模式组件已移除静态导出（由 router 动态导入，避免打包进主 bundle）
-// 如需直接使用，请在应用层通过 router 注册或按需动态导入
+// Basic mode components no longer have static exports (dynamically imported by the router to avoid bundling them into the main bundle)
+// To use them directly, register them via the router at the app layer or import them dynamically on demand
 // export { default as BasicSystemWorkspace } from "./components/basic-mode/BasicSystemWorkspace.vue";
 // export { default as BasicUserWorkspace } from "./components/basic-mode/BasicUserWorkspace.vue";
 
-// App 布局组件
+// App layout components
 export { AppHeaderActions, AppCoreNav, PromptOptimizerApp } from "./components/app-layout";
 
-// Router（由 UI 包提供，应用层应安装此 router 以避免多实例/注入不一致）
+// Router (provided by the UI package; apps should install this router to avoid multiple instances / inconsistent injection)
 export { router } from "./router";
 
-// 评估组件
+// Evaluation components
 export { EvaluationPanel, EvaluateButton, EvaluationScoreBadge } from "./components/evaluation";
 
-// 导出 Naive UI 组件 (解决组件解析问题)
+// Export Naive UI components (resolves component resolution issues)
 export {
   NFlex,
   NButton,
@@ -149,13 +149,13 @@ export {
   useMessage,
 } from "naive-ui";
 
-// 导出指令
+// Export directives
 export { clickOutside } from "./directives/clickOutside";
 
-// 导出 composables
+// Export composables
 export * from "./composables";
 
-// 从core重新导出需要的内容, 仅保留工厂函数、代理类和必要的工具/类型
+// Re-export what is needed from core, keeping only factory functions, proxy classes, and necessary utilities/types
 export {
   StorageFactory,
   DexieStorageProvider,
@@ -186,16 +186,16 @@ export {
   FavoriteManagerElectronProxy,
   isRunningInElectron,
   waitForElectronApi,
-  // 评估服务
+  // Evaluation service
   EvaluationService,
   createEvaluationService,
-  // 🆕 变量提取服务
+  // 🆕 Variable extraction service
   createVariableExtractionService,
-  // 🆕 变量值生成服务
+  // 🆕 Variable value generation service
   createVariableValueGenerationService,
 } from "@prompt-optimizer/core";
 
-// 导出类型
+// Export types
 export type {
   OptimizationMode,
   OptimizationRequest,
@@ -215,25 +215,25 @@ export type {
   IFavoriteManager,
   FavoritePrompt,
   FavoriteCategory,
-  // 评估服务类型
+  // Evaluation service types
   IEvaluationService,
   EvaluationType,
   EvaluationRequest,
   EvaluationResponse,
   EvaluationScore,
   EvaluationStreamHandlers,
-  // 🆕 变量提取服务类型
+  // 🆕 Variable extraction service types
   IVariableExtractionService,
   VariableExtractionRequest,
   VariableExtractionResponse,
   ExtractedVariable,
 } from "@prompt-optimizer/core";
 
-// 导出新增的类型和服务
+// Export newly added types and services
 export * from "./types";
 export * from "./services";
 
-// 导出图像模式组件与核心图像服务（转发 core 能力）
+// Export image mode components and the core image service (forwarding core capabilities)
 export { default as ImageModeSelector } from "./components/image-mode/ImageModeSelector.vue";
 export {
   ImageModelManager,
@@ -242,7 +242,7 @@ export {
   createImageService,
 } from "@prompt-optimizer/core";
 
-// 导出数据转换工具和类型
+// Export data conversion utilities and types
 export { DataTransformer, OptionAccessors } from "./utils/data-transformer";
 export type {
   SelectOption,

@@ -28,11 +28,11 @@ let singleton: {
 } | null = null
 
 /**
- * 上下文模式（Pro模式）的子模式单例。读取/写入 PreferenceService。
- * - 默认值为 'user'
- * - 系统模式（多对话优化）在任何环境下都可用
- * - 第一次调用时异步初始化
- * - 状态独立于基础模式，实现不同功能模式下的子模式状态隔离
+ * Context mode (Pro mode) sub-mode singleton. Reads/writes PreferenceService.
+ * - Defaults to 'user'
+ * - System mode (multi-conversation optimization) is available in all environments
+ * - Initialized asynchronously on the first call
+ * - State is independent of basic mode, isolating the sub-mode state across function modes
  */
 export function useProSubMode(services: Ref<AppServices | null>): UseProSubModeApi {
   if (!singleton) {
@@ -53,23 +53,23 @@ export function useProSubMode(services: Ref<AppServices | null>): UseProSubModeA
     }
     singleton!.initializing = (async () => {
       try {
-        // 读取 pro-sub-mode；若不存在，返回默认值
+        // Read pro-sub-mode; if it does not exist, return the default value
         const saved = await getPreference<ProSubMode>(UI_SETTINGS_KEYS.PRO_SUB_MODE, DEFAULT_PRO_SUB_MODE)
 
         const normalized = normalizeLegacyProSubMode(saved)
         singleton!.mode.value = normalized
 
-        // 将规范化后的值持久化（兼容旧值 system/user -> multi/variable）
+        // Persist the normalized value (compatible with the old values system/user -> multi/variable)
         if (saved !== normalized) {
           await setPreference(UI_SETTINGS_KEYS.PRO_SUB_MODE, normalized)
         }
       } catch (e) {
-        console.error(`[useProSubMode] 初始化失败，使用默认值 ${DEFAULT_PRO_SUB_MODE}:`, e)
-        // 读取失败则保持默认值，并尝试持久化
+        console.error(`[useProSubMode] Initialization failed, using the default value ${DEFAULT_PRO_SUB_MODE}:`, e)
+        // If reading fails, keep the default value and try to persist it
         try {
           await setPreference(UI_SETTINGS_KEYS.PRO_SUB_MODE, DEFAULT_PRO_SUB_MODE)
         } catch {
-          // 忽略设置失败错误
+          // Ignore set-failure errors
         }
       } finally {
         singleton!.initialized = true

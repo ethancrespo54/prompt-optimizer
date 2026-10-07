@@ -3,11 +3,11 @@
         class="variable-aware-input-wrapper"
         :style="completionColorVars"
     >
-        <!-- CodeMirror 编辑器容器 (外观对齐 Naive UI NInput textarea) -->
+        <!-- CodeMirror editor container (appearance aligned with the Naive UI NInput textarea) -->
         <div class="codemirror-container" :class="codemirrorContainerClass">
             <div ref="editorRef" class="codemirror-editor"></div>
 
-            <!-- 清空按钮 (仅在启用 clearable 且有内容时显示) -->
+            <!-- Clear button (only shown when clearable is enabled and there is content) -->
             <button
                 v-if="showClearButton"
                 class="vai-clear"
@@ -33,13 +33,13 @@
                 </svg>
             </button>
 
-            <!-- 字符计数 (与 NInput show-count 一致) -->
+            <!-- Character count (consistent with NInput show-count) -->
             <div v-if="showCount" class="vai-count" aria-hidden="true">
                 {{ countText }}
             </div>
         </div>
 
-        <!-- 悬浮的"提取为变量"按钮 -->
+        <!-- Floating "Extract as variable" button -->
         <NPopover
             v-model:show="showExtractionButton"
             :x="popoverPosition.x"
@@ -66,7 +66,7 @@
             </NButton>
         </NPopover>
 
-        <!-- 变量提取对话框 -->
+        <!-- Variable extraction dialog -->
         <VariableExtractionDialog
             v-model:show="showExtractionDialog"
             :selected-text="currentSelection.displayText"
@@ -106,44 +106,44 @@ import {
 } from "./codemirror-extensions";
 
 /**
- * 支持变量高亮和智能管理的输入框组件
+ * Input component supporting variable highlighting and smart management
  *
- * 基于 CodeMirror 6 实现,提供:
- * 1. 变量实时高亮 (全局/临时/预定义/缺失)
- * 2. 变量自动完成 (输入 {{ 触发)
- * 3. 缺失变量快捷添加
- * 4. 文本选择提取变量 (保留原有功能)
+ * Implemented on top of CodeMirror 6, providing:
+ * 1. Real-time variable highlighting (global / temporary / predefined / missing)
+ * 2. Variable autocomplete (triggered by typing {{)
+ * 3. Quick add of missing variables
+ * 4. Extracting variables from selected text (original feature kept)
  */
 
-// Props 定义
+// Props definition
 interface Props {
-    /** 输入框的值 */
+    /** Input box value */
     modelValue: string;
-    /** 占位符文本 */
+    /** Placeholder text */
     placeholder?: string;
-    /** 🆕 是否只读 */
+    /** 🆕 Whether read-only */
     readonly?: boolean;
-    /** 自动调整高度 */
+    /** Auto-adjust height */
     autosize?: boolean | { minRows?: number; maxRows?: number };
 
-    /** 是否显示清空按钮 (对齐 NInput clearable) */
+    /** Whether to show the clear button (aligned with NInput clearable) */
     clearable?: boolean;
-    /** 是否显示字符计数 (对齐 NInput show-count) */
+    /** Whether to show the character count (aligned with NInput show-count) */
     showCount?: boolean;
-    /** 最大输入长度 (对齐 NInput maxLength/maxlength) */
+    /** Maximum input length (aligned with NInput maxLength/maxlength) */
     maxLength?: number;
 
-    /** 已存在的全局变量名列表 */
+    /** List of existing global variable names */
     existingGlobalVariables?: string[];
-    /** 已存在的临时变量名列表 */
+    /** List of existing temporary variable names */
     existingTemporaryVariables?: string[];
-    /** 系统预定义变量名列表 */
+    /** List of system predefined variable names */
     predefinedVariables?: string[];
-    /** 全局变量名到变量值的映射 */
+    /** Map of global variable names to values */
     globalVariableValues?: Record<string, string>;
-    /** 临时变量名到变量值的映射 */
+    /** Map of temporary variable names to values */
     temporaryVariableValues?: Record<string, string>;
-    /** 预定义变量名到变量值的映射 */
+    /** Map of predefined variable names to values */
     predefinedVariableValues?: Record<string, string>;
 }
 
@@ -161,11 +161,11 @@ const props = withDefaults(defineProps<Props>(), {
     predefinedVariableValues: () => ({}),
 });
 
-// Emits 定义
+// Emits definition
 interface Emits {
-    /** 更新输入框的值 */
+    /** Update the input box value */
     (e: "update:modelValue", value: string): void;
-    /** 变量提取事件 */
+    /** Variable extraction event */
     (
         e: "variable-extracted",
         data: {
@@ -174,7 +174,7 @@ interface Emits {
             variableType: "global" | "temporary";
         },
     ): void;
-    /** 添加缺失变量事件 */
+    /** Add missing variable event */
     (e: "add-missing-variable", varName: string): void;
 }
 
@@ -239,10 +239,10 @@ const handleClear = () => {
     editorView.focus();
 };
 
-// 防止“外部 props 同步 -> CodeMirror dispatch -> updateListener emit -> 再同步”的回路
+// Prevent the loop "external props sync -> CodeMirror dispatch -> updateListener emit -> sync again"
 const isSyncingFromModel = ref(false);
 
-// 创建 Compartment 用于动态更新扩展
+// Create a Compartment for dynamically updating extensions
 const autocompletionCompartment = new Compartment();
 const highlighterCompartment = new Compartment();
 const missingVariableTooltipCompartment = new Compartment();
@@ -265,7 +265,7 @@ const buildVariableMap = (
     return map;
 };
 
-// 将变量名转换为 Record 格式 (包含变量值,用于检测与补全)
+// Convert variable names to a Record format (including variable values, used for detection and completion)
 const globalVariablesMap = computed(() =>
     buildVariableMap(props.existingGlobalVariables, props.globalVariableValues),
 );
@@ -284,14 +284,14 @@ const predefinedVariablesMap = computed(() =>
     ),
 );
 
-// 变量检测
+// Variable detection
 const { extractVariables } = useVariableDetection(
     globalVariablesMap,
     temporaryVariablesMap,
     predefinedVariablesMap,
 );
 
-// 变量相关多语言文案
+// Variable-related i18n copy
 const variableDetectionLabels = computed<VariableDetectionLabels>(() => {
     return {
         sourceGlobal: t("variableDetection.sourceGlobal"),
@@ -305,7 +305,7 @@ const variableDetectionLabels = computed<VariableDetectionLabels>(() => {
     };
 });
 
-/** 判断给定位置是否位于变量占位符内部 */
+/** Determine whether the given position is inside a variable placeholder */
 const isInsideVariablePlaceholder = (text: string, index: number): boolean => {
     const beforeText = text.substring(0, index);
     const openBraces = (beforeText.match(/\{\{/g) || []).length;
@@ -313,44 +313,44 @@ const isInsideVariablePlaceholder = (text: string, index: number): boolean => {
     return openBraces > closeBraces;
 };
 
-/** 校验选中文本是否合法 (不得跨越变量边界) */
+/** Validate that the selected text is legal (must not cross a variable boundary) */
 const validateSelection = (
     fullText: string,
     start: number,
     end: number,
     selectedText: string,
 ): { isValid: boolean; reason?: string } => {
-    // 是否有有效选择
+    // Whether there is a valid selection
     if (start === end || !selectedText.trim()) {
-        return { isValid: false, reason: "未选中任何文本" };
+        return { isValid: false, reason: "No text selected" };
     }
 
-    // 检查是否跨越变量边界
+    // Check whether it crosses a variable boundary
     const beforeSelection = fullText.substring(0, start);
     const afterSelection = fullText.substring(end);
 
     const openBracesBefore = (beforeSelection.match(/\{\{/g) || []).length;
     const closeBracesBefore = (beforeSelection.match(/\}\}/g) || []).length;
     if (openBracesBefore > closeBracesBefore) {
-        return { isValid: false, reason: "不能跨越变量边界" };
+        return { isValid: false, reason: "Cannot cross a variable boundary" };
     }
 
     const openBracesAfter = (afterSelection.match(/\{\{/g) || []).length;
     const closeBracesAfter = (afterSelection.match(/\}\}/g) || []).length;
     if (closeBracesAfter > openBracesAfter) {
-        return { isValid: false, reason: "不能跨越变量边界" };
+        return { isValid: false, reason: "Cannot cross a variable boundary" };
     }
 
     const openBracesInSelection = (selectedText.match(/\{\{/g) || []).length;
     const closeBracesInSelection = (selectedText.match(/\}\}/g) || []).length;
     if (openBracesInSelection !== closeBracesInSelection) {
-        return { isValid: false, reason: "不能跨越变量边界" };
+        return { isValid: false, reason: "Cannot cross a variable boundary" };
     }
 
     return { isValid: true };
 };
 
-/** 统计文本中目标字符串的出现次数 (忽略变量占位符内部) */
+/** Count the occurrences of the target string in the text (ignoring those inside variable placeholders) */
 const isOutsideVariableRange = (
     fullText: string,
     start: number,
@@ -388,7 +388,7 @@ const countOccurrencesOutsideVariables = (
     return count;
 };
 
-/** 替换文本中所有目标字符串 (忽略变量占位符内部) */
+/** Replace all occurrences of the target string in the text (ignoring those inside variable placeholders) */
 const replaceAllOccurrencesOutsideVariables = (
     fullText: string,
     searchText: string,
@@ -417,7 +417,7 @@ const replaceAllOccurrencesOutsideVariables = (
     return result;
 };
 
-// 变量提取相关状态
+// Variable extraction-related state
 const showExtractionButton = ref(false);
 const showExtractionDialog = ref(false);
 const popoverPosition = ref({ x: 0, y: 0 });
@@ -429,20 +429,20 @@ const currentSelection = ref({
 });
 const occurrenceCount = ref(1);
 
-// 处理添加缺失变量
+// Handle adding a missing variable
 const handleAddMissingVariable = (varName: string) => {
     emit("add-missing-variable", varName);
 
-    // 显示成功提示
+    // Show a success message
     message.success(t("variableDetection.addSuccess", { name: varName }));
 };
 
-// 计算编辑器高度
+// Compute the editor height
 const editorHeight = computed(() => {
     const autosize = props.autosize;
     if (typeof autosize === "boolean") {
-        // autosize === true 时，完全自适应容器高度（100%）
-        // autosize === false 时，使用固定高度
+        // When autosize === true, fully adapt to the container height (100%)
+        // When autosize === false, use a fixed height
         return autosize
             ? { min: '100%', max: 'none' }
             : { min: '200px', max: '200px' };
@@ -455,11 +455,11 @@ const editorHeight = computed(() => {
     };
 });
 
-// 检查选中文本
+// Check the selected text
 const checkSelection = () => {
     if (!editorView) return;
 
-    // 🔒 只读模式下禁用变量提取功能
+    // 🔒 Disable the variable extraction feature in read-only mode
     if (props.readonly) {
         showExtractionButton.value = false;
         return;
@@ -477,7 +477,7 @@ const checkSelection = () => {
 
         if (
             validation.reason &&
-            validation.reason !== "未选中任何文本"
+            validation.reason !== "No text selected"
         ) {
             message.warning(validation.reason);
         }
@@ -501,7 +501,7 @@ const checkSelection = () => {
     showExtractionButton.value = true;
 };
 
-// 计算悬浮框位置
+// Compute the floating box position
 const calculatePopoverPosition = () => {
     if (!editorView) return;
 
@@ -516,13 +516,13 @@ const calculatePopoverPosition = () => {
     }
 };
 
-// 处理提取变量按钮点击
+// Handle the extract variable button click
 const handleExtractVariable = () => {
     showExtractionButton.value = false;
     showExtractionDialog.value = true;
 };
 
-// 处理变量提取确认
+// Handle variable extraction confirmation
 const handleExtractionConfirm = (data: {
     variableName: string;
     variableValue: string;
@@ -531,7 +531,7 @@ const handleExtractionConfirm = (data: {
 }) => {
     if (!editorView) return;
 
-    // 🔒 只读模式下禁止修改文本（双重防护）
+    // 🔒 Prevent text modification in read-only mode (double protection)
     if (props.readonly) {
         message.warning(t("variableExtraction.readonlyWarning"));
         showExtractionDialog.value = false;
@@ -543,21 +543,21 @@ const handleExtractionConfirm = (data: {
     let newValue = text;
 
     if (data.replaceAll && occurrenceCount.value > 1) {
-        // 全部替换
+        // Replace all
         newValue = replaceAllOccurrencesOutsideVariables(
             text,
             currentSelection.value.rawText,
             placeholder,
         );
     } else {
-        // 仅替换当前选中的文本
+        // Only replace the currently selected text
         newValue =
             text.substring(0, currentSelection.value.start) +
             placeholder +
             text.substring(currentSelection.value.end);
     }
 
-    // 更新编辑器内容
+    // Update the editor content
     editorView.dispatch({
         changes: {
             from: 0,
@@ -569,14 +569,14 @@ const handleExtractionConfirm = (data: {
         },
     });
 
-    // 发射变量提取事件
+    // Emit the variable extraction event
     emit("variable-extracted", {
         variableName: data.variableName,
         variableValue: data.variableValue,
         variableType: data.variableType,
     });
 
-    // 显示成功消息
+    // Show a success message
     if (data.replaceAll && occurrenceCount.value > 1) {
         message.success(
             t("variableExtraction.extractSuccessAll", {
@@ -592,16 +592,16 @@ const handleExtractionConfirm = (data: {
         );
     }
 
-    // 关闭对话框
+    // Close the dialog
     showExtractionDialog.value = false;
 };
 
-// 处理变量提取取消
+// Handle variable extraction cancellation
 const handleExtractionCancel = () => {
     showExtractionDialog.value = false;
 };
 
-// 初始化 CodeMirror
+// Initialize CodeMirror
 onMounted(() => {
     if (!editorRef.value) return;
 
@@ -638,9 +638,9 @@ onMounted(() => {
                 ...lintKeymap,
                 indentWithTab
             ]),
-            // 变量高亮 (使用 Compartment)
+            // Variable highlighting (using a Compartment)
             highlighterCompartment.of(variableHighlighter(extractVariables)),
-            // 缺失变量提示
+            // Missing variable hint
             missingVariableTooltipCompartment.of(
                 missingVariableTooltip(
                     handleAddMissingVariable,
@@ -655,7 +655,7 @@ onMounted(() => {
                     },
                 ),
             ),
-            // 已存在变量提示
+            // Existing variable hint
             existingVariableTooltipCompartment.of(
                 existingVariableTooltip(
                     variableDetectionLabels.value,
@@ -672,22 +672,22 @@ onMounted(() => {
                     },
                 ),
             ),
-            // 主题适配
+            // Theme adaptation
             themeCompartment.of(
                 createThemeExtension(themeVars.value, {
                     readonly: props.readonly,
                 }),
             ),
-            // 🆕 只读状态
+            // 🆕 Read-only state
             readOnlyCompartment.of(EditorState.readOnly.of(props.readonly)),
-            // 🆕 自动换行功能
+            // 🆕 Line wrapping feature
             lineWrappingCompartment.of(EditorView.lineWrapping),
-            // 监听文档变化
+            // Watch document changes
             EditorView.updateListener.of((update) => {
                 if (update.docChanged) {
                     const newValue = update.state.doc.toString();
 
-                    // 对齐 NInput maxlength 行为：先做长度限制，再同步到外部，避免短时间内发出超长值。
+                    // Align with the NInput maxlength behavior: limit the length first and then sync outward, to avoid emitting an over-long value in a short time.
                     if (
                         !isSyncingFromModel.value &&
                         typeof props.maxLength === "number" &&
@@ -712,18 +712,18 @@ onMounted(() => {
                         return;
                     }
 
-                    // 外部同步导致的变更不回写（避免循环/重复写入）
+                    // Changes caused by external sync are not written back (avoids loops / duplicate writes)
                     if (!isSyncingFromModel.value) {
                         emit("update:modelValue", newValue);
                     }
                 }
 
-                // 监听选择变化
+                // Watch selection changes
                 if (update.selectionSet) {
                     checkSelection();
                 }
             }),
-            // 占位符（使用官方 placeholder 扩展）
+            // Placeholder (using the official placeholder extension)
             placeholderCompartment.of(
                 props.placeholder ? cmPlaceholder(props.placeholder) : []
             ),
@@ -736,7 +736,7 @@ onMounted(() => {
     });
 });
 
-// 监听外部值变化
+// Watch external value changes
 watch(
     () => props.modelValue,
     (newValue) => {
@@ -756,7 +756,7 @@ watch(
     },
 );
 
-// 监听变量列表与多语言变化,动态更新扩展
+// Watch the variable lists and language changes and update the extensions dynamically
 watch(
     [
         () => globalVariablesMap.value,
@@ -815,7 +815,7 @@ watch(
     },
 );
 
-// 监听占位符变化,动态更新编辑器属性
+// Watch placeholder changes and update the editor attributes dynamically
 watch(
     () => props.placeholder,
     (placeholder) => {
@@ -831,7 +831,7 @@ watch(
     },
 );
 
-// 🆕 监听 readonly 变化,动态更新编辑器只读状态
+// 🆕 Watch readonly changes and update the editor read-only state dynamically
 watch(
     () => props.readonly,
     (readonly) => {
@@ -850,7 +850,7 @@ watch(
     },
 );
 
-// 监听主题变化,动态更新 CodeMirror 主题
+// Watch theme changes and update the CodeMirror theme dynamically
 watch(
     themeVars,
     (vars) => {
@@ -899,7 +899,7 @@ watch(
     { deep: true },
 );
 
-// 清理
+// Cleanup
 onBeforeUnmount(() => {
     if (editorView) {
         editorView.destroy();
@@ -907,13 +907,13 @@ onBeforeUnmount(() => {
     }
 });
 
-// 暴露方法供父组件调用
+// Expose methods for the parent component to call
 defineExpose({
-    // 获取编辑器实例
+    // Get the editor instance
     getEditorView: () => editorView,
-    // 获取当前值
+    // Get the current value
     getValue: () => editorView?.state.doc.toString() || "",
-    // 设置值
+    // Set the value
     setValue: (value: string) => {
         if (editorView) {
             editorView.dispatch({
@@ -925,7 +925,7 @@ defineExpose({
             });
         }
     },
-    // 获取选中文本
+    // Get the selected text
     getSelection: () => {
         if (!editorView) return { text: "", from: 0, to: 0 };
         const { from, to } = editorView.state.selection.main;
@@ -935,7 +935,7 @@ defineExpose({
             to,
         };
     },
-    // 替换选中文本
+    // Replace the selected text
     replaceSelection: (text: string) => {
         if (!editorView) return;
         const { from, to } = editorView.state.selection.main;
@@ -944,7 +944,7 @@ defineExpose({
             selection: { anchor: from + text.length },
         });
     },
-    // 聚焦编辑器
+    // Focus the editor
     focus: () => {
         editorView?.focus();
     },
@@ -984,7 +984,7 @@ defineExpose({
     box-shadow: 0 0 0 2px var(--n-primary-color-suppl);
 }
 
-/* CodeMirror 内部样式调整 */
+/* CodeMirror internal style adjustments */
 .codemirror-container :deep(.cm-editor) {
     height: 100%;
 }
@@ -997,19 +997,19 @@ defineExpose({
 
 .codemirror-container :deep(.cm-content) {
     min-height: v-bind("editorHeight.min");
-    /* 🆕 支持文本自动换行 */
+    /* 🆕 Support automatic text wrapping */
     white-space: pre-wrap;
     word-wrap: break-word;
     overflow-wrap: break-word;
 }
 
-/* 🆕 确保长行文本正确换行 */
+/* 🆕 Make sure long lines wrap correctly */
 .codemirror-container :deep(.cm-line) {
     white-space: pre-wrap;
     word-break: break-word;
 }
 
-/* 为右上角清空按钮、右下角计数预留空间，避免内容被遮挡 */
+/* Reserve space for the top-right clear button and the bottom-right counter, to avoid obscuring the content */
 .codemirror-container.vai-has-clear :deep(.cm-content) {
     padding-right: 36px;
 }
@@ -1069,14 +1069,14 @@ defineExpose({
     user-select: none;
 }
 
-/* 占位符样式（使用 CodeMirror 官方 placeholder 扩展） */
+/* Placeholder styles (using the official CodeMirror placeholder extension) */
 .codemirror-container :deep(.cm-placeholder) {
     color: var(--n-placeholder-color);
     pointer-events: none;
     font-style: normal;
 }
 
-/* 自动完成面板样式 */
+/* Autocomplete panel styles */
 .codemirror-container :deep(.cm-tooltip-autocomplete) {
     background: var(--n-color);
     border: 1px solid var(--n-border-color);

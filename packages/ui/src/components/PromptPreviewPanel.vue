@@ -7,7 +7,7 @@
     :segmented="{ content: 'soft', footer: 'soft' }"
   >
     <NFlex vertical :size="16">
-      <!-- 变量统计信息 -->
+      <!-- Variable statistics -->
       <NCard size="small" :title="$t('contextMode.preview.stats')">
         <NFlex :size="12" :wrap="true">
           <NTag :bordered="false" type="info">
@@ -22,7 +22,7 @@
         </NFlex>
       </NCard>
 
-      <!-- 缺失变量警告 -->
+      <!-- Missing variable warning -->
       <NCard
         v-if="hasMissingVariables"
         size="small"
@@ -46,7 +46,7 @@
         </template>
       </NCard>
 
-      <!-- 预览内容 -->
+      <!-- Preview content -->
       <NCard size="small" :title="$t('contextMode.preview.renderedContent')">
         <NScrollbar :style="{ maxHeight: '400px' }">
           <div class="preview-content">
@@ -55,7 +55,7 @@
         </NScrollbar>
       </NCard>
 
-      <!-- 模式说明 -->
+      <!-- Mode description -->
       <NCard size="small" :title="$t('contextMode.preview.modeExplanation')">
         <NText depth="2" :style="{ fontSize: '14px' }">
           <template v-if="contextMode === 'user' && renderPhase === 'optimize'">
@@ -96,13 +96,13 @@ import {
 import type { ContextMode } from '@prompt-optimizer/core'
 
 const props = defineProps<{
-  /** 预览内容 */
+  /** Preview content */
   previewContent: string
-  /** 缺失的变量 */
+  /** Missing variables */
   missingVariables: string[]
-  /** 是否有缺失变量 */
+  /** Whether there are missing variables */
   hasMissingVariables: boolean
-  /** 变量统计 */
+  /** Variable statistics */
   variableStats: {
     total: number
     builtin: number
@@ -110,11 +110,11 @@ const props = defineProps<{
     missing: number
     provided: number
   }
-  /** 上下文模式 */
+  /** Context mode */
   contextMode: ContextMode
-  /** 渲染阶段 */
+  /** Render stage */
   renderPhase: 'optimize' | 'test'
-  /** 是否显示 */
+  /** Whether to show */
   show: boolean
 }>()
 

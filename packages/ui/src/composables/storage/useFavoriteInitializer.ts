@@ -2,14 +2,14 @@ import { useI18n } from 'vue-i18n';
 import type { IFavoriteManager } from '@prompt-optimizer/core';
 
 /**
- * 收藏功能初始化器
- * 负责创建国际化的默认分类
+ * Favorites feature initializer
+ * Responsible for creating the internationalized default categories
  */
 export function useFavoriteInitializer(manager: IFavoriteManager) {
   const { t } = useI18n();
 
   /**
-   * 确保默认分类存在(仅首次使用时创建)
+   * Ensure the default categories exist (created only on first use)
    */
   const ensureDefaultCategories = async () => {
     const defaultCategories = [

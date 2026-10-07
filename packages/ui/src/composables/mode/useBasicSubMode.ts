@@ -19,10 +19,10 @@ let singleton: {
 } | null = null
 
 /**
- * 基础模式的子模式单例
- * - 默认值为 'system'（系统提示词优化）
- * - 自动持久化
- * - 独立于上下文模式和图像模式
+ * Singleton of the basic mode sub-mode
+ * - Defaults to 'system' (system prompt optimization)
+ * - Persisted automatically
+ * - Independent of context mode and image mode
  */
 export function useBasicSubMode(services: Ref<AppServices | null>): UseBasicSubModeApi {
   if (!singleton) {
@@ -52,20 +52,20 @@ export function useBasicSubMode(services: Ref<AppServices | null>): UseBasicSubM
           ? saved
           : 'system'
 
-        console.log(`[useBasicSubMode] 初始化完成，当前值: ${singleton!.mode.value}`)
+        console.log(`[useBasicSubMode] Initialization complete, current value: ${singleton!.mode.value}`)
 
-        // 持久化默认值（如果未设置过）
+        // Persist the default value (if it has not been set before)
         if (saved !== 'system' && saved !== 'user') {
           await setPreference(UI_SETTINGS_KEYS.BASIC_SUB_MODE, 'system')
-          console.log('[useBasicSubMode] 首次初始化，已持久化默认值: system')
+          console.log('[useBasicSubMode] First initialization, default value persisted: system')
         }
       } catch (e) {
-        console.error('[useBasicSubMode] 初始化失败，使用默认值 system:', e)
-        // 读取失败则保持默认 'system'，并尝试持久化
+        console.error('[useBasicSubMode] Initialization failed, using the default value system:', e)
+        // If reading fails, keep the default 'system' and try to persist it
         try {
           await setPreference(UI_SETTINGS_KEYS.BASIC_SUB_MODE, 'system')
         } catch {
-          // 忽略设置失败错误
+          // Ignore set-failure errors
         }
       } finally {
         singleton!.initialized = true
@@ -80,7 +80,7 @@ export function useBasicSubMode(services: Ref<AppServices | null>): UseBasicSubM
     await ensureInitialized()
     singleton!.mode.value = mode
     await setPreference(UI_SETTINGS_KEYS.BASIC_SUB_MODE, mode)
-    console.log(`[useBasicSubMode] 子模式已切换并持久化: ${mode}`)
+    console.log(`[useBasicSubMode] Sub-mode switched and persisted: ${mode}`)
   }
 
   const switchToSystem = () => setBasicSubMode('system')

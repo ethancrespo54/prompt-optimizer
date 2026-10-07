@@ -1,29 +1,29 @@
 /**
- * 错误处理工具函数
- * 提供统一的错误处理和类型安全的错误信息提取
+ * Error handling utility functions
+ * Provides unified error handling and type-safe error message extraction
  */
 
 import { useToast } from '../composables/ui/useToast'
 import { i18n } from '../plugins/i18n'
 
 /**
- * 扩展错误类型，支持更详细的错误信息
+ * Extended error type supporting more detailed error info
  */
 export interface ExtendedError extends Error {
-  /** 详细的错误消息 */
+  /** Detailed error message */
   detailedMessage?: string
-  /** 原始错误对象 */
+  /** Original error object */
   originalError?: unknown
-  /** 错误代码（i18n key） */
+  /** Error code (i18n key) */
   code?: string
-  /** i18n 插值参数 */
+  /** i18n interpolation params */
   params?: Record<string, unknown>
-  /** 额外上下文（非 i18n 插值用） */
+  /** Extra context (not for i18n interpolation) */
   context?: Record<string, unknown>
 }
 
 /**
- * 应用错误类
+ * Application error class
  */
 export class AppError extends Error {
   constructor(
@@ -37,10 +37,10 @@ export class AppError extends Error {
 }
 
 /**
- * 从未知类型的错误中提取错误消息
- * @param error - 未知类型的错误对象
- * @param fallback - 默认错误消息
- * @returns 错误消息字符串
+ * Extract an error message from an error of unknown type
+ * @param error - Error object of unknown type
+ * @param fallback - Default error message
+ * @returns Error message string
  */
 export function getErrorMessage(error: unknown, fallback = 'Unknown error'): string {
   if (error instanceof Error) {
@@ -73,11 +73,11 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 /**
- * 将结构化错误（code + params）转换为用户可读的 i18n 文案。
+ * Convert a structured error (code + params) into user-readable i18n text.
  *
- * 规则：
- * - 不解析 error.message（避免把 `[error.xxx] ...` 暴露给用户）
- * - 只有在 i18n 存在该 key 时才使用翻译，否则回退到 getErrorMessage
+ * Rules:
+ * - Do not parse error.message (avoids exposing `[error.xxx] ...` to users)
+ * - Only use the translation when the key exists in i18n; otherwise fall back to getErrorMessage
  */
 export function getI18nErrorMessage(error: unknown, fallback = 'Unknown error'): string {
   if (!isRecord(error)) {
@@ -110,9 +110,9 @@ export function getI18nErrorMessage(error: unknown, fallback = 'Unknown error'):
 
 
 /**
- * 类型守卫：检查是否为 ExtendedError
- * @param error - 待检查的错误对象
- * @returns 是否为 ExtendedError
+ * Type guard: check whether it is an ExtendedError
+ * @param error - Error object to check
+ * @returns Whether it is an ExtendedError
  */
 export function isExtendedError(error: unknown): error is ExtendedError {
   return (
@@ -122,9 +122,9 @@ export function isExtendedError(error: unknown): error is ExtendedError {
 }
 
 /**
- * 安全地将未知错误转换为 ExtendedError
- * @param error - 未知类型的错误对象
- * @returns ExtendedError 或 null
+ * Safely convert an unknown error into an ExtendedError
+ * @param error - Error object of unknown type
+ * @returns ExtendedError or null
  */
 export function asExtendedError(error: unknown): ExtendedError | null {
   if (isExtendedError(error)) {
@@ -134,26 +134,26 @@ export function asExtendedError(error: unknown): ExtendedError | null {
 }
 
 /**
- * 获取详细的错误消息，优先使用 ExtendedError 的详细信息
- * @param error - 未知类型的错误对象
- * @param fallback - 默认错误消息
- * @returns 详细的错误消息字符串
+ * Get a detailed error message, preferring the detailed info of ExtendedError
+ * @param error - Error object of unknown type
+ * @param fallback - Default error message
+ * @returns Detailed error message string
  */
 export function getDetailedErrorMessage(error: unknown, fallback = 'Unknown error'): string {
   const extendedError = asExtendedError(error)
 
   if (extendedError) {
-    // 优先使用详细消息
+    // Prefer the detailed message
     if (extendedError.detailedMessage) {
       return extendedError.detailedMessage
     }
 
-    // 其次使用原始错误
+    // Then use the original error
     if (extendedError.originalError !== undefined) {
       return String(extendedError.originalError)
     }
 
-    // 最后使用标准错误消息
+    // Finally use the standard error message
     return extendedError.message
   }
 
@@ -161,10 +161,10 @@ export function getDetailedErrorMessage(error: unknown, fallback = 'Unknown erro
 }
 
 /**
- * 创建一个 ExtendedError 实例
- * @param message - 错误消息
- * @param options - 扩展选项
- * @returns ExtendedError 实例
+ * Create an ExtendedError instance
+ * @param message - Error message
+ * @param options - Extension options
+ * @returns ExtendedError instance
  */
 export function createExtendedError(
   message: string,
@@ -202,26 +202,26 @@ export function createExtendedError(
 }
 
 /**
- * 创建错误处理器
- * @param context - 错误上下文描述
- * @returns 错误处理器对象
+ * Create an error handler
+ * @param context - Error context description
+ * @returns Error handler object
  */
 export function createErrorHandler(context: string) {
   const toast = useToast()
 
   return {
     handleError(error: unknown) {
-      console.error(`[${context}]错误:`, error)
+      console.error(`[${context}] Error:`, error)
 
-      toast.error(getI18nErrorMessage(error, `${context}过程中发生未知错误`))
+      toast.error(getI18nErrorMessage(error, `An unknown error occurred during ${context}`))
     }
   }
 }
 
 /**
- * 在开发环境中记录详细的错误信息
- * @param context - 错误上下文描述
- * @param error - 错误对象
+ * Log detailed error info in the development environment
+ * @param context - Error context description
+ * @param error - Error object
  */
 export function logErrorInDev(context: string, error: unknown): void {
   if (import.meta.env.DEV) {
@@ -243,12 +243,12 @@ export function logErrorInDev(context: string, error: unknown): void {
 }
 
 /**
- * 预定义错误消息常量
+ * Predefined error message constants
  */
 export const errorMessages = {
-  SERVICE_NOT_INITIALIZED: '服务未初始化，请稍后重试',
-  TEMPLATE_NOT_SELECTED: '请先选择提示词模板',
-  INCOMPLETE_TEST_INFO: '请填写完整的测试信息',
-  LOAD_TEMPLATE_FAILED: '加载提示词失败',
-  CLEAR_HISTORY_FAILED: '清空历史记录失败'
+  SERVICE_NOT_INITIALIZED: 'Service not initialized, please try again later',
+  TEMPLATE_NOT_SELECTED: 'Please select a prompt template first',
+  INCOMPLETE_TEST_INFO: 'Please fill in the complete test info',
+  LOAD_TEMPLATE_FAILED: 'Failed to load prompts',
+  CLEAR_HISTORY_FAILED: 'Failed to clear the history'
 } as const 

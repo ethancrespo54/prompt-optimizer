@@ -1,14 +1,14 @@
-// Naive UI 主题配置 - 全面基于 Naive UI 的 themeOverrides 系统
+// Naive UI theme config - fully based on the themeOverrides system of Naive UI
 import { computed, ref, watch } from 'vue'
 
 import { darkTheme, lightTheme, type GlobalThemeOverrides, type GlobalTheme } from 'naive-ui'
 import { pinia } from '../plugins/pinia'
 import { useGlobalSettings } from '../stores/settings/useGlobalSettings'
 
-// 当前主题ID
+// Current theme ID
 export const currentThemeId = ref<string>('light')
 
-// 主题类型定义
+// Theme type definitions
 export interface ThemeConfig {
   id: string
   name: string
@@ -16,11 +16,11 @@ export interface ThemeConfig {
   themeOverrides: GlobalThemeOverrides
 }
 
-// 纯Naive UI主题配置 - 完全消除CSS依赖
+// Pure Naive UI theme config - eliminates the CSS dependency completely
 export const naiveThemeConfigs: Record<string, ThemeConfig> = {
   light: {
     id: 'light',
-    name: '日间模式',
+    name: 'Light Mode',
     naiveTheme: lightTheme,
     themeOverrides: {
       common: {
@@ -155,7 +155,7 @@ export const naiveThemeConfigs: Record<string, ThemeConfig> = {
 
   dark: {
     id: 'dark', 
-    name: '夜间模式',
+    name: 'Dark Mode',
     naiveTheme: darkTheme,
     themeOverrides: {
       common: {
@@ -177,7 +177,7 @@ export const naiveThemeConfigs: Record<string, ThemeConfig> = {
 
   blue: {
     id: 'blue',
-    name: '蓝色模式',
+    name: 'Blue Mode',
     naiveTheme: lightTheme,
     themeOverrides: {
       common: {
@@ -306,7 +306,7 @@ export const naiveThemeConfigs: Record<string, ThemeConfig> = {
 
   classic: {
     id: 'classic',
-    name: '米杏模式',
+    name: 'Cream Mode',
     naiveTheme: lightTheme,
     themeOverrides: {
       common: {
@@ -444,7 +444,7 @@ export const naiveThemeConfigs: Record<string, ThemeConfig> = {
 
   green: {
     id: 'green',
-    name: '绿色模式',
+    name: 'Green Mode',
     naiveTheme: darkTheme,
     themeOverrides: {
       common: {
@@ -589,7 +589,7 @@ export const naiveThemeConfigs: Record<string, ThemeConfig> = {
 
   purple: {
     id: 'purple',
-    name: '暗紫模式',
+    name: 'Dark Purple Mode',
     naiveTheme: darkTheme,
     themeOverrides: {
       common: {
@@ -733,20 +733,20 @@ export const naiveThemeConfigs: Record<string, ThemeConfig> = {
   }
 }
 
-// 获取可用主题列表
+// Get the list of available themes
 export const availableThemes = Object.values(naiveThemeConfigs)
 
-// 当前主题配置
+// Current theme config
 export const currentThemeConfig = computed(() => 
   naiveThemeConfigs[currentThemeId.value] || naiveThemeConfigs.light
 )
 
-// 当前 Naive UI 主题
+// Current Naive UI theme
 export const currentNaiveTheme = computed<GlobalTheme | null>(() => 
   currentThemeConfig.value.naiveTheme
 )
 
-// 当前主题覆盖配置
+// Current theme override config
 export const currentThemeOverrides = computed<GlobalThemeOverrides>(() => 
   currentThemeConfig.value.themeOverrides || {}
 )
@@ -849,7 +849,7 @@ const ensureAutoColorSchemeWatch = (settings: ReturnType<typeof useGlobalSetting
   }
 }
 
-// 主题切换（统一由 useGlobalSettings 持久化）
+// Theme switching (persisted uniformly by useGlobalSettings)
 export const switchTheme = (themeId: string): boolean => {
   const settings = useGlobalSettings(pinia)
   settings.updateThemeId(themeId)
@@ -861,20 +861,20 @@ export const switchTheme = (themeId: string): boolean => {
   return ok
 }
 
-// 获取当前主题ID
+// Get the current theme ID
 export const getCurrentThemeId = (): string => currentThemeId.value
 
-// 获取主题配置
+// Get the theme config
 export const getThemeConfig = (themeId: string): ThemeConfig | null => {
   return naiveThemeConfigs[themeId] || null
 }
 
-// 初始化主题系统
+// Initialize the theme system
 export const initializeNaiveTheme = (): void => {
   const settings = useGlobalSettings(pinia)
 
-  // 一次性迁移：localStorage('naive-theme-id') → useGlobalSettings
-  // 只在 global-settings/v1 尚未恢复且当前为默认 'auto' 时执行
+  // One-time migration: localStorage('naive-theme-id') → useGlobalSettings
+  // Only runs when global-settings/v1 has not been restored yet and the current value is the default 'auto'
   try {
     const legacy = localStorage.getItem('naive-theme-id')
     if (legacy && settings.state.selectedThemeId === 'auto' && !settings.hasRestored) {
@@ -887,8 +887,8 @@ export const initializeNaiveTheme = (): void => {
   // When in 'auto' mode, keep theme synced with OS color scheme changes.
   ensureAutoColorSchemeWatch(settings)
 
-  // 监听全局配置的主题选择，驱动实际应用主题
-  // 使用模块级 guard，防止 initializeNaiveTheme 被多次调用时重复注册 watch
+  // Watch the theme selection in the global config and drive the actual applied theme
+  // Use a module-level guard to prevent the watch from being registered repeatedly when initializeNaiveTheme is called multiple times
   if (!__themeWatchInitialized) {
     __themeWatchInitialized = true
     watch(
@@ -900,19 +900,19 @@ export const initializeNaiveTheme = (): void => {
       { immediate: true }
     )
   } else {
-    // 已注册 watch：手动应用一次，确保初始化时 theme 与 state 对齐
+    // The watch is already registered: apply once manually to make sure the theme matches the state on initialization
     applyThemeId(settings.state.selectedThemeId)
   }
 }
 
 let __themeWatchInitialized = false
 
-// 检查是否为深色主题
+// Check whether it is a dark theme
 export const isDarkTheme = computed(() => {
   const config = currentThemeConfig.value
   return config.naiveTheme === darkTheme
 })
 
-// 为向后兼容性导出的别名
+// Alias exported for backward compatibility
 export const naiveTheme = currentNaiveTheme
 export const themeOverrides = currentThemeOverrides

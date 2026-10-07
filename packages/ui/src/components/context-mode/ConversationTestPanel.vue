@@ -5,7 +5,7 @@
         />
 
         <template v-if="mode === 'full'">
-            <!-- 控制工具栏 -->
+            <!-- Control toolbar -->
             <NCard :style="{ flexShrink: 0 }" size="small">
                 <TestControlBar
                     :model-label="t('test.model')"
@@ -31,7 +31,7 @@
                 </TestControlBar>
             </NCard>
 
-            <!-- 测试结果区域（支持对比模式）-->
+            <!-- Test result area (supports compare mode) -->
             <TestResultSection
                 :is-compare-mode="isCompareMode"
                 :vertical-layout="adaptiveResultVerticalLayout"
@@ -64,10 +64,10 @@
                 @show-optimized-detail="emit('show-optimized-detail')"
                 @apply-improvement="emit('apply-improvement', $event)"
             >
-                <!-- 🆕 对比模式：原始结果 -->
+                <!-- 🆕 Compare mode: original result -->
                 <template #original-result>
                     <div class="result-container">
-                        <!-- 工具调用显示 -->
+                        <!-- Tool call display -->
                         <ToolCallDisplay
                             v-if="originalToolCalls.length > 0"
                             :tool-calls="originalToolCalls"
@@ -83,10 +83,10 @@
                     </div>
                 </template>
 
-                <!-- 🆕 对比模式：优化结果 -->
+                <!-- 🆕 Compare mode: optimized result -->
                 <template #optimized-result>
                     <div class="result-container">
-                        <!-- 工具调用显示 -->
+                        <!-- Tool call display -->
                         <ToolCallDisplay
                             v-if="optimizedToolCalls.length > 0"
                             :tool-calls="optimizedToolCalls"
@@ -102,10 +102,10 @@
                     </div>
                 </template>
 
-                <!-- 单一结果模式 -->
+                <!-- Single result mode -->
                 <template #single-result>
                     <div class="result-container">
-                        <!-- 工具调用显示 -->
+                        <!-- Tool call display -->
                         <ToolCallDisplay
                             v-if="toolCalls.length > 0"
                             :tool-calls="toolCalls"
@@ -152,13 +152,13 @@ import { useTestVariableManager } from "../../composables/variable/useTestVariab
 
 const { t } = useI18n();
 
-// 性能监控
+// Performance monitoring
 const { recordUpdate, getPerformanceReport } = usePerformanceMonitor("ConversationTestPanel");
 
-// 防抖节流
+// Debounce/throttle
 const { debounce, throttle } = useDebounceThrottle();
 
-// 响应式配置
+// Responsive config
 const {
     shouldUseVerticalLayout,
     buttonSize: responsiveButtonSize,
@@ -166,56 +166,56 @@ const {
 
 interface Props {
     /**
-     * 渲染模式：
-     * - full: 变量表单 + 测试控制栏 + 结果区（历史行为）
-     * - variables-only: 仅变量表单（供 Workspace 自行渲染多列 variants 测试区）
+     * Render mode:
+     * - full: variable form + test control bar + result area (historical behavior)
+     * - variables-only: variable form only (for the Workspace to render the multi-column variants test area itself)
      */
     mode?: "full" | "variables-only";
 
-    // 核心状态
+    // Core state
     optimizationMode: OptimizationMode;
     isTestRunning?: boolean;
 
-    // 🆕 对比模式
+    // 🆕 Compare mode
     isCompareMode?: boolean;
     enableCompareMode?: boolean;
 
-    // 模型信息（用于显示标签）
+    // Model info (used for the display label)
     modelName?: string;
 
-    // 变量管理
+    // Variable management
     globalVariables?: Record<string, string>;
     predefinedVariables?: Record<string, string>;
     temporaryVariables?: Record<string, string>;
 
-    // 布局配置
+    // Layout config
     inputMode?: "compact" | "normal";
     buttonSize?: "small" | "medium" | "large";
     resultVerticalLayout?: boolean;
 
-    // 结果显示配置
+    // Result display config
     singleResultTitle?: string;
 
-    // 🆕 测试结果数据（支持对比模式）
+    // 🆕 Test result data (supports compare mode)
     testResult?: AdvancedTestResult;
     originalTestResult?: AdvancedTestResult;
     optimizedTestResult?: AdvancedTestResult;
 
-    // 🆕 评估功能配置
+    // 🆕 Evaluation feature config
     showEvaluation?: boolean;
-    // 是否有测试结果（用于显示评估按钮）
+    // Whether there are test results (used to show the evaluate button)
     hasOriginalResult?: boolean;
     hasOptimizedResult?: boolean;
-    // 评估状态
+    // Evaluation state
     isEvaluatingOriginal?: boolean;
     isEvaluatingOptimized?: boolean;
-    // 评估分数
+    // Evaluation score
     originalScore?: number | null;
     optimizedScore?: number | null;
-    // 是否有评估结果
+    // Whether there are evaluation results
     hasOriginalEvaluation?: boolean;
     hasOptimizedEvaluation?: boolean;
-    // 评估结果和等级（用于悬浮预览）
+    // Evaluation results and grades (used for the hover preview)
     originalEvaluationResult?: EvaluationResponse | null;
     optimizedEvaluationResult?: EvaluationResponse | null;
     originalScoreLevel?: ScoreLevel | null;
@@ -234,7 +234,7 @@ const props = withDefaults(defineProps<Props>(), {
     globalVariables: () => ({}),
     predefinedVariables: () => ({}),
     temporaryVariables: () => ({}),
-    // 评估默认值
+    // Evaluation defaults
     showEvaluation: false,
     hasOriginalResult: false,
     hasOptimizedResult: false,
@@ -261,7 +261,7 @@ const emit = defineEmits<{
     "tool-calls-updated": [toolCalls: ToolCallResult[]];
     "temporary-variable-remove": [name: string];
     "temporary-variables-clear": [];
-    // 🆕 评估相关事件
+    // 🆕 Evaluation-related events
     "evaluate-original": [];
     "evaluate-optimized": [];
     "evaluate-with-feedback": [payload: { type: EvaluationType; feedback: string }];
@@ -270,29 +270,29 @@ const emit = defineEmits<{
     "apply-improvement": [payload: { improvement: string; type: EvaluationType }];
 }>();
 
-// 🆕 工具调用状态管理（支持对比模式）
+// 🆕 Tool call state management (supports compare mode)
 const toolCalls = ref<ToolCallResult[]>([]);
 const originalToolCalls = ref<ToolCallResult[]>([]);
 const optimizedToolCalls = ref<ToolCallResult[]>([]);
 
-// 🆕 处理对比模式切换
+// 🆕 Handle the compare mode toggle
 const handleCompareToggle = () => {
     emit("update:isCompareMode", !props.isCompareMode);
     emit("compare-toggle");
     recordUpdate();
 };
 
-// 🆕 处理工具调用的方法（支持对比模式）
+// 🆕 Method for handling tool calls (supports compare mode)
 const handleToolCall = (toolCall: ToolCallResult, testType?: 'original' | 'optimized') => {
     if (props.isCompareMode && testType) {
-        // 对比模式：根据 testType 添加到对应数组
+        // Compare mode: add to the corresponding array based on testType
         if (testType === 'original') {
             originalToolCalls.value.push(toolCall);
         } else {
             optimizedToolCalls.value.push(toolCall);
         }
     } else {
-        // 单一模式：添加到统一数组
+        // Single mode: add to the unified array
         toolCalls.value.push(toolCall);
     }
     emit("tool-call", toolCall);
@@ -300,10 +300,10 @@ const handleToolCall = (toolCall: ToolCallResult, testType?: 'original' | 'optim
     recordUpdate();
 };
 
-// 🆕 清除工具调用数据的方法（支持对比模式）
+// 🆕 Method for clearing tool call data (supports compare mode)
 const clearToolCalls = (testType?: 'original' | 'optimized' | 'both') => {
     if (!testType || testType === 'both') {
-        // 清除所有
+        // Clear all
         toolCalls.value = [];
         originalToolCalls.value = [];
         optimizedToolCalls.value = [];
@@ -314,7 +314,7 @@ const clearToolCalls = (testType?: 'original' | 'optimized' | 'both') => {
     }
 };
 
-// 响应式布局配置
+// Responsive layout config
 const adaptiveButtonSize = computed(() => {
     return props.buttonSize ?? responsiveButtonSize.value;
 });
@@ -323,7 +323,7 @@ const adaptiveResultVerticalLayout = computed(() => {
     return shouldUseVerticalLayout.value || props.resultVerticalLayout;
 });
 
-// 主要操作按钮文本
+// Primary action button text
 const primaryActionText = computed(() => {
     if (props.isTestRunning) {
         return t("test.testing");
@@ -331,14 +331,14 @@ const primaryActionText = computed(() => {
     return t("test.startTest");
 });
 
-// 主要操作按钮禁用状态
+// Primary action button disabled state
 const primaryActionDisabled = computed(() => {
     return props.isTestRunning;
 });
 
 const handleTest = throttle(
     () => {
-        // 获取并传递测试变量
+        // Get and pass the test variables
         const testVars = getVariableValues();
         emit("test", testVars);
         recordUpdate();
@@ -347,7 +347,7 @@ const handleTest = throttle(
     "handleTest",
 );
 
-// ========== 变量管理 ==========
+// ========== Variable management ==========
 
 const variableManager = useTestVariableManager({
     globalVariables: toRef(props, 'globalVariables'),
@@ -379,13 +379,13 @@ const setVariableValues = (values: Record<string, string>) => {
     variableManager.setVariableValues(values)
 }
 
-// 开发环境下的性能调试
+// Performance debugging in the development environment
 if (import.meta.env.DEV) {
     const logPerformance = debounce(
         () => {
             const report = getPerformanceReport();
             if (report.grade.grade === "F") {
-                console.warn("ConversationTestPanel 性能较差:", report);
+                console.warn("ConversationTestPanel performance is poor:", report);
             }
         },
         5000,
@@ -397,18 +397,18 @@ if (import.meta.env.DEV) {
     onUnmounted(() => clearInterval(timer));
 }
 
-// 暴露方法供父组件调用（兼容 TestAreaPanelInstance 接口）
+// Expose methods for the parent component to call (compatible with the TestAreaPanelInstance interface)
 defineExpose({
     handleToolCall,
     clearToolCalls,
-    // 🆕 支持对比模式的工具调用数据
+    // 🆕 Tool call data supporting compare mode
     getToolCalls: () => ({
         original: props.isCompareMode ? originalToolCalls.value : [],
         optimized: props.isCompareMode ? optimizedToolCalls.value : toolCalls.value
     }),
     getVariableValues,
     setVariableValues,
-    // 预览功能占位符（兼容接口）
+    // Preview feature placeholder (compatibility interface)
     showPreview: () => {},
     hidePreview: () => {},
 });

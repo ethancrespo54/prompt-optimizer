@@ -3,12 +3,12 @@ import { type Ref } from 'vue'
 import type { AppServices } from '../../types/services'
 
 /**
- * [底层辅助函数] 获取偏好设置
- * @param services 服务引用
- * @param key 键名
- * @param defaultValue 默认值
- * @returns 设置值或默认值
- * @throws 如果preferenceService不可用，则抛出错误
+ * [Low-level helper] Get a preference
+ * @param services Service reference
+ * @param key Key name
+ * @param defaultValue Default value
+ * @returns The setting value or the default value
+ * @throws Throws an error if preferenceService is unavailable
  */
 export async function getPreference<T>(
   services: Ref<AppServices | null>,
@@ -18,15 +18,15 @@ export async function getPreference<T>(
   if (services.value?.preferenceService) {
     return services.value.preferenceService.get(key, defaultValue);
   }
-  throw new Error(`[getPreference] preferenceService不可用，无法获取键: ${key}`);
+  throw new Error(`[getPreference] preferenceService is unavailable, cannot get the key: ${key}`);
 }
 
 /**
- * [底层辅助函数] 设置偏好设置
- * @param services 服务引用
- * @param key 键名
- * @param value 值
- * @throws 如果preferenceService不可用，则抛出错误
+ * [Low-level helper] Set a preference
+ * @param services Service reference
+ * @param key Key name
+ * @param value Value
+ * @throws Throws an error if preferenceService is unavailable
  */
 export async function setPreference<T>(
   services: Ref<AppServices | null>,
@@ -36,26 +36,26 @@ export async function setPreference<T>(
   if (services.value?.preferenceService) {
     return services.value.preferenceService.set(key, value);
   }
-  throw new Error(`[setPreference] preferenceService不可用，无法设置键: ${key}`);
+  throw new Error(`[setPreference] preferenceService is unavailable, cannot set the key: ${key}`);
 }
 
 /**
- * [推荐] 创建一组与特定服务实例绑定的偏好设置辅助函数。
- * 这是在Vue组件和Composables中使用的首选方式。
+ * [Recommended] Create a set of preference helper functions bound to a specific service instance.
+ * This is the preferred way to use them in Vue components and composables.
  * 
- * @param services 来自 useAppInitializer 或 inject 的服务引用
- * @returns 返回一个包含 getPreference 和 setPreference 方法的对象，这些方法无需重复传递services参数。
+ * @param services The services reference from useAppInitializer or inject
+ * @returns An object containing the getPreference and setPreference methods, which do not require passing the services parameter repeatedly.
  */
 export function usePreferences(services: Ref<AppServices | null>) {
   /**
-   * 获取一个偏好设置的值
+   * Get the value of a preference
    */
   const get = <T>(key: string, defaultValue: T): Promise<T> => {
     return getPreference(services, key, defaultValue);
   };
 
   /**
-   * 设置一个偏好设置的值
+   * Set the value of a preference
    */
   const set = <T>(key: string, value: T): Promise<void> => {
     return setPreference(services, key, value);

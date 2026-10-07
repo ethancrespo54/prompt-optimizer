@@ -27,18 +27,18 @@ export function useImageModelManager() {
   const { t } = useI18n()
   const toast = useToast()
 
-  // 按spec设计使用依赖注入
+  // Use dependency injection per the spec design
   const registry = inject<IImageAdapterRegistry>('imageRegistry')!
   const imageModelManager = inject<IImageModelManager>('imageModelManager')!
   const imageService = inject<IImageService>('imageService')!
 
-  // 状态管理
+  // State management
   const providers = ref<ImageProvider[]>([])
   const models = ref<ImageModel[]>([])
   const dynamicModels = ref<ImageModel[]>([])
   const configs = ref<ImageModelConfig[]>([])
 
-  // UI状态
+  // UI state
   const isLoadingDynamicModels = ref(false)
   const isLoadingProviders = ref(false)
   const isTestingConnection = ref(false)
@@ -46,7 +46,7 @@ export function useImageModelManager() {
   const selectedProviderId = ref('')
   const selectedModelId = ref('')
 
-  // 表单状态（不包含provider和model字段，仅用于编辑）
+  // Form state (does not include the provider and model fields; only used for editing)
   const configForm = ref<EditableImageModelConfig>({
     id: '',
     name: '',
@@ -57,7 +57,7 @@ export function useImageModelManager() {
     paramOverrides: {}
   })
 
-  // 连接和模型加载状态
+  // Connection and model loading state
   const connectionStatus = ref<{
     type: 'success' | 'error' | 'warning' | 'info'
     messageKey: string
@@ -81,7 +81,7 @@ export function useImageModelManager() {
     detail?: string
   } | null>(null)
 
-  // 计算属性（按spec设计增强状态管理）
+  // Computed properties (state management enhanced per the spec design)
   const isLoadingModels = computed(() => isLoadingDynamicModels.value)
 
   const selectedProvider = computed(() =>
@@ -92,7 +92,7 @@ export function useImageModelManager() {
     models.value.find(m => m.id === selectedModelId.value)
   )
 
-  // 简化后的接口:直接传入必要的参数
+  // Simplified interface: pass in the necessary parameters directly
   const advancedParameters = useModelAdvancedParameters({
     mode: 'image',
     registry: computed(() => registry),
@@ -124,7 +124,7 @@ export function useImageModelManager() {
     applyDefaultsFromModel
   } = advancedParameters
 
-  // 额外的状态计算属性（提升用户体验）
+  // Extra state computed properties (improving the user experience)
   const hasStaticModels = computed(() => {
     if (!selectedProviderId.value) return false
     try {
@@ -150,19 +150,19 @@ export function useImageModelManager() {
   )
 
   const canTestConnection = computed(() => {
-    // 测试期间禁用
+    // Disabled during testing
     if (isTestingConnection.value) return false
-    // 必须有必需的连接配置
+    // Must have the required connection config
     if (!isConnectionConfigured.value) return false
-    // 必须有模型 ID（发送请求所需）
+    // Must have a model ID (needed to send the request)
     if (!configForm.value.modelId?.trim()) return false
-    // 必须有 provider
+    // Must have a provider
     if (!configForm.value.providerId) return false
 
     return true
   })
 
-  // 初始化数据加载
+  // Initial data loading
   const loadProviders = async () => {
     isLoadingProviders.value = true
     try {
@@ -178,13 +178,13 @@ export function useImageModelManager() {
   const loadConfigs = async () => {
     try {
       const allConfigs = await imageModelManager.getAllConfigs()
-      // 排序：启用的模型在前，然后按显示名称排序
+      // Sort: enabled models first, then by display name
       configs.value = allConfigs.sort((a: ImageModelConfig, b: ImageModelConfig) => {
-        // 第一级：按启用状态排序（启用的在前）
+        // First level: sort by enabled state (enabled first)
         if (a.enabled !== b.enabled) {
           return a.enabled ? -1 : 1
         }
-        // 第二级：按名称字母顺序排序
+        // Second level: sort alphabetically by name
         return a.name.localeCompare(b.name)
       })
     } catch (error) {
@@ -193,7 +193,7 @@ export function useImageModelManager() {
     }
   }
 
-  // 直接调用新接口
+  // Call the new interface directly
   const updateConfig = async (id: string, updates: Partial<ImageModelConfig>) => {
     await imageModelManager.updateConfig(id, updates)
   }
@@ -206,7 +206,7 @@ export function useImageModelManager() {
     await imageModelManager.deleteConfig(id)
   }
 
-  // 提供商变更处理（按spec设计的渐进式体验）
+  // Provider change handling (progressive experience per the spec design)
   const onProviderChange = async (
     providerId: string,
     options: boolean | { autoSelectFirstModel?: boolean; resetOverrides?: boolean; resetConnectionConfig?: boolean } = true
@@ -220,13 +220,13 @@ export function useImageModelManager() {
       configForm.value.paramOverrides = {}
     }
 
-    // 只有在需要自动选择时才重置模型ID
+    // Only reset the model ID when auto-selection is needed
     if (normalized.autoSelectFirstModel) {
       selectedModelId.value = ''
       configForm.value.modelId = ''
     }
 
-    // 重置所有相关状态
+    // Reset all related state
     connectionStatus.value = null
     modelLoadingStatus.value = null
     dynamicModels.value = []
@@ -237,7 +237,7 @@ export function useImageModelManager() {
       return
     }
 
-    // 使用共享函数处理连接配置
+    // Use the shared function to handle the connection config
     const providerMeta = providers.value.find(p => p.id === providerId)
     configForm.value.connectionConfig = computeConnectionConfig(
       configForm.value.connectionConfig,
@@ -245,17 +245,17 @@ export function useImageModelManager() {
       normalized.resetConnectionConfig
     )
 
-    // 1. 立即显示静态模型（即时响应）
+    // 1. Show the static models immediately (instant response)
     try {
       const staticModels = registry.getStaticModels(providerId)
       models.value = staticModels
 
-      // 只有在需要自动选择且当前没有选中模型时才自动选择第一个模型
+      // Only auto-select the first model when auto-selection is needed and no model is currently selected
       if (normalized.autoSelectFirstModel && staticModels.length > 0) {
         const firstModel = staticModels[0]
         selectedModelId.value = firstModel.id
         configForm.value.modelId = firstModel.id
-        // 切换提供商后自动应用第一个模型的默认参数
+        // After switching providers, automatically apply the default parameters of the first model
         if (firstModel.id && providerId) {
           applyDefaultsFromModel(false)
         }
@@ -266,7 +266,7 @@ export function useImageModelManager() {
           count: staticModels.length
         }
       } else if (staticModels.length > 0) {
-        // 编辑模式：不自动选择，但仍显示成功加载的状态
+        // Edit mode: no auto-selection, but still show the successfully loaded state
         modelLoadingStatus.value = {
           type: 'success',
           messageKey: 'image.model.staticLoaded',
@@ -287,16 +287,16 @@ export function useImageModelManager() {
       }
     }
 
-    // 2. 如果支持动态获取且用户已配置连接信息
+    // 2. If dynamic fetching is supported and the user has configured the connection info
     if (registry.supportsDynamicModels(providerId)) {
       const connectionConfig = getConnectionConfig()
       if (connectionConfig && hasValidConnectionConfig(connectionConfig)) {
-        // 异步加载动态模型，不阻塞UI
+        // Load dynamic models asynchronously without blocking the UI
         refreshDynamicModels().catch(error => {
           console.warn('Dynamic model loading failed after provider change:', error)
         })
       } else {
-        // 提示用户需要配置连接信息
+        // Prompt the user that connection info needs to be configured
         modelLoadingStatus.value = {
           type: 'warning',
           messageKey: 'image.model.connectionRequired'
@@ -305,12 +305,12 @@ export function useImageModelManager() {
     }
   }
 
-  // 获取连接配置（辅助方法）
+  // Get the connection config (helper method)
   const getConnectionConfig = () => {
     return configForm.value.connectionConfig ?? {}
   }
 
-  // 验证连接配置是否有效（辅助方法）
+  // Validate that the connection config is valid (helper method)
   const hasValidConnectionConfig = (connectionConfig: Record<string, unknown>) => {
     const provider = selectedProvider.value
     if (!provider?.connectionSchema) return true
@@ -318,7 +318,7 @@ export function useImageModelManager() {
     return provider.connectionSchema.required.every(field => connectionConfig[field])
   }
 
-  // 详细校验：返回缺失字段与类型不符列表
+  // Detailed validation: returns the lists of missing fields and mismatched types
   const validateConnectionConfigDetailed = (connectionConfig: Record<string, unknown>) => {
     const provider = selectedProvider.value
     const missing: string[] = []
@@ -342,15 +342,15 @@ export function useImageModelManager() {
     return { ok: missing.length === 0 && typeErrors.length === 0, missing, typeErrors }
   }
 
-  // 连接配置变更处理（增强响应性）
+  // Connection config change handling (enhanced reactivity)
   const onConnectionConfigChange = async () => {
     connectionStatus.value = null
 
-    // 如果支持动态模型且连接配置完整，自动刷新模型
+    // If dynamic models are supported and the connection config is complete, refresh the models automatically
     if (selectedProvider.value?.supportsDynamicModels) {
       const connectionConfig = configForm.value.connectionConfig || {}
       if (hasValidConnectionConfig(connectionConfig)) {
-        // 配置有效时，异步刷新动态模型
+        // When the config is valid, refresh the dynamic models asynchronously
         refreshDynamicModels().catch(error => {
           console.warn('Failed to refresh models after connection config change:', error)
           modelLoadingStatus.value = {
@@ -359,7 +359,7 @@ export function useImageModelManager() {
           }
         })
       } else {
-        // 配置无效时，回退到静态模型并提示
+        // When the config is invalid, fall back to the static models and prompt
         try {
           const staticModels = registry.getStaticModels(selectedProviderId.value)
           models.value = staticModels
@@ -377,26 +377,26 @@ export function useImageModelManager() {
     }
   }
 
-  // 连接测试
-  // 辅助函数：根据模型能力选择测试类型
+  // Connection test
+  // Helper function: choose the test type based on model capabilities
   const selectTestType = (model: ImageModel): 'text2image' | 'image2image' => {
     const capabilities = model.capabilities || {}
     const text2image = capabilities?.text2image
     const image2image = capabilities?.image2image
 
     if (text2image && !image2image) {
-      return 'text2image'  // 只支持文生图
+      return 'text2image'  // Only supports text-to-image
     }
 
     if (!text2image && image2image) {
-      return 'image2image' // 只支持图生图
+      return 'image2image' // Only supports image-to-image
     }
 
     if (text2image && image2image) {
-      return 'text2image'  // 两种都支持，优先文生图
+      return 'text2image'  // Supports both; prefer text-to-image
     }
 
-    throw new Error('模型不支持任何图像生成功能')
+    throw new Error('The model does not support any image generation feature')
   }
 
   const testConnection = async () => {
@@ -404,7 +404,7 @@ export function useImageModelManager() {
       return
     }
 
-    // 检查是否选择了模型
+    // Check whether a model is selected
     if (!configForm.value.modelId) {
       toast.error(t('image.model.selectRequired'))
       return
@@ -414,7 +414,7 @@ export function useImageModelManager() {
     connectionStatus.value = { type: 'info', messageKey: 'image.connection.testing' }
 
     try {
-      // 本地先做详细校验，给出缺失与类型错误提示
+      // Do a detailed local validation first and give hints for missing and wrongly typed fields
       const detail = validateConnectionConfigDetailed(configForm.value.connectionConfig || {})
       if (!detail.ok) {
         const parts: string[] = []
@@ -427,22 +427,22 @@ export function useImageModelManager() {
         return
       }
 
-      // 获取选中的模型信息：优先使用缓存，不存在时通过registry构建
+      // Get the selected model info: prefer the cache; when absent, build it through the registry
       let selectedModel = models.value.find(m => m.id === configForm.value.modelId)
       if (!selectedModel) {
-        // 对于自定义模型ID，使用adapter的buildDefaultModel方法构建
+        // For custom model IDs, use the adapter's buildDefaultModel method to build it
         try {
           const adapter = registry.getAdapter(selectedProviderId.value)
           selectedModel = adapter.buildDefaultModel(configForm.value.modelId)
         } catch (error) {
-          throw new Error(`无法构建模型 ${configForm.value.modelId}: ${error instanceof Error ? error.message : String(error)}`)
+          throw new Error(`Unable to build model ${configForm.value.modelId}: ${error instanceof Error ? error.message : String(error)}`)
         }
       }
 
-      // 根据模型能力确定测试类型
+      // Determine the test type based on the model capabilities
       const testType = selectTestType(selectedModel)
 
-      // 构建完整的模型配置
+      // Build the complete model config
       const completeConfig: ImageModelConfig = {
         id: configForm.value.id || 'test',
         name: configForm.value.name || 'Test Config',
@@ -451,28 +451,28 @@ export function useImageModelManager() {
         enabled: true,
         connectionConfig: configForm.value.connectionConfig || {},
         paramOverrides: configForm.value.paramOverrides || {},
-        // 测试时使用简化的provider和model对象
+        // Use simplified provider and model objects when testing
         provider: selectedProvider.value!,
         model: selectedModel!
       }
 
-      // 无感 IPC：通过 imageService 统一执行连接测试
+      // Seamless IPC: run the connection test uniformly through imageService
       const result = await imageService.testConnection(completeConfig)
 
-      // 测试成功
+      // Test succeeded
       connectionStatus.value = {
         type: 'success',
         messageKey: 'image.connection.testSuccess'
       }
 
-      // 保存测试结果图片用于显示
+      // Save the test result images for display
       testResult.value = {
         success: true,
         image: result.images[0],
         testType
       }
 
-      // 连接成功后自动刷新模型（如果支持动态获取）
+      // After a successful connection, refresh the models automatically (if dynamic fetching is supported)
       await refreshDynamicModels()
       toast.success(t('image.connection.testSuccess'))
 
@@ -490,7 +490,7 @@ export function useImageModelManager() {
     }
   }
 
-  // 动态模型刷新（按spec设计的合并逻辑）
+  // Dynamic model refresh (merge logic per the spec design)
   const refreshDynamicModels = async () => {
     if (!selectedProviderId.value || !registry.supportsDynamicModels(selectedProviderId.value)) {
       return
@@ -513,11 +513,11 @@ export function useImageModelManager() {
     }
 
     try {
-      // 无感 IPC：通过 imageService 统一拉取动态模型
+      // Seamless IPC: fetch dynamic models uniformly through imageService
       const fetchedDynamicModels = await imageService.getDynamicModels(selectedProviderId.value, connectionConfig)
       dynamicModels.value = fetchedDynamicModels
 
-      // 合并静态和动态模型，动态模型优先（按spec设计）
+      // Merge the static and dynamic models, with dynamic models taking precedence (per the spec design)
       const staticModels = registry.getStaticModels(selectedProviderId.value)
       models.value = mergeDynamicModels(staticModels, fetchedDynamicModels)
 
@@ -530,7 +530,7 @@ export function useImageModelManager() {
     } catch (error) {
       console.warn('Failed to load dynamic models, using static list:', error)
 
-      // 自动降级到静态模型，保持用户体验（按spec设计）
+      // Automatically fall back to the static models to keep the user experience (per the spec design)
       const staticModels = registry.getStaticModels(selectedProviderId.value)
       models.value = staticModels
       dynamicModels.value = []
@@ -546,13 +546,13 @@ export function useImageModelManager() {
     }
   }
 
-  // 合并动态模型的辅助方法（按spec设计）
+  // Helper method for merging dynamic models (per the spec design)
   const mergeDynamicModels = (staticModels: ImageModel[], dynamicModels: ImageModel[]): ImageModel[] => {
     const dynamicIds = new Set(dynamicModels.map(m => m.id))
     return [...dynamicModels, ...staticModels.filter(m => !dynamicIds.has(m.id))]
   }
 
-  // 手动刷新模型
+  // Manually refresh the models
   const refreshModels = async () => {
     if (!selectedProvider.value?.supportsDynamicModels) {
       toast.info(t('image.model.refreshNotSupported'))
@@ -564,7 +564,7 @@ export function useImageModelManager() {
       return
     }
 
-    // 显示加载状态
+    // Show the loading state
     isLoadingDynamicModels.value = true
     modelLoadingStatus.value = {
       type: 'info',
@@ -581,20 +581,20 @@ export function useImageModelManager() {
     }
   }
 
-  // 模型选择变更
+  // Model selection change
   const onModelChange = (modelId: string) => {
     selectedModelId.value = modelId
     configForm.value.modelId = modelId
 
     if (modelId && selectedProviderId.value) {
-      // 编辑模式（configForm.id 存在）：合并参数（保留用户已有配置）
-      // 创建模式：替换参数（使用新模型的默认值）
+      // Edit mode (configForm.id exists): merge parameters (keep the user's existing config)
+      // Create mode: replace parameters (use the new model's default values)
       const isEditing = !!configForm.value.id
       applyDefaultsFromModel(isEditing)
     }
   }
 
-  // 保存配置（优化版本：使用缓存的模型对象）
+  // Save the config (optimized version: uses the cached model object)
   const saveConfig = async () => {
     if (!configForm.value.name || !selectedProviderId.value || !selectedModelId.value) {
       toast.error(t('image.config.incomplete'))
@@ -604,29 +604,29 @@ export function useImageModelManager() {
     isSaving.value = true
 
     try {
-      // 从缓存中获取provider信息
+      // Get the provider info from the cache
       const cachedProvider = providers.value.find(p => p.id === selectedProviderId.value)
 
       if (!cachedProvider) {
-        throw new Error(`提供商不存在: ${selectedProviderId.value}`)
+        throw new Error(`Provider does not exist: ${selectedProviderId.value}`)
       }
 
-      // 获取模型信息：优先使用缓存，不存在时通过registry构建
+      // Get the model info: prefer the cache; when absent, build it through the registry
       let cachedModel = models.value.find(m => m.id === selectedModelId.value)
       if (!cachedModel) {
-        // 对于自定义模型ID，使用adapter的buildDefaultModel方法构建
+        // For custom model IDs, use the adapter's buildDefaultModel method to build it
         try {
           const adapter = registry.getAdapter(selectedProviderId.value)
           cachedModel = adapter.buildDefaultModel(selectedModelId.value)
         } catch (error) {
-          throw new Error(`无法构建模型 ${selectedModelId.value}: ${error instanceof Error ? error.message : String(error)}`)
+          throw new Error(`Unable to build model ${selectedModelId.value}: ${error instanceof Error ? error.message : String(error)}`)
         }
       }
 
-      // 组装完整的自包含配置
+      // Assemble the complete self-contained config
       const completeConfig: ImageModelConfig = {
         ...configForm.value,
-        // 嵌入完整的provider和model信息
+        // Embed the complete provider and model info
         provider: cachedProvider,
         model: cachedModel
       }
@@ -640,10 +640,10 @@ export function useImageModelManager() {
         toast.success(t('image.config.createSuccess'))
       }
 
-      // 重新加载配置列表
+      // Reload the config list
       await loadConfigs()
 
-      // 重置表单
+      // Reset the form
       resetForm()
 
     } catch (error) {
@@ -654,7 +654,7 @@ export function useImageModelManager() {
     }
   }
 
-  // 重置表单
+  // Reset the form
   const resetForm = () => {
     selectedProviderId.value = ''
     selectedModelId.value = ''
@@ -666,7 +666,7 @@ export function useImageModelManager() {
       enabled: true,
       connectionConfig: {},
       paramOverrides: {}
-      // 注意：不设置provider和model字段，它们由saveConfig时从缓存填充
+      // Note: the provider and model fields are not set; they are filled in from the cache in saveConfig
     }
     models.value = []
     connectionStatus.value = null
@@ -674,12 +674,12 @@ export function useImageModelManager() {
     testResult.value = null
   }
 
-  // 生成配置ID
+  // Generate the config ID
   const generateConfigId = () => {
     return `config_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
   }
 
-  // 初始化
+  // Initialize
   const initialize = async () => {
     await Promise.all([
       loadProviders(),
@@ -688,7 +688,7 @@ export function useImageModelManager() {
   }
 
   return {
-    // 数据状态
+    // Data state
     providers,
     models,
     dynamicModels,
@@ -697,7 +697,7 @@ export function useImageModelManager() {
     selectedModelId,
     configForm,
 
-    // UI状态
+    // UI state
     isLoadingModels,
     isLoadingProviders,
     isTestingConnection,
@@ -706,7 +706,7 @@ export function useImageModelManager() {
     modelLoadingStatus,
     testResult,
 
-    // 计算属性（按spec设计增强的状态管理）
+    // Computed properties (state management enhanced per the spec design)
     selectedProvider,
     selectedModel,
     hasStaticModels,
@@ -719,7 +719,7 @@ export function useImageModelManager() {
     currentParamOverrides,
     availableParameterCount,
 
-    // 方法
+    // Methods
     onProviderChange,
     onConnectionConfigChange,
     testConnection,

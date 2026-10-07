@@ -24,7 +24,7 @@ import { useI18n } from 'vue-i18n'
 import { NDropdown, NButton, NIcon, type DropdownOption } from 'naive-ui'
 import type { EvaluationType } from '@prompt-optimizer/core'
 
-// 使用一个简单的 SVG 图标作为图表图标
+// Use a simple SVG icon as the chart icon
 const ChartIcon = {
   render() {
     return h('svg', {
@@ -43,13 +43,13 @@ const ChartIcon = {
 
 // Props
 const props = defineProps<{
-  /** 是否有原始测试结果 */
+  /** Whether there is an original test result */
   hasOriginalResult: boolean
-  /** 是否有优化后测试结果 */
+  /** Whether there is an optimized test result */
   hasOptimizedResult: boolean
-  /** 是否为对比模式 */
+  /** Whether in compare mode */
   isCompareMode: boolean
-  /** 是否正在评估 */
+  /** Whether an evaluation is in progress */
   isEvaluating: boolean
 }>()
 
@@ -60,16 +60,16 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 
-// 是否有任何测试结果
+// Whether there are any test results
 const hasAnyResult = computed(() => {
   return props.hasOriginalResult || props.hasOptimizedResult
 })
 
-// 下拉菜单选项
+// Dropdown menu options
 const evaluationOptions = computed<DropdownOption[]>(() => {
   const options: DropdownOption[] = []
 
-  // 原始提示词评估（需要有原始测试结果）
+  // Original prompt evaluation (requires an original test result)
   if (props.hasOriginalResult) {
     options.push({
       label: t('evaluation.type.original'),
@@ -78,7 +78,7 @@ const evaluationOptions = computed<DropdownOption[]>(() => {
     })
   }
 
-  // 优化后评估（需要有优化测试结果）
+  // Optimized evaluation (requires an optimized test result)
   if (props.hasOptimizedResult) {
     options.push({
       label: t('evaluation.type.optimized'),
@@ -87,7 +87,7 @@ const evaluationOptions = computed<DropdownOption[]>(() => {
     })
   }
 
-  // 对比评估（需要同时有两个结果，且在对比模式下）
+  // Compare evaluation (requires both results, and compare mode)
   if (props.isCompareMode && props.hasOriginalResult && props.hasOptimizedResult) {
     options.push({
       type: 'divider',
@@ -103,7 +103,7 @@ const evaluationOptions = computed<DropdownOption[]>(() => {
   return options
 })
 
-// 处理选择
+// Handle selection
 const handleSelect = (key: string) => {
   emit('evaluate', key as EvaluationType)
 }

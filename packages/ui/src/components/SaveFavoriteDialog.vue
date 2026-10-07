@@ -9,12 +9,12 @@
     content-style="padding: 0; display: flex; flex-direction: column; height: min(75vh, 800px); overflow: hidden;"
   >
     <div style="display: flex; flex-direction: column; gap: 16px; padding: 20px; height: 100%; overflow: hidden;">
-      <!-- 基础信息面板（可滚动） -->
+      <!-- Basic info panel (scrollable) -->
       <div style="flex: 0 0 auto; max-height: 350px; overflow-y: auto;">
         <n-card :title="t('favorites.dialog.basicInfo')" :bordered="false" :segmented="{ content: true }" size="small">
           <n-form label-placement="left" :label-width="80">
             <n-grid :cols="2" :x-gap="16">
-              <!-- 左列 -->
+              <!-- Left column -->
               <n-grid-item>
                 <n-form-item :label="t('favorites.dialog.titleLabel')" required>
                   <n-input
@@ -43,7 +43,7 @@
                 </n-form-item>
               </n-grid-item>
 
-              <!-- 右列 -->
+              <!-- Right column -->
               <n-grid-item>
                 <n-form-item :label="t('favorites.dialog.descriptionLabel')">
                   <n-input
@@ -56,7 +56,7 @@
                   />
                 </n-form-item>
 
-                <!-- 动态显示:优化模式或图像模式 -->
+                <!-- Dynamic display: optimization mode or image mode -->
                 <n-form-item
                   v-if="formData.functionMode === 'basic' || formData.functionMode === 'context'"
                   :label="t('favorites.dialog.optimizationModeLabel')"
@@ -83,10 +83,10 @@
               </n-grid-item>
             </n-grid>
 
-            <!-- 标签(跨越两列) -->
+            <!-- Tags (spanning two columns) -->
             <n-form-item :label="t('favorites.dialog.tagsLabel')">
               <div style="width: 100%;">
-                <!-- 已选标签显示 -->
+                <!-- Selected tags display -->
                 <n-space v-if="formData.tags.length > 0" :size="[8, 8]" style="margin-bottom: 8px;">
                   <n-tag
                     v-for="(tag, index) in formData.tags"
@@ -99,7 +99,7 @@
                   </n-tag>
                 </n-space>
 
-                <!-- 标签输入自动完成 -->
+                <!-- Tag input autocomplete -->
                 <n-auto-complete
                   v-model:value="tagInputValue"
                   :options="tagSuggestions"
@@ -191,7 +191,7 @@
         </n-card>
       </div>
 
-      <!-- 正文内容区域（占据剩余空间） -->
+      <!-- Body content area (takes up the remaining space) -->
       <div style="flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden;">
         <n-divider style="margin: 0 0 12px 0; flex: 0 0 auto;">
           <span style="font-weight: 600;">{{ t('favorites.dialog.contentTitle') }}</span>
@@ -262,19 +262,19 @@ const { t } = useI18n();
 const { filterTags, loadTags } = useTagSuggestions();
 
 interface Props {
-  /** 是否显示对话框 */
+  /** Whether to show the dialog */
   show: boolean
-  /** 对话框模式: 'create' 新建空白收藏, 'save' 从优化器保存, 'edit' 编辑现有收藏 */
+  /** Dialog mode: 'create' new blank favorite, 'save' save from the optimizer, 'edit' edit an existing favorite */
   mode?: 'create' | 'save' | 'edit'
-  /** 收藏内容(优化后的提示词) */
+  /** Favorite content (the optimized prompt) */
   content?: string
-  /** 原始内容(用于从优化器保存时) */
+  /** Original content (used when saving from the optimizer) */
   originalContent?: string
-  /** 当前功能模式(用于从优化器保存时预填充) */
+  /** Current function mode (used for prefilling when saving from the optimizer) */
   currentFunctionMode?: 'basic' | 'context' | 'pro' | 'image'
-  /** 当前优化模式(用于从优化器保存时预填充) */
+  /** Current optimization mode (used for prefilling when saving from the optimizer) */
   currentOptimizationMode?: 'system' | 'user'
-  /** 可选的预填充数据（外部导入收藏确认场景） */
+  /** Optional prefilled data (for the external import favorite confirmation scenario) */
   prefill?: {
     title?: string
     description?: string
@@ -285,7 +285,7 @@ interface Props {
     imageSubMode?: 'text2image' | 'image2image'
     metadata?: Record<string, unknown>
   }
-  /** 要编辑的收藏(仅用于 edit 模式) */
+  /** Favorite to edit (only used in edit mode) */
   favorite?: FavoritePrompt
 }
 
@@ -310,7 +310,7 @@ const message = useToast();
 const saving = ref(false);
 const mediaTouched = ref(false);
 
-// 标签输入和建议
+// Tag input and suggestions
 const tagInputValue = ref('');
 const tagSuggestions = computed(() => {
   const suggestions = filterTags(tagInputValue.value, formData.tags);
@@ -320,14 +320,14 @@ const tagSuggestions = computed(() => {
   }));
 });
 
-// 对话框标题
+// Dialog title
 const dialogTitle = computed(() => {
   if (props.mode === 'create') return t('favorites.dialog.createTitle');
   if (props.mode === 'edit') return t('favorites.dialog.editTitle');
   return t('favorites.dialog.saveTitle');
 });
 
-// 表单数据
+// Form data
 const formData = reactive({
   title: '',
   description: '',
@@ -579,7 +579,7 @@ const handleClearImages = () => {
   resetMediaDraft();
 };
 
-// 选项配置
+// Option config
 const functionModeOptions = computed(() => [
   { label: t('favorites.dialog.functionModes.basic'), value: 'basic' },
   { label: t('favorites.dialog.functionModes.context'), value: 'context' },
@@ -587,7 +587,7 @@ const functionModeOptions = computed(() => [
 ]);
 
 const optimizationModeOptions = computed(() => {
-  // 根据功能模式动态生成选项
+  // Dynamically generate options based on the function mode
   const isContextMode = formData.functionMode === 'context';
 
   return [
@@ -611,22 +611,22 @@ const imageSubModeOptions = computed(() => [
   { label: t('favorites.dialog.imageModes.image2image'), value: 'image2image' }
 ]);
 
-// 功能模式切换处理
+// Function mode switch handling
 const handleFunctionModeChange = (mode: 'basic' | 'context' | 'image') => {
   formData.functionMode = mode;
 
   if (mode === 'basic' || mode === 'context') {
-    // 切换到 basic/context,设置默认优化模式,清空图像子模式
+    // Switching to basic/context: set the default optimization mode and clear the image sub-mode
     formData.optimizationMode = formData.optimizationMode || 'system';
     formData.imageSubMode = undefined;
   } else if (mode === 'image') {
-    // 切换到 image,设置默认图像子模式,清空优化模式
+    // Switching to image: set the default image sub-mode and clear the optimization mode
     formData.imageSubMode = formData.imageSubMode || 'text2image';
     formData.optimizationMode = undefined;
   }
 };
 
-// 标签管理函数
+// Tag management functions
 const handleRemoveTag = (index: number) => {
   formData.tags.splice(index, 1);
 };
@@ -647,12 +647,12 @@ const handleAddTag = (e: KeyboardEvent) => {
   }
 };
 
-// 关闭对话框
+// Close the dialog
 const handleClose = () => {
   emit('update:show', false);
 };
 
-// 保存收藏
+// Save the favorite
 const handleSave = async () => {
   const servicesValue = services?.value;
   if (!servicesValue?.favoriteManager) {
@@ -660,7 +660,7 @@ const handleSave = async () => {
     return;
   }
 
-  // 验证必填字段
+  // Validate required fields
   if (!formData.title.trim()) {
     message.warning(t('favorites.dialog.validation.titleRequired'));
     return;
@@ -673,7 +673,7 @@ const handleSave = async () => {
 
   saving.value = true;
   try {
-    // 【优化】保存收藏前，确保所有标签都存在于独立标签库中（仅对缺失项调用）
+    // [Optimization] Before saving the favorite, make sure all tags exist in the standalone tag library (only call for the missing ones)
     const existingTags = new Set<string>(
       (await servicesValue.favoriteManager.getAllTags()).map(tagStat => tagStat.tag)
     );
@@ -687,12 +687,12 @@ const handleSave = async () => {
         await servicesValue.favoriteManager.addTag(tag);
         existingTags.add(tag);
       } catch (error) {
-        // 只忽略"标签已存在"错误，其他错误需要抛出
+        // Only ignore the "tag already exists" error; throw other errors
         if (error && typeof error === 'object' && 'code' in error && error.code !== 'TAG_ALREADY_EXISTS') {
-          console.error('添加标签到独立库失败:', error);
+          console.error('Failed to add tag to the standalone library:', error);
           throw error;
         }
-        // 标签已存在，这是正常情况，继续处理
+        // The tag already exists, which is normal; continue processing
       }
     }
 
@@ -742,14 +742,14 @@ const handleSave = async () => {
     const metadata = Object.keys(existingMetadata).length > 0 ? existingMetadata : undefined;
 
     if (props.mode === 'edit' && props.favorite) {
-      // 编辑模式：更新现有收藏
+      // Edit mode: update the existing favorite
       await servicesValue.favoriteManager.updateFavorite(props.favorite.id, {
         ...basePayload,
         metadata,
       });
       message.success(t('favorites.dialog.messages.editSuccess'));
     } else {
-      // 创建模式或保存模式：添加新收藏
+      // Create mode or save mode: add a new favorite
       const favoriteData: {
         title: string;
         description: string;
@@ -774,23 +774,23 @@ const handleSave = async () => {
     emit('update:show', false);
   } catch (error) {
     const failedKey = props.mode === 'edit' ? 'favorites.dialog.messages.editFailed' : 'favorites.dialog.messages.saveFailed';
-    const errorMessage = error instanceof Error ? error.message : '未知错误';
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     message.error(`${t(failedKey)}: ${errorMessage}`);
   } finally {
     saving.value = false;
   }
 };
 
-// 监听对话框显示,初始化表单
+// Watch the dialog display and initialize the form
 watch(() => props.show, async (newShow) => {
   if (newShow) {
     mediaTouched.value = false;
 
-    // 加载标签建议
+    // Load tag suggestions
     await loadTags();
 
     if (props.mode === 'create') {
-      // 新建模式: 重置为空表单
+      // Create mode: reset to an empty form
       formData.title = '';
       formData.description = '';
       formData.content = '';
@@ -801,7 +801,7 @@ watch(() => props.show, async (newShow) => {
       formData.imageSubMode = undefined;
       resetMediaDraft();
     } else if (props.mode === 'edit' && props.favorite) {
-      // 编辑模式: 加载现有收藏数据
+      // Edit mode: load the existing favorite data
       formData.title = props.favorite.title;
       formData.description = props.favorite.description || '';
       formData.content = props.favorite.content;
@@ -812,22 +812,22 @@ watch(() => props.show, async (newShow) => {
       formData.imageSubMode = props.favorite.imageSubMode;
       await hydrateMediaDraftFromFavorite(props.favorite);
     } else {
-      // 保存模式: 智能预填充
+      // Save mode: smart prefill
       const prefill = props.prefill;
 
-      // 1. 标题 = 原始提示词前30字符(去除换行符)
+      // 1. Title = the first 30 characters of the original prompt (newlines removed)
       const titleSource = (typeof prefill?.title === 'string' && prefill.title.trim()
         ? prefill.title
         : props.originalContent || props.content || '');
       formData.title = titleSource
-        .replace(/\r?\n/g, ' ')  // 替换换行为空格
+        .replace(/\r?\n/g, ' ')  // Replace newlines with spaces
         .substring(0, 30)
         .trim();
 
-      // 2. 内容 = 优化后的提示词
+      // 2. Content = the optimized prompt
       formData.content = props.content || '';
 
-      // 3. 说明 / 分类 / 标签 预填充
+      // 3. Prefill description / category / tags
       formData.description = typeof prefill?.description === 'string' ? prefill.description : '';
       formData.category = await resolvePrefillCategoryId(
         typeof prefill?.category === 'string' ? prefill.category : '',
@@ -836,7 +836,7 @@ watch(() => props.show, async (newShow) => {
         ? dedupeStrings(prefill.tags.map((tag) => String(tag || '').trim()).filter(Boolean))
         : [];
 
-      // 4. 根据预填充模式（优先）或当前模式自动设置
+      // 4. Set automatically based on the prefilled mode (takes priority) or the current mode
       if (prefill?.functionMode === 'image') {
         formData.functionMode = 'image';
         formData.imageSubMode =

@@ -32,7 +32,7 @@ import {
   createImageAdapterRegistry,
   createTextAdapterRegistry,
   createImageStorageService,
-  // migrateLegacySessions - 已移除，session 是本次重构新引入
+  // migrateLegacySessions - removed; sessions were newly introduced in this refactoring
   type IImageModelManager,
   type IImageService,
   type ITextAdapterRegistry,
@@ -55,8 +55,8 @@ import type { AppServices } from '../../types/services';
 import { scheduleImageStorageGc } from '../../stores/session/imageStorageMaintenance'
 
 /**
- * 应用服务统一初始化器。
- * 负责根据运行环境（Web 或 Electron）创建和初始化所有核心服务。
+ * Unified app service initializer.
+ * Responsible for creating and initializing all core services depending on the runtime environment (Web or Electron).
  * @returns { services, isInitializing, error }
  */
 export function useAppInitializer(): {
@@ -70,7 +70,7 @@ export function useAppInitializer(): {
 
   onMounted(async () => {
     try {
-      console.log('[AppInitializer] 开始应用初始化...');
+      console.log('[AppInitializer] Starting app initialization...');
 
 
       let modelManager: IModelManager;
@@ -92,20 +92,20 @@ export function useAppInitializer(): {
       let textAdapterRegistryInstance: ITextAdapterRegistry | undefined;
 
       if (isRunningInElectron()) {
-        console.log('[AppInitializer] 检测到Electron环境，等待API就绪...');
+        console.log('[AppInitializer] Electron environment detected, waiting for the API to be ready...');
         
-        // 等待 Electron API 完全就绪
+        // Wait for the Electron API to be fully ready
         const apiReady = await waitForElectronApi();
         if (!apiReady) {
-          throw new Error('Electron API 初始化超时，请检查preload脚本是否正确加载');
+          throw new Error('Electron API initialization timed out, please check that the preload script is loaded correctly');
         }
         
-        console.log('[AppInitializer] Electron API 就绪，初始化代理服务...');
+        console.log('[AppInitializer] Electron API is ready, initializing proxy services...');
 
-        // 在Electron环境中，不需要storageProvider
-        // 所有存储操作都通过各个manager的代理完成
+        // In the Electron environment, storageProvider is not needed
+        // All storage operations go through the proxy of each manager
 
-        // 在Electron环境中，我们实例化所有轻量级的代理类
+        // In the Electron environment, we instantiate all the lightweight proxy classes
         modelManager = new ElectronModelManagerProxy();
         templateManager = new ElectronTemplateManagerProxy();
         historyManager = new ElectronHistoryManagerProxy();
@@ -113,69 +113,69 @@ export function useAppInitializer(): {
         promptService = new ElectronPromptServiceProxy();
         preferenceService = new ElectronPreferenceServiceProxy();
 
-        // 文本模型适配器注册表（本地实例，不需要代理）
+        // Text model adapter registry (local instance, no proxy needed)
         textAdapterRegistryInstance = createTextAdapterRegistry();
 
-        // 图像相关（Electron 渲染进程代理）
+        // Image-related (Electron renderer process proxies)
         const { ElectronImageModelManagerProxy, ElectronImageServiceProxy } = await import('@prompt-optimizer/core')
         imageAdapterRegistryInstance = createImageAdapterRegistry();
         imageModelManager = new ElectronImageModelManagerProxy();
         imageService = new ElectronImageServiceProxy();
 
-        // 🆕 图像存储服务：Electron 渲染进程同样使用 IndexedDB（与 Web 行为一致）
-        console.log('[AppInitializer] 初始化图像存储服务（Electron）...');
+        // 🆕 Image storage service: the Electron renderer process also uses IndexedDB (same behavior as the web)
+        console.log('[AppInitializer] Initializing the image storage service (Electron)...');
         imageStorageService = createImageStorageService({
           maxCacheSize: 50 * 1024 * 1024,  // 50 MB
-          maxAge: 7 * 24 * 60 * 60 * 1000,  // 7 天
-          maxCount: 100,                     // 最多 100 张
-          autoCleanupThreshold: 0.8,         // 达到 80% 时触发清理
+          maxAge: 7 * 24 * 60 * 60 * 1000,  // 7 days
+          maxCount: 100,                     // At most 100 images
+          autoCleanupThreshold: 0.8,         // Trigger cleanup at 80%
           dbName: 'PromptOptimizerImageDB',
         });
 
-        // 收藏快照图像存储（独立数据库，避免与 session 图片清理策略耦合）
+        // Favorite snapshot image storage (separate database, to avoid coupling with the session image cleanup policy)
         favoriteImageStorageService = createImageStorageService({
           maxCacheSize: 200 * 1024 * 1024,      // 200 MB
-          maxAge: 365 * 24 * 60 * 60 * 1000,    // 365 天
+          maxAge: 365 * 24 * 60 * 60 * 1000,    // 365 days
           maxCount: 1000,
           autoCleanupThreshold: 0.9,
           dbName: 'PromptOptimizerFavoriteImageDB',
         });
 
-        // DataManager在Electron环境下使用代理模式
+        // DataManager uses the proxy pattern in the Electron environment
         dataManager = new ElectronDataManagerProxy();
 
-        // 使用真正的 Electron 模板语言服务代理
+        // Use the real Electron template language service proxy
         const templateLanguageService = new ElectronTemplateLanguageServiceProxy();
 
-        // 创建 CompareService（直接使用，无需代理）
+        // Create the CompareService (used directly, no proxy needed)
         const compareService = createCompareService();
 
-        // 使用 ElectronContextRepoProxy 代替临时方案
+        // Use ElectronContextRepoProxy instead of the temporary solution
         const contextRepo = new ElectronContextRepoProxy();
 
-        // 创建收藏管理器代理
+        // Create the favorites manager proxy
         const { FavoriteManagerElectronProxy } = await import('@prompt-optimizer/core')
         favoriteManager = new FavoriteManagerElectronProxy();
 
-        // 🆕 创建评估服务（使用代理的 llmService, modelManager, templateManager）
+        // 🆕 Create the evaluation service (using the proxied llmService, modelManager, templateManager)
         evaluationService = createEvaluationService(llmService, modelManager, templateManager);
 
-        // 🆕 创建变量提取服务（使用代理的 llmService, modelManager, templateManager）
+        // 🆕 Create the variable extraction service (using the proxied llmService, modelManager, templateManager)
         variableExtractionService = createVariableExtractionService(llmService, modelManager, templateManager);
 
-        // 🆕 创建变量值生成服务（使用代理的 llmService, modelManager, templateManager）
+        // 🆕 Create the variable value generation service (using the proxied llmService, modelManager, templateManager)
         variableValueGenerationService = createVariableValueGenerationService(llmService, modelManager, templateManager);
 
-        // 🆕 读取当前上下文的模式
-        console.log('[AppInitializer] 读取当前上下文模式...');
+        // 🆕 Read the mode of the current context
+        console.log('[AppInitializer] Reading the current context mode...');
         const contextMode = ref<ContextMode>(DEFAULT_CONTEXT_MODE);
         try {
           const currentId = await contextRepo.getCurrentId();
           const currentContext = await contextRepo.get(currentId);
           contextMode.value = currentContext.mode || DEFAULT_CONTEXT_MODE;
-          console.log('[AppInitializer] 当前上下文模式:', contextMode.value);
+          console.log('[AppInitializer] Current context mode:', contextMode.value);
         } catch (err) {
-          console.warn('[AppInitializer] 读取上下文模式失败，使用默认值:', err);
+          console.warn('[AppInitializer] Failed to read the context mode, using the default value:', err);
         }
 
         services.value = {
@@ -185,25 +185,25 @@ export function useAppInitializer(): {
           dataManager,
           llmService,
           promptService,
-          templateLanguageService, // 使用代理而不是null
-          preferenceService, // 使用从core包导入的ElectronPreferenceServiceProxy
-          compareService, // 直接使用，无需代理
-          contextRepo, // 使用Electron代理
-          favoriteManager, // 使用Electron代理
-          contextMode, // 🆕 上下文模式
+          templateLanguageService, // Use the proxy instead of null
+          preferenceService, // Use the ElectronPreferenceServiceProxy imported from the core package
+          compareService, // Used directly, no proxy needed
+          contextRepo, // Use the Electron proxy
+          favoriteManager, // Use the Electron proxy
+          contextMode, // 🆕 Context mode
           textAdapterRegistry: textAdapterRegistryInstance,
           imageModelManager,
           imageService,
           imageAdapterRegistry: imageAdapterRegistryInstance,
-          imageStorageService, // 🆕 图像存储服务
+          imageStorageService, // 🆕 Image storage service
           favoriteImageStorageService,
-          evaluationService, // 🆕 评估服务
-          variableExtractionService, // 🆕 变量提取服务
-          variableValueGenerationService, // 🆕 变量值生成服务
+          evaluationService, // 🆕 Evaluation service
+          variableExtractionService, // 🆕 Variable extraction service
+          variableValueGenerationService, // 🆕 Variable value generation service
         };
-        console.log('[AppInitializer] Electron代理服务初始化完成');
+        console.log('[AppInitializer] Electron proxy services initialized');
 
-        // 只保留 session 引用的图片：启动后做一次 best-effort GC
+        // Keep only the images referenced by sessions: run a best-effort GC once after startup
         if (imageStorageService) {
           scheduleImageStorageGc(preferenceService, imageStorageService, {
             getFavoritesPayload: () => favoriteManager.getFavorites(),
@@ -211,11 +211,11 @@ export function useAppInitializer(): {
         }
 
       } else {
-        console.log('[AppInitializer] 检测到Web环境，初始化完整服务...');
-        // 在Web环境中，我们创建一套完整的、真实的服务
+        console.log('[AppInitializer] Web environment detected, initializing the full services...');
+        // In the Web environment, we create a complete set of real services
         const storageProvider = StorageFactory.create('dexie');
 
-        // 创建基于存储提供器的偏好设置服务，使用core包中的createPreferenceService
+        // Create the preference service based on the storage provider, using createPreferenceService from the core package
         preferenceService = createPreferenceService(storageProvider);
 
         const languageService = createTemplateLanguageService(preferenceService);
@@ -223,38 +223,38 @@ export function useAppInitializer(): {
         // Services with no dependencies or only storage
         const modelManagerInstance = createModelManager(storageProvider);
 
-        // 文本模型适配器注册表（本地实例）
+        // Text model adapter registry (local instance)
         textAdapterRegistryInstance = createTextAdapterRegistry();
 
-        // 图像模型管理器（独立存储空间）
+        // Image model manager (separate storage space)
         const imageAdapterRegistry = await import('@prompt-optimizer/core').then(m => m.createImageAdapterRegistry())
         imageAdapterRegistryInstance = imageAdapterRegistry
         const imageModelManagerInstance = createImageModelManager(storageProvider, imageAdapterRegistry);
 
-        // 🆕 创建图像存储服务（独立 IndexedDB 数据库）
-        console.log('[AppInitializer] 初始化图像存储服务...');
+        // 🆕 Create the image storage service (separate IndexedDB database)
+        console.log('[AppInitializer] Initializing the image storage service...');
         imageStorageService = createImageStorageService({
           maxCacheSize: 50 * 1024 * 1024,  // 50 MB
-          maxAge: 7 * 24 * 60 * 60 * 1000,  // 7 天
-          maxCount: 100,                     // 最多 100 张
-          autoCleanupThreshold: 0.8,         // 达到 80% 时触发清理
+          maxAge: 7 * 24 * 60 * 60 * 1000,  // 7 days
+          maxCount: 100,                     // At most 100 images
+          autoCleanupThreshold: 0.8,         // Trigger cleanup at 80%
           dbName: 'PromptOptimizerImageDB',
         });
 
-        // 收藏快照图像存储（独立数据库，避免与 session 图片清理策略耦合）
+        // Favorite snapshot image storage (separate database, to avoid coupling with the session image cleanup policy)
         favoriteImageStorageService = createImageStorageService({
           maxCacheSize: 200 * 1024 * 1024,      // 200 MB
-          maxAge: 365 * 24 * 60 * 60 * 1000,    // 365 天
+          maxAge: 365 * 24 * 60 * 60 * 1000,    // 365 days
           maxCount: 1000,
           autoCleanupThreshold: 0.9,
           dbName: 'PromptOptimizerFavoriteImageDB',
         });
 
-        // 📝 图像数据迁移已移除（session 是本次重构新引入，无历史数据需要迁移）
-        // 如果将来需要迁移，可以使用 migrateLegacySessions() 函数
+        // 📝 Image data migration was removed (sessions were newly introduced in this refactoring, so there is no historical data to migrate)
+        // If a migration is needed in the future, the migrateLegacySessions() function can be used
 
         // Initialize language service first, as template manager depends on it
-        console.log('[AppInitializer] 初始化语言服务...');
+        console.log('[AppInitializer] Initializing the language service...');
         await languageService.initialize();
         
         const templateManagerInstance = createTemplateManager(storageProvider, languageService);
@@ -265,7 +265,7 @@ export function useAppInitializer(): {
         const historyManagerInstance = createHistoryManager(storageProvider, modelManagerInstance);
         
         // Now ensure model manager with async init is ready (template manager no longer needs async init)
-        console.log('[AppInitializer] 确保模型管理器初始化完成...');
+        console.log('[AppInitializer] Making sure the model manager initialization is complete...');
         await modelManagerInstance.ensureInitialized();
 
         // Assign instances after they are fully initialized
@@ -273,7 +273,7 @@ export function useAppInitializer(): {
         templateManager = templateManagerInstance;
         historyManager = historyManagerInstance;
 
-        // 创建严格符合接口的适配器
+        // Create adapters that strictly conform to the interfaces
         const modelManagerAdapter: IModelManager = {
           ensureInitialized: () => modelManagerInstance.ensureInitialized(),
           isInitialized: () => modelManagerInstance.isInitialized(),
@@ -330,7 +330,7 @@ export function useAppInitializer(): {
         };
 
         // Services that depend on initialized managers
-        console.log('[AppInitializer] 创建依赖其他管理器的服务...');
+        console.log('[AppInitializer] Creating the services that depend on other managers...');
         llmService = createLLMService(modelManagerInstance);
         promptService = createPromptService(modelManager, llmService, templateManager, historyManager);
         imageService = createImageService(imageModelManagerInstance, imageAdapterRegistryInstance);
@@ -344,67 +344,67 @@ export function useAppInitializer(): {
           console.warn('[AppInitializer] ImageModelManager ensureInitialized failed (non-critical):', e)
         }
 
-        // 创建 CompareService（直接使用）
+        // Create the CompareService (used directly)
         const compareService = createCompareService();
 
-        // 创建 ContextRepo（使用相同的存储提供器）
+        // Create the ContextRepo (using the same storage provider)
         const contextRepo = createContextRepo(storageProvider);
 
-        // 创建 DataManager（需要contextRepo）
+        // Create the DataManager (needs contextRepo)
         dataManager = createDataManager(modelManagerInstance, templateManagerInstance, historyManagerInstance, preferenceService, contextRepo);
 
-        // 创建收藏管理器
+        // Create the favorites manager
         favoriteManager = new FavoriteManager(storageProvider);
 
-        // 🆕 创建评估服务
+        // 🆕 Create the evaluation service
         evaluationService = createEvaluationService(llmService, modelManagerAdapter, templateManagerAdapter);
 
-        // 🆕 创建变量提取服务
+        // 🆕 Create the variable extraction service
         variableExtractionService = createVariableExtractionService(llmService, modelManagerAdapter, templateManagerAdapter);
 
-        // 🆕 创建变量值生成服务
+        // 🆕 Create the variable value generation service
         variableValueGenerationService = createVariableValueGenerationService(llmService, modelManagerAdapter, templateManagerAdapter);
 
-        // 🆕 读取当前上下文的模式
-        console.log('[AppInitializer] 读取当前上下文模式...');
+        // 🆕 Read the mode of the current context
+        console.log('[AppInitializer] Reading the current context mode...');
         const contextMode = ref<ContextMode>(DEFAULT_CONTEXT_MODE);
         try {
           const currentId = await contextRepo.getCurrentId();
           const currentContext = await contextRepo.get(currentId);
           contextMode.value = currentContext.mode || DEFAULT_CONTEXT_MODE;
-          console.log('[AppInitializer] 当前上下文模式:', contextMode.value);
+          console.log('[AppInitializer] Current context mode:', contextMode.value);
         } catch (err) {
-          console.warn('[AppInitializer] 读取上下文模式失败，使用默认值:', err);
+          console.warn('[AppInitializer] Failed to read the context mode, using the default value:', err);
         }
 
-        // 将所有服务实例赋值给 services.value
+        // Assign all service instances to services.value
         services.value = {
-          modelManager: modelManagerAdapter, // 使用适配器
-          templateManager: templateManagerAdapter, // 使用适配器
-          historyManager: historyManagerAdapter, // 使用适配器
+          modelManager: modelManagerAdapter, // Use the adapter
+          templateManager: templateManagerAdapter, // Use the adapter
+          historyManager: historyManagerAdapter, // Use the adapter
           dataManager,
           llmService,
           promptService,
           templateLanguageService: languageService,
-          preferenceService, // 使用从core包导入的PreferenceService
-          compareService, // 直接使用
-          contextRepo, // 上下文仓库
-          favoriteManager, // 收藏管理器
-          contextMode, // 🆕 上下文模式
+          preferenceService, // Use the PreferenceService imported from the core package
+          compareService, // Used directly
+          contextRepo, // Context repository
+          favoriteManager, // Favorites manager
+          contextMode, // 🆕 Context mode
           textAdapterRegistry: textAdapterRegistryInstance,
           imageModelManager: imageModelManagerInstance,
           imageService,
           imageAdapterRegistry: imageAdapterRegistryInstance,
-          imageStorageService, // 🆕 图像存储服务
+          imageStorageService, // 🆕 Image storage service
           favoriteImageStorageService,
-          evaluationService, // 🆕 评估服务
-          variableExtractionService, // 🆕 变量提取服务
-          variableValueGenerationService, // 🆕 变量值生成服务
+          evaluationService, // 🆕 Evaluation service
+          variableExtractionService, // 🆕 Variable extraction service
+          variableValueGenerationService, // 🆕 Variable value generation service
         };
 
-        console.log('[AppInitializer] 所有服务初始化完成');
+        console.log('[AppInitializer] All services initialized');
 
-        // 只保留 session 引用的图片：启动后做一次 best-effort GC
+        // Keep only the images referenced by sessions: run a best-effort GC once after startup
         if (imageStorageService) {
           scheduleImageStorageGc(preferenceService, imageStorageService, {
             getFavoritesPayload: () => favoriteManager.getFavorites(),
@@ -414,12 +414,12 @@ export function useAppInitializer(): {
 
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : String(err);
-      console.error("[AppInitializer] 关键服务初始化失败:", errorMessage);
-      console.error("[AppInitializer] 错误详情:", err);
+      console.error("[AppInitializer] Critical service initialization failed:", errorMessage);
+      console.error("[AppInitializer] Error details:", err);
       error.value = err instanceof Error ? err : new Error(String(err));
     } finally {
       isInitializing.value = false;
-      console.log('[AppInitializer] 应用初始化完成');
+      console.log('[AppInitializer] App initialization complete');
     }
   });
 

@@ -1312,7 +1312,7 @@ export function useAppPromptGardenImport(options: AppPromptGardenImportOptions) 
                 }
               } catch (e) {
                 console.warn('[PromptGardenImport] Failed to load example input image:', e)
-                toast.warning('示例输入图加载失败（请检查 Prompt Garden /prompt-assets 的 CORS 配置）')
+                toast.warning('Failed to load the sample input image (please check the CORS config of Prompt Garden /prompt-assets)')
               }
             }
           }

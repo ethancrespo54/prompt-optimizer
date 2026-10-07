@@ -14,8 +14,8 @@ interface VirtualScrollOptions {
 }
 
 /**
- * 虚拟滚动 Composable
- * 优化大列表渲染性能
+ * Virtual scroll composable
+ * Optimizes the rendering performance of large lists
  */
 export function useVirtualScroll<T extends VirtualScrollItem>(
   items: T[],
@@ -28,14 +28,14 @@ export function useVirtualScroll<T extends VirtualScrollItem>(
     containerHeight = 400
   } = options
 
-  // 状态管理
+  // State management
   const scrollTop = ref(0)
   const containerRef = ref<HTMLElement>()
   const contentRef = ref<HTMLElement>()
   const isScrolling = ref(false)
   const scrollEndTimer = ref<number>()
 
-  // 计算可见区域
+  // Compute the visible area
   const visibleRange = computed(() => {
     const startIndex = Math.max(0, Math.floor(scrollTop.value / itemHeight) - buffer)
     const endIndex = Math.min(
@@ -46,7 +46,7 @@ export function useVirtualScroll<T extends VirtualScrollItem>(
     return { startIndex, endIndex }
   })
 
-  // 可见的项目
+  // Visible items
   const visibleItems = computed(() => {
     const { startIndex, endIndex } = visibleRange.value
     return items.slice(startIndex, endIndex + 1).map((item, index) => ({
@@ -56,36 +56,36 @@ export function useVirtualScroll<T extends VirtualScrollItem>(
     }))
   })
 
-  // 总高度
+  // Total height
   const totalHeight = computed(() => items.length * itemHeight)
 
-  // 顶部偏移
+  // Top offset
   const offsetTop = computed(() => visibleRange.value.startIndex * itemHeight)
 
-  // 底部填充高度
+  // Bottom padding height
   const offsetBottom = computed(() => 
     Math.max(0, (items.length - visibleRange.value.endIndex - 1) * itemHeight)
   )
 
-  // 滚动事件处理
+  // Scroll event handling
   const handleScroll = (event: Event) => {
     const target = event.target as HTMLElement
     scrollTop.value = target.scrollTop
     
     isScrolling.value = true
     
-    // 清除之前的计时器
+    // Clear the previous timer
     if (scrollEndTimer.value) {
       clearTimeout(scrollEndTimer.value)
     }
     
-    // 设置滚动结束计时器
+    // Set the scroll-end timer
     scrollEndTimer.value = window.setTimeout(() => {
       isScrolling.value = false
     }, 150)
   }
 
-  // 滚动到指定位置
+  // Scroll to the specified position
   const scrollToIndex = (index: number, behavior: ScrollBehavior = 'smooth') => {
     if (!containerRef.value) return
     
@@ -96,26 +96,26 @@ export function useVirtualScroll<T extends VirtualScrollItem>(
     })
   }
 
-  // 滚动到顶部
+  // Scroll to the top
   const scrollToTop = (behavior: ScrollBehavior = 'smooth') => {
     scrollToIndex(0, behavior)
   }
 
-  // 滚动到底部
+  // Scroll to the bottom
   const scrollToBottom = (behavior: ScrollBehavior = 'smooth') => {
     scrollToIndex(items.length - 1, behavior)
   }
 
-  // 获取当前可见项目索引范围
+  // Get the index range of the currently visible items
   const getVisibleIndexRange = () => visibleRange.value
 
-  // 检查项目是否可见
+  // Check whether an item is visible
   const isItemVisible = (index: number) => {
     const { startIndex, endIndex } = visibleRange.value
     return index >= startIndex && index <= endIndex
   }
 
-  // 强制更新可见区域
+  // Force an update of the visible area
   const forceUpdate = () => {
     nextTick(() => {
       if (containerRef.value) {
@@ -124,7 +124,7 @@ export function useVirtualScroll<T extends VirtualScrollItem>(
     })
   }
 
-  // 获取性能统计
+  // Get performance statistics
   const getPerformanceStats = () => {
     const { startIndex, endIndex } = visibleRange.value
     const visibleCount = endIndex - startIndex + 1
@@ -140,7 +140,7 @@ export function useVirtualScroll<T extends VirtualScrollItem>(
     }
   }
 
-  // 生命周期管理
+  // Lifecycle management
   onMounted(() => {
     if (containerRef.value) {
       containerRef.value.addEventListener('scroll', handleScroll, { passive: true })
@@ -161,7 +161,7 @@ export function useVirtualScroll<T extends VirtualScrollItem>(
     containerRef,
     contentRef,
     
-    // 状态
+    // State
     scrollTop,
     isScrolling,
     visibleItems,
@@ -170,7 +170,7 @@ export function useVirtualScroll<T extends VirtualScrollItem>(
     offsetTop,
     offsetBottom,
     
-    // 方法
+    // Methods
     scrollToIndex,
     scrollToTop,
     scrollToBottom,
@@ -179,7 +179,7 @@ export function useVirtualScroll<T extends VirtualScrollItem>(
     forceUpdate,
     getPerformanceStats,
     
-    // 配置
+    // Config
     itemHeight,
     buffer,
     threshold,

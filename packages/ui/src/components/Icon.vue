@@ -1,4 +1,4 @@
-<!-- 简化的Icon组件，用于显示刷新图标 -->
+<!-- Simplified Icon component, used to display the refresh icon -->
 <template>
   <svg
     v-if="name === 'refresh'"

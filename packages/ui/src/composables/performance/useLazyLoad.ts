@@ -28,8 +28,8 @@ interface LazyComponentErrorCallbackFunction {
 }
 
 /**
- * 懒加载 Composable
- * 优化图片和组件的加载性能
+ * Lazy loading composable
+ * Optimizes the loading performance of images and components
  */
 export function useLazyLoad(options: LazyLoadOptions = {}) {
   const {
@@ -43,7 +43,7 @@ export function useLazyLoad(options: LazyLoadOptions = {}) {
   const observedElements = ref(new Set<Element>())
 
   /**
-   * 创建交叉观察器
+   * Create an intersection observer
    */
   const createObserver = () => {
     if (typeof IntersectionObserver === 'undefined') {
@@ -64,7 +64,7 @@ export function useLazyLoad(options: LazyLoadOptions = {}) {
                 callback(element, entry)
               }
 
-              // 处理图片懒加载
+              // Handle image lazy loading
               if (element.hasAttribute('data-src')) {
                 const img = element as HTMLImageElement
                 const src = img.getAttribute('data-src')
@@ -76,7 +76,7 @@ export function useLazyLoad(options: LazyLoadOptions = {}) {
                 }
               }
 
-              // 处理背景图片懒加载
+              // Handle background image lazy loading
               if (element.hasAttribute('data-bg')) {
                 const bgUrl = element.getAttribute('data-bg')
                 if (bgUrl) {
@@ -87,7 +87,7 @@ export function useLazyLoad(options: LazyLoadOptions = {}) {
                 }
               }
 
-              // 如果设置为只触发一次，则停止观察
+              // If set to trigger only once, stop observing
               if (once) {
                 observer.value?.unobserve(element)
                 observedElements.value.delete(element)
@@ -110,7 +110,7 @@ export function useLazyLoad(options: LazyLoadOptions = {}) {
   }
 
   /**
-   * 观察元素
+   * Observe an element
    */
   const observe = (
     element: Element,
@@ -126,7 +126,7 @@ export function useLazyLoad(options: LazyLoadOptions = {}) {
     }
 
     if (!observer.value) {
-      // 如果不支持 IntersectionObserver，立即执行回调
+      // If IntersectionObserver is not supported, run the callback immediately
       if (callback) {
         try {
           callback(element, {} as IntersectionObserverEntry)
@@ -139,7 +139,7 @@ export function useLazyLoad(options: LazyLoadOptions = {}) {
       return
     }
 
-    // 保存回调函数
+    // Save the callback function
     if (callback) {
       (element as Element & { __lazyCallback?: LazyCallbackFunction }).__lazyCallback = callback
     }
@@ -152,21 +152,21 @@ export function useLazyLoad(options: LazyLoadOptions = {}) {
   }
 
   /**
-   * 停止观察元素
+   * Stop observing an element
    */
   const unobserve = (element: Element) => {
     if (observer.value && observedElements.value.has(element)) {
       observer.value.unobserve(element)
       observedElements.value.delete(element)
       
-      // 清理回调函数
+      // Clean up the callback function
       delete (element as Element & { __lazyCallback?: LazyCallbackFunction }).__lazyCallback
       delete (element as Element & { __lazyErrorCallback?: LazyErrorCallbackFunction }).__lazyErrorCallback
     }
   }
 
   /**
-   * 停止观察所有元素
+   * Stop observing all elements
    */
   const unobserveAll = () => {
     if (observer.value) {
@@ -176,7 +176,7 @@ export function useLazyLoad(options: LazyLoadOptions = {}) {
   }
 
   /**
-   * 懒加载图片
+   * Lazy-load an image
    */
   const lazyImage = (
     img: HTMLImageElement,
@@ -185,7 +185,7 @@ export function useLazyLoad(options: LazyLoadOptions = {}) {
     onLoad?: () => void,
     onError?: (error: Event) => void
   ) => {
-    // 设置占位符
+    // Set the placeholder
     if (placeholder) {
       img.src = placeholder
     }
@@ -195,7 +195,7 @@ export function useLazyLoad(options: LazyLoadOptions = {}) {
     observe(
       img,
       () => {
-        // 图片加载监听
+        // Image load listener
         const handleLoad = () => {
           img.classList.remove('lazy-loading')
           img.classList.add('lazy-loaded')
@@ -219,7 +219,7 @@ export function useLazyLoad(options: LazyLoadOptions = {}) {
   }
 
   /**
-   * 懒加载背景图片
+   * Lazy-load a background image
    */
   const lazyBackground = (
     element: HTMLElement,
@@ -233,7 +233,7 @@ export function useLazyLoad(options: LazyLoadOptions = {}) {
     observe(
       element,
       () => {
-        // 预加载背景图片
+        // Preload the background image
         const img = new Image()
         
         const handleLoad = () => {
@@ -256,7 +256,7 @@ export function useLazyLoad(options: LazyLoadOptions = {}) {
   }
 
   /**
-   * 懒加载组件
+   * Lazy-load a component
    */
   const lazyComponent = (
     element: Element,
@@ -284,7 +284,7 @@ export function useLazyLoad(options: LazyLoadOptions = {}) {
   }
 
   /**
-   * 批量预加载图片
+   * Batch preload images
    */
   const preloadImages = (urls: string[], onProgress?: (loaded: number, total: number) => void) => {
     return new Promise<void>((resolve, reject) => {
@@ -327,7 +327,7 @@ export function useLazyLoad(options: LazyLoadOptions = {}) {
   }
 
   /**
-   * 获取观察状态
+   * Get the observation status
    */
   const getObserverStats = () => {
     return {
@@ -337,24 +337,24 @@ export function useLazyLoad(options: LazyLoadOptions = {}) {
     }
   }
 
-  // 组件卸载时清理
+  // Clean up when the component unmounts
   onUnmounted(() => {
     unobserveAll()
   })
 
   return {
-    // 核心方法
+    // Core methods
     observe,
     unobserve,
     unobserveAll,
     
-    // 专用方法
+    // Dedicated methods
     lazyImage,
     lazyBackground,
     lazyComponent,
     preloadImages,
     
-    // 状态
+    // State
     getObserverStats,
     observedElements: observedElements.value
   }

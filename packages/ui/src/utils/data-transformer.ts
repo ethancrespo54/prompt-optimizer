@@ -2,14 +2,14 @@ import type { TextModelConfig, Template } from '@prompt-optimizer/core'
 import type { ModelSelectOption, TemplateSelectOption, SelectOption } from '../types/select-options'
 
 /**
- * 数据转换工具类
- * 负责将原始数据转换为SelectWithConfig组件所需的标准化格式
+ * Data transformation utility class
+ * Responsible for converting raw data into the standardized format required by the SelectWithConfig component
  */
 export class DataTransformer {
   /**
-   * 将模型配置转换为选择器选项
-   * @param models 模型配置数组
-   * @returns 标准化的模型选择选项
+   * Convert model configs into selector options
+   * @param models Array of model configs
+   * @returns Standardized model selection options
    */
   static modelsToSelectOptions(models: TextModelConfig[]): ModelSelectOption[] {
     return models.map(model => ({
@@ -17,15 +17,15 @@ export class DataTransformer {
       secondary: model.providerMeta?.name ?? model.providerMeta?.id ?? 'Unknown',
       value: model.id,
       raw: model,
-      // 保持向后兼容性
+      // Keep backward compatibility
       label: `${model.name} (${model.providerMeta?.name ?? model.providerMeta?.id ?? 'Unknown'})`
     }))
   }
 
   /**
-   * 将模板配置转换为选择器选项
-   * @param templates 模板配置数组
-   * @returns 标准化的模板选择选项
+   * Convert template configs into selector options
+   * @param templates Array of template configs
+   * @returns Standardized template selection options
    */
   static templatesToSelectOptions(templates: Template[]): TemplateSelectOption[] {
     return templates.map(template => ({
@@ -33,18 +33,18 @@ export class DataTransformer {
       secondary: template.metadata?.description || '',
       value: template.id,
       raw: template,
-      // 保持向后兼容性
+      // Keep backward compatibility
       label: template.name || ''
     }))
   }
 
   /**
-   * 通用转换函数
-   * @param items 原始数据数组
-   * @param getPrimary 提取主要显示文本的函数
-   * @param getSecondary 提取次要显示文本的函数
-   * @param getValue 提取值的函数
-   * @returns 标准化的选择选项
+   * Generic conversion function
+   * @param items Raw data array
+   * @param getPrimary Function that extracts the primary display text
+   * @param getSecondary Function that extracts the secondary display text
+   * @param getValue Function that extracts the value
+   * @returns Standardized selection options
    */
   static toSelectOptions<T>(
     items: T[],
@@ -60,7 +60,7 @@ export class DataTransformer {
         secondary,
         value: getValue(item),
         raw: item,
-        // 生成兼容的label格式
+        // Generate a compatible label format
         label: secondary ? `${primary} (${secondary})` : primary
       }
     })
@@ -68,22 +68,22 @@ export class DataTransformer {
 }
 
 /**
- * 简化的访问器函数
- * 用于SelectWithConfig组件的prop函数
+ * Simplified accessor functions
+ * Prop functions for the SelectWithConfig component
  */
 export const OptionAccessors = {
   /**
-   * 获取主要显示文本
+   * Get the primary display text
    */
   getPrimary: (opt: SelectOption): string => opt.primary,
 
   /**
-   * 获取次要显示文本
+   * Get the secondary display text
    */
   getSecondary: (opt: SelectOption): string => opt.secondary,
 
   /**
-   * 获取选择值
+   * Get the selected value
    */
   getValue: (opt: SelectOption): string => opt.value
 }

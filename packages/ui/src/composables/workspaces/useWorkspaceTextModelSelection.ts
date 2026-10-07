@@ -1,14 +1,14 @@
 /**
- * 工作区 Text 模型选择逻辑（通用，Image 模式使用）
+ * Workspace Text model selection logic (shared, used by image mode)
  *
- * 功能：
- * - 从 session store 读取/写入 selectedTextModelKey
- * - 刷新文本模型选项列表
- * - 自动兜底选择第一个可用模型（写回 session store，单一真源）
- * - 竞态保护（避免快速切换/刷新导致旧请求覆盖新请求）
+ * Features:
+ * - Read/write selectedTextModelKey from the session store
+ * - Refresh the text model option list
+ * - Automatically fall back to selecting the first available model (write back to the session store, single source of truth)
+ * - Race protection (avoids old requests overwriting new ones caused by rapid switching/refreshing)
  *
- * @param services - AppServices 实例
- * @param sessionStore - Session store 实例（ImageText2ImageSession / ImageImage2ImageSession）
+ * @param services - AppServices instance
+ * @param sessionStore - Session store instance (ImageText2ImageSession / ImageImage2ImageSession)
  */
 import { computed, ref, watch, type Ref } from 'vue'
 import type { AppServices } from '../../types/services'

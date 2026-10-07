@@ -165,7 +165,7 @@ const handleImageModelSaved = () => {
   try {
     imageListRef.value?.refresh?.()
   } catch {
-      // 静默处理错误
+      // Silently handle the error
     }
 }
 
@@ -175,7 +175,7 @@ if (typeof window !== 'undefined') {
       const tab = (e as CustomEvent).detail
       if (tab === 'text' || tab === 'image' || tab === 'function') activeTab.value = tab
     } catch {
-      // 静默处理错误
+      // Silently handle the error
     }
   }
   onMounted(() => window.addEventListener('model-manager:set-tab', tabHandler))

@@ -17,12 +17,12 @@ import type { AppServices } from '../../types/services'
 import { useProMultiMessageSession } from '../../stores/session/useProMultiMessageSession'
 
 /**
- * 多轮对话消息优化 Composable 返回值接口
+ * Return value interface of the multi-turn conversation message optimization composable
  */
 export interface UseConversationOptimization {
-  // 状态
+  // State
   selectedMessageId: Ref<string>
-  /** 当前选中的消息（用于 Pro Multi 自动选择/评估上下文） */
+  /** Currently selected message (used for Pro Multi auto-selection / evaluation context) */
   selectedMessage: ComputedRef<ConversationMessage | undefined>
   currentChainId: Ref<string>
   currentRecordId: Ref<string>
@@ -31,34 +31,34 @@ export interface UseConversationOptimization {
   isOptimizing: Ref<boolean>
   messageChainMap: Ref<Map<string, string>>
 
-  // 方法
+  // Methods
   selectMessage: (message: ConversationMessage) => Promise<void>
   optimizeMessage: () => Promise<void>
   iterateMessage: (payload: { originalPrompt: string, optimizedPrompt: string, iterateInput: string }) => Promise<void>
   switchVersion: (version: PromptRecordChain['versions'][number]) => Promise<void>
-  switchToV0: (version: PromptRecordChain['versions'][number]) => Promise<void>  // 🆕 V0 切换
+  switchToV0: (version: PromptRecordChain['versions'][number]) => Promise<void>  // 🆕 V0 switching
   applyToConversation: (messageId: string, content: string) => void
   applyCurrentVersion: () => Promise<void>
   cleanupDeletedMessageMapping: (messageId: string, options?: { keepSelection?: boolean }) => void
   saveLocalEdit: (payload: { optimizedPrompt: string; note?: string; source?: 'patch' | 'manual' }) => Promise<void>
-  restoreFromSessionStore: () => void  // 🔧 Codex 修复：显式恢复函数
+  restoreFromSessionStore: () => void  // 🔧 Codex fix: explicit restore function
 }
 
 /**
- * 多轮对话消息优化 Composable
+ * Multi-turn conversation message optimization composable
  *
- * 提供消息级别的优化功能，支持：
- * - 选择任意 system/user 消息进行优化
- * - 版本管理和历史记录
- * - 自动应用优化结果
- * - 工作链智能复用
+ * Provides message-level optimization, supporting:
+ * - Selecting any system/user message to optimize
+ * - Version management and history
+ * - Automatically applying optimization results
+ * - Smart reuse of working chains
  *
- * @param services 服务实例引用
- * @param conversationMessages 对话消息列表
- * @param optimizationMode 优化模式（system/user）
- * @param selectedOptimizeModel 优化模型
- * @param selectedTemplate 优化模板
- * @param selectedIterateTemplate 迭代模板
+ * @param services Service instance reference
+ * @param conversationMessages Conversation message list
+ * @param optimizationMode Optimization mode (system/user)
+ * @param selectedOptimizeModel Optimize model
+ * @param selectedTemplate Optimization template
+ * @param selectedIterateTemplate Iterate template
  */
 export function useConversationOptimization(
   services: Ref<AppServices | null>,
@@ -71,11 +71,11 @@ export function useConversationOptimization(
   const toast = useToast()
   const { t } = useI18n()
 
-  // 服务引用
+  // Service reference
   const historyManager = computed(() => services.value?.historyManager)
   const promptService = computed(() => services.value?.promptService)
 
-  // ⚠️ Pro 多消息 session store（仅 Pro-system 模式使用）
+  // ⚠️ Pro multi-message session store (only used in Pro-system mode)
   const proMultiMessageSession = useProMultiMessageSession()
 
   const isSyncingMapToSession = ref(false)
@@ -100,9 +100,9 @@ export function useConversationOptimization(
     })
   }
 
-  // 辅助函数：同步 messageChainMap 到 session store
-  // ⚠️ Codex 修复：messageChainMap 是 ref(new Map())，watch 无法追踪 Map 内部修改
-  // 改为在每次 set/delete 后显式同步
+  // Helper function: sync messageChainMap to the session store
+  // ⚠️ Codex fix: messageChainMap is ref(new Map()), and watch cannot track changes inside the Map
+  // Changed to sync explicitly after every set/delete
   const syncMessageChainMapToSession = () => {
     if (optimizationMode.value === 'system') {
       const record: Record<string, string> = {}
@@ -115,23 +115,23 @@ export function useConversationOptimization(
     }
   }
 
-  // 🔧 Codex 修复：核心映射表现在直接使用 messageId → chainId，移除 mode 前缀
-  // 原因：Session Store 已做子模式隔离（session/v1/pro-multi），无需在 key 中重复 mode 信息
-  // 使用 Map 数据结构确保 O(1) 查找性能
+  // 🔧 Codex fix: the core mapping table now uses messageId → chainId directly, with the mode prefix removed
+  // Reason: the Session Store already isolates sub-modes (session/v1/pro-multi), so the mode info need not be repeated in the key
+  // Use the Map data structure to ensure O(1) lookup performance
   const messageChainMap = ref<Map<string, string>>(new Map())
 
-  // 🔧 Codex 修复：简化删除逻辑，直接使用 messageId
+  // 🔧 Codex fix: simplify the delete logic and use messageId directly
   const removeMessageMapping = (messageId?: string) => {
     if (!messageId) return false
     const removed = messageChainMap.value.delete(messageId)
-    // ⚠️ Codex 修复：显式同步到 session store
+    // ⚠️ Codex fix: explicitly sync to the session store
     if (removed) {
       syncMessageChainMapToSession()
     }
     return removed
   }
 
-  // 状态管理（将可持久化字段绑定到 session store，消除双真源）
+  // State management (bind persistable fields to the session store, eliminating dual sources)
   const localSelectedMessageId = ref<string>('')
   const localChainId = ref<string>('')
   const localRecordId = ref<string>('')
@@ -217,60 +217,60 @@ export function useConversationOptimization(
   const currentVersions = ref<PromptRecordChain['versions']>([])
   const isOptimizing = ref<boolean>(false)
 
-  // ========== Session Store 同步逻辑 ==========
+  // ========== Session Store sync logic ==========
 
-  // ⚠️ Codex 修复：messageChainMap 是 ref(new Map())，watch 无法追踪 Map 内部修改
-  // 改为在每次 set/delete 后显式同步（见 optimizeMessage、iterateMessage、removeMessageMapping）
-  // syncMessageChainMapToSession() 已在上方定义
+  // ⚠️ Codex fix: messageChainMap is ref(new Map()), and watch cannot track changes inside the Map
+  // Changed to sync explicitly after every set/delete (see optimizeMessage, iterateMessage, removeMessageMapping)
+  // syncMessageChainMapToSession() is defined above
 
   /**
-   * 🔧 Codex 修复：从 Session Store 恢复 messageChainMap（仅 Pro-system 模式）
+   * 🔧 Codex fix: restore messageChainMap from the Session Store (Pro-system mode only)
    *
-   * 说明：
-   * - 其它可持久化字段已通过 computed 直绑到 session store（单一真源）
-   * - 这里只负责 Map/Record 互转 + 旧 key 迁移
+   * Notes:
+   * - Other persistable fields are already bound directly to the session store via computed (single source of truth)
+   * - This is only responsible for Map/Record conversion + migrating old keys
    */
   const restoreFromSessionStore = () => {
     if (optimizationMode.value !== 'system') return
 
     const messageChainMapFromStore = proMultiMessageSession.messageChainMap
 
-    // 🔧 Codex 修复：恢复消息-链映射表，并迁移旧格式 key
+    // 🔧 Codex fix: restore the message-chain mapping table and migrate old-format keys
     if (messageChainMapFromStore && Object.keys(messageChainMapFromStore).length > 0) {
       const restoredMap = new Map<string, string>()
       let hasMigrated = false
 
-      // 🔧 Codex 建议：使用严格前缀匹配，避免误迁移包含 `:` 的 messageId
+      // 🔧 Codex suggestion: use strict prefix matching to avoid wrongly migrating a messageId that contains `:`
       const oldKeyPattern = /^(system|user|basic|pro|image):/
 
       for (const [key, value] of Object.entries(messageChainMapFromStore)) {
-        // 🔧 识别旧格式 key（匹配 "system:", "user:", "basic:", "pro:", "image:" 前缀）
+        // 🔧 Identify old-format keys (matching the prefixes "system:", "user:", "basic:", "pro:", "image:")
         const match = key.match(oldKeyPattern)
         if (match) {
-          // 提取纯 messageId（前缀后的部分）
+          // Extract the plain messageId (the part after the prefix)
           const messageId = key.substring(match[0].length)
           if (messageId) {
             restoredMap.set(messageId, value)
             hasMigrated = true
-            console.log(`[ConversationOptimization] 迁移旧格式 key: ${key} → ${messageId}`)
+            console.log(`[ConversationOptimization] Migrating old-format key: ${key} → ${messageId}`)
           }
         } else {
-          // 新格式 key，直接使用
+          // New-format key, use directly
           restoredMap.set(key, value)
         }
       }
 
       messageChainMap.value = restoredMap
 
-      // 🔧 如果发生了迁移，立即同步到 session store 以保存新格式
+      // 🔧 If a migration happened, sync to the session store immediately to save the new format
       if (hasMigrated) {
-        console.log('[ConversationOptimization] 检测到旧格式 key，已自动迁移并保存')
+        console.log('[ConversationOptimization] Detected old-format keys, migrated and saved automatically')
         syncMessageChainMapToSession()
       }
     }
   }
 
-  // session store → Map 同步（支持刷新/切换后恢复）
+  // session store → Map sync (supports restore after refresh/switch)
   watch(
     () => proMultiMessageSession.messageChainMap,
     () => {
@@ -282,12 +282,12 @@ export function useConversationOptimization(
   )
 
   /**
-   * 🆕 辅助函数：从历史记录获取消息的当前应用版本号
-   * @param messageId 消息 ID
-   * @param chainId 优化链 ID
-   * @param currentContent 当前消息内容
-   * @param originalContent 原始消息内容
-   * @returns 版本号 (0=v0, 1=v1, 2=v2...)
+   * 🆕 Helper function: get the currently applied version number of a message from the history records
+   * @param messageId Message ID
+   * @param chainId Optimization chain ID
+   * @param currentContent Current message content
+   * @param originalContent Original message content
+   * @returns Version number (0=v0, 1=v1, 2=v2...)
    */
   const getMessageAppliedVersion = async (
     messageId: string,
@@ -296,7 +296,7 @@ export function useConversationOptimization(
     originalContent?: string
   ): Promise<number> => {
     try {
-      // 0. 优先检查是否为原始内容 (V0)
+      // 0. First check whether it is the original content (V0)
       if (currentContent?.trim() === originalContent?.trim()) {
         return 0
       }
@@ -308,34 +308,34 @@ export function useConversationOptimization(
         return 0
       }
 
-      // 精确匹配：遍历所有版本，找到内容匹配的版本
+      // Exact match: iterate over all versions to find the one whose content matches
       for (let i = 0; i < chain.versions.length; i++) {
         if (chain.versions[i].optimizedPrompt?.trim() === currentContent?.trim()) {
           return chain.versions[i].version // Use persistent version number
         }
       }
 
-      // 如果没有匹配且内容已修改，假设为最新版本
+      // If there is no match and the content has been modified, assume it is the latest version
       const latest = chain.versions[chain.versions.length - 1]
       return latest ? latest.version : 0
     } catch (error) {
-      console.warn(`[ConversationOptimization] 获取消息 ${messageId} 版本号失败:`, error)
-      return 0 // 失败时默认 v0
+      console.warn(`[ConversationOptimization] Failed to get the version number of message ${messageId}:`, error)
+      return 0 // Defaults to v0 on failure
     }
   }
 
   /**
-   * 选择消息进行优化
-   * @param message 要优化的消息
+   * Select a message to optimize
+   * @param message The message to optimize
    */
   const selectMessage = async (message: ConversationMessage) => {
-    // 验证消息角色：仅允许 user 和 system 消息优化
+    // Validate the message role: only user and system messages can be optimized
     if (message.role !== 'user' && message.role !== 'system') {
       toast.warning(t('toast.warning.cannotOptimizeRole', { role: message.role }))
       return
     }
 
-    // 自动补充缺失的 ID / 原始内容（防御性策略）
+    // Automatically fill in a missing ID / original content (defensive strategy)
     if (!message.id) {
       message.id = uuidv4()
     }
@@ -343,14 +343,14 @@ export function useConversationOptimization(
       message.originalContent = message.content
     }
 
-    // 更新选中的消息 ID
+    // Update the selected message ID
     selectedMessageId.value = message.id || ''
 
-    // 🔧 Codex 修复：直接使用 messageId 作为 key，移除 mode 前缀
+    // 🔧 Codex fix: use messageId directly as the key, with the mode prefix removed
     const existingChainId = message.id ? messageChainMap.value.get(message.id) : undefined
 
     if (existingChainId) {
-      // 加载现有工作链
+      // Load the existing working chain
       try {
         const history = historyManager.value
         if (!history) {
@@ -363,9 +363,9 @@ export function useConversationOptimization(
         optimizedPrompt.value = chain.currentRecord.optimizedPrompt
         currentRecordId.value = chain.currentRecord.id
       } catch (error) {
-        console.error('[ConversationOptimization] 加载工作链失败:', error)
+        console.error('[ConversationOptimization] Failed to load the working chain:', error)
         toast.error(t('toast.error.loadChainFailed'))
-        // 重置为首次优化状态
+        // Reset to the first-optimization state
         currentChainId.value = ''
         currentVersions.value = []
         currentRecordId.value = ''
@@ -374,7 +374,7 @@ export function useConversationOptimization(
         }
       }
     } else {
-      // 🔧 没有映射关系，视为新消息，重置状态（工作链将在首次优化完成后创建）
+      // 🔧 No mapping exists; treat it as a new message and reset the state (the working chain is created after the first optimization completes)
       currentChainId.value = ''
       currentVersions.value = []
       optimizedPrompt.value = ''
@@ -384,10 +384,10 @@ export function useConversationOptimization(
   }
 
   /**
-   * 优化选中的消息 (总是新建优化链)
+   * Optimize the selected message (always creates a new optimization chain)
    */
   const optimizeMessage = async () => {
-    // 查找当前选中的消息
+    // Find the currently selected message
     const message = conversationMessages.value.find(m => m.id === selectedMessageId.value)
     if (!message || !selectedTemplate.value || !selectedOptimizeModel.value) {
       if (!message) {
@@ -405,7 +405,7 @@ export function useConversationOptimization(
       return
     }
 
-    // 强制重置状态，开始新的优化链
+    // Force a state reset and start a new optimization chain
     isOptimizing.value = true
     optimizedPrompt.value = ''
     optimizedReasoning.value = ''
@@ -419,16 +419,16 @@ export function useConversationOptimization(
     message.originalContent = originalContentSnapshot
 
     try {
-      // 构建消息优化请求，使用专门的 MessageOptimizationRequest 接口
+      // Build the message optimization request using the dedicated MessageOptimizationRequest interface
       const request: MessageOptimizationRequest = {
         selectedMessageId: selectedMessageId.value,
         messages: conversationMessages.value,
         modelKey: selectedOptimizeModel.value,
-        templateId: selectedTemplate.value.id, // 使用用户选择的模板
-        variables: {}, // 自定义变量（暂时为空）
+        templateId: selectedTemplate.value.id, // Use the template chosen by the user
+        variables: {}, // Custom variables (empty for now)
       }
 
-      // 调用流式消息优化 API（使用新的 optimizeMessageStream）
+      // Call the streaming message optimization API (using the new optimizeMessageStream)
       await promptService.value!.optimizeMessageStream(
         request,
         {
@@ -440,28 +440,28 @@ export function useConversationOptimization(
           },
           onComplete: async () => {
             try {
-              // 判断是首次优化还是后续优化
+              // Determine whether this is the first optimization or a later one
               if (!historyManager.value) {
                 throw new Error('History service unavailable')
               }
 
-              // 🔧 先应用优化结果到会话，确保快照保存的是最新状态
+              // 🔧 Apply the optimization result to the conversation first, so the snapshot saves the latest state
               applyToConversation(message.id || '', optimizedPrompt.value)
 
-              // 首次优化：创建新工作链
-              // 🆕 为每条消息记录其优化链和版本号
+              // First optimization: create a new working chain
+              // 🆕 Record the optimization chain and version number of each message
               const conversationSnapshot = await Promise.all(
                   conversationMessages.value.map(async (msg) => {
-                    // 🔧 Codex 修复：直接使用 messageId 作为 key
+                    // 🔧 Codex fix: use messageId directly as the key
                     const msgChainId = msg.id ? messageChainMap.value.get(msg.id) : undefined
                     let appliedVersion = 0
 
-                    // 🔧 修复：首次优化时，当前消息没有 chainId，但已经应用了 v1
+                    // 🔧 Fix: on the first optimization, the current message has no chainId but v1 has already been applied
                     if (msg.id === message.id) {
-                      // 当前正在优化的消息，首次优化必然是 V1
+                      // For the message currently being optimized, the first optimization is necessarily V1
                       appliedVersion = 1
                     } else if (msgChainId && msg.id) {
-                      // 其他已优化过的消息，使用辅助函数检测版本
+                      // For other already-optimized messages, detect the version using the helper function
                       appliedVersion = await getMessageAppliedVersion(
                         msg.id,
                         msgChainId,
@@ -473,11 +473,11 @@ export function useConversationOptimization(
                     return {
                       id: msg.id || '',
                       role: msg.role,
-                      // 🔧 确保使用最新的优化内容
+                      // 🔧 Make sure the latest optimized content is used
                       content: (msg.id === message.id) ? optimizedPrompt.value : msg.content,
                       originalContent: msg.originalContent,
-                      chainId: msgChainId,           // 🆕 记录优化链 ID
-                      appliedVersion: appliedVersion // 🆕 记录应用的版本号
+                      chainId: msgChainId,           // 🆕 Record the optimization chain ID
+                      appliedVersion: appliedVersion // 🆕 Record the applied version number
                     }
                   })
               )
@@ -494,7 +494,7 @@ export function useConversationOptimization(
                     messageId: message.id,
                     messageRole: message.role,
                     optimizationMode: optimizationMode.value,
-                    // 🆕 保存完整的会话快照（包含版本信息）
+                    // 🆕 Save the full session snapshot (including version info)
                     conversationSnapshot
                   }
               }
@@ -504,44 +504,44 @@ export function useConversationOptimization(
               currentVersions.value = newChain.versions
               currentRecordId.value = newChain.currentRecord.id
 
-              // 🔧 Codex 修复：建立消息 ID 到工作链 ID 的映射（直接使用 messageId）
+              // 🔧 Codex fix: establish the mapping from message ID to working chain ID (using messageId directly)
               if (message.id) {
                   messageChainMap.value.set(message.id, newChain.chainId)
-                  // ⚠️ Codex 修复：显式同步到 session store
+                  // ⚠️ Codex fix: explicitly sync to the session store
                   syncMessageChainMapToSession()
               }
 
-              // 触发全局历史记录刷新事件
+              // Trigger the global history refresh event
               if (typeof window !== 'undefined') {
                 window.dispatchEvent(new Event('prompt-optimizer:history-refresh'))
               }
 
-              // 显示成功提示
+              // Show a success message
               toast.success(t('toast.success.optimizeAndApply', { version: 'v1' }))
             } catch (error) {
-              console.error('[ConversationOptimization] 保存历史记录失败:', error)
+              console.error('[ConversationOptimization] Failed to save the history record:', error)
               toast.warning(t('toast.warning.saveHistoryFailed'))
-              // 优化结果仍然可用，但未保存历史
+              // The optimization result is still usable, but the history was not saved
             } finally {
               isOptimizing.value = false
             }
           },
           onError: (error: Error) => {
-            console.error('[ConversationOptimization] 优化失败:', error)
+            console.error('[ConversationOptimization] Optimization failed:', error)
             toast.error(getI18nErrorMessage(error, t('toast.error.optimizeFailed')))
             isOptimizing.value = false
           }
         }
       )
     } catch (error) {
-      console.error('[ConversationOptimization] 优化失败:', error)
+      console.error('[ConversationOptimization] Optimization failed:', error)
       toast.error(getI18nErrorMessage(error, t('toast.error.optimizeFailed')))
       isOptimizing.value = false
     }
   }
 
   /**
-   * 迭代优化当前选中的消息
+   * Iteratively optimize the currently selected message
    */
   const iterateMessage = async (
     {
@@ -560,7 +560,7 @@ export function useConversationOptimization(
     }
     if (!iterateInput) return
     
-    // 查找当前选中的消息
+    // Find the currently selected message
     const message = conversationMessages.value.find(m => m.id === selectedMessageId.value)
     if (!message) {
         toast.warning(t('toast.warning.messageNotFound'))
@@ -573,18 +573,18 @@ export function useConversationOptimization(
     }
 
     isOptimizing.value = true
-    optimizedPrompt.value = ''  // 🔧 清空旧内容，避免累加
+    optimizedPrompt.value = ''  // 🔧 Clear the old content to avoid accumulation
     optimizedReasoning.value = ''
     await nextTick()
 
     try {
-      // 🔧 使用迭代专用模板，如果没有选择迭代模板，回退到默认迭代模板
+      // 🔧 Use the iterate-specific template; if no iterate template is selected, fall back to the default iterate template
       const templateId = selectedIterateTemplate.value?.id || 'context-iterate'
 
       await promptService.value.iteratePromptStream(
-        originalPrompt, // 原始提示词
-        lastOptimizedPrompt, // 上一次优化结果
-        iterateInput, // 迭代指令
+        originalPrompt, // Original prompt
+        lastOptimizedPrompt, // Previous optimization result
+        iterateInput, // Iteration instruction
         selectedOptimizeModel.value,
         {
           onToken: (token: string) => {
@@ -597,25 +597,25 @@ export function useConversationOptimization(
              try {
                 if (!historyManager.value) throw new Error('History service unavailable')
 
-                // 应用结果
+                // Apply the result
                 applyToConversation(message.id || '', optimizedPrompt.value)
                 
-                // 🔧 关键修复：手动计算新版本号（与 addIteration 的逻辑保持一致）
+                // 🔧 Key fix: compute the new version number manually (consistent with the logic of addIteration)
                 const newVersionNumber = (currentVersions.value[currentVersions.value.length - 1]?.version || 0) + 1
 
-                // 构建快照（使用手动计算的版本号）
+                // Build the snapshot (using the manually computed version number)
                 const conversationSnapshot = await Promise.all(
                   conversationMessages.value.map(async (msg) => {
-                    // 🔧 Codex 修复：直接使用 messageId 作为 key
+                    // 🔧 Codex fix: use messageId directly as the key
                     const msgChainId = msg.id ? messageChainMap.value.get(msg.id) : undefined
                     let appliedVersion = 0
 
-                    // 🔧 修复：迭代优化时，优先判断是否为当前消息
+                    // 🔧 Fix: during iterative optimization, first check whether it is the current message
                     if (msg.id === message.id) {
-                      // 当前正在优化的消息，使用手动计算的新版本号
+                      // For the message currently being optimized, use the manually computed new version number
                       appliedVersion = newVersionNumber
                     } else if (msgChainId && msg.id) {
-                      // 其他已优化过的消息，使用辅助函数检测版本
+                      // For other already-optimized messages, detect the version using the helper function
                       appliedVersion = await getMessageAppliedVersion(
                         msg.id,
                         msgChainId,
@@ -630,7 +630,7 @@ export function useConversationOptimization(
                       content: msg.content,
                       originalContent: msg.originalContent,
                       chainId: msgChainId,
-                      appliedVersion: appliedVersion // 🆕 记录应用的版本号
+                      appliedVersion: appliedVersion // 🆕 Record the applied version number
                     }
                   })
                 )
@@ -646,7 +646,7 @@ export function useConversationOptimization(
                     messageId: message.id,
                     messageRole: message.role,
                     optimizationMode: optimizationMode.value,
-                    // 🆕 迭代时也更新会话快照（包含版本信息）
+                    // 🆕 Also update the session snapshot during iteration (including version info)
                     conversationSnapshot
                   }
                 }
@@ -655,24 +655,24 @@ export function useConversationOptimization(
                 currentVersions.value = updatedChain.versions
                 currentRecordId.value = updatedChain.currentRecord.id
 
-                // 触发全局历史记录刷新事件
+                // Trigger the global history refresh event
                 if (typeof window !== 'undefined') {
                   window.dispatchEvent(new Event('prompt-optimizer:history-refresh'))
                 }
                 
-                // 显示成功提示
+                // Show a success message
                 const versionNumber = currentVersions.value.length
                 toast.success(t('toast.success.optimizeAndApply', { version: `v${versionNumber}` }))
 
              } catch (error) {
-               console.error('[ConversationOptimization] 保存迭代历史失败:', error)
+               console.error('[ConversationOptimization] Failed to save the iteration history:', error)
                toast.warning(t('toast.warning.saveHistoryFailed'))
              } finally {
                isOptimizing.value = false
              }
           },
           onError: (error: Error) => {
-            console.error('[ConversationOptimization] 迭代失败:', error)
+            console.error('[ConversationOptimization] Iteration failed:', error)
             toast.error(getI18nErrorMessage(error, t('toast.error.iterateFailed')))
             isOptimizing.value = false
           }
@@ -681,20 +681,20 @@ export function useConversationOptimization(
         {
           messages: conversationMessages.value,
           selectedMessageId: selectedMessageId.value,
-          variables: {}, // 暂无变量支持
-          tools: [] // 暂无工具支持
+          variables: {}, // Variables are not supported yet
+          tools: [] // Tools are not supported yet
         },
       )
     } catch (error) {
-      console.error('[ConversationOptimization] 迭代失败:', error)
+      console.error('[ConversationOptimization] Iteration failed:', error)
       toast.error(getI18nErrorMessage(error, t('toast.error.iterateFailed')))
       isOptimizing.value = false
     }
   }
 
   /**
-   * 切换版本
-   * @param version 要切换到的版本
+   * Switch version
+   * @param version The version to switch to
    */
   const switchVersion = async (version: PromptRecordChain['versions'][number]) => {
     if (!version || !version.optimizedPrompt) {
@@ -703,30 +703,30 @@ export function useConversationOptimization(
     }
     optimizedPrompt.value = version.optimizedPrompt
     currentRecordId.value = version.id
-    // 等待一个微任务确保状态更新完成
+    // Wait for a microtask to make sure the state update is complete
     await nextTick()
   }
 
   /**
-   * 🆕 切换到 V0（原始版本）
-   * @param version 第一个版本对象（包含 originalPrompt）
+   * 🆕 Switch to V0 (the original version)
+   * @param version The first version object (containing originalPrompt)
    */
   const switchToV0 = async (version: PromptRecordChain['versions'][number]) => {
     if (!version || !version.originalPrompt) {
       toast.error(t('toast.error.invalidVersion'))
       return
     }
-    // 使用 originalPrompt 作为显示内容
+    // Use originalPrompt as the display content
     optimizedPrompt.value = version.originalPrompt
     currentRecordId.value = version.id
-    // 等待一个微任务确保状态更新完成
+    // Wait for a microtask to make sure the state update is complete
     await nextTick()
   }
 
   /**
-   * 应用优化结果到会话
-   * @param messageId 消息 ID
-   * @param content 要应用的内容
+   * Apply the optimization result to the conversation
+   * @param messageId Message ID
+   * @param content The content to apply
    */
   const applyToConversation = (messageId: string, content: string) => {
     const message = conversationMessages.value.find(m => m.id === messageId)
@@ -738,8 +738,8 @@ export function useConversationOptimization(
   }
 
   /**
-   * 将当前版本应用到会话（用于手动回退）
-   * 🆕 直接使用当前显示的 optimizedPrompt，支持 V0（原始内容）
+   * Apply the current version to the conversation (for manual rollback)
+   * 🆕 Directly use the currently displayed optimizedPrompt, supporting V0 (the original content)
    */
   const applyCurrentVersion = async () => {
     if (!selectedMessageId.value) {
@@ -747,8 +747,8 @@ export function useConversationOptimization(
       return
     }
 
-    // 🆕 直接使用当前显示的内容，无需从历史记录加载
-    // 这样可以正确支持 V0（原始内容）的应用
+    // 🆕 Directly use the currently displayed content, with no need to load it from the history records
+    // This correctly supports applying V0 (the original content)
     if (!optimizedPrompt.value) {
       toast.warning(t('toast.warning.noContentToApply'))
       return
@@ -759,15 +759,15 @@ export function useConversationOptimization(
   }
 
   /**
-   * 清理已删除消息的映射
-   * @param messageId 被删除的消息 ID
+   * Clean up the mapping of a deleted message
+   * @param messageId The ID of the deleted message
    */
   const cleanupDeletedMessageMapping = (messageId: string, options?: { keepSelection?: boolean }) => {
     if (!messageId) return
 
     const removed = removeMessageMapping(messageId)
     if (removed) {
-      console.log('[ConversationOptimization] 已清理消息映射:', messageId)
+      console.log('[ConversationOptimization] Cleaned up the message mapping:', messageId)
     }
 
     if (selectedMessageId.value === messageId) {
@@ -784,23 +784,23 @@ export function useConversationOptimization(
         optimizedPrompt.value = ''
         optimizedReasoning.value = ''
         currentRecordId.value = ''
-        console.log('[ConversationOptimization] 已清空当前选中状态')
+        console.log('[ConversationOptimization] Cleared the current selection state')
       }
     }
   }
 
   /*
-   * 模式切换不在这里做“软重置”：
-   * - Pro-system 状态分离/持久化应由 session store + SessionManager 负责
-   * - 这里清空并同步到 session 会导致切换子模式时把持久化数据覆盖为“空”（刷新后尤为明显）
+   * No "soft reset" is done on mode switch here:
+   * - Pro-system state separation/persistence should be handled by the session store + SessionManager
+   * - Clearing and syncing to the session here would overwrite persisted data with "empty" when switching sub-modes (especially noticeable after a refresh)
    *
-   * 原逻辑（已禁用）：
+   * Original logic (disabled):
    * watch(optimizationMode, () => { ...clear...; syncMessageChainMapToSession() })
    */
 
   /**
-   * 保存本地修改为一个新版本（不触发 LLM）
-   * - 用于"直接修复"与手动编辑后的显式保存
+   * Save local changes as a new version (does not trigger the LLM)
+   * - Used for "direct fix" and explicit saving after manual edits
    */
   const saveLocalEdit = async ({ optimizedPrompt: newPrompt, note, source }: { optimizedPrompt: string; note?: string; source?: 'patch' | 'manual' }) => {
     try {
@@ -815,11 +815,11 @@ export function useConversationOptimization(
         selectedTemplate.value?.id ||
         'local-edit'
 
-      // 查找当前选中的消息
+      // Find the currently selected message
       const message = conversationMessages.value.find(m => m.id === selectedMessageId.value)
       const originalContent = message?.originalContent || message?.content || ''
 
-      // 若当前没有链（极少数场景），创建新链以便后续版本管理
+      // If there is currently no chain (rare), create a new chain for later version management
       if (!currentChainId.value) {
         const recordData = {
           id: uuidv4(),
@@ -842,10 +842,10 @@ export function useConversationOptimization(
         currentVersions.value = newRecord.versions
         currentRecordId.value = newRecord.currentRecord.id
 
-        // 🔧 Codex 修复：建立消息 ID 到工作链 ID 的映射（直接使用 messageId）
+        // 🔧 Codex fix: establish the mapping from message ID to working chain ID (using messageId directly)
         if (message?.id) {
           messageChainMap.value.set(message.id, newRecord.chainId)
-          // ⚠️ Codex 修复：显式同步到 session store
+          // ⚠️ Codex fix: explicitly sync to the session store
           syncMessageChainMapToSession()
         }
         return
@@ -870,13 +870,13 @@ export function useConversationOptimization(
       currentVersions.value = updatedChain.versions
       currentRecordId.value = updatedChain.currentRecord.id
     } catch (error: unknown) {
-      console.error('[useConversationOptimization] 保存本地修改失败:', error)
+      console.error('[useConversationOptimization] Failed to save local changes:', error)
       toast.warning(t('toast.warning.saveHistoryFailed'))
     }
   }
 
   return {
-    // 状态
+    // State
     selectedMessageId,
     selectedMessage,
     currentChainId,
@@ -886,16 +886,16 @@ export function useConversationOptimization(
     isOptimizing,
     messageChainMap,
 
-    // 方法
+    // Methods
     selectMessage,
     optimizeMessage,
     iterateMessage,
     switchVersion,
-    switchToV0,  // 🆕 V0 切换方法
+    switchToV0,  // 🆕 V0 switching method
     applyToConversation,
     applyCurrentVersion,
     cleanupDeletedMessageMapping,
     saveLocalEdit,
-    restoreFromSessionStore  // 🔧 Codex 修复：显式恢复函数
+    restoreFromSessionStore  // 🔧 Codex fix: explicit restore function
   }
 }

@@ -1,4 +1,4 @@
-<!-- 功能模式选择器组件 - 使用 Naive UI RadioGroup -->
+<!-- Function mode selector component - uses Naive UI RadioGroup -->
 <template>
   <NRadioGroup data-testid="function-mode-selector"
     :value="modelValue"
@@ -49,7 +49,7 @@ defineProps<Props>()
 const emit = defineEmits<Emits>()
 
 /**
- * 更新功能模式
+ * Update the function mode
  */
 const updateFunctionMode = (mode: 'basic' | 'pro' | 'image') => {
   emit('update:modelValue', mode)
@@ -58,7 +58,7 @@ const updateFunctionMode = (mode: 'basic' | 'pro' | 'image') => {
 </script>
 
 <style scoped>
-/* 响应式设计 - 移动端全宽显示 */
+/* Responsive design - full-width display on mobile */
 @media (max-width: 640px) {
   .function-mode-selector {
     width: 100%;

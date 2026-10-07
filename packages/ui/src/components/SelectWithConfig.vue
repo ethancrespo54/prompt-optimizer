@@ -89,14 +89,14 @@ const emit = defineEmits<{
 const attrs = useAttrs() as Record<string, unknown>
 const { t } = useI18n()
 
-// 检测是否有 config 事件处理器 - 始终显示配置按钮确保功能可用
-// 动态显示配置相关功能（由父级显式开启）
+// Detect whether there is a config event handler - always show the config button to keep the feature available
+// Dynamically show config-related features (explicitly enabled by the parent)
 const shouldShowConfigAction = computed(() => !!props.showConfigAction)
 const shouldShowEmptyConfigCTA = computed(() => !!props.showEmptyConfigCTA)
 
-// 将外部原始 options 转换为 NSelect 可识别的选项，label 为两行结构
+// Convert the external raw options into options NSelect recognizes, with a two-line label structure
 const mappedOptions = computed(() => {
-  // 使用 toValue 解包可能的 Ref，兼容直接传递 ref 或数组
+  // Use toValue to unwrap a possible Ref, compatible with passing a ref or an array directly
   const optionsArray = toValue(props.options) || []
   return optionsArray.map((opt: SelectOption) => {
     const primary = props.getPrimary(opt) || ''
@@ -112,7 +112,7 @@ const mappedOptions = computed(() => {
   })
 })
 
-// 使用 Naive UI 官方的 render-label 自定义选项渲染
+// Use Naive UI's official render-label to customize option rendering
 const renderOptionLabel = (option: { primary: string; secondary: string; raw: SelectOption }) => {
   const primary = option?.primary || ''
   const secondary = option?.secondary || ''
@@ -123,7 +123,7 @@ const renderOptionLabel = (option: { primary: string; secondary: string; raw: Se
   ])
 }
 
-// 多选 tag 渲染
+// Multi-select tag rendering
 const renderSelectedTag = ({
   option
 }: {
@@ -134,7 +134,7 @@ const renderSelectedTag = ({
   return h('span', { title }, option?.primary || '')
 }
 
-// 透传属性，若无自定义 filter，则提供默认过滤（匹配主/副文本）
+// Pass through attributes; if there is no custom filter, provide a default filter (matching primary/secondary text)
 const forwardedAttrs = computed(() => {
   const hasCustomFilter = Object.prototype.hasOwnProperty.call(attrs, 'filter')
   const internalFilter = (pattern: string, option: { primary: string; secondary: string }) => {
@@ -154,7 +154,7 @@ const forwardedAttrs = computed(() => {
         ? true
         : props.multiple
 
-  // 规范：通过 class & menu-props.class 注入样式作用域，避免使用 :deep
+  // Convention: inject style scoping via class & menu-props.class, avoiding :deep
   const mergedRootClass = [rootClass, 'swc-select'].filter(Boolean).join(' ')
   const mp = (menuPropsKebab || menuProps || {}) as Record<string, unknown>
   const mergedMenuClass = [mp.class, 'swc-select-menu'].filter(Boolean).join(' ')
@@ -205,7 +205,7 @@ const emitConfig = () => emit('config')
 </style>
 
 <style>
-/* 使用类作用域（通过 class & menu-props 注入），避免 :deep */
+/* Use class scoping (injected via class & menu-props), avoiding :deep */
 .swc-select-menu .n-base-select-option__content {
   white-space: normal;
   line-height: 1.35;
@@ -234,7 +234,7 @@ const emitConfig = () => emit('config')
   white-space: normal;
   word-break: break-word;
 }
-/* 选中区仅显示主行 */
+/* The selected area only shows the primary line */
 .swc-select .n-base-selection .swc-secondary,
 .swc-select .n-base-selection-label .swc-secondary {
   display: none;

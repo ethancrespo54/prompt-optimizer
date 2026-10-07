@@ -93,7 +93,7 @@ const showEditor = ref(false)
 const handleOpen = () => {
   if (props.disabled || props.loading) return
 
-  // 幂等打开，避免重复点击导致误关闭
+  // Idempotent open, to avoid accidental closing caused by repeated clicks
   showEditor.value = true
 }
 

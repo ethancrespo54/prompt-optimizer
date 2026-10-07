@@ -1,10 +1,10 @@
 /**
- * 智能变量提取器实现
+ * Smart variable extractor implementation
  */
 
 import type { VariableExtractor } from '../types'
 
-// 内置常见变量名库
+// Built-in library of common variable names
 const COMMON_VARIABLES = {
   database: [
     'table_schema', 'database_structure', 'table_info', 'sql_context', 
@@ -32,7 +32,7 @@ const COMMON_VARIABLES = {
   ]
 } as const
 
-// 关键词匹配模式
+// Keyword matching patterns
 const KEYWORD_PATTERNS = {
   database: /(?:table|schema|database|sql|create\s+table|alter\s+table|column|field|index|primary\s+key|foreign\s+key)/i,
   examples: /(?:example|sample|demo|case|instance|illustration|for\s+example|such\s+as)/i,
@@ -44,7 +44,7 @@ const KEYWORD_PATTERNS = {
 
 export class SmartVariableExtractor implements VariableExtractor {
   /**
-   * 从选中文本提取变量
+   * Extract a variable from the selected text
    */
   extractVariable(
     messageContent: string,
@@ -61,23 +61,23 @@ export class SmartVariableExtractor implements VariableExtractor {
       endIndex: number
     }
   } {
-    // 验证变量名
+    // Validate the variable name
     if (!this.isValidVariableName(variableName)) {
       throw new Error(`Invalid variable name: ${variableName}`)
     }
 
-    // 验证选择范围
+    // Validate the selection range
     if (startIndex < 0 || endIndex > messageContent.length || startIndex >= endIndex) {
       throw new Error('Invalid selection range')
     }
 
-    // 验证选中文本匹配
+    // Validate that the selected text matches
     const actualSelectedText = messageContent.substring(startIndex, endIndex)
     if (actualSelectedText !== selectedText) {
       throw new Error('Selected text does not match the specified range')
     }
 
-    // 替换选中文本为变量占位符
+    // Replace the selected text with a variable placeholder
     const placeholder = `{{${variableName}}}`
     const updatedContent = messageContent.substring(0, startIndex) + 
                           placeholder + 
@@ -95,7 +95,7 @@ export class SmartVariableExtractor implements VariableExtractor {
   }
 
   /**
-   * 智能建议变量名
+   * Smart variable name suggestions
    */
   suggestVariableNames(selectedText: string): Array<{
     name: string
@@ -110,17 +110,17 @@ export class SmartVariableExtractor implements VariableExtractor {
       reason: string
     }> = []
 
-    // 基于关键词模式匹配
+    // Based on keyword pattern matching
     for (const [category, pattern] of Object.entries(KEYWORD_PATTERNS)) {
       if (pattern.test(selectedText)) {
         const categoryVariables = COMMON_VARIABLES[category as keyof typeof COMMON_VARIABLES]
         const confidence = this.calculatePatternConfidence(selectedText, pattern)
         
-        // 添加该类别的变量建议
+        // Add the variable suggestions of this category
         categoryVariables.slice(0, 3).forEach((name, index) => {
           suggestions.push({
             name,
-            confidence: confidence - (index * 0.1), // 按优先级递减
+            confidence: confidence - (index * 0.1), // Decreases by priority
             category,
             reason: `Detected ${category}-related content`
           })
@@ -128,7 +128,7 @@ export class SmartVariableExtractor implements VariableExtractor {
       }
     }
 
-    // 基于长度和内容特征的通用建议
+    // General suggestions based on length and content characteristics
     if (selectedText.length > 200) {
       suggestions.push({
         name: 'long_context',
@@ -147,7 +147,7 @@ export class SmartVariableExtractor implements VariableExtractor {
       })
     }
 
-    // JSON格式检测
+    // JSON format detection
     if (this.looksLikeJSON(selectedText)) {
       suggestions.push({
         name: 'json_data',
@@ -157,19 +157,19 @@ export class SmartVariableExtractor implements VariableExtractor {
       })
     }
 
-    // 去重并按置信度排序
+    // Deduplicate and sort by confidence
     const uniqueSuggestions = this.deduplicateSuggestions(suggestions)
     return uniqueSuggestions.sort((a, b) => b.confidence - a.confidence).slice(0, 8)
   }
 
   /**
-   * 替换变量为实际值
+   * Replace variables with actual values
    */
   replaceVariables(content: string, variables: Record<string, string>): string {
     let result = content
     
     for (const [name, value] of Object.entries(variables)) {
-      // 匹配 {{variableName}} 格式，允许空格
+      // Match the {{variableName}} format, allowing spaces
       const pattern = new RegExp(`\\{\\{\\s*${this.escapeRegExp(name)}\\s*\\}\\}`, 'g')
       result = result.replace(pattern, value)
     }
@@ -178,7 +178,7 @@ export class SmartVariableExtractor implements VariableExtractor {
   }
 
   /**
-   * 扫描内容中的变量占位符
+   * Scan the content for variable placeholders
    */
   scanVariables(content: string): Array<{
     name: string
@@ -190,7 +190,7 @@ export class SmartVariableExtractor implements VariableExtractor {
       positions: Array<{start: number, end: number}>
     }>()
 
-    // 匹配所有 {{variableName}} 格式
+    // Match all {{variableName}} formats
     const pattern = /\{\{\s*([^}]+)\s*\}\}/g
     let match: RegExpExecArray | null
 
@@ -210,7 +210,7 @@ export class SmartVariableExtractor implements VariableExtractor {
       variables.get(variableName)!.positions.push({ start, end })
     }
 
-    // 转换为数组格式
+    // Convert to an array format
     return Array.from(variables.entries()).map(([name, data]) => ({
       name,
       placeholder: data.placeholder,
@@ -218,25 +218,25 @@ export class SmartVariableExtractor implements VariableExtractor {
     }))
   }
 
-  // 私有方法：验证变量名是否有效
+  // Private method: validate whether the variable name is valid
   private isValidVariableName(name: string): boolean {
     return /^[a-zA-Z][a-zA-Z0-9_]*$/.test(name) && name.length <= 50
   }
 
-  // 私有方法：计算模式匹配置信度
+  // Private method: compute the pattern match confidence
   private calculatePatternConfidence(text: string, pattern: RegExp): number {
     const matches = text.match(new RegExp(pattern.source, 'gi'))
     if (!matches) return 0
 
     const matchCount = matches.length
     const textLength = text.length
-    const matchDensity = matchCount / Math.max(textLength / 100, 1) // 每100字符的匹配数
+    const matchDensity = matchCount / Math.max(textLength / 100, 1) // Matches per 100 characters
 
-    // 基础置信度 + 密度奖励，最大1.0
+    // Base confidence + density bonus, at most 1.0
     return Math.min(0.5 + Math.min(matchDensity * 0.3, 0.5), 1.0)
   }
 
-  // 私有方法：检测是否像JSON
+  // Private method: detect whether it looks like JSON
   private looksLikeJSON(text: string): boolean {
     const trimmed = text.trim()
     if ((trimmed.startsWith('{') && trimmed.endsWith('}')) ||
@@ -251,7 +251,7 @@ export class SmartVariableExtractor implements VariableExtractor {
     return false
   }
 
-  // 私有方法：去重建议
+  // Private method: deduplicate suggestions
   private deduplicateSuggestions(suggestions: Array<{
     name: string
     confidence: number
@@ -273,7 +273,7 @@ export class SmartVariableExtractor implements VariableExtractor {
     })
   }
 
-  // 私有方法：转义正则表达式特殊字符
+  // Private method: escape regex special characters
   private escapeRegExp(string: string): string {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
   }

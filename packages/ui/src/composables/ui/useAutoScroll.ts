@@ -2,78 +2,78 @@ import { ref, watch, nextTick, onMounted, onBeforeUnmount, type Ref } from 'vue'
 
 
 /**
- * useAutoScroll 组合式函数
+ * useAutoScroll composable
  * -------------------------
- * 提供智能自动滚动功能，当用户向上滚动时会暂停自动滚动，滚动到底部后恢复自动滚动。
+ * Provides smart auto-scrolling: it pauses auto-scrolling when the user scrolls up and resumes after scrolling back to the bottom.
  * 
- * 使用方法:
+ * Usage:
  * 
- * 1. 基本用法
+ * 1. Basic usage
  * ```typescript
  * const { elementRef } = useAutoScroll<HTMLDivElement>()
- * // 在模板中引用元素
+ * // Reference the element in the template
  * // <div ref="elementRef">...</div>
  * ```
  * 
- * 2. 适用于整块内容更新的场景（如PromptPanel）
+ * 2. For scenarios where the whole content is updated at once (such as PromptPanel)
  * ```typescript
  * const { elementRef: textareaRef, watchSource } = useAutoScroll<HTMLTextAreaElement>()
- * // 监听props变化并触发滚动
+ * // Watch props changes and trigger scrolling
  * watchSource(() => props.content, true)
  * ```
  * 
- * 3. 适用于流式内容更新的场景（如OutputPanel）
+ * 3. For scenarios with streaming content updates (such as OutputPanel)
  * ```typescript
  * const { elementRef: containerRef, onContentChange } = useAutoScroll<HTMLDivElement>()
  * 
- * // 当内容更新时通知滚动系统
+ * // Notify the scroll system when the content updates
  * const updateContent = (text: string) => {
  *   content.value += text
  *   onContentChange()
  * }
  * ```
  * 
- * 4. 强制滚动（无论用户是否手动滚动）
+ * 4. Forced scrolling (regardless of whether the user has scrolled manually)
  * ```typescript
  * const { elementRef, forceScrollToBottom } = useAutoScroll<HTMLElement>()
  * 
- * // 在需要时强制滚动到底部
+ * // Force scrolling to the bottom when needed
  * const resetView = () => {
  *   forceScrollToBottom()
  * }
  * ```
  * 
- * 5. 获取和控制自动滚动状态
+ * 5. Get and control the auto-scroll state
  * ```typescript
  * const { elementRef, shouldAutoScroll } = useAutoScroll<HTMLElement>()
  * 
- * // 监听自动滚动状态
+ * // Watch the auto-scroll state
  * watch(shouldAutoScroll, (enabled) => {
  *   console.log(`Auto-scroll is now ${enabled ? 'enabled' : 'disabled'}`)
  * })
  * 
- * // 手动切换自动滚动状态
+ * // Manually toggle the auto-scroll state
  * const toggleAutoScroll = () => {
  *   shouldAutoScroll.value = !shouldAutoScroll.value
  * }
  * ```
  * 
- * @param options 配置选项
- * @returns 包含元素ref和自动滚动相关方法的对象
+ * @param options Config options
+ * @returns An object containing the element ref and auto-scroll-related methods
  */
 export function useAutoScroll<T extends HTMLElement>(options: {
     /**
-     * 是否启用自动滚动
+     * Whether to enable auto-scrolling
      * @default true
      */
     enabled?: boolean;
     /**
-     * 在日志中输出调试信息
+     * Output debug info in the logs
      * @default false
      */
     debug?: boolean;
     /**
-     * 检测滚动到底部的阈值（像素）
+     * Threshold (in pixels) for detecting scrolling to the bottom
      * @default 10
      */
     threshold?: number;
@@ -91,27 +91,27 @@ export function useAutoScroll<T extends HTMLElement>(options: {
         threshold = 10
     } = options
 
-    // 创建要滚动元素的引用
+    // Create a reference to the element to scroll
     const elementRef = ref<T | null>(null) as Ref<T | null>
 
-    // 是否应该自动滚动（当用户手动向上滚动时会设置为false）
+    // Whether to auto-scroll (set to false when the user scrolls up manually)
     const shouldAutoScroll = ref(true)
 
     /**
-     * 检查元素是否已经滚动到底部
+     * Check whether the element has scrolled to the bottom
      */
     const isScrolledToBottom = (element: HTMLElement): boolean => {
-        // 元素的完整滚动高度 - 元素当前滚动位置 - 元素可见高度 <= 阈值
+        // The element's full scroll height - the element's current scroll position - the element's visible height <= threshold
         return element.scrollHeight - element.scrollTop - element.clientHeight <= threshold
     }
 
     /**
-     * 处理滚动事件
+     * Handle the scroll event
      */
     const handleScroll = () => {
         if (!elementRef.value) return
 
-        // 检查是否滚动到底部
+        // Check whether it scrolled to the bottom
         const isBottom = isScrolledToBottom(elementRef.value)
 
         if (isBottom && !shouldAutoScroll.value) {
@@ -127,14 +127,14 @@ export function useAutoScroll<T extends HTMLElement>(options: {
         }
     }
 
-    // 添加和移除滚动事件监听器
+    // Add and remove the scroll event listener
     onMounted(() => {
         if (elementRef.value) {
             elementRef.value.addEventListener('scroll', handleScroll)
         }
     })
 
-    // 监听元素引用的变化，以便添加事件处理程序
+    // Watch changes in the element reference in order to add the event handler
     watch(elementRef, (newEl, oldEl) => {
         if (oldEl) {
             oldEl.removeEventListener('scroll', handleScroll)
@@ -151,7 +151,7 @@ export function useAutoScroll<T extends HTMLElement>(options: {
     })
 
     /**
-     * 手动触发滚动到底部
+     * Manually trigger scrolling to the bottom
      */
     const scrollToBottom = async () => {
         if (!enabled || !elementRef.value || !shouldAutoScroll.value) return
@@ -172,7 +172,7 @@ export function useAutoScroll<T extends HTMLElement>(options: {
     }
 
     /**
-     * 强制滚动到底部，无论shouldAutoScroll状态如何
+     * Force scrolling to the bottom, regardless of the shouldAutoScroll state
      */
     const forceScrollToBottom = async () => {
         if (!enabled || !elementRef.value) return
@@ -190,30 +190,30 @@ export function useAutoScroll<T extends HTMLElement>(options: {
         }
     }
 
-    // 添加内部容器高度状态
+    // Add the inner container height state
     const containerHeight = ref(0)
 
-    // 检查高度变化的函数
+    // Function that checks the height change
     const checkHeightChange = () => {
         if (elementRef.value) {
             const newHeight = elementRef.value.scrollHeight
             if (newHeight !== containerHeight.value) {
                 containerHeight.value = newHeight
-                // 只有当应该自动滚动时才滚动
+                // Only scroll when auto-scrolling should happen
                 scrollToBottom()
             }
         }
     }
 
-    // 提供一个函数用于内容变化时检查高度
+    // Provide a function for checking the height when the content changes
     const onContentChange = () => {
         nextTick(checkHeightChange)
     }
 
     /**
-     * 设置监听源头的自动滚动
-     * @param source 需要监听变化的源数据
-     * @param immediate 是否立即执行
+     * Set up auto-scrolling for the watch source
+     * @param source The source data to watch for changes
+     * @param immediate Whether to execute immediately
      */
     const watchSource = <S>(source: Ref<S> | (() => S), immediate = false) => {
         watch(source, () => {

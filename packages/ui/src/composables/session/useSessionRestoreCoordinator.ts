@@ -1,68 +1,68 @@
 import { ref } from 'vue'
 
 /**
- * Session 恢复协调器 Composable
+ * Session restore coordinator composable
  *
- * 负责协调 session 恢复流程，处理：
- * - 并发恢复控制（互斥锁）
- * - 恢复请求重试（pendingRestore）
- * - 组件卸载后的清理（isUnmounted）
+ * Responsible for coordinating the session restore flow, handling:
+ * - Concurrent restore control (mutex lock)
+ * - Restore request retries (pendingRestore)
+ * - Cleanup after the component unmounts (isUnmounted)
  *
- * 设计原则：
- * - 只处理恢复协调逻辑，不涉及具体的恢复实现
- * - 具体恢复函数由调用方提供
- * - 最小侵入性，降低回归风险
+ * Design principles:
+ * - Only handles restore coordination logic, not concrete restore implementations
+ * - The concrete restore function is provided by the caller
+ * - Minimally invasive, lowering the regression risk
  *
- * @param restoreFn 具体的恢复函数（由调用方提供）
+ * @param restoreFn The concrete restore function (provided by the caller)
  */
 export function useSessionRestoreCoordinator(restoreFn: () => Promise<void> | void) {
-  // 🔧 Codex 修复：互斥锁，防止并发调用 restoreSessionToUI()
+  // 🔧 Codex fix: mutex lock, preventing concurrent calls to restoreSessionToUI()
   const isRestoring = ref(false)
-  // 🔧 Codex 修复：待处理恢复标志，防止恢复请求丢失
-  // 当 isRestoring=true 时如果有新请求，设置此标志，锁释放后会补跑
+  // 🔧 Codex fix: pending restore flag, preventing restore requests from being lost
+  // If a new request arrives while isRestoring=true, this flag is set and the restore is re-run after the lock is released
   const pendingRestore = ref(false)
-  // 🔧 Codex 修复：组件卸载标志，避免卸载后 microtask 仍执行恢复
+  // 🔧 Codex fix: component unmount flag, so microtasks do not run a restore after unmounting
   const isUnmounted = ref(false)
 
   /**
-   * 执行恢复（带协调逻辑）
+   * Run a restore (with coordination logic)
    *
-   * 功能：
-   * 1. 互斥控制：同时只允许一个恢复操作执行
-   * 2. 请求重试：如果恢复期间有新请求，会在当前恢复完成后补跑
-   * 3. 卸载检查：组件卸载后不再执行恢复
+   * Features:
+   * 1. Mutex control: only one restore operation may run at a time
+   * 2. Request retry: if a new request arrives during a restore, it is re-run after the current restore completes
+   * 3. Unmount check: no restore runs after the component unmounts
    */
   const executeRestore = async () => {
-    // 🔧 互斥检查：如果正在恢复中，设置 pending 标志后返回
+    // 🔧 Mutex check: if a restore is in progress, set the pending flag and return
     if (isRestoring.value) {
-      console.warn('[SessionRestoreCoordinator] executeRestore 已在执行中，设置 pendingRestore 标志')
+      console.warn('[SessionRestoreCoordinator] executeRestore is already running, setting the pendingRestore flag')
       pendingRestore.value = true
       return
     }
 
     isRestoring.value = true
     try {
-      // 执行具体的恢复逻辑（由调用方提供）
+      // Run the concrete restore logic (provided by the caller)
       await restoreFn()
     } catch (error) {
-      // 🔧 修复：添加错误处理，避免未处理的 Promise rejection 传播到 Vue watcher
+      // 🔧 Fix: add error handling to avoid unhandled Promise rejections propagating to the Vue watcher
       console.error('[SessionRestoreCoordinator] restore failed', error)
     } finally {
-      // 🔧 无论成功或失败，都要释放锁
+      // 🔧 Release the lock whether it succeeds or fails
       isRestoring.value = false
 
-      // 🔧 Codex 修复：如果在恢复期间有新请求，补跑一次
-      // 🔧 Codex 建议：使用 queueMicrotask 异步排队，避免递归压力（而非 await 递归）
+      // 🔧 Codex fix: if a new request arrived during the restore, re-run once
+      // 🔧 Codex suggestion: use queueMicrotask to queue asynchronously, avoiding recursion pressure (rather than await recursion)
       if (pendingRestore.value) {
         pendingRestore.value = false
-        console.log('[SessionRestoreCoordinator] 检测到 pendingRestore，异步排队补跑恢复')
+        console.log('[SessionRestoreCoordinator] Detected pendingRestore, queueing the restore re-run asynchronously')
         queueMicrotask(() => {
-          // 🔧 Codex 修复：组件卸载后跳过恢复，避免无意义工作/日志噪声
+          // 🔧 Codex fix: skip the restore after the component unmounts, avoiding pointless work/log noise
           if (isUnmounted.value) {
-            console.log('[SessionRestoreCoordinator] 组件已卸载，跳过 pending restore')
+            console.log('[SessionRestoreCoordinator] The component has unmounted, skipping the pending restore')
             return
           }
-          // 🔧 Codex 修复：添加错误处理，避免未处理的 Promise rejection
+          // 🔧 Codex fix: add error handling to avoid unhandled Promise rejections
           void executeRestore().catch(err => {
             console.error('[SessionRestoreCoordinator] pending restore failed', err)
           })
@@ -72,20 +72,20 @@ export function useSessionRestoreCoordinator(restoreFn: () => Promise<void> | vo
   }
 
   /**
-   * 标记组件已卸载
-   * 应在组件 onBeforeUnmount 中调用
+   * Mark the component as unmounted
+   * Should be called in the component's onBeforeUnmount
    */
   const markUnmounted = () => {
     isUnmounted.value = true
   }
 
   return {
-    // 状态
+    // State
     isRestoring,
     pendingRestore,
     isUnmounted,
 
-    // 方法
+    // Methods
     executeRestore,
     markUnmounted
   }

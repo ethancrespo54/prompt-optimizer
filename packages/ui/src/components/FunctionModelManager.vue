@@ -1,7 +1,7 @@
 <template>
   <div class="function-model-manager">
     <NSpace vertical :size="16">
-      <!-- 评估模型配置 -->
+      <!-- Evaluation model config -->
       <div class="config-section">
         <NSpace align="center" :size="8" class="section-header">
           <NText strong>{{ t('functionModel.evaluationModel') }}</NText>
@@ -27,7 +27,7 @@
             @config="handleOpenModelManager"
             @update:model-value="handleModelChange"
           />
-          <!-- 显示模型源和模型名称标签 -->
+          <!-- Show the model source and model name tags -->
           <template v-if="selectedModelInfo">
             <NTag v-if="selectedModelInfo.provider" size="small" type="info">
               {{ selectedModelInfo.provider }}
@@ -54,30 +54,30 @@ import type { ModelSelectOption } from '../types/select-options'
 
 const { t } = useI18n()
 
-// 获取服务
+// Get services
 const services = inject<AppServices | Ref<AppServices | null>>('services')
 if (!services) {
   throw new Error('[FunctionModelManager] services not provided')
 }
 
-// 注入 App 层统一的 openModelManager 接口（如果存在）
+// Inject the App layer's unified openModelManager interface (if present)
 const appOpenModelManager = inject<
   ((tab?: 'text' | 'image' | 'function') => void) | null
 >('openModelManager', null)
 
-// 统一转为 Ref 格式
+// Uniformly convert to Ref format
 const servicesRef: Ref<AppServices | null> = 'value' in services
   ? (services as Ref<AppServices | null>)
   : ref(services as AppServices)
 
-// 使用功能模型管理器（单例）
+// Use the function model manager (singleton)
 const functionModelManager = useFunctionModelManager(servicesRef)
 const { evaluationModel, setEvaluationModel } = functionModelManager
 
-// 模型选项列表
+// Model option list
 const modelOptions = ref<ModelSelectOption[]>([])
 
-// 获取选中模型的详细信息（用于显示标签）
+// Get the details of the selected model (used for displaying tags)
 const selectedModelInfo = computed(() => {
   if (!evaluationModel.value) return null
   const option = modelOptions.value.find(opt => opt.value === evaluationModel.value)
@@ -96,7 +96,7 @@ const ensureInitializedIfSupported = async (manager: unknown) => {
   }
 }
 
-// 刷新模型列表
+// Refresh the model list
 const refreshModels = async () => {
   if (!servicesRef.value?.modelManager) {
     modelOptions.value = []
@@ -114,7 +114,7 @@ const refreshModels = async () => {
   }
 }
 
-// 处理模型变化
+// Handle model changes
 const handleModelChange = async (
   newValue: string | number | (string | number)[] | null
 ) => {
@@ -129,29 +129,29 @@ const handleModelChange = async (
   await setEvaluationModel(nextValue)
 }
 
-// 初始化
+// Initialize
 const initialize = async () => {
   await refreshModels()
-  // 确保功能模型管理器已初始化
+  // Make sure the function model manager is initialized
   await functionModelManager.initialize()
 }
 
-// 打开模型管理器
+// Open the model manager
 const handleOpenModelManager = () => {
-  // 评估模型依赖文本模型配置：优先切到 text 页签
+  // The evaluation model depends on the text model config: switch to the text tab first
   if (appOpenModelManager) {
     appOpenModelManager('text')
     return
   }
 
-  // 兜底：如果没有注入 openModelManager，只能尝试切换页签并提示宿主补齐注入
+  // Fallback: if openModelManager is not injected, we can only try switching tabs and prompt the host to fill in the injection
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent('model-manager:set-tab', { detail: 'text' }))
   }
   console.warn('[FunctionModelManager] openModelManager not provided by host app')
 }
 
-// 刷新
+// Refresh
 const refresh = async () => {
   await refreshModels()
   await functionModelManager.refresh()

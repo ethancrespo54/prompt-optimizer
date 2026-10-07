@@ -1,11 +1,11 @@
 /**
- * Pro-MultiMessage Session Store (Pro-system，多消息模式)
+ * Pro-MultiMessage Session Store (Pro-system, multi-message mode)
  *
- * 管理 Pro 模式下 System 子模式的会话状态
- * 特点：
- * - 多轮对话消息管理
- * - 消息-历史链映射（Codex 要求使用 Record）
- * - 当前选中消息的优化结果
+ * Manages the session state of the System sub-mode under Pro mode
+ * Characteristics:
+ * - Multi-turn conversation message management
+ * - Message-to-history-chain mapping (Codex requires using a Record)
+ * - Optimization result of the currently selected message
  */
 
 import { defineStore } from 'pinia'
@@ -26,7 +26,7 @@ export interface TestResults {
 }
 
 /**
- * Pro-MultiMessage 会话状态
+ * Pro-MultiMessage session state
  */
 export interface ProMultiMessageSessionState {
   conversationMessagesSnapshot: ConversationMessage[]
@@ -37,9 +37,9 @@ export interface ProMultiMessageSessionState {
   versionId: string
 
   /**
-   * 临时变量（子模式隔离 + 持久化）
-   * - pro-multi 维度持久化（刷新不丢）
-   * - 不与 pro-variable / image-* 共享
+   * Temporary variables (sub-mode isolated + persisted)
+   * - Persisted at the pro-multi level (survives refresh)
+   * - Not shared with pro-variable / image-*
    */
   temporaryVariables: Record<string, string>
 
@@ -59,10 +59,10 @@ export interface ProMultiMessageSessionState {
 }
 
 /**
- * pro-multi 测试面板的版本选择（针对“当前选中消息”）：
- * - 0: v0（原始消息内容）
- * - >=1: v1..vn（历史链版本号）
- * - 'latest': 跟随最新 vn
+ * Version selection of the pro-multi test panel (for the "currently selected message"):
+ * - 0: v0 (original message content)
+ * - >=1: v1..vn (history chain version number)
+ * - 'latest': follows the latest vn
  */
 export type TestPanelVersionValue = 0 | number | 'latest'
 
@@ -71,9 +71,9 @@ export type TestVariantId = 'a' | 'b' | 'c' | 'd'
 export type TestColumnCount = 2 | 3 | 4
 
 export interface ProMultiLayoutConfig {
-  /** 主布局左侧宽度（百分比，25..50） */
+  /** Left width of the main layout (percentage, 25..50) */
   mainSplitLeftPct: number
-  /** 测试区列数（2..4） */
+  /** Number of test area columns (2..4) */
   testColumnCount: TestColumnCount
 }
 
@@ -93,7 +93,7 @@ export type TestVariantResults = Record<TestVariantId, TestVariantResult>
 export type TestVariantLastRunFingerprint = Record<TestVariantId, string>
 
 /**
- * 默认状态
+ * Default state
  */
 const createDefaultState = (): ProMultiMessageSessionState => ({
   conversationMessagesSnapshot: [],
@@ -105,7 +105,7 @@ const createDefaultState = (): ProMultiMessageSessionState => ({
   temporaryVariables: {},
   messageChainMap: {},
   testResults: null,
-  // v2: 多列测试（最多 4 列）
+  // v2: multi-column testing (up to 4 columns)
   layout: { mainSplitLeftPct: 50, testColumnCount: 2 },
   testVariants: [
     { id: 'a', version: 0, modelKey: '' },
@@ -135,34 +135,34 @@ const createDefaultState = (): ProMultiMessageSessionState => ({
 })
 
 export const useProMultiMessageSession = defineStore('proMultiMessageSession', () => {
-  // ========== 状态定义（使用独立 ref，而非包装在 state 对象中）==========
+  // ========== State definitions (uses independent refs rather than wrapping them in a state object) ==========
 
-  // 对话消息快照（仅用于恢复）
+  // Conversation message snapshot (used for restore only)
   const conversationMessagesSnapshot = ref<ConversationMessage[]>([])
 
-  // 当前选中的消息ID
+  // Currently selected message ID
   const selectedMessageId = ref('')
 
-  // 当前消息的优化结果
+  // Optimization result of the current message
   const optimizedPrompt = ref('')
 
-  // 🔧 Codex 修复：添加 reasoning 字段，与其他 session store 保持一致
+  // 🔧 Codex fix: add the reasoning field, consistent with the other session stores
   const reasoning = ref('')
 
-  // 历史相关（只存 ID）
+  // History-related (only the ID is stored)
   const chainId = ref('')
   const versionId = ref('')
 
-  // 消息-历史链映射（Codex 要求：Map 改 Record）
+  // Message-to-history-chain mapping (Codex requirement: change Map to Record)
   const messageChainMap = ref<Record<string, string>>({})
 
-  // 临时变量（子模式隔离 + 持久化）
+  // Temporary variables (sub-mode isolated + persisted)
   const temporaryVariables = ref<Record<string, string>>({})
 
-  // 测试结果
+  // Test results
   const testResults = ref<TestResults | null>(null)
 
-  // 多列测试（最多 4 列）
+  // Multi-column testing (up to 4 columns)
   const layout = ref<ProMultiLayoutConfig>({ mainSplitLeftPct: 50, testColumnCount: 2 })
   const testVariants = ref<TestVariantConfig[]>([
     { id: 'a', version: 0, modelKey: '' },
@@ -183,23 +183,23 @@ export const useProMultiMessageSession = defineStore('proMultiMessageSession', (
     d: '',
   })
 
-  // 评估结果
+  // Evaluation results
   const evaluationResults = ref<PersistedEvaluationResults>(createDefaultEvaluationResults())
 
-  // 模型和模板选择（只存 ID/key）
+  // Model and template selection (only the ID/key is stored)
   const selectedOptimizeModelKey = ref('')
   const selectedTestModelKey = ref('')
   const selectedTemplateId = ref<string | null>(null)
   const selectedIterateTemplateId = ref<string | null>(null)
 
-  // 对比模式
+  // Compare mode
   const isCompareMode = ref(true)
 
-  // 最后活跃时间
+  // Last active time
   const lastActiveAt = ref(Date.now())
 
   /**
-   * 更新对话消息快照
+   * Update the conversation message snapshot
    */
   const updateConversationMessages = (messages: ConversationMessage[]) => {
     conversationMessagesSnapshot.value = messages
@@ -207,7 +207,7 @@ export const useProMultiMessageSession = defineStore('proMultiMessageSession', (
   }
 
   /**
-   * 选择消息
+   * Select a message
    */
   const selectMessage = (messageId: string) => {
     selectedMessageId.value = messageId
@@ -215,8 +215,8 @@ export const useProMultiMessageSession = defineStore('proMultiMessageSession', (
   }
 
   /**
-   * 更新优化结果
-   * 🔧 Codex 修复：添加 reasoning 字段支持
+   * Update the optimization result
+   * 🔧 Codex fix: add reasoning field support
    */
   const updateOptimizedResult = (payload: {
     optimizedPrompt: string
@@ -245,7 +245,7 @@ export const useProMultiMessageSession = defineStore('proMultiMessageSession', (
   }
 
   /**
-   * 更新消息-历史链映射
+   * Update the message-to-history-chain mapping
    */
   const updateMessageChainMap = (messageId: string, chainId: string) => {
     messageChainMap.value[messageId] = chainId
@@ -253,7 +253,7 @@ export const useProMultiMessageSession = defineStore('proMultiMessageSession', (
   }
 
   /**
-   * 批量更新消息-历史链映射
+   * Batch update the message-to-history-chain mapping
    */
   const setMessageChainMap = (map: Record<string, string>) => {
     messageChainMap.value = { ...map }
@@ -261,14 +261,14 @@ export const useProMultiMessageSession = defineStore('proMultiMessageSession', (
   }
 
   /**
-   * 移除消息的历史链映射
+   * Remove the history chain mapping of a message
    */
   const removeMessageChainMapping = (messageId: string) => {
     delete messageChainMap.value[messageId]
     lastActiveAt.value = Date.now()
   }
 
-  // 临时变量（持久化到 session）
+  // Temporary variables (persisted to the session)
   const setTemporaryVariable = (name: string, value: string) => {
     if (!isValidVariableName(name)) {
       console.warn('[ProMultiMessageSession] Ignoring invalid temporary variable name:', name)
@@ -296,12 +296,12 @@ export const useProMultiMessageSession = defineStore('proMultiMessageSession', (
   }
 
   /**
-   * 更新测试结果
+   * Update the test results
    */
   const updateTestResults = (results: TestResults | null) => {
     const prev = testResults.value
 
-    // 检查是否相同
+    // Check whether they are the same
     const isSame =
       prev === results ||
       (!!prev &&
@@ -313,24 +313,24 @@ export const useProMultiMessageSession = defineStore('proMultiMessageSession', (
 
     if (isSame) return
 
-    // 直接赋值给 ref（现在是响应式的）
+    // Assign directly to the ref (now reactive)
     testResults.value = results
     lastActiveAt.value = Date.now()
   }
 
   /**
-   * 更新优化模型选择
+   * Update the optimize model selection
    */
   const updateOptimizeModel = (modelKey: string) => {
     if (selectedOptimizeModelKey.value === modelKey) return
     selectedOptimizeModelKey.value = modelKey
     lastActiveAt.value = Date.now()
-    // 异步保存完整状态（best-effort）
+    // Save the full state asynchronously (best-effort)
     saveSession()
   }
 
   /**
-   * 更新测试模型选择
+   * Update the test model selection
    */
   const updateTestModel = (modelKey: string) => {
     if (selectedTestModelKey.value === modelKey) return
@@ -340,7 +340,7 @@ export const useProMultiMessageSession = defineStore('proMultiMessageSession', (
   }
 
   /**
-   * 更新模板选择
+   * Update the template selection
    */
   const updateTemplate = (templateId: string | null) => {
     if (selectedTemplateId.value === templateId) return
@@ -350,7 +350,7 @@ export const useProMultiMessageSession = defineStore('proMultiMessageSession', (
   }
 
   /**
-   * 更新迭代模板选择
+   * Update the iterate template selection
    */
   const updateIterateTemplate = (templateId: string | null) => {
     if (selectedIterateTemplateId.value === templateId) return
@@ -360,7 +360,7 @@ export const useProMultiMessageSession = defineStore('proMultiMessageSession', (
   }
 
   /**
-   * 切换对比模式
+   * Toggle compare mode
    */
   const toggleCompareMode = (enabled?: boolean) => {
     const nextValue = enabled ?? !isCompareMode.value
@@ -398,7 +398,7 @@ export const useProMultiMessageSession = defineStore('proMultiMessageSession', (
   }
 
   /**
-   * 重置状态
+   * Reset the state
    */
   const reset = () => {
     const defaultState = createDefaultState()
@@ -425,17 +425,17 @@ export const useProMultiMessageSession = defineStore('proMultiMessageSession', (
   }
 
   /**
-   * 保存会话
+   * Save the session
    */
   const saveSession = async () => {
     const $services = getPiniaServices()
     if (!$services?.preferenceService) {
-      console.warn('[ProMultiMessageSession] PreferenceService 不可用，无法保存会话')
+      console.warn('[ProMultiMessageSession] PreferenceService is unavailable, cannot save the session')
       return
     }
 
     try {
-      // 构建完整的会话状态对象用于序列化
+      // Build the full session state object for serialization
       const sessionState = {
         conversationMessagesSnapshot: conversationMessagesSnapshot.value,
         selectedMessageId: selectedMessageId.value,
@@ -463,17 +463,17 @@ export const useProMultiMessageSession = defineStore('proMultiMessageSession', (
         sessionState
       )
     } catch (error) {
-      console.error('[ProMultiMessageSession] 保存会话失败:', error)
+      console.error('[ProMultiMessageSession] Failed to save the session:', error)
     }
   }
 
   /**
-   * 恢复会话
+   * Restore the session
    */
   const restoreSession = async () => {
     const $services = getPiniaServices()
     if (!$services?.preferenceService) {
-      console.warn('[ProMultiMessageSession] PreferenceService 不可用，无法恢复会话')
+      console.warn('[ProMultiMessageSession] PreferenceService is unavailable, cannot restore the session')
       return
     }
 
@@ -505,8 +505,8 @@ export const useProMultiMessageSession = defineStore('proMultiMessageSession', (
           ? (parsed.testResults as TestResults)
           : null
 
-        // ==================== v2: 多列 variants ====================
-        // 默认状态
+        // ==================== v2: multi-column variants ====================
+        // Default state
         const defaultState = createDefaultState()
 
         // layout
@@ -577,7 +577,7 @@ export const useProMultiMessageSession = defineStore('proMultiMessageSession', (
             d: pick('d'),
           }
         } else if (testResults.value) {
-          // legacy 迁移：旧版 testResults（original/optimized） → A/B
+          // legacy migration: old testResults (original/optimized) → A/B
           testVariantResults.value = {
             ...defaultState.testVariantResults,
             a: {
@@ -621,7 +621,7 @@ export const useProMultiMessageSession = defineStore('proMultiMessageSession', (
         isCompareMode.value = typeof parsed.isCompareMode === 'boolean' ? parsed.isCompareMode : true
         lastActiveAt.value = Date.now()
 
-        // 如果 variants 的 modelKey 为空，尝试用 legacy selectedTestModelKey 填充一次
+        // If the modelKey of a variant is empty, try filling it once with the legacy selectedTestModelKey
         const seedModelKey = selectedTestModelKey.value
         if (seedModelKey) {
           let changed = false
@@ -635,9 +635,9 @@ export const useProMultiMessageSession = defineStore('proMultiMessageSession', (
           }
         }
       }
-      // else: 没有保存的会话，使用默认状态
+      // else: no saved session, use the default state
 
-      // 兼容迁移：模板选择（从旧 TEMPLATE_SELECTION_KEYS 迁移一次）
+      // Compatibility migration: template selection (migrated once from the old TEMPLATE_SELECTION_KEYS)
       if (!selectedTemplateId.value) {
         const legacyTemplateId = await $services.preferenceService.get(
           TEMPLATE_SELECTION_KEYS.CONTEXT_SYSTEM_OPTIMIZE_TEMPLATE,
@@ -657,13 +657,13 @@ export const useProMultiMessageSession = defineStore('proMultiMessageSession', (
         }
       }
     } catch (error) {
-      console.error('[ProMultiMessageSession] 恢复会话失败:', error)
+      console.error('[ProMultiMessageSession] Failed to restore the session:', error)
       reset()
     }
   }
 
   return {
-    // ========== 状态（直接返回，Pinia 会自动追踪响应式）==========
+    // ========== State (returned directly; Pinia tracks reactivity automatically) ==========
     conversationMessagesSnapshot,
     selectedMessageId,
     optimizedPrompt,
@@ -685,7 +685,7 @@ export const useProMultiMessageSession = defineStore('proMultiMessageSession', (
     isCompareMode,
     lastActiveAt,
 
-    // ========== 更新方法 ==========
+    // ========== Update methods ==========
     updateConversationMessages,
     selectMessage,
     updateOptimizedResult,
@@ -708,7 +708,7 @@ export const useProMultiMessageSession = defineStore('proMultiMessageSession', (
     updateTestVariant,
     reset,
 
-    // ========== 持久化方法 ==========
+    // ========== Persistence methods ==========
     saveSession,
     restoreSession,
   }

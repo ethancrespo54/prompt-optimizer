@@ -22,9 +22,9 @@ let singleton: {
 } | null = null
 
 /**
- * 全局功能模式（basic/pro）单例。读取/写入 PreferenceService。
- * - 默认值为 'basic'（向后兼容）
- * - 第一次调用时异步初始化
+ * Global function mode (basic/pro) singleton. Reads/writes PreferenceService.
+ * - Defaults to 'basic' (backward compatible)
+ * - Initialized asynchronously on the first call
  */
 export function useFunctionMode(services: Ref<AppServices | null>): UseFunctionModeApi {
   if (!singleton) {
@@ -41,21 +41,21 @@ export function useFunctionMode(services: Ref<AppServices | null>): UseFunctionM
     }
     singleton!.initializing = (async () => {
       try {
-        // 读取 function-mode；若不存在，返回默认 'basic'
+        // Read function-mode; if it does not exist, return the default 'basic'
         const saved = await getPreference<FunctionMode>(UI_SETTINGS_KEYS.FUNCTION_MODE, 'basic')
         singleton!.mode.value = (saved === 'pro' || saved === 'image') ? saved : 'basic'
-        // 将默认值持久化（若未设置过）
+        // Persist the default value (if it has not been set before)
         if (saved !== 'pro' && saved !== 'basic' && saved !== 'image') {
           await setPreference(UI_SETTINGS_KEYS.FUNCTION_MODE, 'basic')
         }
-        // ✅ 只在成功时标记为已初始化
+        // ✅ Only mark as initialized on success
         singleton!.initialized = true
       } catch (e) {
-        // ⚠️ 初始化失败，保持 initialized = false，允许后续重试
+        // ⚠️ Initialization failed; keep initialized = false to allow a later retry
         console.warn('[useFunctionMode] Initialization failed, will retry on next call:', e)
-        // 保持默认 'basic' 模式，但不标记为已初始化
+        // Keep the default 'basic' mode, but do not mark it as initialized
       } finally {
-        // 清理初始化锁，无论成败
+        // Clear the initialization lock, regardless of success or failure
         singleton!.initializing = null
       }
     })()

@@ -15,11 +15,11 @@ export interface ModelManagerHooks {
 }
 
 /**
- * 模型管理器 Hook（仅负责模型配置/列表刷新，不再负责模型“选择”的持久化）
+ * Model manager hook (only responsible for refreshing model configs/lists; no longer responsible for persisting model "selection")
  *
- * 设计说明：
- * - 模型选择已迁移到各 mode 的 Session Store（单一真源）
- * - 这里不再读写任何“全局模型选择 key”，避免双真源和同步复杂度
+ * Design notes:
+ * - Model selection has moved to the Session Store of each mode (single source of truth)
+ * - No "global model selection key" is read or written here anymore, avoiding dual sources and sync complexity
  */
 export function useModelManager(
   services: Ref<AppServices | null>,

@@ -9,16 +9,16 @@
             class="basic-user-split"
             :style="{ gridTemplateColumns: `${mainSplitLeftPct}% 12px 1fr` }"
         >
-            <!-- 左侧：优化区域 -->
+            <!-- Left: optimization area -->
             <div class="split-pane" style="min-width: 0; height: 100%; overflow: hidden;">
                 <NFlex
                     vertical
                     :style="{ overflow: 'auto', height: '100%', minHeight: 0 }"
                     size="medium"
                 >
-                <!-- 输入控制区域（可折叠） -->
+                <!-- Input control area (collapsible) -->
                 <NCard :style="{ flexShrink: 0 }">
-                    <!-- 折叠态：只显示标题栏 -->
+                    <!-- Collapsed state: only show the title bar -->
                     <NFlex
                         v-if="isInputPanelCollapsed"
                         justify="space-between"
@@ -54,7 +54,7 @@
                         </NButton>
                     </NFlex>
 
-                    <!-- 展开态：完整输入面板 -->
+                    <!-- Expanded state: full input panel -->
                     <InputPanelUI
                         v-else
                         v-model="promptModel"
@@ -75,7 +75,7 @@
                         @analyze="handleAnalyze"
                         @configModel="handleOpenModelManager"
                     >
-                        <!-- 模型选择 -->
+                        <!-- Model selection -->
                         <template #model-select>
                             <SelectWithConfig
                                 v-model="selectedOptimizeModelKeyModel"
@@ -87,7 +87,7 @@
                             />
                         </template>
 
-                        <!-- 模板选择 -->
+                        <!-- Template selection -->
                         <template #template-select>
                             <SelectWithConfig
                                 v-model="selectedTemplateIdModel"
@@ -99,7 +99,7 @@
                             />
                         </template>
 
-                        <!-- 标题栏折叠按钮 -->
+                        <!-- Title bar collapse button -->
                         <template #header-extra>
                             <NButton
                                 type="tertiary"
@@ -121,7 +121,7 @@
                     </InputPanelUI>
                 </NCard>
 
-                <!-- 优化工作区 -->
+                <!-- Optimization workspace -->
                 <NCard
                     :style="{ flex: 1, minHeight: '200px', overflow: 'hidden' }"
                     content-style="height: 100%; max-height: 100%; overflow: hidden;"
@@ -163,10 +163,10 @@
                 @keydown="onSplitKeydown"
             />
 
-            <!-- 右侧：测试区域 -->
+            <!-- Right: test area -->
             <div ref="testPaneRef" class="split-pane" style="min-width: 0; height: 100%; overflow: hidden;">
                 <NFlex vertical :style="{ height: '100%', gap: '12px' }">
-                    <!-- 顶部：列数与全局操作 -->
+                    <!-- Top: column count and global actions -->
                     <NCard size="small" :style="{ flexShrink: 0 }">
                         <div class="test-area-top">
                             <NFlex align="center" :size="8" :wrap="false" style="min-width: 0;">
@@ -225,7 +225,7 @@
                         </div>
                     </NCard>
 
-                    <!-- 配置区：与结果列对齐 -->
+                    <!-- Config area: aligned with the result columns -->
                     <NCard size="small" :style="{ flexShrink: 0 }">
                         <div class="variant-deck" :style="{ gridTemplateColumns: testGridTemplateColumns }">
                             <div
@@ -291,12 +291,12 @@
                                     </NTooltip>
                                 </div>
 
-                                <!-- 单列评估入口移动到输出列工具栏（见 OutputDisplay slot） -->
+                                <!-- The single-column evaluation entry moved to the output column toolbar (see the OutputDisplay slot) -->
                             </div>
                         </div>
                     </NCard>
 
-                    <!-- 结果区：多列网格（无横向滚动） -->
+                    <!-- Result area: multi-column grid (no horizontal scrolling) -->
                     <div class="variant-results-wrap">
                         <div class="variant-results" :style="{ gridTemplateColumns: testGridTemplateColumns }">
                             <NCard
@@ -407,20 +407,20 @@
 
 <script setup lang="ts">
 /**
- * BasicUserWorkspace - Basic 模式 User 子模式工作区
+ * BasicUserWorkspace - workspace for the User sub-mode of Basic mode
  *
- * 职责：
- * - 直接使用 useBasicUserSession 作为状态源
- * - 使用 useBasicWorkspaceLogic 处理业务逻辑
- * - 使用 useWorkspaceModelSelection 管理模型选择
- * - 使用 useWorkspaceTemplateSelection 管理模板选择
- * - 使用 useEvaluationHandler 处理评估功能
- * - 内联基础模式工作区布局（与 BasicSystemWorkspace 保持一致）
+ * Responsibilities:
+ * - Use useBasicUserSession directly as the state source
+ * - Use useBasicWorkspaceLogic to handle business logic
+ * - Use useWorkspaceModelSelection to manage model selection
+ * - Use useWorkspaceTemplateSelection to manage template selection
+ * - Use useEvaluationHandler to handle evaluation
+ * - Inline the basic mode workspace layout (consistent with BasicSystemWorkspace)
  *
- * 与 BasicSystemWorkspace 的唯一差异：
- * - 使用 useBasicUserSession
- * - templateType 为 'userOptimize'（而非 'optimize'）
- * - optimizationMode 为 'user'（而非 'system'）
+ * The only differences from BasicSystemWorkspace:
+ * - Uses useBasicUserSession
+ * - templateType is 'userOptimize' (rather than 'optimize')
+ * - optimizationMode is 'user' (rather than 'system')
  */
  import { ref, reactive, computed, toRef, inject, onMounted, onUnmounted, watch, nextTick, type Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -452,23 +452,23 @@ import { useElementSize } from '@vueuse/core'
 const { t } = useI18n()
 const toast = useToast()
 
-// 服务注入
+// Service injection
 const injectedServices = inject<Ref<AppServices | null>>('services')
 const services = injectedServices ?? ref<AppServices | null>(null)
 const appOpenModelManager = inject<((tab?: 'text' | 'image' | 'function') => void) | null>('openModelManager', null)
 const appOpenTemplateManager = inject<((type?: string) => void) | null>('openTemplateManager', null)
 
-// Session store（单一真源）
+// Session store (single source of truth)
 const session = useBasicUserSession()
 
-// ==================== 主布局：可拖拽分栏（左侧 25%~50%） ====================
+// ==================== Main layout: draggable split pane (left 25%~50%) ====================
 
 const splitRootRef = ref<HTMLElement | null>(null)
 const testPaneRef = ref<HTMLElement | null>(null)
 
 const clampLeftPct = (pct: number) => Math.min(50, Math.max(25, pct))
 
-// 使用本地 draft，避免拖拽过程频繁写入持久化存储
+// Use a local draft to avoid frequent writes to persistent storage while dragging
 const mainSplitLeftPct = ref<number>(50)
 watch(
   () => session.layout.mainSplitLeftPct,
@@ -535,14 +535,14 @@ const onSplitKeydown = (e: KeyboardEvent) => {
   session.setMainSplitLeftPct(mainSplitLeftPct.value)
 }
 
-// 业务逻辑
+// Business logic
 const logic = useBasicWorkspaceLogic({
   services,
   sessionStore: session,
   optimizationMode: 'user',
   promptRecordType: 'userOptimize',
   onOptimizeComplete: (_chain) => {
-    // 发送历史刷新事件
+    // Send the history refresh event
     window.dispatchEvent(new CustomEvent('prompt-optimizer:history-refresh'))
   },
   onIterateComplete: (_chain) => {
@@ -553,10 +553,10 @@ const logic = useBasicWorkspaceLogic({
   }
 })
 
-// 模型选择
+// Model selection
 const modelSelection = useWorkspaceModelSelection(services, session)
 
-// 模板选择（templateType: 'userOptimize', iterateTemplateType: 'iterate'）
+// Template selection (templateType: 'userOptimize', iterateTemplateType: 'iterate')
 const templateSelection = useWorkspaceTemplateSelection(
   services,
   session,
@@ -564,7 +564,7 @@ const templateSelection = useWorkspaceTemplateSelection(
   'iterate'
 )
 
-// 迭代模板（从 session 派生，持久化）
+// Iterate template (derived from the session, persisted)
 const selectedIterateTemplate = computed<Template | null>({
   get: () => templateSelection.selectedIterateTemplate.value,
   set: (value) => {
@@ -578,7 +578,7 @@ const getVariant = (id: TestVariantId): TestVariantConfig | undefined => {
   return Array.isArray(list) ? list.find(v => v.id === id) : undefined
 }
 
-// 测试列数（2/3/4）
+// Test column count (2/3/4)
 const testColumnCountModel = computed<TestColumnCount>({
   get: () => {
     const raw = session.layout.testColumnCount
@@ -587,7 +587,7 @@ const testColumnCountModel = computed<TestColumnCount>({
   set: (value) => session.setTestColumnCount(value)
 })
 
-// 测试列选择（先保持 A/B 两列，后续再扩展到 4 列）
+// Test column selection (keep two columns A/B for now, extend to 4 columns later)
 const originalTestVersionModel = computed<TestPanelVersionValue>({
   get: () => getVariant('a')?.version ?? 0,
   set: (value) => session.updateTestVariant('a', { version: value })
@@ -608,7 +608,7 @@ const optimizedTestModelKeyModel = computed<string>({
   set: (value) => session.updateTestVariant('b', { modelKey: value })
 })
 
-// C/D 两列（仅在 3/4 列模式下显示）
+// Columns C/D (only shown in 3/4-column mode)
 const variantCTestVersionModel = computed<TestPanelVersionValue>({
   get: () => getVariant('c')?.version ?? 'latest',
   set: (value) => session.updateTestVariant('c', { version: value })
@@ -632,7 +632,7 @@ const variantDTestModelKeyModel = computed<string>({
 const ALL_VARIANT_IDS: TestVariantId[] = ['a', 'b', 'c', 'd']
 const activeVariantIds = computed<TestVariantId[]>(() => ALL_VARIANT_IDS.slice(0, testColumnCountModel.value))
 
-// template 中使用：variantVersionModels[id] / variantModelKeyModels[id]
+// Used in the template: variantVersionModels[id] / variantModelKeyModels[id]
 const variantVersionModels = {
   a: originalTestVersionModel,
   b: optimizedTestVersionModel,
@@ -647,8 +647,8 @@ const variantModelKeyModels = {
   d: variantDTestModelKeyModel,
 } as const
 
-// 版本选项：默认仅显示“原始(v0)”与“最新(latest)”，
-// 若存在中间版本，则额外显示 v1..v(n-1)。
+// Version options: by default only show "Original (v0)" and "Latest (latest)",
+// and if intermediate versions exist, additionally show v1..v(n-1).
 const versionOptions = computed(() => {
   const versions = logic.currentVersions.value || []
 
@@ -668,9 +668,9 @@ const versionOptions = computed(() => {
   ]
 })
 
-// 确保测试列的模型选择始终有效：
-// - 旧 session 可能缺失 modelKey
-// - 模型列表变化时（禁用/删除）自动 fallback
+// Make sure the model selection of the test columns is always valid:
+// - Old sessions may lack modelKey
+// - Automatic fallback when the model list changes (disabled/deleted)
 watch(
   () => modelSelection.textModelOptions.value,
   (opts) => {
@@ -691,16 +691,16 @@ watch(
   { immediate: true }
 )
 
-// 测试区宽度：用于禁用 4 列（避免横向滚动）
+// Test area width: used to disable 4 columns (avoids horizontal scrolling)
 const { width: testPaneWidth } = useElementSize(testPaneRef)
-// 经验阈值：4 列时每列至少 ~250px，避免选择器/按钮过度挤压
+// Empirical threshold: at 4 columns each column needs at least ~250px, to avoid squeezing the selectors/buttons too much
 const canUseFourColumns = computed(() => testPaneWidth.value >= 1000)
 
 watch(
   canUseFourColumns,
   (ok) => {
     if (!ok && testColumnCountModel.value === 4) {
-      // 宽度不足时自动降级到 3 列（用户可继续手动切到 2 列）
+      // Automatically degrade to 3 columns when the width is insufficient (the user can still manually switch to 2 columns)
       testColumnCountModel.value = 3
     }
   },
@@ -742,9 +742,9 @@ const resolveTestPrompt = (selection: TestPanelVersionValue): ResolvedTestPrompt
 const resolvedOriginalTestPrompt = computed(() => resolveTestPrompt(originalTestVersionModel.value))
 const resolvedOptimizedTestPrompt = computed(() => resolveTestPrompt(optimizedTestVersionModel.value))
 
-// ==================== 测试区：多列 variant（最多 4 列） ====================
+// ==================== Test area: multi-column variants (up to 4 columns) ====================
 
-// Pinia setup store 会自动解包 refs，这里是直接可变的响应式对象（非 Ref）
+// The Pinia setup store unwraps refs automatically, so this is a directly mutable reactive object (not a Ref)
 const variantResults = session.testVariantResults
 
 const variantRunning = reactive<Record<TestVariantId, boolean>>({
@@ -831,7 +831,7 @@ const runVariant = async (
     allowParallel?: boolean
   }
 ): Promise<boolean> => {
-  // 防止同一列重复触发；是否允许与其他列并发由 allowParallel 控制。
+  // Prevent the same column from triggering repeatedly; whether it may run concurrently with other columns is controlled by allowParallel.
   if (variantRunning[id]) return false
   if (!opts?.allowParallel && isAnyVariantRunning.value) return false
 
@@ -848,7 +848,7 @@ const runVariant = async (
     evaluationHandler.clearBeforeTest()
   }
 
-  // 清空该列结果并开始流式写入
+  // Clear the results of this column and start streaming writes
   variantResults[id] = { result: '', reasoning: '' }
   variantRunning[id] = true
 
@@ -869,7 +869,7 @@ const runVariant = async (
         }
       },
       onComplete: () => {
-        // 由 finally 统一收尾（结束 loading / 更新 fingerprint / 持久化）
+        // Finalized uniformly by finally (end loading / update fingerprint / persist)
       },
       onError: (error: Error) => {
         throw error
@@ -889,7 +889,7 @@ const runVariant = async (
     variantRunning[id] = false
     variantLastRunFingerprint[id] = getVariantFingerprint(id)
 
-    // best-effort: 仅在一次运行结束时持久化，避免流式过程中频繁写入
+    // best-effort: only persist when a run ends, to avoid frequent writes during streaming
     if (opts?.persist !== false) {
       void session.saveSession()
     }
@@ -899,7 +899,7 @@ const runVariant = async (
 const runAllVariants = async () => {
   if (isAnyVariantRunning.value) return
 
-  // 先校验所有列配置，避免部分启动导致状态混乱
+  // Validate the config of all columns first, to avoid a partial start causing a confused state
   const ids = activeVariantIds.value
   for (const id of ids) {
     if (!getVariantTestInput(id)) return
@@ -918,7 +918,7 @@ const runAllVariants = async () => {
     )
   )
 
-  // 所有列执行结束后统一持久化（best-effort）
+  // Persist uniformly after all columns finish running (best-effort)
   void session.saveSession()
 
   if (results.every(Boolean)) {
@@ -928,24 +928,24 @@ const runAllVariants = async () => {
   }
 }
 
-// 组件引用（用于触发迭代对话框、刷新迭代下拉等）
+// Component refs (used to trigger the iterate dialog, refresh the iterate dropdown, etc.)
 type PromptPanelExpose = {
   openIterateDialog?: (initialContent?: string) => void
   refreshIterateTemplateSelect?: () => void
 } | null
 const promptPanelRef = ref<PromptPanelExpose>(null)
 
-// 输入区折叠状态（初始展开）
+// Input area collapsed state (expanded initially)
 const isInputPanelCollapsed = ref(false)
 
-// 提示词摘要（折叠态显示）
+// Prompt summary (shown in the collapsed state)
 const promptSummary = computed(() => {
   const prompt = logic.prompt.value
   if (!prompt) return ''
   return prompt.length > 50 ? prompt.slice(0, 50) + '...' : prompt
 })
 
-// 分析评估（prompt-only）：收起输入区后触发评估
+// Analysis evaluation (prompt-only): trigger the evaluation after collapsing the input area
 const handleAnalyze = async () => {
   if (!logic.prompt.value?.trim()) return
   if (logic.isOptimizing.value) return
@@ -953,8 +953,8 @@ const handleAnalyze = async () => {
 
   analyzing.value = true
   try {
-    // 分析模式不产生新提示词，但评估请求需要 non-empty optimizedPrompt
-    // 将当前原始提示词同步到 optimizedPrompt，供 prompt-only 评估使用
+    // Analysis mode does not produce a new prompt, but the evaluation request needs a non-empty optimizedPrompt
+    // Sync the current original prompt to optimizedPrompt for the prompt-only evaluation
     logic.optimizedPrompt.value = logic.prompt.value
     logic.optimizedReasoning.value = ''
 
@@ -966,7 +966,7 @@ const handleAnalyze = async () => {
   }
 }
 
-// 🔧 解包 logic 中的 ref，用于传递给子组件（避免 Vue prop 类型警告）
+// 🔧 Unwrap the refs in logic to pass to child components (avoids Vue prop type warnings)
 const unwrappedLogicProps = computed(() => ({
   isOptimizing: logic.isOptimizing.value,
   isIterating: logic.isIterating.value,
@@ -975,14 +975,14 @@ const unwrappedLogicProps = computed(() => ({
   isTestingOriginal: logic.isTestingOriginal.value,
   isTestingOptimized: logic.isTestingOptimized.value,
   optimizedReasoning: logic.optimizedReasoning.value,
-  // ✅ 修复：处理 testResults 可能为 null 的情况
+  // ✅ Fix: handle the case where testResults may be null
   testResultsOriginalResult: logic.testResults.value?.originalResult || '',
   testResultsOriginalReasoning: logic.testResults.value?.originalReasoning || '',
   testResultsOptimizedResult: logic.testResults.value?.optimizedResult || '',
   testResultsOptimizedReasoning: logic.testResults.value?.optimizedReasoning || ''
 }))
 
-// 🔧 为 v-model 创建解包的 computed（支持双向绑定）
+// 🔧 Create unwrapped computed for v-model (supports two-way binding)
 const promptModel = computed({
   get: () => logic.prompt.value,
   set: (value) => { logic.prompt.value = value }
@@ -993,7 +993,7 @@ const optimizedPromptModel = computed({
   set: (value) => { logic.optimizedPrompt.value = value }
 })
 
-// 🔧 为 SelectWithConfig 的 v-model 创建解包的 computed
+// 🔧 Create unwrapped computed for the v-model of SelectWithConfig
 const selectedOptimizeModelKeyModel = computed({
   get: () => logic.selectedOptimizeModelKey.value,
   set: (value) => { logic.selectedOptimizeModelKey.value = value }
@@ -1004,7 +1004,7 @@ const selectedTemplateIdModel = computed({
   set: (value) => { logic.selectedTemplateId.value = value }
 })
 
-// 评估处理器
+// Evaluation handler
 const testResultsComputed = computed(() => ({
   originalResult: variantResults.a.result || undefined,
   optimizedResult: variantResults.b.result || undefined,
@@ -1030,10 +1030,10 @@ const evaluationHandler = useEvaluationHandler({
   })
 })
 
-// 提供评估上下文
+// Provide the evaluation context
 provideEvaluation(evaluationHandler.evaluation)
 
-// 评估状态
+// Evaluation state
 const { evaluation, handleEvaluate: handleEvaluateInternal } = evaluationHandler
 const testAreaProps = evaluationHandler.testAreaEvaluationProps
 const panelProps = evaluationHandler.panelProps
@@ -1048,7 +1048,7 @@ const optimizedEvaluationResult = computed(() => testAreaProps.value.optimizedEv
 const originalScoreLevel = computed(() => testAreaProps.value.originalScoreLevel)
 const optimizedScoreLevel = computed(() => testAreaProps.value.optimizedScoreLevel)
 
-// 对比评估状态
+// Compare evaluation state
 const isEvaluatingCompare = evaluationHandler.compareEvaluation.isEvaluatingCompare
 const compareScore = computed(() => evaluationHandler.compareEvaluation.compareScore.value ?? 0)
 const hasCompareEvaluation = evaluationHandler.compareEvaluation.hasCompareResult
@@ -1059,14 +1059,14 @@ const compareScoreLevel = computed(() =>
 
 const analyzing = ref(false)
 
-// ==================== 事件处理 ====================
+// ==================== Event handling ====================
 
-// 迭代优化
+// Iterative optimization
 const handleIterate = (payload: IteratePayload) => {
   logic.handleIterate(payload)
 }
 
-// 评估
+// Evaluation
 const handleEvaluate = async (type: 'original' | 'optimized' | 'compare') => {
   await handleEvaluateInternal(type)
 }
@@ -1078,23 +1078,23 @@ const handleEvaluateWithFeedback = async (payload: {
   await evaluationHandler.handleEvaluateWithFeedback(payload.type, payload.feedback)
 }
 
-// 分析评估（prompt-only）
+// Analysis evaluation (prompt-only)
 const handleAnalyzeEvaluate = async () => {
   await handleEvaluateInternal('prompt-only')
 }
 
-// 显示详情
+// Show details
 const showDetail = (type: 'original' | 'optimized' | 'compare') => {
   evaluation.showDetail(type)
 }
 
-// 应用改进
+// Apply improvements
 const handleApplyImprovement = (payload: { improvement: string; type: string }) => {
   evaluation.closePanel()
   promptPanelRef.value?.openIterateDialog?.(payload.improvement)
 }
 
-// 应用补丁
+// Apply patch
 const handleApplyPatch = (payload: { operation: PatchOperation }) => {
   if (!payload.operation) return
   const current = logic.optimizedPrompt.value || ''
@@ -1112,7 +1112,7 @@ const handleClearEvaluation = () => {
   evaluation.clearAllResults()
 }
 
-// 保存本地编辑
+// Save local edits
 const handleSaveLocalEdit = async (payload: { note?: string }) => {
   await logic.handleSaveLocalEdit({
     optimizedPrompt: logic.optimizedPrompt.value || '',
@@ -1121,7 +1121,7 @@ const handleSaveLocalEdit = async (payload: { note?: string }) => {
   })
 }
 
-// 保存收藏（从顶层 App 注入）
+// Save favorite (injected from the top-level App)
 const globalHandleSaveFavorite = inject<((data: { content: string; originalContent?: string }) => void) | null>(
   'handleSaveFavorite',
   null
@@ -1146,22 +1146,22 @@ const handleSaveFavorite = () => {
   globalHandleSaveFavorite(data)
 }
 
-// 打开模型管理器
+// Open the model manager
 const handleOpenModelManager = () => {
   appOpenModelManager?.('text')
 }
 
-// 打开模板管理器
+// Open the template manager
 const handleOpenTemplateManager = (type?: string) => {
   appOpenTemplateManager?.(type || 'userOptimize')
 }
 
-// ==================== 初始化 ====================
+// ==================== Initialization ====================
 
 onMounted(async () => {
-  // 加载版本列表
+  // Load the version list
   await logic.loadVersions()
-  // 刷新模型和模板列表
+  // Refresh the model and template lists
   await modelSelection.refreshTextModels()
   await templateSelection.refreshOptimizeTemplates()
   await templateSelection.refreshIterateTemplates()
@@ -1198,7 +1198,7 @@ const refreshIterateSelectHandler = async () => {
   promptPanelRef.value?.refreshIterateTemplateSelect?.()
 }
 
-// chainId 变化时加载版本
+// Load versions when chainId changes
 watch(() => session.chainId, async (newChainId) => {
   if (newChainId) {
     await logic.loadVersions()
@@ -1295,7 +1295,7 @@ defineExpose({
 }
 
 .variant-cell__model {
-    /* 让模型选择不要无限拉伸：保持紧凑，避免把右侧按钮/布局挤散 */
+    /* Keep the model selection from stretching indefinitely: stay compact to avoid scattering the right-hand buttons/layout */
     flex: 0 1 220px;
     max-width: 220px;
     min-width: 0;

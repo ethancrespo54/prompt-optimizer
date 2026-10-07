@@ -13,8 +13,8 @@ type PerformanceWithMemory = Performance & {
 }
 
 /**
- * 性能监控 Composable
- * 提供组件性能指标监控和优化建议
+ * Performance monitoring composable
+ * Provides component performance metric monitoring and optimization suggestions
  */
 export function usePerformanceMonitor(componentName: string = 'Unknown') {
   const startTime = ref(0)
@@ -24,24 +24,24 @@ export function usePerformanceMonitor(componentName: string = 'Unknown') {
   const memoryUsage = ref(0)
   const observedElements = ref(new Set<Element>())
   
-  // 性能观察器
+  // Performance observer
   let performanceObserver: PerformanceObserver | null = null
   let resizeObserver: ResizeObserver | null = null
   let mutationObserver: MutationObserver | null = null
 
-  // 记录渲染开始时间
+  // Record the render start time
   const startRender = () => {
     startTime.value = performance.now()
   }
 
-  // 记录渲染完成时间
+  // Record the render completion time
   const endRender = async () => {
     await nextTick()
     const renderTime = performance.now() - startTime.value
     renderCount.value++
     lastUpdate.value = new Date()
     
-    // 记录性能指标
+    // Record performance metrics
     if (typeof performance !== 'undefined' && performance.mark) {
       performance.mark(`${componentName}-render-end`)
       performance.measure(
@@ -54,13 +54,13 @@ export function usePerformanceMonitor(componentName: string = 'Unknown') {
     return renderTime
   }
 
-  // 记录组件更新
+  // Record component updates
   const recordUpdate = () => {
     updateCount.value++
     lastUpdate.value = new Date()
   }
 
-  // 获取内存使用情况
+  // Get memory usage
   const updateMemoryUsage = () => {
     if (typeof performance !== 'undefined') {
       const perf = performance as PerformanceWithMemory
@@ -70,78 +70,78 @@ export function usePerformanceMonitor(componentName: string = 'Unknown') {
     }
   }
 
-  // 计算性能指标
+  // Compute performance metrics
   const metrics = computed((): PerformanceMetrics => {
     const renderTime = startTime.value > 0 ? performance.now() - startTime.value : 0
     
     return {
       renderTime: renderTime,
-      loadTime: renderTime, // 简化为渲染时间
+      loadTime: renderTime, // Simplified to the render time
       memoryUsage: memoryUsage.value,
       updateCount: updateCount.value,
       lastUpdate: lastUpdate.value
     }
   })
 
-  // 性能建议
+  // Performance suggestions
   const suggestions = computed(() => {
     const suggestions: string[] = []
     
     if (updateCount.value > 50) {
-      suggestions.push('组件更新过于频繁，考虑使用 debounce 或 throttle')
+      suggestions.push('The component updates too frequently; consider using debounce or throttle')
     }
     
     if (metrics.value.renderTime > 16) {
-      suggestions.push('渲染时间超过 16ms，可能影响 60fps 体验')
+      suggestions.push('Render time exceeds 16ms and may affect the 60fps experience')
     }
     
     if (memoryUsage.value > 50 * 1024 * 1024) { // 50MB
-      suggestions.push('内存使用量较高，检查是否存在内存泄漏')
+      suggestions.push('Memory usage is high; check for memory leaks')
     }
     
     if (renderCount.value > 0 && updateCount.value / renderCount.value > 10) {
-      suggestions.push('更新渲染比例过高，考虑优化响应式数据')
+      suggestions.push('The update render ratio is too high; consider optimizing the reactive data')
     }
 
     return suggestions
   })
 
-  // 性能等级评估
+  // Performance grade evaluation
   const performanceGrade = computed(() => {
     let score = 100
     
-    // 渲染时间评分
+    // Render time score
     if (metrics.value.renderTime > 32) score -= 30
     else if (metrics.value.renderTime > 16) score -= 15
     else if (metrics.value.renderTime > 8) score -= 5
     
-    // 更新频率评分
+    // Update frequency score
     if (updateCount.value > 100) score -= 25
     else if (updateCount.value > 50) score -= 15
     else if (updateCount.value > 20) score -= 5
     
-    // 内存使用评分  
+    // Memory usage score
     const memoryMB = memoryUsage.value / (1024 * 1024)
     if (memoryMB > 100) score -= 20
     else if (memoryMB > 50) score -= 10
     else if (memoryMB > 25) score -= 5
 
-    if (score >= 90) return { grade: 'A', color: 'success', text: '优秀' }
-    if (score >= 80) return { grade: 'B', color: 'info', text: '良好' }  
-    if (score >= 70) return { grade: 'C', color: 'warning', text: '一般' }
-    if (score >= 60) return { grade: 'D', color: 'warning', text: '较差' }
-    return { grade: 'F', color: 'error', text: '需要优化' }
+    if (score >= 90) return { grade: 'A', color: 'success', text: 'Excellent' }
+    if (score >= 80) return { grade: 'B', color: 'info', text: 'Good' }
+    if (score >= 70) return { grade: 'C', color: 'warning', text: 'Fair' }
+    if (score >= 60) return { grade: 'D', color: 'warning', text: 'Poor' }
+    return { grade: 'F', color: 'error', text: 'Needs optimization' }
   })
 
-  // 开始性能监控
+  // Start performance monitoring
   const startMonitoring = () => {
     if (typeof performance === 'undefined') return
 
-    // 标记渲染开始
+    // Mark the render start
     performance.mark(`${componentName}-render-start`)
     startRender()
 
-    // 创建性能观察器
+    // Create the performance observer
     if (typeof PerformanceObserver !== 'undefined') {
       performanceObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries()
@@ -159,7 +159,7 @@ export function usePerformanceMonitor(componentName: string = 'Unknown') {
       }
     }
 
-    // 定期更新内存使用情况
+    // Periodically update the memory usage
     const memoryInterval = setInterval(updateMemoryUsage, 5000)
     
     onUnmounted(() => {
@@ -167,13 +167,13 @@ export function usePerformanceMonitor(componentName: string = 'Unknown') {
     })
   }
 
-  // 观察DOM变化
+  // Observe DOM changes
   const observeElement = (element: Element) => {
     if (!element || observedElements.value.has(element)) return
 
     observedElements.value.add(element)
 
-    // 创建大小变化观察器
+    // Create a resize observer
     if (!resizeObserver && typeof ResizeObserver !== 'undefined') {
       resizeObserver = new ResizeObserver((entries) => {
         entries.forEach((entry) => {
@@ -182,7 +182,7 @@ export function usePerformanceMonitor(componentName: string = 'Unknown') {
       })
     }
 
-    // 创建DOM变化观察器  
+    // Create a DOM mutation observer
     if (!mutationObserver && typeof MutationObserver !== 'undefined') {
       mutationObserver = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
@@ -205,7 +205,7 @@ export function usePerformanceMonitor(componentName: string = 'Unknown') {
     }
   }
 
-  // 停止观察元素
+  // Stop observing the element
   const unobserveElement = (element: Element) => {
     if (!element || !observedElements.value.has(element)) return
     
@@ -213,7 +213,7 @@ export function usePerformanceMonitor(componentName: string = 'Unknown') {
     resizeObserver?.unobserve(element)
   }
 
-  // 获取详细的性能报告
+  // Get a detailed performance report
   const getPerformanceReport = () => {
     return {
       componentName,
@@ -227,7 +227,7 @@ export function usePerformanceMonitor(componentName: string = 'Unknown') {
     }
   }
 
-  // 重置性能计数器
+  // Reset the performance counters
   const resetMetrics = () => {
     renderCount.value = 0
     updateCount.value = 0
@@ -236,10 +236,10 @@ export function usePerformanceMonitor(componentName: string = 'Unknown') {
     memoryUsage.value = 0
   }
 
-  // 生命周期
+  // Lifecycle
   onMounted(() => {
     startMonitoring()
-    endRender() // 记录初始渲染完成
+    endRender() // Record that the initial render is complete
   })
 
   onUnmounted(() => {
@@ -249,14 +249,14 @@ export function usePerformanceMonitor(componentName: string = 'Unknown') {
   })
 
   return {
-    // 状态
+    // State
     metrics,
     suggestions,
     performanceGrade,
     renderCount,
     updateCount,
     
-    // 方法
+    // Methods
     startRender,
     endRender,
     recordUpdate,
@@ -266,7 +266,7 @@ export function usePerformanceMonitor(componentName: string = 'Unknown') {
     getPerformanceReport,
     resetMetrics,
     
-    // 工具方法
+    // Utility methods
     startMonitoring
   }
 }

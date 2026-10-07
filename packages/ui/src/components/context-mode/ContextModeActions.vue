@@ -1,7 +1,7 @@
 <template>
   <NFlex align="center" :wrap="false" :size="12">
-    <!-- 快捷操作按钮 -->
-    <!-- 工具管理 -->
+    <!-- Quick action buttons -->
+    <!-- Tool management -->
     <NButton
       size="small"
       type="default"
@@ -25,5 +25,5 @@ const emit = defineEmits<{
 </script>
 
 <style scoped>
-/* 确保按钮组在小屏幕上也能正常显示 */
+/* Make sure the button group displays correctly on small screens too */
 </style>

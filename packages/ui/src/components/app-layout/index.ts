@@ -1,8 +1,8 @@
 /**
- * App Layout 组件模块
+ * App Layout component module
  *
- * 从 App.vue 提取出的布局相关组件，用于减少 App.vue 的复杂度
- * 并实现 web 和 extension 应用之间的代码复用。
+ * Layout-related components extracted from App.vue, used to reduce the complexity of App.vue
+ * and to share code between the web and extension apps.
  */
 
 export { default as AppHeaderActions } from './AppHeaderActions.vue'

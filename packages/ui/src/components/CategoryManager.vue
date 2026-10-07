@@ -1,6 +1,6 @@
 <template>
   <div class="category-manager">
-    <!-- 工具栏 -->
+    <!-- Toolbar -->
     <div class="toolbar">
       <n-space>
         <n-button type="primary" @click="handleAddRootCategory">
@@ -24,7 +24,7 @@
       </n-space>
     </div>
 
-    <!-- 分类树 -->
+    <!-- Category tree -->
     <div class="tree-container">
       <n-tree
         ref="treeRef"
@@ -39,7 +39,7 @@
       />
     </div>
 
-    <!-- 编辑分类对话框 -->
+    <!-- Edit category dialog -->
     <n-modal
       v-model:show="editDialogVisible"
       preset="card"
@@ -103,7 +103,7 @@
       </template>
     </n-modal>
 
-    <!-- 删除确认对话框 -->
+    <!-- Delete confirmation dialog -->
     <n-modal
       v-model:show="deleteDialogVisible"
       preset="dialog"
@@ -164,13 +164,13 @@ const emit = defineEmits<{
   'category-updated': [];
 }>();
 
-// 状态
+// State
 const categories = ref<FavoriteCategory[]>([]);
 const expandedKeys = ref<string[]>([]);
 const treeRef = ref();
 const formRef = ref<FormInst | null>(null);
 
-// 编辑对话框
+// Edit dialog
 const editDialogVisible = ref(false);
 const editingCategory = ref<FavoriteCategory | null>(null);
 const categoryForm = ref({
@@ -181,12 +181,12 @@ const categoryForm = ref({
 });
 const saving = ref(false);
 
-// 删除对话框
+// Delete dialog
 const deleteDialogVisible = ref(false);
 const deletingCategory = ref<FavoriteCategory | null>(null);
 const deletingCategoryUsageCount = ref(0);
 
-// 表单验证规则
+// Form validation rules
 const formRules = computed<FormRules>(() => ({
   name: [
     { required: true, message: t('favorites.categoryManager.validation.nameRequired'), trigger: ['input', 'blur'] },
@@ -194,7 +194,7 @@ const formRules = computed<FormRules>(() => ({
   ]
 }));
 
-// 将扁平分类列表转换为树形结构
+// Convert the flat category list into a tree structure
 const buildCategoryTree = (categories: FavoriteCategory[], parentId?: string): TreeOption[] => {
   return categories
     .filter(cat => cat.parentId === parentId)
@@ -207,15 +207,15 @@ const buildCategoryTree = (categories: FavoriteCategory[], parentId?: string): T
     }));
 };
 
-// 树形数据
+// Tree data
 const treeData = computed(() => buildCategoryTree(categories.value));
 
-// 父分类选项（用于编辑时选择父分类）
+// Parent category options (used to choose a parent category when editing)
 const parentCategoryOptions = computed(() => {
   const buildOptions = (cats: FavoriteCategory[], parentId?: string, level = 0): TreeOption[] => {
     return cats
       .filter(cat => {
-        // 排除当前正在编辑的分类及其子分类
+        // Exclude the category currently being edited and its child categories
         if (editingCategory.value && cat.id === editingCategory.value.id) {
           return false;
         }
@@ -232,7 +232,7 @@ const parentCategoryOptions = computed(() => {
   return buildOptions(categories.value);
 });
 
-// 计算删除分类的子分类数量
+// Compute the number of child categories of the category being deleted
 const deletingCategoryHasChildren = computed(() => {
   if (!deletingCategory.value) return false;
   return categories.value.some(cat => cat.parentId === deletingCategory.value!.id);
@@ -247,13 +247,13 @@ const deletingCategoryChildCount = computed(() => {
   return countChildren(deletingCategory.value.id);
 });
 
-// 渲染树节点标签
+// Render the tree node label
 const renderLabel = ({ option }: { option: TreeOption }): VNodeChild => {
   const cat = option.category as FavoriteCategory;
   return h('span', { class: 'tree-label' }, cat.name);
 };
 
-// 渲染树节点前缀图标
+// Render the tree node prefix icon
 const renderPrefix = ({ option }: { option: TreeOption }): VNodeChild => {
   const cat = option.category as FavoriteCategory;
 
@@ -266,7 +266,7 @@ const renderPrefix = ({ option }: { option: TreeOption }): VNodeChild => {
   );
 };
 
-// 渲染树节点后缀操作按钮
+// Render the tree node suffix action buttons
 const renderSuffix = ({ option }: { option: TreeOption }): VNodeChild => {
   const cat = option.category as FavoriteCategory;
 
@@ -313,7 +313,7 @@ const renderSuffix = ({ option }: { option: TreeOption }): VNodeChild => {
   );
 };
 
-// 处理节点操作
+// Handle node actions
 const handleNodeAction = (action: string, category: FavoriteCategory) => {
   switch (action) {
     case 'add':
@@ -328,7 +328,7 @@ const handleNodeAction = (action: string, category: FavoriteCategory) => {
   }
 };
 
-// 添加根分类
+// Add a root category
 const handleAddRootCategory = () => {
   editingCategory.value = null;
   categoryForm.value = {
@@ -340,7 +340,7 @@ const handleAddRootCategory = () => {
   editDialogVisible.value = true;
 };
 
-// 添加子分类
+// Add a child category
 const handleAddSubCategory = (parent: FavoriteCategory) => {
   editingCategory.value = null;
   categoryForm.value = {
@@ -352,7 +352,7 @@ const handleAddSubCategory = (parent: FavoriteCategory) => {
   editDialogVisible.value = true;
 };
 
-// 编辑分类
+// Edit a category
 const handleEditCategory = (category: FavoriteCategory) => {
   editingCategory.value = category;
   categoryForm.value = {
@@ -364,17 +364,17 @@ const handleEditCategory = (category: FavoriteCategory) => {
   editDialogVisible.value = true;
 };
 
-// 删除分类
+// Delete a category
 const handleDeleteCategory = async (category: FavoriteCategory) => {
   deletingCategory.value = category;
 
-  // 获取该分类的使用统计
+  // Get the usage statistics of this category
   const servicesValue = services?.value;
   if (servicesValue?.favoriteManager) {
     try {
       deletingCategoryUsageCount.value = await servicesValue.favoriteManager.getCategoryUsage(category.id);
     } catch (error) {
-      console.error('获取分类使用统计失败:', error);
+      console.error('Failed to get category usage statistics:', error);
       deletingCategoryUsageCount.value = 0;
     }
   }
@@ -382,18 +382,18 @@ const handleDeleteCategory = async (category: FavoriteCategory) => {
   deleteDialogVisible.value = true;
 };
 
-// 确认删除
+// Confirm deletion
 const handleConfirmDelete = async () => {
   if (!deletingCategory.value) return;
 
   const servicesValue = services?.value;
   if (!servicesValue?.favoriteManager) {
-    message.warning('收藏功能暂不可用');
+    message.warning('Favorites feature is currently unavailable');
     return;
   }
 
   try {
-    // 递归删除所有子分类
+    // Recursively delete all child categories
     const deleteWithChildren = async (categoryId: string) => {
       const children = categories.value.filter(cat => cat.parentId === categoryId);
       for (const child of children) {
@@ -407,8 +407,8 @@ const handleConfirmDelete = async () => {
     await loadCategories();
     emit('category-updated');
   } catch (error) {
-    console.error('删除分类失败:', error);
-    const errorMessage = error instanceof Error ? error.message : '未知错误';
+    console.error('Failed to delete category:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     message.error(`${t('favorites.categoryManager.deleteFailed')}: ${errorMessage}`);
   } finally {
     deleteDialogVisible.value = false;
@@ -416,7 +416,7 @@ const handleConfirmDelete = async () => {
   }
 };
 
-// 保存分类
+// Save a category
 const handleSaveCategory = async () => {
   try {
     await formRef.value?.validate();
@@ -426,14 +426,14 @@ const handleSaveCategory = async () => {
 
   const servicesValue = services?.value;
   if (!servicesValue?.favoriteManager) {
-    message.warning('收藏功能暂不可用');
+    message.warning('Favorites feature is currently unavailable');
     return;
   }
 
   saving.value = true;
   try {
     if (editingCategory.value) {
-      // 更新分类
+      // Update a category
       await servicesValue.favoriteManager.updateCategory(editingCategory.value.id, {
         name: categoryForm.value.name,
         description: categoryForm.value.description,
@@ -442,7 +442,7 @@ const handleSaveCategory = async () => {
       });
       message.success(t('favorites.categoryManager.updateSuccess'));
     } else {
-      // 添加分类
+      // Add a category
       await servicesValue.favoriteManager.addCategory({
         name: categoryForm.value.name,
         description: categoryForm.value.description,
@@ -457,15 +457,15 @@ const handleSaveCategory = async () => {
     await loadCategories();
     emit('category-updated');
   } catch (error) {
-    console.error('保存分类失败:', error);
-    const errorMessage = error instanceof Error ? error.message : '未知错误';
+    console.error('Failed to save category:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     message.error(`${t('favorites.categoryManager.saveFailed')}: ${errorMessage}`);
   } finally {
     saving.value = false;
   }
 };
 
-// 全部展开
+// Expand all
 const handleExpandAll = () => {
   const getAllKeys = (nodes: TreeOption[]): string[] => {
     const keys: string[] = [];
@@ -480,29 +480,29 @@ const handleExpandAll = () => {
   expandedKeys.value = getAllKeys(treeData.value);
 };
 
-// 全部折叠
+// Collapse all
 const handleCollapseAll = () => {
   expandedKeys.value = [];
 };
 
-// 更新展开的节点
+// Update the expanded nodes
 const handleUpdateExpandedKeys = (keys: string[]) => {
   expandedKeys.value = keys;
 };
 
-// 加载分类列表
+// Load the category list
 const loadCategories = async () => {
   const servicesValue = services?.value;
   if (!servicesValue?.favoriteManager) {
-    console.warn('收藏管理器未初始化');
+    console.warn('Favorite manager is not initialized');
     return;
   }
 
   try {
     categories.value = await servicesValue.favoriteManager.getCategories();
   } catch (error) {
-    console.error('加载分类失败:', error);
-    const errorMessage = error instanceof Error ? error.message : '未知错误';
+    console.error('Failed to load categories:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     message.error(`${t('favorites.categoryManager.loadFailed')}: ${errorMessage}`);
   }
 };
@@ -511,7 +511,7 @@ onMounted(() => {
   loadCategories();
 });
 
-// 监听服务初始化
+// Watch for service initialization
 watch(() => services?.value?.favoriteManager, (favoriteManager) => {
   if (favoriteManager) {
     loadCategories();

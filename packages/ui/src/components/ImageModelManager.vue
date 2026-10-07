@@ -1,13 +1,13 @@
 <template>
   <div class="image-model-list">
-    <!-- 空状态 -->
+    <!-- Empty state -->
     <NEmpty v-if="configs.length === 0" :description="t('image.model.empty')">
       <template #extra>
         <NButton type="primary" @click="openAddModal">{{ t('image.model.addFirst') }}</NButton>
       </template>
     </NEmpty>
 
-    <!-- 模型列表 -->
+    <!-- Model list -->
     <NSpace v-else vertical :size="12">
       <NCard
         v-for="config in configs"
@@ -20,7 +20,7 @@
         <template #header>
           <NSpace justify="space-between" align="center">
             <NSpace vertical :size="2">
-              <!-- 配置名称行 -->
+              <!-- Config name row -->
               <NSpace align="center">
                 <NText strong>{{ config.name || config.id }}</NText>
                 <NTag
@@ -31,7 +31,7 @@
                   {{ t('modelManager.disabled') }}
                 </NTag>
               </NSpace>
-              <!-- 标签行：Provider、Model、能力标签合并 -->
+              <!-- Tag row: Provider, Model, and capability tags combined -->
               <NSpace :size="6">
                 <NTag size="small" type="info" :bordered="false">
                   {{ config.provider?.name || config.providerId }}
@@ -47,7 +47,7 @@
                 >
                   {{ t('modelManager.corsRestrictedTag') }}
                 </NTag>
-                <!-- 能力标签移到这里 -->
+                <!-- Capability tags moved here -->
                 <NTag v-if="config.model?.capabilities?.text2image" size="small" type="success" :bordered="false">
                   {{ t('image.capability.text2image') }}
                 </NTag>
@@ -77,7 +77,7 @@
               <span class="hidden md:inline">{{ t('modelManager.testConnection') }}</span>
             </NButton>
 
-            <!-- 测试结果缩略图 -->
+            <!-- Test result thumbnails -->
             <NImage
               v-if="testResults[config.id]?.success && testResults[config.id]?.image"
               :src="getPreviewImageSrc(config.id) || ''"
@@ -160,10 +160,10 @@ const toast = useToast()
 const dialog = useDialog()
 const isElectronEnv = isRunningInElectron()
 
-// 定义事件
+// Define events
 const emit = defineEmits(['add', 'edit'])
 
-// 使用 composable
+// Use composables
 const {
   configs,
   initialize,
@@ -172,13 +172,13 @@ const {
   deleteConfig: deleteConfigFromManager
 } = useImageModelManager()
 
-// 注入依赖
+// Inject dependencies
 const imageService = inject<IImageService>('imageService')
 if (!imageService) {
   throw new Error('[ImageModelManager] Missing required dependency: imageService')
 }
 
-// 状态管理
+// State management
 const testingConnections = ref<Record<string, boolean>>({})
 const testResults = ref<Record<string, {
   success: boolean
@@ -192,23 +192,23 @@ const testResults = ref<Record<string, {
 
 const isTestingConnectionFor = (configId: string) => !!testingConnections.value[configId]
 
-// 辅助函数：根据模型能力选择测试类型
+// Helper: choose the test type based on model capabilities
 const selectTestType = (model: ImageModel): 'text2image' | 'image2image' => {
   const { text2image, image2image } = model.capabilities
 
   if (text2image && !image2image) {
-    return 'text2image'  // 只支持文生图
+    return 'text2image'  // Only supports text-to-image
   }
 
   if (!text2image && image2image) {
-    return 'image2image' // 只支持图生图
+    return 'image2image' // Only supports image-to-image
   }
 
   if (text2image && image2image) {
-    return 'text2image'  // 两种都支持，优先文生图
+    return 'text2image'  // Supports both; prefer text-to-image
   }
 
-  throw new Error('模型不支持任何图像生成功能')
+  throw new Error('The model does not support any image generation feature')
 }
 
 const getPreviewImageSrc = (configId: string): string | null => {
@@ -221,7 +221,7 @@ const getPreviewImageSrc = (configId: string): string | null => {
   return `data:image/png;base64,${b64}`
 }
 
-// 操作方法
+// Action methods
 const openAddModal = () => {
   emit('add')
 }
@@ -240,23 +240,23 @@ const testConnection = async (configId: string) => {
     try {
       testingConnections.value[configId] = true
 
-      // 清除之前的测试结果
+      // Clear the previous test result
       delete testResults.value[configId]
 
       if (!config) throw new Error('Config not found')
 
-      // 获取选中的模型信息
+      // Get the selected model info
       if (!config.model) {
-        throw new Error('选中的模型未找到')
+        throw new Error('Selected model not found')
       }
 
-      // 根据模型能力确定测试类型
+      // Determine the test type based on the model capabilities
       const testType = selectTestType(config.model)
 
-      // 通过统一服务执行测试（Electron 下经 IPC 走主进程；Web 下本地执行）
+      // Run the test through the unified service (via IPC to the main process in Electron; run locally on the web)
       const result = await imageService.testConnection(config)
 
-      // 测试成功
+      // Test succeeded
       testResults.value[configId] = {
         success: true,
         image: result.images[0],
@@ -268,10 +268,10 @@ const testConnection = async (configId: string) => {
     } catch (error) {
       console.error('Connection test failed:', error)
 
-      // 记录失败结果
+      // Record the failure result
       testResults.value[configId] = {
         success: false,
-        testType: 'text2image' // 默认值
+        testType: 'text2image' // Default value
       }
 
       const detail = getI18nErrorMessage(error, t('image.connection.testError'))
@@ -310,7 +310,7 @@ const toggleConfig = async (config: { id: string; enabled: boolean }) => {
     await loadConfigs()
     toast.success(config.enabled ? t('modelManager.disableSuccess') : t('modelManager.enableSuccess'))
   } catch (error) {
-    console.error('切换模型状态失败:', error)
+    console.error('Failed to toggle model state:', error)
     toast.error(t('modelManager.toggleFailed', { error: getI18nErrorMessage(error, 'Unknown error') }))
   }
 }
@@ -322,28 +322,28 @@ const deleteConfig = async (configId: string) => {
       await loadConfigs()
       toast.success(t('modelManager.deleteSuccess'))
     } catch (error) {
-      console.error('删除模型失败:', error)
+      console.error('Failed to delete model:', error)
       toast.error(t('modelManager.deleteFailed', { error: getI18nErrorMessage(error, 'Unknown error') }))
     }
   }
 }
 
-// 初始化
+// Initialize
 onMounted(async () => {
   try {
     await initialize()
   } catch (error) {
-    console.error('初始化图像模型管理器失败:', error)
+    console.error('Failed to initialize the image model manager:', error)
   }
 })
 
-// 暴露给父组件的刷新方法
+// Refresh method exposed to the parent component
 defineExpose({
   refresh: async () => {
     try {
       await loadConfigs()
     } catch {
-      // 静默处理错误
+      // Silently handle the error
     }
   }
 })
@@ -354,7 +354,7 @@ defineExpose({
   width: 100%;
 }
 
-/* 文本截断样式 */
+/* Text truncation style */
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;

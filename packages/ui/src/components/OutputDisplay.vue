@@ -77,7 +77,7 @@ interface Props {
   loading?: boolean
   streaming?: boolean
 
-  /** 透传给 OutputDisplayCore 的 data-testid（挂在根节点） */
+  /** data-testid passed through to OutputDisplayCore (attached to the root node) */
   testId?: string
 }
 
@@ -108,21 +108,21 @@ const isShowingFullscreen = ref(false);
 
 const testId = computed(() => props.testId || undefined)
 
-// 注入服务并获取 CompareService
+// Inject services and get CompareService
 const services = inject<Ref<AppServices | null>>('services');
 if (!services) {
-  throw new Error('[OutputDisplay] services未正确注入，请确保在App组件中正确provide了services');
+  throw new Error('[OutputDisplay] services was not injected correctly; make sure services is provided in the App component');
 }
 
 const compareService = computed(() => {
   const servicesValue = services.value;
   if (!servicesValue) {
-    throw new Error('[OutputDisplay] services未初始化，请确保应用已正确启动');
+    throw new Error('[OutputDisplay] services is not initialized; make sure the app has started correctly');
   }
 
   const service = servicesValue.compareService;
   if (!service) {
-    throw new Error('[OutputDisplay] compareService未初始化，请确保服务已正确配置');
+    throw new Error('[OutputDisplay] compareService is not initialized; make sure the services are configured correctly');
   }
 
   return service;
@@ -170,7 +170,7 @@ defineExpose({ forceRefreshContent, forceExitEditing });
   @apply flex flex-col h-full border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 relative;
 }
 
-/* 悬浮工具栏样式 */
+/* Floating toolbar styles */
 .floating-toolbar {
   @apply absolute top-2 right-2 z-10 flex items-center gap-2 px-3 py-2 rounded-lg shadow-lg;
   background: rgba(255, 255, 255, 0.8);
@@ -178,7 +178,7 @@ defineExpose({ forceRefreshContent, forceExitEditing });
   border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-/* 全屏模式下的悬浮复制按钮 */
+/* Floating copy button in fullscreen mode */
 .floating-copy-btn {
   @apply absolute top-2 right-2 z-10 flex items-center gap-2 px-3 py-2 rounded-lg shadow-lg;
   background: rgba(255, 255, 255, 0.8);
@@ -198,7 +198,7 @@ defineExpose({ forceRefreshContent, forceExitEditing });
   @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50;
 }
 
-/* 悬浮工具栏动画 */
+/* Floating toolbar animation */
 .fade-slide-enter-active,
 .fade-slide-leave-active {
   transition: all 0.2s ease-out;
@@ -236,12 +236,12 @@ defineExpose({ forceRefreshContent, forceExitEditing });
 
 .reasoning-content {
   @apply overflow-y-auto mt-0;
-  max-height: 30vh; /* 使用视口高度的30%，更灵活 */
-  padding: 0; /* 移除所有内边距，让推理内容贴边显示 */
+  max-height: 30vh; /* Use 30% of the viewport height, more flexible */
+  padding: 0; /* Remove all padding so the reasoning content sits flush to the edges */
 }
 
 .reasoning-content-fullscreen {
-  /* 全屏模式下的推理内容样式 */
+  /* Reasoning content styles in fullscreen mode */
 }
 
 .reasoning-actions {
@@ -290,7 +290,7 @@ defineExpose({ forceRefreshContent, forceExitEditing });
   @apply border-solid border-blue-500;
 }
 
-/* 隐藏滚动条但保持可滚动 */
+/* Hide the scrollbar but keep it scrollable */
 .reasoning-content,
 textarea {
   scrollbar-width: none; /* Firefox */

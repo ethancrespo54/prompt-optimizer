@@ -6,7 +6,7 @@ export interface Toast {
   type: 'success' | 'error' | 'info' | 'warning'
 }
 
-// 全局消息API实例 - 在NMessageProvider上下文中初始化
+// Global message API instance - initialized within the NMessageProvider context
 type MessageApi = {
   success: (content: string, options?: MessageOptions) => MessageReactive
   error: (content: string, options?: MessageOptions) => MessageReactive
@@ -16,7 +16,7 @@ type MessageApi = {
 
 let globalMessageApi: MessageApi | null = null
 
-// 设置全局消息API（在Toast组件中调用）
+// Set the global message API (called in the Toast component)
 export function setGlobalMessageApi(api: MessageApi) {
   globalMessageApi = api
   console.log('[useToast] Global message API set successfully')
@@ -70,7 +70,7 @@ export function useToast() {
   }
 
   const remove = (messageReactive?: MessageReactive) => {
-    // Naive UI消息实例可以直接调用destroy方法
+    // The Naive UI message instance can call the destroy method directly
     if (messageReactive && typeof messageReactive.destroy === 'function') {
       messageReactive.destroy()
     }
@@ -88,7 +88,7 @@ export function useToast() {
     error,
     info,
     warning,
-    // 向后兼容
-    toasts: [] as never[], // Naive UI不需要维护toasts数组
+    // Backward compatibility
+    toasts: [] as never[], // Naive UI does not need to maintain a toasts array
   }
 }

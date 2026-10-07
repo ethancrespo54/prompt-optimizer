@@ -1,21 +1,21 @@
 <template>
     <NCard class="conversation-manager" :size="size" :bordered="false">
-        <!-- 标题和统计信息 -->
+        <!-- Title and statistics -->
         <template #header>
             <NSpace justify="space-between" align="center">
-                <!-- 左侧：标题 -->
+                <!-- Left: title -->
                 <NText class="text-base font-semibold">
                     {{ title || t("conversation.management.title") }}
                 </NText>
 
-                <!-- 右侧：统计信息和操作按钮 -->
+                <!-- Right: statistics and action buttons -->
                 <NSpace :size="8" align="center">
-                    <!-- 消息数量 -->
+                    <!-- Message count -->
                     <NText v-if="messages.length > 0" :depth="3" style="font-size: 13px">
                         💬 {{ t("conversation.stats.messages") }}: {{ messages.length }}
                     </NText>
 
-                    <!-- 变量统计 -->
+                    <!-- Variable statistics -->
                     <NText
                         v-if="showVariablePreview && allUsedVariables.length > 0"
                         :depth="3"
@@ -24,7 +24,7 @@
                         🏷️ {{ t("conversation.stats.variables") }}: {{ allUsedVariables.length }}
                     </NText>
 
-                    <!-- 缺失变量警告 -->
+                    <!-- Missing variable warning -->
                     <NText
                         v-if="allMissingVariables.length > 0"
                         :depth="3"
@@ -33,7 +33,7 @@
                         ⚠️ {{ t("conversation.stats.missing") }}: {{ allMissingVariables.length }}
                     </NText>
 
-                    <!-- 工具数量标签（可点击） -->
+                    <!-- Tool count tag (clickable) -->
                     <NText
                         v-if="enableToolManagement"
                         :depth="3"
@@ -44,7 +44,7 @@
                         🔧 {{ t("conversation.stats.tools") }}: {{ toolCount || 0 }}
                     </NText>
 
-                    <!-- 打开上下文编辑器按钮 -->
+                    <!-- Open context editor button -->
                     <NButton
                         v-if="messages.length > 0 && canEditMessages"
                         @click="handleOpenContextEditor"
@@ -75,9 +75,9 @@
             </NSpace>
         </template>
 
-        <!-- 消息列表内容 -->
+        <!-- Message list content -->
         <div v-if="!isCollapsed" :style="contentStyle">
-            <!-- 空状态 -->
+            <!-- Empty state -->
             <NEmpty
                 v-if="messages.length === 0"
                 :description="t('conversation.noMessages')"
@@ -111,7 +111,7 @@
                 </template>
             </NEmpty>
 
-            <!-- 消息列表 -->
+            <!-- Message list -->
             <NScrollbar v-else :style="scrollbarStyle">
                 <NList>
                     <NListItem
@@ -132,7 +132,7 @@
                                 }"
                             >
                             <div class="cm-row">
-                                <!-- 角色标签（小号，单行布局） -->
+                                <!-- Role tag (small, single-line layout) -->
                                 <NSpace align="center" :size="4" class="left">
                                     <NDropdown
                                         trigger="click"
@@ -163,7 +163,7 @@
                                     </NDropdown>
                                 </NSpace>
 
-                                <!-- 内容输入 -->
+                                <!-- Content input -->
                                 <div class="content">
                                     <VariableAwareInput
                                         v-if="canEditMessages"
@@ -180,17 +180,17 @@
                                         @variable-extracted="handleVariableExtracted"
                                         @add-missing-variable="handleAddMissingVariable"
                                     />
-                                    <!-- 只读模式下显示纯文本 -->
+                                    <!-- Show plain text in read-only mode -->
                                     <NText v-if="!canEditMessages">{{ message.content }}</NText>
                                 </div>
 
-                                <!-- 操作按钮（选择/上/下/删） -->
+                                <!-- Action buttons (select / up / down / delete) -->
                                 <NSpace
                                     v-if="canEditMessages"
                                     :size="4"
                                     class="actions"
                                 >
-                                    <!-- 🆕 选择按钮（仅在启用消息优化且消息可优化时显示） -->
+                                    <!-- 🆕 Select button (only shown when message optimization is enabled and the message is optimizable) -->
                                     <NButton
                                         v-if="enableMessageOptimization && canOptimizeMessage(message)"
                                         @click.stop="handleMessageClick(message)"
@@ -310,7 +310,7 @@
                     </NListItem>
                 </NList>
 
-                <!-- 添加消息按钮（去边框、去额外内边距） -->
+                <!-- Add message button (borderless, no extra padding) -->
                 <div v-if="canEditMessages" class="mt-4 add-row">
                     <NSpace justify="center">
                         <NDropdown
@@ -380,13 +380,13 @@ import type { ConversationMessage } from "@prompt-optimizer/core";
 const { t } = useI18n();
 const toast = useToast();
 
-// 性能监控
+// Performance monitoring
 const { recordUpdate } = usePerformanceMonitor("ConversationManager");
 
-// 防抖节流
+// Debounce/throttle
 const { batchExecute } = useDebounceThrottle();
 
-// Props 和 Events
+// Props and Events
 const props = withDefaults(defineProps<ConversationManagerProps>(), {
     disabled: false,
     readonly: false,
@@ -400,13 +400,13 @@ const props = withDefaults(defineProps<ConversationManagerProps>(), {
     scanVariables: () => [],
     replaceVariables: (content: string) => content,
     isPredefinedVariable: () => false,
-    // 🆕 临时变量
+    // 🆕 Temporary variables
     temporaryVariables: () => ({}),
-    // 🆕 消息优化相关
+    // 🆕 Message optimization-related
     selectedMessageId: undefined,
     enableMessageOptimization: false,
     isMessageOptimizing: false,
-    // 🆕 工具管理相关
+    // 🆕 Tool management-related
     enableToolManagement: true,
 });
 
@@ -422,17 +422,17 @@ const emit = defineEmits<{
     (e: "ready"): void;
 }>();
 
-// 状态管理 - 使用 shallowRef 优化大数据渲染
+// State management - use shallowRef to optimize rendering of large data
 const loading = ref(false);
 const isCollapsed = ref(false);
 
-// 批处理状态更新优化
+// Batch state update optimization
 const batchStateUpdate = batchExecute((updates: Array<() => void>) => {
     updates.forEach((update) => update());
     recordUpdate();
-}, 16); // 使用16ms批处理，匹配60fps
+}, 16); // Use 16ms batching to match 60fps
 
-// 计算属性
+// Computed properties
 const buttonSize = computed(() => {
     const sizeMap = {
         small: "tiny",
@@ -475,15 +475,15 @@ const scrollbarStyle = computed(() => {
     return {};
 });
 
-// 消息编辑权限控制
+// Message editing permission control
 const canEditMessages = computed(() => {
-    // readonly优先级最高
+    // readonly takes the highest priority
     if (props.readonly) return false;
-    // 允许编辑
+    // Allow editing
     return true;
 });
 
-// 变量相关计算属性（统一使用注入函数）
+// Variable-related computed properties (use the injected functions uniformly)
 const allUsedVariables = computed(() => {
     if (!props.showVariablePreview) return [];
     const vars = new Set<string>();
@@ -503,7 +503,7 @@ const allMissingVariables = computed(() => {
     );
 });
 
-// 角色切换下拉
+// Role switch dropdown
 const roleOptions = computed(() => [
     { label: t("conversation.roles.system"), key: "system" },
     { label: t("conversation.roles.user"), key: "user" },
@@ -511,7 +511,7 @@ const roleOptions = computed(() => [
     { label: t("conversation.roles.tool"), key: "tool" },
 ]);
 
-// 添加消息的下拉菜单选项
+// Dropdown menu options for adding a message
 const addMessageOptions = computed(() => [
     {
         label: t("conversation.roles.system"),
@@ -613,7 +613,7 @@ const addMessageOptions = computed(() => [
     },
 ]);
 
-// 工具函数
+// Utility functions
 const getRoleTagType = (role: ConversationMessage["role"]) => {
     const typeMap = {
         system: "info",
@@ -624,9 +624,9 @@ const getRoleTagType = (role: ConversationMessage["role"]) => {
     return typeMap[role] || "default";
 };
 
-// 动态autosize配置（轻量化版本）
+// Dynamic autosize config (lightweight version)
 
-// 消息处理方法 - 移除防抖以确保输入显示同步
+// Message handling methods - debouncing removed to keep the input display in sync
 const handleMessageUpdate = (index: number, message: ConversationMessage) => {
     const newMessages = [...props.messages];
     newMessages[index] = message;
@@ -660,10 +660,10 @@ const handleAddMessage = () => {
 
 const handleAddMessageWithRole = (role: ConversationMessage["role"]) => {
     const newMessage: ConversationMessage = {
-        id: uuidv4(), // 🆕 自动生成唯一 ID
+        id: uuidv4(), // 🆕 Automatically generate a unique ID
         role,
         content: "",
-        originalContent: "", // 🆕 保存原始内容
+        originalContent: "", // 🆕 Save the original content
     };
 
     const newMessages = [...props.messages, newMessage];
@@ -675,7 +675,7 @@ const handleOpenContextEditor = () => {
     emit("openContextEditor", [...props.messages], props.availableVariables);
 };
 
-// 角色切换
+// Role switch
 const handleRoleSelect = (index: number, role: ConversationMessage["role"]) => {
     const current = props.messages[index];
     if (!current || current.role === role) return;
@@ -686,8 +686,8 @@ const handleRoleSelect = (index: number, role: ConversationMessage["role"]) => {
     emit("messageChange", index, updated, "update");
 };
 
-// 处理变量提取
-// 注意：只 emit 事件，由父组件处理保存和显示 toast（参考 ContextEditor 的实现）
+// Handle variable extraction
+// Note: only emit the event; the parent component handles saving and showing the toast (see the ContextEditor implementation)
 const handleVariableExtracted = (data: {
   variableName: string;
   variableValue: string;
@@ -696,23 +696,23 @@ const handleVariableExtracted = (data: {
   emit('variable-extracted', data);
 };
 
-// 处理添加缺失变量
+// Handle adding a missing variable
 const handleAddMissingVariable = (varName: string) => {
   emit('add-missing-variable', varName);
 };
 
-// 🆕 消息优化功能
-// 判断消息是否可以被优化（只有 user 和 system 角色可优化）
+// 🆕 Message optimization feature
+// Determine whether a message can be optimized (only the user and system roles are optimizable)
 const canOptimizeMessage = (message: ConversationMessage): boolean => {
     return message.role === 'user' || message.role === 'system';
 };
 
-// 处理消息点击（用于选择要优化的消息）
+// Handle message click (used to select the message to optimize)
 const handleMessageClick = (message: ConversationMessage) => {
-    // 如果未启用消息优化功能，直接返回
+    // If the message optimization feature is not enabled, return directly
     if (!props.enableMessageOptimization) return;
 
-    // 只有可优化的消息才能被选中
+    // Only optimizable messages can be selected
     if (!canOptimizeMessage(message)) {
         toast.warning(
             t("toast.warning.cannotOptimizeRole", {
@@ -722,24 +722,24 @@ const handleMessageClick = (message: ConversationMessage) => {
         return;
     }
 
-    // 触发消息选择事件
-    // 父组件应该监听此事件并调用 useConversationOptimization 的 selectMessage 方法
+    // Trigger the message selection event
+    // The parent component should listen to this event and call the selectMessage method of useConversationOptimization
     emit('messageSelect', message);
 };
 
-// 初始化：为现有消息补全 id 和 originalContent 字段
+// Initialization: backfill the id and originalContent fields for existing messages
 onMounted(() => {
     let needsUpdate = false;
     const updatedMessages = props.messages.map(msg => {
         const updated = { ...msg };
 
-        // 补全缺失的 id
+        // Backfill missing ids
         if (!updated.id) {
             updated.id = uuidv4();
             needsUpdate = true;
         }
 
-        // 补全缺失的 originalContent
+        // Backfill missing originalContent
         if (updated.originalContent === undefined) {
             updated.originalContent = updated.content;
             needsUpdate = true;
@@ -748,13 +748,13 @@ onMounted(() => {
         return updated;
     });
 
-    // 如果有更新，emit 新的消息数组
+    // If anything was updated, emit the new message array
     if (needsUpdate) {
         emit("update:messages", updatedMessages);
     }
 });
 
-// 生命周期 - 使用批处理优化
+// Lifecycle - use batch optimization
 watch(
     () => props.messages,
     () => {
@@ -774,7 +774,7 @@ watch(
 
 .cm-row {
     display: flex;
-    align-items: flex-start;  /* 改为顶部对齐 */
+    align-items: flex-start;  /* Changed to top alignment */
     gap: 8px;
     flex-wrap: nowrap;
 }
@@ -802,7 +802,7 @@ watch(
     min-width: 0;
 }
 
-/* VariableAwareInput 样式适配 */
+/* VariableAwareInput style adaptation */
 .cm-row .content :deep(.variable-aware-input-wrapper) {
     width: 100%;
 }
@@ -822,13 +822,13 @@ watch(
     box-shadow: 0 0 0 2px var(--n-primary-color-suppl);
 }
 
-/* CodeMirror 高度控制 */
+/* CodeMirror height control */
 .cm-row .content :deep(.cm-scroller) {
     min-height: 1.5em;
-    max-height: 15em;  /* 约 10 行 */
+    max-height: 15em;  /* About 10 lines */
 }
 
-/* 移动端适配 */
+/* Mobile adaptation */
 @media (max-width: 768px) {
     .cm-row {
         gap: 4px;
@@ -839,7 +839,7 @@ watch(
     }
 }
 
-/* 🆕 消息优化功能样式 */
+/* 🆕 Message optimization feature styles */
 .message-card {
     transition: all 0.2s ease;
 }

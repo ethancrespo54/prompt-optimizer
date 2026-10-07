@@ -8,20 +8,20 @@ import type { VariableManagerHooks } from './useVariableManager'
 import type { TestAreaPanelInstance } from '../../components/types/test-area'
 
 /**
- * 多对话模式专用测试 Composable
+ * Test composable dedicated to multi-conversation mode
  *
- * 专门处理上下文-多消息模式的测试逻辑，包括：
- * - 选中消息的 V0 对比
- * - 会话上下文处理
- * - 工具调用支持
+ * Specifically handles the test logic of context multi-message mode, including:
+ * - V0 comparison of the selected message
+ * - Conversation context handling
+ * - Tool call support
  *
- * @param services 服务实例引用
- * @param selectedTestModel 测试模型选择
- * @param optimizationContext 优化上下文（会话消息）
- * @param optimizationContextTools 上下文工具列表
- * @param variableManager 变量管理器
- * @param selectedMessageId 当前选中的消息ID（用于对比模式）
- * @returns 多对话测试接口
+ * @param services Service instance reference
+ * @param selectedTestModel Test model selection
+ * @param optimizationContext Optimization context (conversation messages)
+ * @param optimizationContextTools Context tool list
+ * @param variableManager Variable manager
+ * @param selectedMessageId Currently selected message ID (used for compare mode)
+ * @returns Multi-conversation test interface
  */
 export function useConversationTester(
   services: Ref<AppServices | null>,
@@ -46,10 +46,10 @@ export function useConversationTester(
     },
 
     /**
-     * 执行多对话测试（支持对比模式）
-     * @param isCompareMode 是否对比模式
-     * @param testVariables 测试变量
-     * @param testPanelRef 测试面板引用（用于工具调用回调）
+     * Run a multi-conversation test (supports compare mode)
+     * @param isCompareMode Whether in compare mode
+     * @param testVariables Test variables
+     * @param testPanelRef Test panel reference (used for tool call callbacks)
      */
     executeTest: async (
       isCompareMode: boolean,
@@ -66,25 +66,25 @@ export function useConversationTester(
         return
       }
 
-      // 检查会话上下文
+      // Check the conversation context
       if (!optimizationContext.value || optimizationContext.value.length === 0) {
         toast.error(t('test.error.noConversation'))
         return
       }
 
       if (isCompareMode) {
-        // 对比模式：并发测试原始和优化会话
+        // Compare mode: test the original and optimized conversations concurrently
         const originalTestPromise = state.testConversation('original', testVariables, testPanelRef)
         const optimizedTestPromise = state.testConversation('optimized', testVariables, testPanelRef)
         await Promise.all([originalTestPromise, optimizedTestPromise])
       } else {
-        // 单一模式：只测试优化后的会话
+        // Single mode: only test the optimized conversation
         await state.testConversation('optimized', testVariables, testPanelRef)
       }
     },
 
     /**
-     * 测试特定类型的会话（原始 vs 优化）
+     * Test a specific kind of conversation (original vs optimized)
      */
     testConversation: async (
       type: 'original' | 'optimized',
@@ -93,7 +93,7 @@ export function useConversationTester(
     ) => {
       const isOriginal = type === 'original'
 
-      // 设置测试状态
+      // Set the test state
       if (isOriginal) {
         state.testResults.isTestingOriginal = true
         state.testResults.originalResult = ''
@@ -104,7 +104,7 @@ export function useConversationTester(
         state.testResults.optimizedReasoning = ''
       }
 
-      // 清除对应类型的工具调用数据
+      // Clear the tool call data of the corresponding type
       testPanelRef?.clearToolCalls(isOriginal ? 'original' : 'optimized')
 
       try {
@@ -134,16 +134,16 @@ export function useConversationTester(
           },
         }
 
-        // 变量：合并全局变量 + 测试变量
+        // Variables: merge global variables + test variables
         const baseVars = variableManager?.variableManager.value?.resolveAllVariables() || {}
         const variables = {
           ...baseVars,
           ...(testVars || {}),
         }
 
-        // 构造会话消息：
-        // - 原始会话（original）：只有选中的消息使用 originalContent（V0），其他消息使用当前版本
-        // - 优化会话（optimized）：所有消息都使用当前版本
+        // Construct the conversation messages:
+        // - Original conversation (original): only the selected message uses originalContent (V0), other messages use the current version
+        // - Optimized conversation (optimized): all messages use the current version
         const messages: ConversationMessage[] = isOriginal
           ? optimizationContext.value.map(msg => ({
               ...msg,
@@ -153,10 +153,10 @@ export function useConversationTester(
             }))
           : optimizationContext.value
 
-        // 检查是否有工具
+        // Check whether there are tools
         const hasTools = optimizationContextTools.value?.length > 0
 
-        // 使用自定义会话测试
+        // Use the custom conversation test
         await services.value!.promptService.testCustomConversationStream(
           {
             modelKey: selectedTestModel.value,
@@ -187,7 +187,7 @@ export function useConversationTester(
         const testTypeKey = type === 'original' ? 'originalTestFailed' : 'optimizedTestFailed'
         toast.error(`${t(`test.error.${testTypeKey}`)}: ${errorMessage}`)
       } finally {
-        // 重置测试状态
+        // Reset the test state
         if (isOriginal) {
           state.testResults.isTestingOriginal = false
         } else {

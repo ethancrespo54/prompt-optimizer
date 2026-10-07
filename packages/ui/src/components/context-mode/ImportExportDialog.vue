@@ -1,5 +1,5 @@
 <template>
-    <!-- 导入模式 -->
+    <!-- Import mode -->
     <NModal
         v-if="mode === 'import'"
         v-model:show="localVisible"
@@ -11,7 +11,7 @@
         @update:show="handleVisibilityChange"
     >
         <template #default>
-            <!-- 格式选择 -->
+            <!-- Format selection -->
             <div class="mb-4">
                 <label class="block text-sm font-medium mb-2">{{
                     t("contextEditor.importFormat")
@@ -39,7 +39,7 @@
                 </p>
             </div>
 
-            <!-- 文件上传 -->
+            <!-- File upload -->
             <div class="mb-4">
                 <NSpace align="center" :size="8" class="mb-2">
                     <input
@@ -78,7 +78,7 @@
                 </NSpace>
             </div>
 
-            <!-- 文本输入区域 -->
+            <!-- Text input area -->
             <NInput
                 v-model:value="importData"
                 type="textarea"
@@ -110,7 +110,7 @@
         </template>
     </NModal>
 
-    <!-- 导出模式 -->
+    <!-- Export mode -->
     <NModal
         v-else
         v-model:show="localVisible"
@@ -122,7 +122,7 @@
         @update:show="handleVisibilityChange"
     >
         <template #default>
-            <!-- 格式选择 -->
+            <!-- Format selection -->
             <div class="mb-4">
                 <label class="block text-sm font-medium mb-2">{{
                     t("contextEditor.exportFormat")
@@ -150,7 +150,7 @@
                 </p>
             </div>
 
-            <!-- 导出预览 -->
+            <!-- Export preview -->
             <div class="mb-4">
                 <label class="block text-sm font-medium mb-2">{{
                     t("contextEditor.exportPreview")
@@ -243,7 +243,7 @@ import { useContextEditor } from '../../composables/context/useContextEditor';
 import type { ConversationMessage, ToolDefinition } from "@prompt-optimizer/core";
 import type { StandardPromptData } from "../../types";
 
-// 类型定义
+// Type definitions
 interface Props {
     visible: boolean;
     mode: 'import' | 'export';
@@ -256,7 +256,7 @@ interface ImportSuccessData {
     tools?: ToolDefinition[];
 }
 
-// Props 和 Events
+// Props and Events
 const props = withDefaults(defineProps<Props>(), {
     tools: () => [],
 });
@@ -270,10 +270,10 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 
-// 复用 useContextEditor
+// Reuse useContextEditor
 const contextEditor = useContextEditor();
 
-// 本地状态
+// Local state
 const localVisible = ref(props.visible);
 const loading = ref(false);
 const importData = ref("");
@@ -283,18 +283,18 @@ const selectedImportFormat = ref("smart");
 const selectedExportFormat = ref("standard");
 const fileInputRef = ref<HTMLInputElement | null>(null);
 
-// 同步 visible 状态
+// Sync the visible state
 watch(() => props.visible, (newVisible) => {
     localVisible.value = newVisible;
     if (newVisible) {
-        // 重置状态
+        // Reset state
         importData.value = "";
         importError.value = "";
         exportError.value = "";
     }
 });
 
-// 导入格式选项
+// Import format options
 const importFormats = computed(() => [
     { id: "smart", name: t("contextEditor.importFormats.smart.name"), description: t("contextEditor.importFormats.smart.description") },
     { id: "openai", name: t("contextEditor.importFormats.openai.name"), description: t("contextEditor.importFormats.openai.description") },
@@ -302,7 +302,7 @@ const importFormats = computed(() => [
     { id: "conversation", name: t("contextEditor.importFormats.conversation.name"), description: t("contextEditor.importFormats.conversation.description") },
 ]);
 
-// 导出格式选项
+// Export format options
 type ExportFormat = "standard" | "openai";
 
 const exportFormats = computed(() => [
@@ -353,7 +353,7 @@ const IMPORT_JSON_SNIPPETS: Record<string, string> = {
     smart: ``,
 };
 
-// 导出预览数据
+// Export preview data
 const buildExportPayload = (): StandardPromptData => ({
     messages: props.messages.map((msg) => ({
         role: msg.role,
@@ -388,7 +388,7 @@ const exportPreviewData = computed(() => {
     return JSON.stringify(basePayload, null, 2);
 });
 
-// 事件处理
+// Event handling
 const handleVisibilityChange = (visible: boolean) => {
     localVisible.value = visible;
     if (!visible) {
@@ -402,7 +402,7 @@ const handleClose = () => {
     handleVisibilityChange(false);
 };
 
-// 消息规范化
+// Message normalization
 const normalizeMessage = (
     msg: Partial<ConversationMessage>,
 ): ConversationMessage => {
@@ -438,7 +438,7 @@ const normalizeMessage = (
     return normalized;
 };
 
-// 文件上传处理
+// File upload handling
 const handleFileUpload = async (event: Event) => {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
@@ -468,7 +468,7 @@ const handleFileUpload = async (event: Event) => {
     }
 };
 
-// 导入提交处理
+// Import submit handling
 const handleImportSubmit = async () => {
     if (!importData.value.trim()) {
         importError.value = t("contextEditor.importDataRequired");
@@ -492,7 +492,7 @@ const handleImportSubmit = async () => {
                 result = contextEditor.convertFromLangFuse(jsonData);
                 break;
             case "conversation":
-                // 直接设置为对话格式
+                // Set directly to the conversation format
                 if (Array.isArray(jsonData)) {
                     emit('import-success', {
                         messages: jsonData.map((msg: Partial<ConversationMessage>) => normalizeMessage(msg)),
@@ -514,7 +514,7 @@ const handleImportSubmit = async () => {
                 return;
         }
 
-        // 处理转换结果
+        // Handle the conversion result
         if (result && result.success && contextEditor.currentData.value) {
             const data = contextEditor.currentData.value;
             emit('import-success', {
@@ -537,7 +537,7 @@ const handleImportSubmit = async () => {
     }
 };
 
-// 导出到文件
+// Export to file
 const notifyExportError = (key: string, err?: unknown) => {
     const baseMessage = t(key);
     const details = err instanceof Error ? err.message : "";
@@ -575,7 +575,7 @@ const handleExportToFile = () => {
     }
 };
 
-// 导出到剪贴板
+// Export to clipboard
 const handleExportToClipboard = async () => {
     try {
         loading.value = true;
@@ -601,7 +601,7 @@ const handleExportToClipboard = async () => {
     }
 };
 
-// 获取导入占位符
+// Get the import placeholder
 const getImportPlaceholder = () => {
     const format = selectedImportFormat.value;
     const prefix = t(`contextEditor.importPlaceholders.${format}`);

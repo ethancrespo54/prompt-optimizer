@@ -1,6 +1,6 @@
 /**
- * 连接配置管理工具函数
- * 统一处理文本模型和图像模型的提供商切换时连接配置逻辑
+ * Connection config management utility functions
+ * Handles the connection config logic uniformly when switching providers for text models and image models
  */
 
 export interface ProviderMeta {
@@ -8,21 +8,21 @@ export interface ProviderMeta {
 }
 
 /**
- * 处理提供商切换时的连接配置更新
+ * Handle connection config updates when switching providers
  *
- * 使用场景：
- * 1. 新建/编辑表单中用户手动切换提供商（resetConnectionConfig: true）
- *    - 重置 baseURL 为新提供商的默认值
- *    - 清空 apiKey 等其他字段（因为不同提供商的凭证不通用）
+ * Use cases:
+ * 1. The user manually switches the provider in a create/edit form (resetConnectionConfig: true)
+ *    - Reset baseURL to the new provider's default value
+ *    - Clear other fields such as apiKey (since credentials are not shared between providers)
  *
- * 2. 打开编辑弹窗时的初始化（resetConnectionConfig: false）
- *    - 保留用户已保存的所有配置（baseURL、apiKey 等）
- *    - 仅在 baseURL 为空时补充提供商默认值
+ * 2. Initialization when opening the edit dialog (resetConnectionConfig: false)
+ *    - Keep all of the user's saved config (baseURL, apiKey, etc.)
+ *    - Only fill in the provider default when baseURL is empty
  *
- * @param currentConfig 当前的连接配置
- * @param providerMeta 提供商元数据（包含 defaultBaseURL）
- * @param resetConnectionConfig 是否重置连接配置
- * @returns 更新后的连接配置
+ * @param currentConfig Current connection config
+ * @param providerMeta Provider metadata (including defaultBaseURL)
+ * @param resetConnectionConfig Whether to reset the connection config
+ * @returns The updated connection config
  */
 export function computeConnectionConfig(
   currentConfig: Record<string, unknown> | undefined,
@@ -30,8 +30,8 @@ export function computeConnectionConfig(
   resetConnectionConfig: boolean
 ): Record<string, unknown> {
   if (resetConnectionConfig) {
-    // 用户手动切换提供商：重置为新提供商默认配置，清空凭证
-    // 显式将旧字段设为空字符串，确保 Vue 响应式更新输入框
+    // The user manually switches the provider: reset to the new provider's default config and clear the credentials
+    // Explicitly set the old fields to empty strings to make sure Vue reactively updates the input boxes
     const result: Record<string, unknown> = {}
     if (currentConfig) {
       for (const key of Object.keys(currentConfig)) {
@@ -44,7 +44,7 @@ export function computeConnectionConfig(
     return result
   }
 
-  // 编辑弹窗初始化：保留已保存配置，仅补充空缺的 baseURL
+  // Edit dialog initialization: keep the saved config and only fill in a missing baseURL
   if (providerMeta?.defaultBaseURL && !currentConfig?.baseURL) {
     return {
       ...currentConfig,
@@ -55,8 +55,8 @@ export function computeConnectionConfig(
 }
 
 /**
- * 规范化提供商切换选项
- * 支持布尔值简写和对象形式的参数
+ * Normalize the provider switch options
+ * Supports a boolean shorthand and the object form of the parameter
  */
 export interface NormalizedProviderChangeOptions {
   autoSelectFirstModel: boolean

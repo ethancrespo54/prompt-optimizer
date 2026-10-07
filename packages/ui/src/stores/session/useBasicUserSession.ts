@@ -1,8 +1,8 @@
 /**
  * Basic-User Session Store
  *
- * 管理 Basic 模式下 User 子模式的会话状态
- * 结构与 BasicSystemSession 相同
+ * Manages the session state of the User sub-mode under Basic mode
+ * Same structure as BasicSystemSession
  */
 
 import { defineStore } from 'pinia'
@@ -15,7 +15,7 @@ import {
 } from '../../types/evaluation'
 
 /**
- * 测试结果结构
+ * Test result structure
  */
 export interface TestResults {
   originalResult: string
@@ -25,10 +25,10 @@ export interface TestResults {
 }
 
 /**
- * basic-user 测试面板的版本选择：
- * - 0: v0（原始提示词）
- * - >=1: v1..vn（历史链版本号）
- * - 'latest': 跟随最新 vn
+ * Version selection of the basic-user test panel:
+ * - 0: v0 (original prompt)
+ * - >=1: v1..vn (history chain version number)
+ * - 'latest': follows the latest vn
  */
 export type TestPanelVersionValue = 0 | number | 'latest'
 
@@ -60,50 +60,50 @@ export interface BasicUserLayoutConfig {
 }
 
 /**
- * Basic-User 会话状态
+ * Basic-User session state
  */
 export interface BasicUserSessionState {
-  // 提示词相关
+  // Prompt-related
   prompt: string
   optimizedPrompt: string
   reasoning: string
 
-  // 历史相关（只存 ID）
+  // History-related (only the ID is stored)
   chainId: string
   versionId: string
 
-  // 测试区域内容
+  // Test area content
   testContent: string
 
-  // 测试结果
+  // Test results
   testResults: TestResults | null
 
-  // 测试布局与列配置（basic-user 专用：最多 4 列）
+  // Test layout and column config (basic-user only: up to 4 columns)
   layout: BasicUserLayoutConfig
   testVariants: TestVariantConfig[]
 
-  // 测试结果（按列持久化，支持最多 4 列）
+  // Test results (persisted per column, supports up to 4 columns)
   testVariantResults: TestVariantResults
   testVariantLastRunFingerprint: TestVariantLastRunFingerprint
 
-  // 评估结果（分类型持久化，用于重启恢复）
+  // Evaluation results (persisted by type, used for restore after a restart)
   evaluationResults: PersistedEvaluationResults
 
-  // 模型和模板选择（只存 ID/key，不存对象）
+  // Model and template selection (only the ID/key is stored, not objects)
   selectedOptimizeModelKey: string
   selectedTestModelKey: string
   selectedTemplateId: string | null
   selectedIterateTemplateId: string | null
 
-  // 对比模式
+  // Compare mode
   isCompareMode: boolean
 
-  // 最后活跃时间
+  // Last active time
   lastActiveAt: number
 }
 
 /**
- * 默认状态
+ * Default state
  */
 const createDefaultState = (): BasicUserSessionState => ({
   prompt: '',
@@ -145,24 +145,24 @@ const createDefaultState = (): BasicUserSessionState => ({
 })
 
 export const useBasicUserSession = defineStore('basicUserSession', () => {
-  // ========== 状态定义（使用独立 ref，而非包装在 state 对象中）==========
+  // ========== State definitions (uses independent refs rather than wrapping them in a state object) ==========
 
-  // 提示词相关
+  // Prompt-related
   const prompt = ref('')
   const optimizedPrompt = ref('')
   const reasoning = ref('')
 
-  // 历史相关（只存 ID）
+  // History-related (only the ID is stored)
   const chainId = ref('')
   const versionId = ref('')
 
-  // 测试区域内容
+  // Test area content
   const testContent = ref('')
 
-  // 测试结果
+  // Test results
   const testResults = ref<TestResults | null>(null)
 
-  // 测试布局与列配置
+  // Test layout and column config
   const layout = ref<BasicUserLayoutConfig>({
     mainSplitLeftPct: 50,
     testColumnCount: 2,
@@ -175,7 +175,7 @@ export const useBasicUserSession = defineStore('basicUserSession', () => {
     { id: 'd', version: 'latest', modelKey: '' },
   ])
 
-  // 测试结果（按列持久化）
+  // Test results (persisted per column)
   const testVariantResults = ref<TestVariantResults>({
     a: { result: '', reasoning: '' },
     b: { result: '', reasoning: '' },
@@ -190,23 +190,23 @@ export const useBasicUserSession = defineStore('basicUserSession', () => {
     d: '',
   })
 
-  // 评估结果
+  // Evaluation results
   const evaluationResults = ref<PersistedEvaluationResults>(createDefaultEvaluationResults())
 
-  // 模型和模板选择（只存 ID/key，不存对象）
+  // Model and template selection (only the ID/key is stored, not objects)
   const selectedOptimizeModelKey = ref('')
   const selectedTestModelKey = ref('')
   const selectedTemplateId = ref<string | null>(null)
   const selectedIterateTemplateId = ref<string | null>(null)
 
-  // 对比模式
+  // Compare mode
   const isCompareMode = ref(true)
 
-  // 最后活跃时间
+  // Last active time
   const lastActiveAt = ref(Date.now())
 
   /**
-   * 更新提示词
+   * Update the prompt
    */
   const updatePrompt = (promptValue: string) => {
     if (prompt.value === promptValue) return
@@ -215,7 +215,7 @@ export const useBasicUserSession = defineStore('basicUserSession', () => {
   }
 
   /**
-   * 更新优化结果
+   * Update the optimization result
    */
   const updateOptimizedResult = (payload: {
     optimizedPrompt: string
@@ -244,12 +244,12 @@ export const useBasicUserSession = defineStore('basicUserSession', () => {
   }
 
   /**
-   * 更新测试结果
+   * Update the test results
    */
   const updateTestResults = (results: TestResults | null) => {
     const prev = testResults.value
 
-    // 检查是否相同
+    // Check whether they are the same
     const isSame =
       prev === results ||
       (!!prev &&
@@ -261,13 +261,13 @@ export const useBasicUserSession = defineStore('basicUserSession', () => {
 
     if (isSame) return
 
-    // 直接赋值给 ref（现在是响应式的）
+    // Assign directly to the ref (now reactive)
     testResults.value = results
     lastActiveAt.value = Date.now()
   }
 
   /**
-   * 设置测试区列数
+   * Set the number of test area columns
    */
   const setTestColumnCount = (count: TestColumnCount) => {
     if (layout.value.testColumnCount === count) return
@@ -277,7 +277,7 @@ export const useBasicUserSession = defineStore('basicUserSession', () => {
   }
 
   /**
-   * 设置主布局左侧宽度（百分比）
+   * Set the left width of the main layout (percentage)
    */
   const setMainSplitLeftPct = (pct: number) => {
     const normalized = Number.isFinite(pct) ? Math.round(pct) : layout.value.mainSplitLeftPct
@@ -289,7 +289,7 @@ export const useBasicUserSession = defineStore('basicUserSession', () => {
   }
 
   /**
-   * 更新某一列（variant）的版本/模型配置
+   * Update the version/model config of a column (variant)
    */
   const updateTestVariant = (id: TestVariantId, patch: Partial<Omit<TestVariantConfig, 'id'>>) => {
     const idx = testVariants.value.findIndex(v => v.id === id)
@@ -306,7 +306,7 @@ export const useBasicUserSession = defineStore('basicUserSession', () => {
   }
 
   /**
-   * 更新测试内容
+   * Update the test content
    */
   const updateTestContent = (content: string) => {
     if (testContent.value === content) return
@@ -315,18 +315,18 @@ export const useBasicUserSession = defineStore('basicUserSession', () => {
   }
 
   /**
-   * 更新优化模型选择
+   * Update the optimize model selection
    */
   const updateOptimizeModel = (modelKey: string) => {
     if (selectedOptimizeModelKey.value === modelKey) return
     selectedOptimizeModelKey.value = modelKey
     lastActiveAt.value = Date.now()
-    // 异步保存完整状态（best-effort）
+    // Save the full state asynchronously (best-effort)
     saveSession()
   }
 
   /**
-   * 更新测试模型选择
+   * Update the test model selection
    */
   const updateTestModel = (modelKey: string) => {
     if (selectedTestModelKey.value === modelKey) return
@@ -336,7 +336,7 @@ export const useBasicUserSession = defineStore('basicUserSession', () => {
   }
 
   /**
-   * 更新模板选择
+   * Update the template selection
    */
   const updateTemplate = (templateId: string | null) => {
     if (selectedTemplateId.value === templateId) return
@@ -346,7 +346,7 @@ export const useBasicUserSession = defineStore('basicUserSession', () => {
   }
 
   /**
-   * 更新迭代模板选择
+   * Update the iterate template selection
    */
   const updateIterateTemplate = (templateId: string | null) => {
     if (selectedIterateTemplateId.value === templateId) return
@@ -356,7 +356,7 @@ export const useBasicUserSession = defineStore('basicUserSession', () => {
   }
 
   /**
-   * 切换对比模式
+   * Toggle compare mode
    */
   const toggleCompareMode = (enabled?: boolean) => {
     const nextValue = enabled ?? !isCompareMode.value
@@ -366,7 +366,7 @@ export const useBasicUserSession = defineStore('basicUserSession', () => {
   }
 
   /**
-   * 重置状态
+   * Reset the state
    */
   const reset = () => {
     const defaultState = createDefaultState()
@@ -391,13 +391,13 @@ export const useBasicUserSession = defineStore('basicUserSession', () => {
   }
 
   /**
-   * 保存会话到持久化存储
-   * 使用 PreferenceService（Codex 要求）
+   * Save the session to persistent storage
+   * Uses PreferenceService (Codex requirement)
    */
   const saveSession = async () => {
     const $services = getPiniaServices()
     if (!$services?.preferenceService) {
-      console.warn('[BasicUserSession] PreferenceService 不可用，无法保存会话')
+      console.warn('[BasicUserSession] PreferenceService is unavailable, cannot save the session')
       return
     }
 
@@ -427,18 +427,18 @@ export const useBasicUserSession = defineStore('basicUserSession', () => {
         sessionState
       )
     } catch (error) {
-      console.error('[BasicUserSession] 保存会话失败:', error)
+      console.error('[BasicUserSession] Failed to save the session:', error)
     }
   }
 
   /**
-   * 从持久化存储恢复会话
-   * 使用 PreferenceService（Codex 要求）
+   * Restore the session from persistent storage
+   * Uses PreferenceService (Codex requirement)
    */
   const restoreSession = async () => {
     const $services = getPiniaServices()
     if (!$services?.preferenceService) {
-      console.warn('[BasicUserSession] PreferenceService 不可用，无法恢复会话')
+      console.warn('[BasicUserSession] PreferenceService is unavailable, cannot restore the session')
       return
     }
 
@@ -461,7 +461,7 @@ export const useBasicUserSession = defineStore('basicUserSession', () => {
         testContent.value = parsed.testContent
         testResults.value = parsed.testResults
 
-        // 兼容旧数据：layout/testVariants 缺失时使用默认值
+        // Compatible with old data: use the defaults when layout/testVariants is missing
         const defaultState = createDefaultState()
         const coerceVersionValue = (value: unknown): TestPanelVersionValue | null => {
           if (value === 'latest') return 'latest'
@@ -471,7 +471,7 @@ export const useBasicUserSession = defineStore('basicUserSession', () => {
 
         const legacyModelKey = typeof parsed.selectedTestModelKey === 'string' ? parsed.selectedTestModelKey : ''
 
-        // variant results (v2): 优先从 saved 读取；否则从旧 testResults 迁移 a/b
+        // variant results (v2): prefer reading from saved; otherwise migrate a/b from the old testResults
         const savedVariantResults = (parsed as Partial<BasicUserSessionState>).testVariantResults
         const savedFingerprint = (parsed as Partial<BasicUserSessionState>).testVariantLastRunFingerprint
         const nextVariantResults: TestVariantResults = { ...defaultState.testVariantResults }
@@ -493,7 +493,7 @@ export const useBasicUserSession = defineStore('basicUserSession', () => {
             if (vr) nextVariantResults[id] = vr
           }
         } else if (parsed.testResults) {
-          // legacy: 仅 a/b
+          // legacy: a/b only
           if (typeof parsed.testResults.originalResult === 'string') nextVariantResults.a.result = parsed.testResults.originalResult
           if (typeof parsed.testResults.originalReasoning === 'string') nextVariantResults.a.reasoning = parsed.testResults.originalReasoning
           if (typeof parsed.testResults.optimizedResult === 'string') nextVariantResults.b.result = parsed.testResults.optimizedResult
@@ -537,7 +537,7 @@ export const useBasicUserSession = defineStore('basicUserSession', () => {
           })
           testVariants.value = normalized
         } else {
-          // v1 迁移：从旧 testPanels 迁移到 a/b
+          // v1 migration: migrate to a/b from the old testPanels
           type LegacyPanel = { version?: unknown; modelKey?: unknown }
           type LegacyPanels = { original?: LegacyPanel; optimized?: LegacyPanel }
           const legacyPanels = (parsed as { testPanels?: LegacyPanels }).testPanels
@@ -559,7 +559,7 @@ export const useBasicUserSession = defineStore('basicUserSession', () => {
             { id: 'd', version: 'latest', modelKey: legacyModelKey },
           ]
         }
-        // 兼容旧数据：未保存 evaluationResults 时使用默认值
+        // Compatible with old data: use the defaults when evaluationResults was not saved
         evaluationResults.value = {
           ...createDefaultEvaluationResults(),
           ...(parsed.evaluationResults && typeof parsed.evaluationResults === 'object'
@@ -574,7 +574,7 @@ export const useBasicUserSession = defineStore('basicUserSession', () => {
         lastActiveAt.value = Date.now()
       }
 
-      // 兼容迁移：模板选择（从旧 TEMPLATE_SELECTION_KEYS 迁移一次）
+      // Compatibility migration: template selection (migrated once from the old TEMPLATE_SELECTION_KEYS)
       if (!selectedTemplateId.value) {
         const legacyTemplateId = await $services.preferenceService.get(
           TEMPLATE_SELECTION_KEYS.USER_OPTIMIZE_TEMPLATE,
@@ -594,14 +594,14 @@ export const useBasicUserSession = defineStore('basicUserSession', () => {
         }
       }
     } catch (error) {
-      console.error('[BasicUserSession] 恢复会话失败:', error)
-      // 恢复失败时保持当前状态或重置为默认
+      console.error('[BasicUserSession] Failed to restore the session:', error)
+      // On a restore failure, keep the current state or reset to the defaults
       reset()
     }
   }
 
   return {
-    // ========== 状态（直接返回，Pinia 会自动追踪响应式）==========
+    // ========== State (returned directly; Pinia tracks reactivity automatically) ==========
     prompt,
     optimizedPrompt,
     reasoning,
@@ -621,7 +621,7 @@ export const useBasicUserSession = defineStore('basicUserSession', () => {
     isCompareMode,
     lastActiveAt,
 
-    // ========== 更新方法 ==========
+    // ========== Update methods ==========
     updatePrompt,
     updateOptimizedResult,
     updateTestContent,
@@ -636,7 +636,7 @@ export const useBasicUserSession = defineStore('basicUserSession', () => {
     toggleCompareMode,
     reset,
 
-    // ========== 持久化方法 ==========
+    // ========== Persistence methods ==========
     saveSession,
     restoreSession,
   }

@@ -76,21 +76,21 @@ const emit = defineEmits<{
 }>()
 
 
-// 注入服务并获取 CompareService
+// Inject services and get CompareService
 const services = inject<Ref<AppServices | null>>('services');
 if (!services) {
-  throw new Error('[OutputDisplayFullscreen] services未正确注入，请确保在App组件中正确provide了services');
+  throw new Error('[OutputDisplayFullscreen] services was not injected correctly; make sure services is provided in the App component');
 }
 
 const compareService = computed(() => {
   const servicesValue = services.value;
   if (!servicesValue) {
-    throw new Error('[OutputDisplayFullscreen] services未初始化，请确保应用已正确启动');
+    throw new Error('[OutputDisplayFullscreen] services is not initialized; make sure the app has started correctly');
   }
 
   const service = servicesValue.compareService;
   if (!service) {
-    throw new Error('[OutputDisplayFullscreen] compareService未初始化，请确保服务已正确配置');
+    throw new Error('[OutputDisplayFullscreen] compareService is not initialized; make sure the services are configured correctly');
   }
 
   return service;
@@ -104,13 +104,13 @@ const internalVisible = computed({
 })
 
 const coreEnabledActions = computed(() => {
-  // 全屏界面只需移除 fullscreen（避免递归全屏）
-  // diff 功能保留：当有 originalContent 时，OutputDisplayCore 会显示对比按钮
+  // The fullscreen view only needs to remove fullscreen (to avoid recursive fullscreen)
+  // The diff feature is kept: when originalContent exists, OutputDisplayCore shows the compare button
   return props.enabledActions?.filter(action => action !== 'fullscreen')
 })
 
 const internalContent = ref(props.content)
-// const isFullscreenReasoningExpanded = ref(true)  // 保留用于未来扩展
+// const isFullscreenReasoningExpanded = ref(true)  // Kept for future extension
 
 watch(() => props.content, (newVal) => {
   internalContent.value = newVal

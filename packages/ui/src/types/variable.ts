@@ -1,17 +1,17 @@
 /**
- * 变量管理相关类型定义
+ * Variable management-related type definitions
  */
 
-// 统一的消息结构
+// Unified message structure
 export interface ConversationMessage {
   /**
-   * 可选消息 ID（上下文/会话模式用于精确定位与历史恢复）
+   * Optional message ID (used by context/conversation mode for precise location and history restore)
    */
   id?: string
   role: 'system' | 'user' | 'assistant' | 'tool'
-  content: string  // 可包含变量语法 {{variableName}}
+  content: string  // May contain variable syntax {{variableName}}
   /**
-   * 可选原始内容（用于对比/历史恢复）
+   * Optional original content (used for comparison / history restore)
    */
   originalContent?: string
   name?: string
@@ -26,59 +26,59 @@ export interface ConversationMessage {
   tool_call_id?: string
 }
 
-// 自定义会话测试请求
+// Custom conversation test request
 export interface CustomConversationRequest {
   modelKey: string;
   messages: ConversationMessage[];
   variables: Record<string, string>;
 }
 
-// 变量值类型（MVP阶段只支持字符串）
+// Variable value type (the MVP stage only supports strings)
 export interface VariableValue {
   value: string;
-  type: 'string';  // MVP阶段只支持string类型
+  type: 'string';  // The MVP stage only supports the string type
   description?: string;
   lastModified: number;
 }
 
-// 变量存储结构
+// Variable storage structure
 export interface VariableStorage {
-  customVariables: Record<string, string>;  // 简化存储，只存值
+  customVariables: Record<string, string>;  // Simplified storage, values only
   advancedModeEnabled: boolean;
   lastConversationMessages?: ConversationMessage[];
 }
 
-// 变量来源标识
+// Variable source identifier
 export type VariableSource = 'predefined' | 'custom';
 
-// 变量管理器接口
+// Variable manager interface
 export interface IVariableManager {
-  // 变量CRUD
+  // Variable CRUD
   setVariable(name: string, value: string): void;
   getVariable(name: string): string | undefined;
   deleteVariable(name: string): void;
   listVariables(): Record<string, string>;
   
-  // 变量解析（预定义 + 自定义）
+  // Variable resolution (predefined + custom)
   resolveAllVariables(context?: Record<string, unknown>): Record<string, string>;
   
-  // 验证
+  // Validation
   validateVariableName(name: string): boolean;
   scanVariablesInContent(content: string): string[];
   
-  // 变量来源检查
+  // Variable source check
   getVariableSource(name: string): VariableSource;
   isPredefinedVariable(name: string): boolean;
   
-  // 高级模式状态
+  // Advanced mode state
   getAdvancedModeEnabled(): boolean;
   setAdvancedModeEnabled(enabled: boolean): void;
   
-  // 会话消息管理
+  // Conversation message management
   getLastConversationMessages(): ConversationMessage[];
   setLastConversationMessages(messages: ConversationMessage[]): void;
   
-  // 缺失的方法
+  // Missing methods
   getStatistics(): { customVariableCount: number; predefinedVariableCount: number; totalVariableCount: number; advancedModeEnabled: boolean; };
   replaceVariables(content: string, variables?: Record<string, string>): string;
   detectMissingVariables(content: string | ConversationMessage[], availableVariables?: Record<string, string>): string[];
@@ -86,7 +86,7 @@ export interface IVariableManager {
   importVariables(jsonData: string): void;
 }
 
-// 变量错误类
+// Variable error class
 export class VariableError extends Error {
   constructor(
     message: string, 
@@ -101,20 +101,20 @@ export class VariableError extends Error {
 
 import { PREDEFINED_VARIABLES as CORE_PREDEFINED_VARIABLES } from '@prompt-optimizer/core';
 
-// 预定义变量常量（从core导入，保证一致性）
+// Predefined variable constants (imported from core to ensure consistency)
 export const PREDEFINED_VARIABLES = CORE_PREDEFINED_VARIABLES;
 
 export type PredefinedVariable = typeof PREDEFINED_VARIABLES[number];
 
-// 变量验证规则
+// Variable validation rules
 export const VARIABLE_VALIDATION = {
-  // 变量名规则：不能为空，不能包含空白字符和花括号
+  // Variable name rules: must not be empty, must not contain whitespace or curly braces
   NAME_PATTERN: /^[^\s{}]+$/,
-  // 变量名不能以数字开头
+  // Variable names must not start with a digit
   NO_NUMBER_START_PATTERN: /^\d/u,
-  // 禁止 Mustache 控制标签前缀作为变量名（避免与 {{#if}} 等语义冲突）
+  // Forbid Mustache control tag prefixes as variable names (avoids semantic conflicts with {{#if}} etc.)
   FORBIDDEN_PREFIX_PATTERN: /^[#/^!>&]/u,
-  // 防止原型污染/异常键
+  // Prevent prototype pollution / abnormal keys
   RESERVED_NAMES: ['__proto__', 'prototype', 'constructor'] as const,
   MAX_NAME_LENGTH: 50,
   MAX_VALUE_LENGTH: 10000,

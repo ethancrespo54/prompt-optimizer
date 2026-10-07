@@ -7,7 +7,7 @@
             overflow: 'hidden',
         }"
     >
-        <!-- 标题和按钮区域 -->
+        <!-- Title and button area -->
         <NCard
             size="small"
             :bordered="false"
@@ -17,7 +17,7 @@
             :style="{ maxHeight: '120px', overflow: 'visible' }"
         >
             <NFlex justify="space-between" align="flex-start" :wrap="false">
-                <!-- 左侧：标题和版本 -->
+                <!-- Left: title and version -->
                 <NSpace vertical :size="8" class="flex-1 min-w-0">
                     <NSpace align="center" :size="12">
                         <NText class="text-lg font-semibold">{{
@@ -28,7 +28,7 @@
                             :size="4"
                             class="version-tags"
                         >
-                            <!-- V3, V2, V1... 按降序显示（最新版本在前） -->
+                            <!-- V3, V2, V1... shown in descending order (newest version first) -->
                             <NTag
                                 v-for="version in versions.slice().reverse()"
                                 :key="version.id"
@@ -43,7 +43,7 @@
                             >
                                 V{{ version.version }}
                             </NTag>
-                            <!-- 🆕 原始版本固定放在最后 -->
+                            <!-- 🆕 The original version is always placed last -->
                             <NTooltip v-if="showV0Tag" trigger="hover">
                                 <template #trigger>
                                     <NTag
@@ -61,9 +61,9 @@
                     </NSpace>
                 </NSpace>
 
-                <!-- 右侧：操作按钮 -->
+                <!-- Right: action buttons -->
                 <NSpace align="center" :size="8" class="flex-shrink-0">
-                    <!-- 预览按钮 -->
+                    <!-- Preview button -->
                     <NButton
                         v-if="showPreview && optimizedPrompt"
                         @click="$emit('open-preview')"
@@ -96,7 +96,7 @@
                             </NIcon>
                         </template>
                     </NButton>
-                    <!-- 应用到会话 -->
+                    <!-- Apply to conversation -->
                     <NButton
                         v-if="showApplyButton && versions && versions.length > 0"
                         @click="$emit('apply-to-conversation')"
@@ -123,8 +123,8 @@
                         </template>
                         {{ t("prompt.applyToConversation") }}
                     </NButton>
-                    <!-- 评估入口：分数徽章或评估按钮 -->
-                    <!-- prompt-only 评估（分析功能）不需要 optimizedPrompt -->
+                    <!-- Evaluation entry: score badge or evaluate button -->
+                    <!-- prompt-only evaluation (the analysis feature) does not need optimizedPrompt -->
                     <div v-if="showEvaluation && (optimizedPrompt || evaluationType === 'prompt-only')" class="evaluation-entry">
                         <EvaluationScoreBadge
                             v-if="hasEvaluationResult || isEvaluating"
@@ -168,7 +168,7 @@
                             </template>
                         </FocusAnalyzeButton>
                     </div>
-                    <!-- 保存本地修改（手动编辑/直接修复后建议保存到历史版本） -->
+                    <!-- Save local changes (after manual edits / direct fixes, saving to a history version is recommended) -->
                     <NButton
                         v-if="showSaveChanges"
                         type="default"
@@ -178,7 +178,7 @@
                     >
                         {{ t("prompt.saveChanges") }}
                     </NButton>
-                    <!-- 继续优化按钮 -->
+                    <!-- Continue optimizing button -->
                     <NButton
                         v-if="optimizedPrompt"
                         @click="handleIterate"
@@ -214,7 +214,7 @@
             </NFlex>
         </NCard>
 
-        <!-- 内容区域：使用 OutputDisplay 组件 -->
+        <!-- Content area: uses the OutputDisplay component -->
         <OutputDisplay
             :test-id="testId ? testId + '-output' : undefined"
             ref="outputDisplayRef"
@@ -239,7 +239,7 @@
             @save-favorite="$emit('save-favorite', $event)"
         />
     </NFlex>
-    <!-- 迭代优化弹窗 -->
+    <!-- Iterative optimization dialog -->
     <Modal v-model="showIterateInput" @confirm="submitIterate">
         <template #title>
             {{ templateTitleText }}
@@ -320,7 +320,7 @@ interface IteratePayload {
 }
 
 const props = defineProps({
-    /** E2E/测试定位用的 testId（用于 OutputDisplay 根节点 data-testid） */
+    /** testId for E2E/test targeting (used for the OutputDisplay root node data-testid) */
     testId: {
         type: String,
         default: undefined,
@@ -365,12 +365,12 @@ const props = defineProps({
         type: Boolean,
         default: false,
     },
-    // 🆕 允许外部指定迭代模板类型（基础/上下文/图像），默认保持原行为
+    // 🆕 Allow the iteration template type to be specified externally (basic/context/image); the original behavior is kept by default
     iterateTemplateType: {
         type: String as () => "iterate" | "contextIterate" | "imageIterate",
         default: undefined,
     },
-    // 是否显示预览按钮
+    // Whether to show the preview button
     showPreview: {
         type: Boolean,
         default: false,
@@ -381,29 +381,29 @@ const props = defineProps({
     },
 });
 
-// 使用评估上下文（可选，不强制要求父组件提供）
+// Use the evaluation context (optional; the parent is not required to provide it)
 const evaluation = useEvaluationContextOptional();
 
-// 使用 Pro 模式上下文（可选，仅在 Pro 模式下由 Workspace 提供）
+// Use the Pro mode context (optional; provided by the Workspace only in Pro mode)
 const proContextRef = useProContextOptional();
 
-// 获取当前版本的迭代需求（如果有）- 需要在评估类型计算之前定义
+// Get the iteration requirement of the current version (if any) - must be defined before the evaluation type is computed
 const currentIterationNote = computed(() => {
     if (!props.versions || !props.currentVersionId) return "";
     const currentVersion = props.versions.find((v) => v.id === props.currentVersionId);
     return currentVersion?.iterationNote || "";
 });
 
-// 计算评估相关的状态（从 context 获取）
+// Compute the evaluation-related state (taken from the context)
 const showEvaluation = computed(() => !!evaluation);
 
-// 判断当前使用的评估类型：有迭代需求用 prompt-iterate，否则用 prompt-only
+// Determine the evaluation type in use: use prompt-iterate when there is an iteration requirement, otherwise prompt-only
 const evaluationType = computed<'prompt-only' | 'prompt-iterate'>(() => {
     const hasIterateNote = currentIterationNote.value.trim().length > 0;
     return hasIterateNote ? 'prompt-iterate' : 'prompt-only';
 });
 
-// 根据评估类型获取对应的状态
+// Get the corresponding state based on the evaluation type
 const isEvaluating = computed(() => {
     if (!evaluation) return false;
     return evaluationType.value === 'prompt-iterate'
@@ -452,16 +452,16 @@ const emit = defineEmits<{
     ];
     "update:selectedIterateTemplate": [template: Template | null];
     switchVersion: [version: PromptRecord];
-    switchToV0: [version: PromptRecord];  // 🆕 V0 切换专用事件
+    switchToV0: [version: PromptRecord];  // 🆕 Event dedicated to V0 switching
     templateSelect: [template: Template];
     "save-favorite": [data: { content: string; originalContent?: string }];
     "open-preview": [];
     "apply-to-conversation": [];
-    // 评估相关事件（evaluate 和 show-evaluation-detail 已通过 inject 的 evaluation context 直接处理）
+    // Evaluation-related events (evaluate and show-evaluation-detail are handled directly through the injected evaluation context)
     "apply-improvement": [payload: { improvement: string; type: EvaluationType }];
-    /** 应用补丁 */
+    /** Apply a patch */
     "apply-patch": [payload: { operation: PatchOperation }];
-    /** 保存当前编辑内容为新版本（不触发 LLM） */
+    /** Save the current edited content as a new version (does not trigger the LLM) */
     "save-local-edit": [payload: { note?: string }];
 }>();
 
@@ -482,14 +482,14 @@ const templateType = computed<"iterate" | "contextIterate" | "imageIterate">(
 const outputDisplayRef = ref<InstanceType<typeof OutputDisplay> | null>(null);
 const iterateTemplateSelectRef = ref<{ refresh?: () => void } | null>(null);
 
-// 🆕 V0 特殊处理：跟踪是否选中 V0
+// 🆕 Special V0 handling: track whether V0 is selected
 const isV0Selected = ref(false);
 
-// 🆕 是否显示 V0 标签（只有当 versions 存在且有原始内容时才显示）
+// 🆕 Whether to show the V0 tag (only when versions exist and have original content)
 const showV0Tag = computed(() => {
     if (!props.versions || props.versions.length === 0) return false;
     if (!props.versions[0]?.originalPrompt) return false;
-    // 如果链本身已经从 V0 开始（version===0），则无需额外的“V0 原始内容”标签，避免重复
+    // If the chain itself already starts at V0 (version===0), no extra "V0 original content" tag is needed, avoiding duplication
     return !props.versions.some((v) => v.version === 0);
 });
 
@@ -506,35 +506,35 @@ const showSaveChanges = computed(() => {
     return props.optimizedPrompt !== currentVersionOptimizedPrompt.value;
 });
 
-// 🆕 切换到 V0（原始内容）
+// 🆕 Switch to V0 (original content)
 const switchToV0 = async () => {
     if (!props.versions || props.versions.length === 0) return;
 
     const v0Content = props.versions[0].originalPrompt;
     if (!v0Content) return;
 
-    // 标记为 V0 已选中
+    // Mark V0 as selected
     isV0Selected.value = true;
 
-    // 🔧 触发专用的 switchToV0 事件，让父组件知道这是 V0 切换
-    // 传递第一个版本对象，父组件应该使用 originalPrompt 而不是 optimizedPrompt
+    // 🔧 Trigger the dedicated switchToV0 event so the parent component knows this is a V0 switch
+    // Pass the first version object; the parent component should use originalPrompt rather than optimizedPrompt
     emit("switchToV0", props.versions[0]);
 
-    // 更新显示内容为原始内容
+    // Update the displayed content to the original content
     emit("update:optimizedPrompt", v0Content);
 
-    // 等待父组件更新内容
+    // Wait for the parent component to update the content
     await nextTick();
 
-    // 强制刷新 OutputDisplay 的内容
+    // Force a refresh of the OutputDisplay content
     if (outputDisplayRef.value) {
         outputDisplayRef.value.forceRefreshContent();
     }
 
-    console.log("[PromptPanel] 已切换到 V0（原始内容）");
+    console.log("[PromptPanel] Switched to V0 (original content)");
 };
 
-// 处理评估按钮点击（触发评估）
+// Handle the evaluate button click (trigger an evaluation)
 const executeEvaluate = async (userFeedback?: string, preferredType?: EvaluationType) => {
     if (!props.optimizedPrompt?.trim()) {
         toast.error(t("prompt.error.noOptimizedPrompt"));
@@ -552,11 +552,11 @@ const executeEvaluate = async (userFeedback?: string, preferredType?: Evaluation
             ? preferredType
             : evaluationType.value;
 
-    // 获取 Pro 模式上下文（如果可用）
+    // Get the Pro mode context (if available)
     const proContext = proContextRef?.value;
 
     if (targetType === "prompt-iterate" && iterateRequirement) {
-        // 有迭代需求时使用 prompt-iterate 评估
+        // When there is an iteration requirement, use prompt-iterate evaluation
         await evaluation.evaluatePromptIterate({
             originalPrompt: props.originalPrompt,
             optimizedPrompt: props.optimizedPrompt,
@@ -565,7 +565,7 @@ const executeEvaluate = async (userFeedback?: string, preferredType?: Evaluation
             userFeedback,
         });
     } else {
-        // 无迭代需求时使用 prompt-only 评估
+        // When there is no iteration requirement, use prompt-only evaluation
         await evaluation.evaluatePromptOnly({
             originalPrompt: props.originalPrompt,
             optimizedPrompt: props.optimizedPrompt,
@@ -575,7 +575,7 @@ const executeEvaluate = async (userFeedback?: string, preferredType?: Evaluation
     }
 };
 
-// 处理评估按钮点击（触发评估）
+// Handle the evaluate button click (trigger an evaluation)
 const handleEvaluate = async () => {
     await executeEvaluate();
 };
@@ -584,35 +584,35 @@ const handleEvaluateWithFeedback = async (payload: { type: EvaluationType; feedb
     await executeEvaluate(payload.feedback, payload.type);
 };
 
-// 处理显示评估详情
+// Handle showing the evaluation details
 const handleShowEvaluationDetail = () => {
     if (!evaluation) return;
     evaluation.showDetail(evaluationType.value);
 };
 
-// 处理应用改进建议（仍需要 emit，因为需要父组件打开迭代弹窗）
+// Handle applying improvement suggestions (still needs emit since the parent component must open the iteration dialog)
 const handleApplyImprovement = (payload: { improvement: string; type: EvaluationType }) => {
     emit("apply-improvement", payload);
 };
 
-// 处理应用补丁
+// Handle applying a patch
 const handleApplyPatch = (payload: { operation: PatchOperation }) => {
     emit("apply-patch", payload);
 };
 
-// 计算标题文本
+// Compute the title text
 const templateTitleText = computed(() => {
     return t("prompt.iterateTitle");
 });
 
-// 计算模板选择标题
+// Compute the template selection title
 const templateSelectText = computed(() => {
     return t("prompt.selectIterateTemplate");
 });
 
-// 计算上一版本的文本用于显示
+// Compute the previous version's text for display
 const previousVersionText = computed(() => {
-    // ✅ 增强：确保 versions 是数组（避免路由渲染时 props 未传递导致的类型错误）
+    // ✅ Enhanced: make sure versions is an array (avoids type errors when props are not passed during route rendering)
     if (!Array.isArray(props.versions) || props.versions.length === 0) {
         return props.originalPrompt || "";
     }
@@ -622,18 +622,18 @@ const previousVersionText = computed(() => {
     );
 
     if (currentIndex > 0) {
-        // 当前版本有上一版本
+        // The current version has a previous version
         return props.versions[currentIndex - 1].optimizedPrompt;
     } else if (currentIndex === 0) {
-        // 当前是V1，使用原始提示词
+        // The current one is V1; use the original prompt
         return props.originalPrompt || "";
     } else {
-        // 找不到当前版本，使用原始提示词
+        // Current version not found; use the original prompt
         return props.originalPrompt || "";
     }
 });
 
-// 获取当前版本号（保留用于未来功能）
+// Get the current version number (kept for future features)
 // const getCurrentVersionNumber = () => {
 //   if (!props.versions || props.versions.length === 0) return 0
 //   const currentVersion = props.versions.find(v => v.id === props.currentVersionId)
@@ -662,12 +662,12 @@ const submitIterate = () => {
         iterateInput: iterateInput.value.trim(),
     });
 
-    // 重置输入
+    // Reset the input
     iterateInput.value = "";
     showIterateInput.value = false;
 };
 
-// 添加版本切换函数
+// Add the version switch function
 const switchVersion = async (version: PromptRecord) => {
     if (version.id === props.currentVersionId && !isV0Selected.value) return;
 
@@ -676,21 +676,21 @@ const switchVersion = async (version: PromptRecord) => {
         if (!ok) return;
     }
 
-    // 🆕 清除 V0 选中状态
+    // 🆕 Clear the V0 selected state
     isV0Selected.value = false;
 
-    // 发出版本切换事件
+    // Emit the version switch event
     emit("switchVersion", version);
 
-    // 等待父组件更新内容
+    // Wait for the parent component to update the content
     await nextTick();
 
-    // 强制刷新OutputDisplay的内容
+    // Force a refresh of the OutputDisplay content
     if (outputDisplayRef.value) {
         outputDisplayRef.value.forceRefreshContent();
     }
 
-    console.log("[PromptPanel] 版本切换完成，强制刷新内容:", {
+    console.log("[PromptPanel] Version switch complete, forcing a content refresh:", {
         versionId: version.id,
         version: version.version,
     });
@@ -700,11 +700,11 @@ const handleSaveChanges = () => {
     emit("save-local-edit", { note: t("prompt.saveChangesNote") });
 };
 
-// 监听流式状态变化，强制退出编辑状态
+// Watch streaming state changes and force exit from the editing state
 watch(
     [() => props.isOptimizing, () => props.isIterating],
     ([newOptimizing, newIterating], [oldOptimizing, oldIterating]) => {
-        // 当开始优化或迭代时（从false变为true），强制退出编辑状态
+        // When optimization or iteration starts (false to true), force exit from the editing state
         if (
             (!oldOptimizing && newOptimizing) ||
             (!oldIterating && newIterating)
@@ -712,7 +712,7 @@ watch(
             if (outputDisplayRef.value) {
                 outputDisplayRef.value.forceExitEditing();
                 console.log(
-                    "[PromptPanel] 检测到开始优化/迭代，强制退出编辑状态",
+                    "[PromptPanel] Detected the start of optimization/iteration, forcing exit from the editing state",
                 );
             }
         }
@@ -720,14 +720,14 @@ watch(
     { immediate: false },
 );
 
-// 暴露刷新迭代模板选择的方法
+// Expose the method for refreshing the iteration template selection
 const refreshIterateTemplateSelect = () => {
     if (iterateTemplateSelectRef.value?.refresh) {
         iterateTemplateSelectRef.value.refresh();
     }
 };
 
-// 打开迭代弹窗并可选预填充文本
+// Open the iteration dialog and optionally prefill the text
 const openIterateDialog = (input?: string) => {
     if (input) {
         iterateInput.value = input;
@@ -742,14 +742,14 @@ defineExpose({
 </script>
 
 <style scoped>
-/* 版本容器样式 */
+/* Version container styles */
 .version-container {
     display: flex;
     flex-wrap: wrap;
     gap: 4px;
 }
 
-/* 版本标签可点击样式 */
+/* Clickable version tag styles */
 .version-tag-clickable {
     cursor: pointer;
     user-select: none;
@@ -770,7 +770,7 @@ defineExpose({
     }
 }
 
-/* 评估入口样式 */
+/* Evaluation entry styles */
 .evaluation-entry {
     display: flex;
     align-items: center;

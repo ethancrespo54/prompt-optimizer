@@ -1,4 +1,4 @@
-// Naive UI 主题管理 Composable
+// Naive UI theme management composable
 import { computed } from 'vue'
 
 import {
@@ -16,26 +16,26 @@ import {
 } from '../../config/naive-theme'
 
 /**
- * Naive UI 主题管理 Composable
- * 提供统一的主题管理接口
+ * Naive UI theme management composable
+ * Provides a unified theme management interface
  */
 export function useNaiveTheme() {
-  // 当前主题相关的响应式数据
+  // Reactive data related to the current theme
   const themeId = computed(() => currentThemeId.value)
   const themeConfig = computed(() => currentThemeConfig.value)
   const naiveTheme = computed(() => currentNaiveTheme.value)
   const themeOverrides = computed(() => currentThemeOverrides.value)
   const isCurrentThemeDark = computed(() => isDarkTheme.value)
   
-  // 当前主题名称
+  // Current theme name
   const currentThemeName = computed(() => themeConfig.value.name)
   
-  // 主题切换函数
+  // Theme switch function
   const changeTheme = (newThemeId: string): boolean => {
     return switchTheme(newThemeId)
   }
   
-  // 获取下一个主题（用于循环切换）
+  // Get the next theme (for cycling)
   const getNextThemeId = (): string => {
     const themeIds = availableThemes.map(t => t.id)
     const currentIndex = themeIds.indexOf(themeId.value)
@@ -43,33 +43,33 @@ export function useNaiveTheme() {
     return themeIds[nextIndex]
   }
   
-  // 循环切换到下一个主题
+  // Cycle to the next theme
   const switchToNextTheme = (): boolean => {
     const nextThemeId = getNextThemeId()
     return changeTheme(nextThemeId)
   }
   
-  // 切换到特定类型的主题
+  // Switch to a specific type of theme
   const switchToLightTheme = () => changeTheme('light')
   const switchToDarkTheme = () => changeTheme('dark')
   const switchToBlueTheme = () => changeTheme('blue')
   const switchToGreenTheme = () => changeTheme('green')
   const switchToPurpleTheme = () => changeTheme('purple')
   
-  // 检查当前是否为特定主题
+  // Check whether the current theme is a specific one
   const isLightTheme = computed(() => themeId.value === 'light')
   const isDarkThemeActive = computed(() => themeId.value === 'dark')
   const isBlueTheme = computed(() => themeId.value === 'blue')
   const isGreenTheme = computed(() => themeId.value === 'green')
   const isPurpleTheme = computed(() => themeId.value === 'purple')
   
-  // 初始化主题
+  // Initialize the theme
   const initTheme = () => {
     initializeNaiveTheme()
   }
   
   return {
-    // 响应式状态
+    // Reactive state
     themeId,
     themeConfig,
     naiveTheme,
@@ -78,14 +78,14 @@ export function useNaiveTheme() {
     availableThemes,
     isCurrentThemeDark,
     
-    // 主题检查
+    // Theme checks
     isLightTheme,
     isDarkThemeActive,
     isBlueTheme,
     isGreenTheme,
     isPurpleTheme,
     
-    // 主题切换方法
+    // Theme switch methods
     changeTheme,
     switchToNextTheme,
     switchToLightTheme,
@@ -94,7 +94,7 @@ export function useNaiveTheme() {
     switchToGreenTheme,
     switchToPurpleTheme,
     
-    // 工具方法
+    // Utility methods
     initTheme,
     getCurrentThemeId,
     getThemeConfig,
@@ -102,5 +102,5 @@ export function useNaiveTheme() {
   }
 }
 
-// 默认导出，方便使用
+// Default export for easy use
 export default useNaiveTheme

@@ -4,11 +4,11 @@ import { isRunningInElectron } from '@prompt-optimizer/core'
 import { usePreferences } from '../storage/usePreferenceManager'
 import { useI18n } from 'vue-i18n'
 import { asExtendedError } from '../../utils/error'
-// 移除过度抽象的 Hook，直接使用 window.electronAPI
+// Removed the over-abstracted Hook; use window.electronAPI directly
 import type { DownloadProgress, UpdateInfo } from '@/types/electron'
 import type { AppServices } from '../../types/services'
 
-// 类型定义现在从 @/types/electron 导入，保持统一
+// Type definitions are now imported from @/types/electron, kept uniform
 
 export interface UpdaterState {
   hasUpdate: boolean
@@ -30,12 +30,12 @@ export interface UpdaterState {
   isDownloadingPrerelease: boolean
   downloadMessage: { type: 'error' | 'warning' | 'info', content: string } | null
   lastDownloadAttempt: 'stable' | 'prerelease' | null
-  // 忽略状态
+  // Ignore state
   isStableVersionIgnored: boolean
   isPrereleaseVersionIgnored: boolean
 }
 
-// 更新器实例类型
+// Updater instance type
 interface UpdaterInstance {
   state: UpdaterState
   checkUpdate: () => Promise<void>
@@ -48,20 +48,20 @@ interface UpdaterInstance {
   downloadPrereleaseVersion: () => Promise<void>
 }
 
-// 全局单例状态，确保所有组件共享同一个状态
+// Global singleton state, ensuring all components share the same state
 let globalUpdaterInstance: UpdaterInstance | null = null
 
 export function useUpdater() {
-  // 如果已有实例，直接返回
+  // If an instance already exists, return it directly
   if (globalUpdaterInstance) {
     return globalUpdaterInstance
   }
 
-  // 环境检测 - 仅在Electron环境中启用功能
+  // Environment detection - the features are only enabled in the Electron environment
   const isElectronEnvironment = isRunningInElectron()
   
   if (!isElectronEnvironment) {
-    // 非Electron环境返回空实现，保持API一致性
+    // Non-Electron environments return an empty implementation, keeping the API consistent
     return {
       state: reactive({
         hasUpdate: false,
@@ -97,7 +97,7 @@ export function useUpdater() {
     }
   }
 
-  // Electron环境的实际实现
+  // Actual implementation for the Electron environment
   const services = inject<Ref<AppServices | null>>('services')
   if (!services) {
     throw new Error('[useUpdater] services injection missing')
@@ -105,7 +105,7 @@ export function useUpdater() {
   const { setPreference } = usePreferences(services)
   const { t } = useI18n()
 
-  // 直接使用 window.electronAPI，简单直接
+  // Use window.electronAPI directly, simple and direct
 
   const state = reactive<UpdaterState>({
     hasUpdate: false,
@@ -133,7 +133,7 @@ export function useUpdater() {
 
 
 
-  // IPC事件监听器引用，用于清理
+  // IPC event listener references, used for cleanup
   let updateAvailableListener: ((info: UpdateInfo) => void) | null = null
   let updateNotAvailableListener: ((info: { version?: string; reason?: string }) => void) | null = null
   let downloadProgressListener: ((progress: DownloadProgress) => void) | null = null
@@ -141,27 +141,27 @@ export function useUpdater() {
   let updateErrorListener: ((error: { message?: string; code?: string; error?: string }) => void) | null = null
   let downloadStartedListener: ((info: { versionType?: 'stable' | 'prerelease'; version?: string }) => void) | null = null
 
-  // 检查两种版本的内部函数
+  // Internal function that checks both versions
   const checkBothVersions = async () => {
     try {
-      // 获取当前版本
+      // Get the current version
       state.currentVersion = await getCurrentVersion()
 
-      // 使用新的统一检查API，避免并发冲突
+      // Use the new unified check API to avoid concurrency conflicts
       console.log('[useUpdater] Checking all versions using unified API...')
       const results = await window.electronAPI!.updater.checkAllVersions()
 
       console.log('[useUpdater] Processing unified check results...', results)
 
-      // 确保 results 存在
+      // Make sure results exists
       if (!results) {
         throw new Error('No results returned from version check')
       }
 
-      // 保存正式版信息
+      // Save the stable version info
       if (results.stable && !results.stable.error && !results.stable.noVersionFound) {
         const newStableVersion = results.stable.remoteVersion || null
-        // 如果版本发生变化，重置忽略状态
+        // If the version changed, reset the ignore state
         if (state.stableVersion !== newStableVersion) {
           state.isStableVersionIgnored = false
         }
@@ -181,10 +181,10 @@ export function useUpdater() {
         }
       }
 
-      // 保存预览版信息
+      // Save the preview version info
       if (results.prerelease && !results.prerelease.error && !results.prerelease.noVersionFound) {
         const newPrereleaseVersion = results.prerelease.remoteVersion || null
-        // 如果版本发生变化，重置忽略状态
+        // If the version changed, reset the ignore state
         if (state.prereleaseVersion !== newPrereleaseVersion) {
           state.isPrereleaseVersionIgnored = false
         }
@@ -204,10 +204,10 @@ export function useUpdater() {
         }
       }
 
-      // 更新总体状态 - 根据用户偏好计算
+      // Update the overall state - computed based on the user's preference
       state.hasUpdate = calculateHasUpdate()
 
-      // 设置检查结果消息
+      // Set the check result message
       if (state.hasStableUpdate || state.hasPrereleaseUpdate) {
         const updates = []
         if (state.hasStableUpdate) updates.push(`stable v${state.stableVersion}`)
@@ -218,7 +218,7 @@ export function useUpdater() {
         state.lastCheckResult = 'not-available'
         state.lastCheckMessage = 'You are using the latest versions'
       } else {
-        // 检查是否是因为没有发布版本或检查失败
+        // Check whether it is because there is no published version or the check failed
         const hasStableError = results.stable?.error
         const hasPrereleaseError = results.prerelease?.error
         const hasStableNoVersionFound = results.stable?.noVersionFound
@@ -247,10 +247,10 @@ export function useUpdater() {
       state.lastCheckResult = 'error'
       state.lastCheckMessage = error instanceof Error ? error.message : String(error)
     } finally {
-      // 无论成功还是失败，都保存检测状态
+      // Save the detection state whether it succeeds or fails
       state.isCheckingUpdate = false
 
-      // 同步后端的忽略状态
+      // Sync the backend's ignore state
       await syncIgnoredStates()
 
       await saveUpdateState()
@@ -268,7 +268,7 @@ export function useUpdater() {
 
 
 
-  // 获取当前应用版本
+  // Get the current app version
   const getCurrentVersion = async (): Promise<string | null> => {
     if (isRunningInElectron() && window.electronAPI?.app) {
       try {
@@ -282,13 +282,13 @@ export function useUpdater() {
     return null
   }
 
-  // 语义化版本比较函数
+  // Semantic version comparison function
   const compareVersions = (version1: string, version2: string): number => {
-    // 移除 'v' 前缀（如果存在）
+    // Remove the 'v' prefix (if present)
     const v1 = version1.replace(/^v/, '')
     const v2 = version2.replace(/^v/, '')
 
-    // 解析版本号
+    // Parse the version number
     const parseVersion = (version: string) => {
       const parts = version.split('-')
       const mainVersion = parts[0]
@@ -308,51 +308,51 @@ export function useUpdater() {
     const parsed1 = parseVersion(v1)
     const parsed2 = parseVersion(v2)
 
-    // 比较主版本号
+    // Compare the major version
     if (parsed1.major !== parsed2.major) {
       return parsed1.major - parsed2.major
     }
 
-    // 比较次版本号
+    // Compare the minor version
     if (parsed1.minor !== parsed2.minor) {
       return parsed1.minor - parsed2.minor
     }
 
-    // 比较修订版本号
+    // Compare the patch version
     if (parsed1.patch !== parsed2.patch) {
       return parsed1.patch - parsed2.patch
     }
 
-    // 如果主版本号相同，比较预发布版本
+    // If the major versions are the same, compare the pre-release versions
     if (parsed1.prerelease && parsed2.prerelease) {
-      // 两个都是预发布版本，按字符串比较
+      // Both are pre-release versions; compare as strings
       return parsed1.prerelease.localeCompare(parsed2.prerelease)
     } else if (parsed1.prerelease && !parsed2.prerelease) {
-      // v1是预发布版本，v2是正式版本，v1 < v2
+      // v1 is a pre-release version and v2 is a stable version, so v1 < v2
       return -1
     } else if (!parsed1.prerelease && parsed2.prerelease) {
-      // v1是正式版本，v2是预发布版本，v1 > v2
+      // v1 is a stable version and v2 is a pre-release version, so v1 > v2
       return 1
     }
 
-    // 版本完全相同
+    // The versions are identical
     return 0
   }
 
-  // 检查是否有更新（新版本大于当前版本）
+  // Check whether there is an update (the new version is greater than the current version)
   const hasUpdate = (currentVersion: string, remoteVersion: string): boolean => {
     if (!currentVersion || !remoteVersion) return false
     return compareVersions(remoteVersion, currentVersion) > 0
   }
 
-  // 根据当前版本类型计算是否有更新
+  // Compute whether there is an update based on the current version type
   const calculateHasUpdate = (): boolean => {
-    // 检查当前版本是否为预览版
+    // Check whether the current version is a preview version
     const isCurrentVersionPrerelease = state.currentVersion?.includes('-') || false
 
     let result: boolean
     if (isCurrentVersionPrerelease) {
-      // 当前是预览版：正式版或预览版有更新都提示（且未被忽略）
+      // Current is a preview version: notify when either the stable or the preview version has an update (and is not ignored)
       const stableUpdateAvailable = state.hasStableUpdate && !state.isStableVersionIgnored
       const prereleaseUpdateAvailable = state.hasPrereleaseUpdate && !state.isPrereleaseVersionIgnored
       result = stableUpdateAvailable || prereleaseUpdateAvailable
@@ -367,7 +367,7 @@ export function useUpdater() {
         result
       })
     } else {
-      // 当前是正式版：只有正式版更新才提示（且未被忽略）
+      // Current is a stable version: only notify when the stable version has an update (and is not ignored)
       result = state.hasStableUpdate && !state.isStableVersionIgnored
 
       console.log('[calculateHasUpdate] Stable user:', {
@@ -380,7 +380,7 @@ export function useUpdater() {
     return result
   }
 
-  // 保存检测状态到持久化存储（不包括忽略状态，忽略状态由后端管理）
+  // Save the detection state to persistent storage (excluding the ignore state, which is managed by the backend)
   const saveUpdateState = async () => {
     try {
       await setPreference('updater.lastCheckTime', Date.now())
@@ -391,17 +391,17 @@ export function useUpdater() {
       await setPreference('updater.stableReleaseUrl', state.stableReleaseUrl)
       await setPreference('updater.prereleaseReleaseUrl', state.prereleaseReleaseUrl)
       await setPreference('updater.lastCheckResult', state.lastCheckResult)
-      // 注意：忽略状态不再保存到前端偏好设置，完全由后端管理
+      // Note: the ignore state is no longer saved to the frontend preferences; it is fully managed by the backend
       console.log('[useUpdater] Update state saved to preferences (excluding ignore states)')
     } catch (error) {
       console.warn('[useUpdater] Failed to save update state:', error)
     }
   }
 
-  // 清理旧的检测状态缓存（简化逻辑，每次启动都重新检测）
+  // Clean up the old detection state cache (simplified logic, re-detect on every startup)
   const clearUpdateStateCache = async () => {
     try {
-      // 清理可能过时的缓存数据
+      // Clean up possibly outdated cached data
       await setPreference('updater.lastCheckTime', 0)
       await setPreference('updater.hasStableUpdate', false)
       await setPreference('updater.hasPrereleaseUpdate', false)
@@ -416,14 +416,14 @@ export function useUpdater() {
     }
   }
 
-  // 检查更新 - 增强版本，支持双重检查
+  // Check for updates - enhanced version, supports a double check
   const checkUpdate = async () => {
     if (!window.electronAPI?.updater) {
       console.warn('[useUpdater] Electron updater API not available')
       return
     }
 
-    // 防止重复检查
+    // Prevent duplicate checks
     if (state.isCheckingUpdate) {
       console.log('[useUpdater] Update check already in progress')
       return
@@ -431,10 +431,10 @@ export function useUpdater() {
 
     try {
       state.isCheckingUpdate = true
-      // 清除之前的下载消息，因为这是一个新的检查操作
+      // Clear the previous download message, since this is a new check operation
       state.downloadMessage = null
 
-      // 智能状态重置：只在没有下载进行时才重置下载相关状态
+      // Smart state reset: only reset the download-related state when no download is in progress
       if (!state.isDownloading) {
         state.isDownloaded = false
         state.downloadProgress = null
@@ -442,23 +442,23 @@ export function useUpdater() {
         state.updateInfo = null
         state.lastCheckResult = 'none'
         state.lastCheckMessage = ''
-        // 重置版本更新状态，确保每次检测都能正确更新
+        // Reset the version update state to make sure every detection updates correctly
         state.hasStableUpdate = false
         state.hasPrereleaseUpdate = false
         state.stableVersion = null
         state.stableReleaseUrl = null
         state.prereleaseVersion = null
         state.prereleaseReleaseUrl = null
-        // 注意：不重置忽略状态，让用户的忽略选择在新检查中保持有效
-        // state.isStableVersionIgnored 和 state.isPrereleaseVersionIgnored 保持不变
-        // 清除持久化的检测状态
+        // Note: the ignore state is not reset, so the user's ignore choice stays effective in the new check
+        // state.isStableVersionIgnored and state.isPrereleaseVersionIgnored stay unchanged
+        // Clear the persisted detection state
         await saveUpdateState()
         console.log('[useUpdater] Reset states for new update check (keeping ignore states)')
       } else {
         console.log('[useUpdater] Download in progress, preserving download states')
       }
 
-      // 检查两种版本：正式版和预览版
+      // Check both versions: stable and preview
       await checkBothVersions()
     } catch (error) {
       console.error('[useUpdater] Check update error:', error)
@@ -475,7 +475,7 @@ export function useUpdater() {
       state.lastCheckResult = 'error'
       if (extendedError) {
         if (extendedError.detailedMessage) {
-          // 检查是否是开发环境的配置文件缺失错误
+          // Check whether it is a missing-config-file error in the development environment
           if (extendedError.detailedMessage.includes('dev-app-update.yml') && extendedError.detailedMessage.includes('ENOENT')) {
             state.lastCheckMessage = 'Development environment: Update checking is disabled (no dev-app-update.yml configured)'
           } else {
@@ -498,11 +498,11 @@ export function useUpdater() {
     }
   }
 
-  // 开始下载 - 已弃用，请使用 downloadStableVersion 或 downloadPrereleaseVersion
+  // Start download - deprecated, please use downloadStableVersion or downloadPrereleaseVersion
   const startDownload = async () => {
     console.warn('[useUpdater] startDownload is deprecated, use downloadStableVersion or downloadPrereleaseVersion instead')
 
-    // 为了向后兼容，如果有可用更新，尝试下载对应类型的版本
+    // For backward compatibility, if there is an available update, try to download the corresponding version type
     if (state.hasStableUpdate) {
       await downloadStableVersion()
     } else if (state.hasPrereleaseUpdate) {
@@ -512,7 +512,7 @@ export function useUpdater() {
     }
   }
 
-  // 安装更新
+  // Install the update
   const installUpdate = async () => {
     if (!window.electronAPI?.updater) {
       console.warn('[useUpdater] Electron updater API not available')
@@ -527,7 +527,7 @@ export function useUpdater() {
     }
   }
 
-  // 从后端同步忽略状态
+  // Sync the ignore state from the backend
   const syncIgnoredStates = async () => {
     if (!window.electronAPI?.updater?.getIgnoredVersions) {
       console.warn('[useUpdater] getIgnoredVersions API not available')
@@ -538,7 +538,7 @@ export function useUpdater() {
       const ignoredVersions = await window.electronAPI.updater.getIgnoredVersions()
       console.log('[useUpdater] Retrieved ignored versions from backend:', ignoredVersions)
 
-      // 根据当前版本和后端忽略状态计算前端忽略状态
+      // Compute the frontend ignore state based on the current version and the backend ignore state
       state.isStableVersionIgnored = !!(ignoredVersions.stable && state.stableVersion && ignoredVersions.stable === state.stableVersion)
       state.isPrereleaseVersionIgnored = !!(ignoredVersions.prerelease && state.prereleaseVersion && ignoredVersions.prerelease === state.prereleaseVersion)
 
@@ -551,7 +551,7 @@ export function useUpdater() {
         isPrereleaseVersionIgnored: state.isPrereleaseVersionIgnored
       })
 
-      // 重新计算总体更新状态
+      // Recompute the overall update state
       state.hasUpdate = calculateHasUpdate()
       console.log('[useUpdater] hasUpdate after sync:', state.hasUpdate)
     } catch (error) {
@@ -559,7 +559,7 @@ export function useUpdater() {
     }
   }
 
-  // 忽略版本
+  // Ignore a version
   const ignoreUpdate = async (version?: string, versionType?: 'stable' | 'prerelease') => {
     if (!window.electronAPI?.updater) {
       console.warn('[useUpdater] Electron updater API not available')
@@ -570,15 +570,15 @@ export function useUpdater() {
       const versionToIgnore = version || state.updateInfo?.version
       if (!versionToIgnore) return
 
-      // 如果没有指定类型，根据版本号自动判断
+      // If no type is specified, determine it automatically from the version number
       const actualVersionType = versionType || (versionToIgnore.includes('-') ? 'prerelease' : 'stable')
 
       console.log('[useUpdater] Before ignore - hasUpdate:', state.hasUpdate, 'isStableVersionIgnored:', state.isStableVersionIgnored, 'isPrereleaseVersionIgnored:', state.isPrereleaseVersionIgnored)
 
-      // ignoreVersion 成功时返回 null (data)，失败时抛出异常
+      // ignoreVersion returns null (data) on success and throws an exception on failure
       await window.electronAPI.updater.ignoreVersion(versionToIgnore, actualVersionType)
 
-      // 立即更新前端状态，确保UI立即响应
+      // Update the frontend state immediately so the UI responds right away
       if (actualVersionType === 'stable') {
         state.isStableVersionIgnored = true
         console.log('[useUpdater] Immediately set isStableVersionIgnored = true')
@@ -587,21 +587,21 @@ export function useUpdater() {
         console.log('[useUpdater] Immediately set isPrereleaseVersionIgnored = true')
       }
 
-      // 立即重新计算hasUpdate状态
+      // Recompute the hasUpdate state immediately
       const oldHasUpdate = state.hasUpdate
       state.hasUpdate = calculateHasUpdate()
       console.log('[useUpdater] Immediately updated hasUpdate from', oldHasUpdate, 'to', state.hasUpdate)
 
-      // 如果忽略的是当前的updateInfo，清理它
+      // If the ignored version is the current updateInfo, clean it up
       if (state.updateInfo?.version === versionToIgnore) {
         state.updateInfo = null
         console.log('[useUpdater] Cleared updateInfo for ignored version')
       }
 
-      // 等待下一个tick确保状态更新完成
+      // Wait for the next tick to make sure the state update is complete
       await nextTick()
 
-      // 异步同步后端状态（用于验证一致性）
+      // Sync the backend state asynchronously (to verify consistency)
       syncIgnoredStates().catch(error => {
         console.error('[useUpdater] Failed to sync ignored states after ignore:', error)
       })
@@ -612,7 +612,7 @@ export function useUpdater() {
     }
   }
 
-  // 取消忽略版本
+  // Unignore a version
   const unignoreUpdate = async (versionType: 'stable' | 'prerelease') => {
     if (!window.electronAPI?.updater?.unignoreVersion) {
       console.warn('[useUpdater] unignoreVersion API not available')
@@ -622,10 +622,10 @@ export function useUpdater() {
     try {
       console.log('[useUpdater] Before unignore - hasUpdate:', state.hasUpdate, 'isStableVersionIgnored:', state.isStableVersionIgnored, 'isPrereleaseVersionIgnored:', state.isPrereleaseVersionIgnored)
 
-      // 调用后端API取消忽略
+      // Call the backend API to unignore
       await window.electronAPI.updater.unignoreVersion(versionType)
 
-      // 立即更新前端状态，确保UI立即响应
+      // Update the frontend state immediately so the UI responds right away
       if (versionType === 'stable') {
         state.isStableVersionIgnored = false
         console.log('[useUpdater] Immediately set isStableVersionIgnored = false')
@@ -634,15 +634,15 @@ export function useUpdater() {
         console.log('[useUpdater] Immediately set isPrereleaseVersionIgnored = false')
       }
 
-      // 立即重新计算hasUpdate状态
+      // Recompute the hasUpdate state immediately
       const oldHasUpdate = state.hasUpdate
       state.hasUpdate = calculateHasUpdate()
       console.log('[useUpdater] Immediately updated hasUpdate from', oldHasUpdate, 'to', state.hasUpdate)
 
-      // 等待下一个tick确保状态更新完成
+      // Wait for the next tick to make sure the state update is complete
       await nextTick()
 
-      // 异步同步后端状态（用于验证一致性）
+      // Sync the backend state asynchronously (to verify consistency)
       syncIgnoredStates().catch(error => {
         console.error('[useUpdater] Failed to sync ignored states after unignore:', error)
       })
@@ -655,7 +655,7 @@ export function useUpdater() {
 
 
 
-  // 下载正式版（使用原子操作）
+  // Download the stable version (using an atomic operation)
   const downloadStableVersion = async () => {
     if (!state.stableVersion) {
       console.warn('[useUpdater] No stable version available for download')
@@ -664,7 +664,7 @@ export function useUpdater() {
       return
     }
 
-    // 防止重复点击 - 检查所有下载状态
+    // Prevent duplicate clicks - check all download states
     if (state.isDownloadingStable || state.isDownloadingPrerelease || state.isDownloading) {
       console.log('[useUpdater] Download already in progress')
       return
@@ -676,7 +676,7 @@ export function useUpdater() {
       state.downloadMessage = null
       state.lastDownloadAttempt = 'stable'
 
-      // 使用新的原子操作API
+      // Use the new atomic operation API
       if (!window.electronAPI?.updater?.downloadSpecificVersion) {
         throw new Error('electronAPI not available')
       }
@@ -688,12 +688,12 @@ export function useUpdater() {
 
       if (result.hasUpdate) {
         console.log('[useUpdater] Stable download started:', result.message)
-        // 立即设置下载状态，确保UI正确显示
+        // Set the download state immediately so the UI displays correctly
         state.isDownloading = true
         state.downloadProgress = null
       } else {
         console.log('[useUpdater] No stable update available:', result.message)
-        // 根据不同的原因显示不同的消息
+        // Show different messages for different reasons
         let content: string
         if (result.reason === 'ignored' && result.version) {
           content = t('updater.versionIgnored', { version: result.version })
@@ -712,7 +712,7 @@ export function useUpdater() {
     } catch (error) {
       console.error('[useUpdater] Atomic stable download error:', error)
 
-      // 提取完整的错误信息
+      // Extract the full error message
       let errorMessage = t('updater.unknownError')
       if (error instanceof Error) {
         errorMessage = error.message
@@ -722,7 +722,7 @@ export function useUpdater() {
         type: 'error',
         content: t('updater.stableDownloadFailed', { error: errorMessage })
       }
-      // 确保下载状态被重置
+      // Make sure the download state is reset
       state.isDownloading = false
       state.downloadProgress = null
     } finally {
@@ -730,7 +730,7 @@ export function useUpdater() {
     }
   }
 
-  // 下载预览版（使用原子操作）
+  // Download the preview version (using an atomic operation)
   const downloadPrereleaseVersion = async () => {
     if (!state.prereleaseVersion) {
       console.warn('[useUpdater] No prerelease version available for download')
@@ -739,7 +739,7 @@ export function useUpdater() {
       return
     }
 
-    // 防止重复点击 - 检查所有下载状态
+    // Prevent duplicate clicks - check all download states
     if (state.isDownloadingStable || state.isDownloadingPrerelease || state.isDownloading) {
       console.log('[useUpdater] Download already in progress')
       return
@@ -751,7 +751,7 @@ export function useUpdater() {
       state.downloadMessage = null
       state.lastDownloadAttempt = 'prerelease'
 
-      // 使用新的原子操作API
+      // Use the new atomic operation API
       if (!window.electronAPI?.updater?.downloadSpecificVersion) {
         throw new Error('electronAPI not available')
       }
@@ -763,12 +763,12 @@ export function useUpdater() {
 
       if (result.hasUpdate) {
         console.log('[useUpdater] Prerelease download started:', result.message)
-        // 立即设置下载状态，确保UI正确显示
+        // Set the download state immediately so the UI displays correctly
         state.isDownloading = true
         state.downloadProgress = null
       } else {
         console.log('[useUpdater] No prerelease update available:', result.message)
-        // 根据不同的原因显示不同的消息
+        // Show different messages for different reasons
         let content: string
         if (result.reason === 'ignored' && result.version) {
           content = t('updater.versionIgnored', { version: result.version })
@@ -787,7 +787,7 @@ export function useUpdater() {
     } catch (error) {
       console.error('[useUpdater] Atomic prerelease download error:', error)
 
-      // 提取完整的错误信息
+      // Extract the full error message
       let errorMessage = t('updater.unknownError')
       if (error instanceof Error) {
         errorMessage = error.message
@@ -797,7 +797,7 @@ export function useUpdater() {
         type: 'error',
         content: t('updater.prereleaseDownloadFailed', { error: errorMessage })
       }
-      // 确保下载状态被重置
+      // Make sure the download state is reset
       state.isDownloading = false
       state.downloadProgress = null
     } finally {
@@ -805,7 +805,7 @@ export function useUpdater() {
     }
   }
 
-  // 打开发布页面
+  // Open the release page
   const openReleaseUrl = async () => {
     if (!state.updateInfo?.releaseUrl || !window.electronAPI?.shell) {
       console.warn('[useUpdater] Release URL or shell API not available')
@@ -820,65 +820,65 @@ export function useUpdater() {
     }
   }
 
-  // 设置IPC事件监听器 - 现在主要用于下载相关事件
+  // Set up the IPC event listeners - now mainly used for download-related events
   const setupEventListeners = () => {
     if (!window.electronAPI?.on) {
       console.warn('[useUpdater] Event API not available')
       return
     }
 
-    // 更新可用 - 保留用于自动检查等场景
+    // Update available - kept for scenarios such as automatic checks
     updateAvailableListener = (info: UpdateInfo) => {
       console.log('[useUpdater] Update available (from auto-check):', info)
       state.updateInfo = info
       state.lastCheckResult = 'available'
       state.lastCheckMessage = `New version ${info.version} is available`
-      // 不直接设置 hasUpdate，而是通过 calculateHasUpdate 计算
+      // Do not set hasUpdate directly; compute it through calculateHasUpdate
       state.hasUpdate = calculateHasUpdate()
       console.log('[useUpdater] Update available event processed, hasUpdate:', state.hasUpdate)
     }
     window.electronAPI.on('update-available-info', updateAvailableListener)
 
-    // 无更新可用 - 现在主要用于日志，实际逻辑在请求-响应中处理
+    // No update available - now mainly used for logging; the actual logic is handled in the request-response flow
     updateNotAvailableListener = (info: { version?: string; reason?: string }) => {
       console.log('[useUpdater] No update available (from auto-check):', info)
-      // 注意：不再在这里更新UI状态，避免与请求-响应模式冲突
+      // Note: the UI state is no longer updated here, to avoid conflicts with the request-response pattern
     }
     window.electronAPI.on('update-not-available', updateNotAvailableListener)
 
-    // 下载进度
+    // Download progress
     downloadProgressListener = (progress: DownloadProgress) => {
       console.log('[useUpdater] Download progress:', progress)
       state.downloadProgress = progress
     }
     window.electronAPI.on('update-download-progress', downloadProgressListener)
 
-    // 下载完成
+    // Download complete
     updateDownloadedListener = (info: UpdateInfo) => {
       console.log('[useUpdater] Update downloaded:', info)
       state.isDownloading = false
       state.isDownloaded = true
-      // 重置特定下载状态
+      // Reset the specific download state
       state.isDownloadingStable = false
       state.isDownloadingPrerelease = false
-      // 清除下载消息
+      // Clear the download message
       state.downloadMessage = null
     }
     window.electronAPI.on('update-downloaded', updateDownloadedListener)
 
-    // 更新错误（包括下载错误）
+    // Update error (including download errors)
     updateErrorListener = (error: { message?: string; code?: string; error?: string }) => {
       console.error('[useUpdater] Update error:', error)
 
-      // 简单处理：重置下载状态，保持更新信息让用户重试
+      // Simple handling: reset the download state and keep the update info so the user can retry
       state.isDownloading = false
       state.downloadProgress = null
       state.lastCheckResult = 'error'
-      // 重置特定下载状态
+      // Reset the specific download state
       state.isDownloadingStable = false
       state.isDownloadingPrerelease = false
 
-      // 设置用户可见的下载错误信息
+      // Set the user-visible download error message
       const errorMessage = error.message || error.error || 'Update check failed'
 
       if (state.lastDownloadAttempt) {
@@ -889,31 +889,31 @@ export function useUpdater() {
         }
       }
 
-      // 使用详细的错误信息，优先使用 message 字段（包含详细信息）
+      // Use the detailed error message, preferring the message field (it contains the details)
       state.lastCheckMessage = errorMessage
-      // 保持 hasUpdate 和 updateInfo，让用户可以重新下载
+      // Keep hasUpdate and updateInfo so the user can download again
     }
     window.electronAPI.on('update-error', updateErrorListener)
 
-    // 下载开始事件 - 立即同步UI状态
+    // Download start event - sync the UI state immediately
     downloadStartedListener = (info: { versionType?: 'stable' | 'prerelease'; version?: string }) => {
       console.log('[useUpdater] Download started:', info)
-      // 立即设置下载状态，确保UI响应
+      // Set the download state immediately to make sure the UI responds
       state.isDownloading = true
       state.downloadProgress = null
-      // 根据版本类型设置对应的下载状态
+      // Set the corresponding download state based on the version type
       if (info.versionType === 'stable') {
         state.isDownloadingStable = true
       } else if (info.versionType === 'prerelease') {
         state.isDownloadingPrerelease = true
       }
-      // 清除之前的消息
+      // Clear the previous message
       state.downloadMessage = null
     }
     window.electronAPI.on('updater-download-started', downloadStartedListener)
   }
 
-  // 清理事件监听器
+  // Clean up the event listeners
   const cleanupEventListeners = () => {
     if (!window.electronAPI?.off) return
 
@@ -937,25 +937,25 @@ export function useUpdater() {
     }
   }
 
-  // 初始化
+  // Initialize
   onMounted(async () => {
     try {
-      // 获取当前版本
+      // Get the current version
       state.currentVersion = await getCurrentVersion()
       console.log('[useUpdater] Current version loaded:', state.currentVersion)
 
-      // 设置事件监听器
+      // Set up the event listeners
       setupEventListeners()
 
-      // 清理旧的缓存数据
+      // Clean up the old cached data
       await clearUpdateStateCache()
 
-      // 同步后端的忽略状态，确保前后端一致
+      // Sync the backend's ignore state to make sure the frontend and backend are consistent
       await syncIgnoredStates()
 
-      // 每次启动都自动检查更新，确保状态最新
+      // Automatically check for updates on every startup to make sure the state is up to date
       console.log('[useUpdater] Performing automatic update check on startup')
-      // 延迟3秒后自动检测，避免影响应用启动速度
+      // Auto-detect after a 3-second delay to avoid affecting the app startup speed
       setTimeout(() => {
         checkUpdate().catch(error => {
           console.warn('[useUpdater] Automatic update check failed:', error)
@@ -968,7 +968,7 @@ export function useUpdater() {
     }
   })
 
-  // 清理
+  // Cleanup
   onUnmounted(() => {
     cleanupEventListeners()
   })
@@ -985,7 +985,7 @@ export function useUpdater() {
     downloadPrereleaseVersion
   }
 
-  // 缓存实例，确保单例
+  // Cache the instance to ensure it is a singleton
   globalUpdaterInstance = instance
   return instance
 }

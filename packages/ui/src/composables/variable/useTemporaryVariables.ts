@@ -1,11 +1,11 @@
 /**
- * 临时变量管理 Composable
+ * Temporary variable management composable
  *
- * 特性：
- * - Pro/Image：按子模式 session store 持久化（刷新不丢；子模式之间隔离）
- * - Basic：维持旧行为，仅内存存储（刷新丢失）
- * - 对外接口保持不变（兼容旧调用方）
- * - 底层由 Pinia store 承载状态
+ * Features:
+ * - Pro/Image: persisted per sub-mode session store (survives refresh; isolated between sub-modes)
+ * - Basic: keeps the old behavior, in-memory only (lost on refresh)
+ * - The external interface stays unchanged (compatible with old callers)
+ * - The state is held by a Pinia store underneath
  */
  
 import { readonly, computed, type Ref } from 'vue'
@@ -18,49 +18,49 @@ import { useImageText2ImageSession } from '../../stores/session/useImageText2Ima
 import { useImageImage2ImageSession } from '../../stores/session/useImageImage2ImageSession'
 
 /**
- * 临时变量管理器接口
+ * Temporary variable manager interface
  */
 export interface TemporaryVariablesManager {
-  /** 临时变量存储（只读） */
+  /** Temporary variable storage (read-only) */
   readonly temporaryVariables: Readonly<Ref<Record<string, string>>>
 
-  /** 设置临时变量 */
+  /** Set a temporary variable */
   setVariable: (name: string, value: string) => void
 
-  /** 获取临时变量值 */
+  /** Get the value of a temporary variable */
   getVariable: (name: string) => string | undefined
 
-  /** 删除临时变量 */
+  /** Delete a temporary variable */
   deleteVariable: (name: string) => void
 
-  /** 清空所有临时变量 */
+  /** Clear all temporary variables */
   clearAll: () => void
 
-  /** 检查变量是否存在 */
+  /** Check whether a variable exists */
   hasVariable: (name: string) => boolean
 
-  /** 列出所有临时变量 */
+  /** List all temporary variables */
   listVariables: () => Record<string, string>
 
-  /** 批量设置变量 */
+  /** Set variables in batch */
   batchSet: (variables: Record<string, string>) => void
 
-  /** 批量删除变量 */
+  /** Delete variables in batch */
   batchDelete: (names: string[]) => void
 }
 
 /**
- * 使用临时变量管理器
+ * Use the temporary variable manager
  *
- * ⚠️ 使用前提：
- * 必须在应用入口已执行 `installPinia(app)` 后再调用。
- * 如果在非组件上下文（如纯函数/服务层）使用，会抛出错误。
+ * ⚠️ Precondition:
+ * It must be called after `installPinia(app)` has run at the app entry.
+ * Using it in a non-component context (such as a pure function / service layer) throws an error.
  *
- * @throws {Error} 如果 Pinia 未安装或无 active pinia instance
+ * @throws {Error} If Pinia is not installed or there is no active pinia instance
  *
  * @example
  * ```typescript
- * // ✅ 正确：在组件或 setup 函数中使用
+ * // ✅ Correct: use it in a component or setup function
  * export default defineComponent({
  *   setup() {
  *     const tempVars = useTemporaryVariables()
@@ -68,13 +68,13 @@ export interface TemporaryVariablesManager {
  *   }
  * })
  *
- * // ❌ 错误：在模块顶层或纯函数中使用
- * const tempVars = useTemporaryVariables()  // 会抛出错误
+ * // ❌ Wrong: use it at module top level or in a pure function
+ * const tempVars = useTemporaryVariables()  // Throws an error
  * ```
  */
 export function useTemporaryVariables(): TemporaryVariablesManager {
-  // ✅ Codex 建议：显式检测 active pinia
-  // 避免 try-catch 吞掉配置错误，导致"静默不生效"
+  // ✅ Codex suggestion: explicitly detect an active pinia
+  // Avoid try-catch swallowing a config error, which would cause "silently not taking effect"
   const activePinia = getActivePinia()
   if (!activePinia) {
     throw new Error(

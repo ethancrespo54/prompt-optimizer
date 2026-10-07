@@ -1,12 +1,12 @@
 /**
- * 模式相关 composables 统一导出
+ * Unified exports of mode-related composables
  *
- * 本模块提供模式管理和访问能力：
- * - useFunctionMode: 一级功能模式管理 (basic/pro/image)
- * - useBasicSubMode: 基础模式子模式管理
- * - useProSubMode: 上下文模式子模式管理
- * - useImageSubMode: 图像模式子模式管理
- * - useCurrentMode: 只读模式访问（无需 services）
+ * This module provides mode management and access:
+ * - useFunctionMode: first-level function mode management (basic/pro/image)
+ * - useBasicSubMode: basic mode sub-mode management
+ * - useProSubMode: context mode sub-mode management
+ * - useImageSubMode: image mode sub-mode management
+ * - useCurrentMode: read-only mode access (no services needed)
  */
 
 export * from './useCurrentMode'

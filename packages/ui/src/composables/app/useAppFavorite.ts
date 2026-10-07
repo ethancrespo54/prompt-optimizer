@@ -1,10 +1,10 @@
 /**
- * App 级别收藏管理 Composable
+ * App-level favorites management composable
  *
- * 负责收藏相关的业务逻辑，包括：
- * - 保存收藏
- * - 使用收藏（智能模式切换）
- * - 收藏对话框管理
+ * Responsible for favorites-related business logic, including:
+ * - Saving favorites
+ * - Using favorites (smart mode switching)
+ * - Favorites dialog management
  */
 
 import { ref, nextTick, type Ref } from 'vue'
@@ -12,7 +12,7 @@ import { useToast } from '../ui/useToast'
 import type { BasicSubMode, ProSubMode, ContextMode, OptimizationMode } from '@prompt-optimizer/core'
 
 /**
- * 保存收藏的数据结构
+ * Data structure for saving a favorite
  */
 export interface SaveFavoriteData {
     content: string
@@ -30,7 +30,7 @@ export interface SaveFavoriteData {
 }
 
 /**
- * 收藏项数据结构
+ * Favorite item data structure
  */
 export interface FavoriteItem {
     content: string
@@ -41,43 +41,43 @@ export interface FavoriteItem {
 }
 
 /**
- * useAppFavorite 的配置选项
+ * Config options for useAppFavorite
  */
 export interface AppFavoriteOptions {
-    /** 🔧 Step D: 路由导航函数（替代 setFunctionMode/set*SubMode） */
+    /** 🔧 Step D: route navigation function (replaces setFunctionMode/set*SubMode) */
     navigateToSubModeKey: (toKey: string, opts?: { replace?: boolean }) => void
-    /** 处理上下文模式变更 */
+    /** Handle context mode changes */
     handleContextModeChange: (mode: ContextMode) => Promise<void>
-    /** 优化器提示词（用于设置收藏内容） */
+    /** Optimizer prompt (used to set the favorite content) */
     optimizerPrompt: Ref<string>
-    /** i18n 翻译函数 */
+    /** i18n translation function */
     t: (key: string, params?: Record<string, unknown>) => string
-    /** 外部数据加载中标志（防止模式切换的自动 restore 覆盖外部数据） */
+    /** Flag for external data loading (prevents the automatic restore on mode switch from overwriting external data) */
     isLoadingExternalData: Ref<boolean>
 }
 
 /**
- * useAppFavorite 的返回值
+ * Return value of useAppFavorite
  */
 export interface AppFavoriteReturn {
-    /** 显示收藏管理对话框 */
+    /** Show the favorites management dialog */
     showFavoriteManager: Ref<boolean>
-    /** 显示保存收藏对话框 */
+    /** Show the save favorite dialog */
     showSaveFavoriteDialog: Ref<boolean>
-    /** 保存收藏数据 */
+    /** Save favorite data */
     saveFavoriteData: Ref<SaveFavoriteData | null>
-    /** 处理保存收藏请求 */
+    /** Handle the save favorite request */
     handleSaveFavorite: (data: SaveFavoriteData) => void
-    /** 处理保存完成 */
+    /** Handle save completion */
     handleSaveFavoriteComplete: () => void
-    /** 处理收藏优化提示词 */
+    /** Handle favoriting the optimized prompt */
     handleFavoriteOptimizePrompt: () => void
-    /** 处理使用收藏 */
+    /** Handle using a favorite */
     handleUseFavorite: (favorite: FavoriteItem) => Promise<void>
 }
 
 /**
- * App 级别收藏管理 Composable
+ * App-level favorites management composable
  */
 export function useAppFavorite(options: AppFavoriteOptions): AppFavoriteReturn {
     const {
@@ -90,37 +90,37 @@ export function useAppFavorite(options: AppFavoriteOptions): AppFavoriteReturn {
 
     const toast = useToast()
 
-    // 状态
+    // State
     const showFavoriteManager = ref(false)
     const showSaveFavoriteDialog = ref(false)
     const saveFavoriteData = ref<SaveFavoriteData | null>(null)
 
     /**
-     * 处理保存收藏请求
+     * Handle the save favorite request
      */
     const handleSaveFavorite = (data: SaveFavoriteData) => {
-        // 保存数据用于对话框预填充
+        // Save the data for prefilling the dialog
         saveFavoriteData.value = data
 
-        // 打开保存对话框
+        // Open the save dialog
         showSaveFavoriteDialog.value = true
     }
 
     /**
-     * 处理保存完成
+     * Handle save completion
      */
     const handleSaveFavoriteComplete = () => {
-        // 关闭对话框已由组件内部处理
-        // 可选:刷新收藏列表或显示额外提示
+        // Closing the dialog is already handled inside the component
+        // Optional: refresh the favorites list or show an extra message
     }
 
     /**
-     * 处理收藏优化提示词
+     * Handle favoriting the optimized prompt
      */
     const handleFavoriteOptimizePrompt = () => {
-        // 关闭收藏管理对话框
+        // Close the favorites management dialog
         showFavoriteManager.value = false
-        // 滚动到优化区域
+        // Scroll to the optimization area
         nextTick(() => {
             const inputPanel = document.querySelector('[data-input-panel]')
             if (inputPanel) {
@@ -130,7 +130,7 @@ export function useAppFavorite(options: AppFavoriteOptions): AppFavoriteReturn {
     }
 
     /**
-     * 处理使用收藏 - 智能模式切换（内部实现）
+     * Handle using a favorite - smart mode switching (internal implementation)
      */
     const handleUseFavoriteImpl = async (favorite: FavoriteItem) => {
         const {
@@ -139,11 +139,11 @@ export function useAppFavorite(options: AppFavoriteOptions): AppFavoriteReturn {
             imageSubMode: favImageSubMode,
         } = favorite
 
-        // 🔧 Step D: 使用 navigateToSubModeKey 一次性导航到目标路由
-        // 不再分两步（先切 functionMode 再切 subMode）
+        // 🔧 Step D: use navigateToSubModeKey to navigate to the target route in one step
+        // No longer two steps (switch functionMode first, then subMode)
 
         if (favFunctionMode === 'image') {
-            // 图像模式：根据 favImageSubMode 确定目标子模式（默认 text2image）
+            // Image mode: determine the target sub-mode from favImageSubMode (defaults to text2image)
             const targetSubMode = favImageSubMode || 'text2image'
             const targetKey = `image-${targetSubMode}`
 
@@ -152,7 +152,7 @@ export function useAppFavorite(options: AppFavoriteOptions): AppFavoriteReturn {
 
             await nextTick()
 
-            // 图像模式的数据回填逻辑
+            // Data backfill logic for image mode
             if (typeof window !== 'undefined') {
                 window.dispatchEvent(
                     new CustomEvent('image-workspace-restore-favorite', {
@@ -167,15 +167,15 @@ export function useAppFavorite(options: AppFavoriteOptions): AppFavoriteReturn {
 
             toast.success(t('toast.success.imageFavoriteLoaded'))
         } else if (favFunctionMode === 'basic' || favFunctionMode === 'context' || favFunctionMode === 'pro') {
-            // 基础模式或上下文模式
+            // Basic mode or context mode
 
-            // 1. 确定目标功能模式
-            // 'pro' 和 'context' 都映射到 pro（兼容历史数据）
+            // 1. Determine the target function mode
+            // Both 'pro' and 'context' map to pro (compatible with historical data)
             const targetFunctionMode = (favFunctionMode === 'context' || favFunctionMode === 'pro') ? 'pro' : 'basic'
 
-            // 2. 确定目标子模式（如果收藏指定了优化模式）
+            // 2. Determine the target sub-mode (if the favorite specifies an optimization mode)
             // - basic: system/user
-            // - pro: multi/variable（兼容旧 optimizationMode: system->multi, user->variable）
+            // - pro: multi/variable (compatible with the old optimizationMode: system->multi, user->variable)
             let targetSubMode: BasicSubMode | ProSubMode
             if (targetFunctionMode === 'pro') {
                 const mode = favOptimizationMode ?? 'user'
@@ -184,13 +184,13 @@ export function useAppFavorite(options: AppFavoriteOptions): AppFavoriteReturn {
                 targetSubMode = (favOptimizationMode ?? 'system') as BasicSubMode
             }
 
-            // 3. 一次性导航到目标路由
+            // 3. Navigate to the target route in one step
             const targetKey = `${targetFunctionMode}-${targetSubMode}`
             navigateToSubModeKey(targetKey)
 
             await nextTick()
 
-            // 4. 如果是 pro 模式，需要同步 contextMode（兼容旧逻辑）
+            // 4. In pro mode, the contextMode must be synced (compatible with the old logic)
             if (targetFunctionMode === 'pro' && favOptimizationMode) {
                 await handleContextModeChange(favOptimizationMode as ContextMode)
             }
@@ -212,36 +212,36 @@ export function useAppFavorite(options: AppFavoriteOptions): AppFavoriteReturn {
                 )
             }
 
-            // 5. 将收藏的提示词内容设置到输入框
+            // 5. Set the favorite's prompt content into the input box
             optimizerPrompt.value = favorite.content
         } else {
-            // 其他情况：直接设置内容，不切换模式
+            // Other cases: set the content directly without switching modes
             optimizerPrompt.value = favorite.content
         }
 
-        // 关闭收藏管理对话框
+        // Close the favorites management dialog
         showFavoriteManager.value = false
 
-        // 显示成功提示
+        // Show a success message
         toast.success(t('toast.success.favoriteLoaded'))
     }
 
     /**
-     * 收藏加载的错误处理包装器
+     * Error handling wrapper for favorite loading
      */
     const handleUseFavorite = async (favorite: FavoriteItem) => {
         try {
-            // 🔧 设置外部数据加载标志，防止模式切换的自动 restore 覆盖外部数据
+            // 🔧 Set the external data loading flag to prevent the automatic restore on mode switch from overwriting external data
             isLoadingExternalData.value = true
 
             await handleUseFavoriteImpl(favorite)
         } catch (error) {
-            // 捕获收藏加载过程中的所有错误
-            console.error('[App] 收藏加载失败:', error)
+            // Catch all errors during favorite loading
+            console.error('[App] Failed to load favorite:', error)
             const errorMessage = error instanceof Error ? error.message : String(error)
             toast.error(t('toast.error.favoriteLoadFailed', { error: errorMessage }))
         } finally {
-            // 🔧 恢复完成，重置标志，允许正常的模式切换 restore
+            // 🔧 Restore finished; reset the flag to allow normal mode-switch restores
             isLoadingExternalData.value = false
         }
     }

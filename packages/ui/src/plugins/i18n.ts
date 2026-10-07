@@ -13,15 +13,15 @@ import type { AppServices } from "../types/services";
 type SupportedLocale = "en-US";
 const SUPPORTED_LOCALES: SupportedLocale[] = ["en-US"];
 
-// 服务引用
+// Service reference
 const servicesRef = shallowRef<AppServices | null>(null);
 
-// 设置服务引用的函数
+// Function to set the service reference
 export function setI18nServices(services: AppServices) {
   servicesRef.value = services;
 }
 
-// 创建i18n实例
+// Create the i18n instance
 const i18n = createI18n({
   legacy: false,
   locale: "en-US" as SupportedLocale,
@@ -54,7 +54,7 @@ watch(
   { immediate: true },
 );
 
-// 初始化语言设置
+// Initialize the language settings
 async function initializeLanguage() {
   try {
     if (!servicesRef.value) {
@@ -86,21 +86,21 @@ async function initializeLanguage() {
   }
 }
 
-// 导出插件安装函数
+// Export the plugin install function
 export function installI18n(app: App) {
-  initializeLanguage(); // 异步初始化，不阻塞应用启动
+  initializeLanguage(); // Async initialization, does not block app startup
   app.use(i18n);
 }
 
-// 导出延迟初始化函数 - 用于Extension等需要等待服务初始化的场景
+// Export the deferred initialization function - for scenarios such as the Extension that must wait for services to initialize
 export async function initializeI18nWithStorage() {
   await initializeLanguage();
 }
 
-// 导出基础安装函数 - 只安装插件，不初始化语言
+// Export the base install function - only installs the plugin, does not initialize the language
 export function installI18nOnly(app: App) {
   app.use(i18n);
 }
 
-// 导出i18n实例
+// Export the i18n instance
 export { i18n };

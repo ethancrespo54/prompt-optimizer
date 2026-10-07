@@ -1,6 +1,6 @@
 /**
- * 上下文管理 Composable
- * 负责管理优化上下文、上下文变量、上下文编辑器等相关功能
+ * Context management composable
+ * Responsible for managing the optimization context, context variables, the context editor, and related features
  */
 
 import { ref, computed, watch, type Ref, type ComputedRef } from 'vue'
@@ -16,7 +16,7 @@ import type { VariableManagerHooks } from "../prompt/useVariableManager";
 
 export interface ContextManagementOptions {
   services: Ref<AppServices | null>;
-  // ✅ 已移除 selectedOptimizationMode - 函数内部未使用，可从 route-computed 动态计算
+  // ✅ Removed selectedOptimizationMode - unused inside the function, can be computed dynamically from route-computed
   advancedModeEnabled: Ref<boolean>;
   showContextEditor: Ref<boolean>;
   contextEditorDefaultTab: Ref<"messages" | "variables" | "tools">;
@@ -36,26 +36,26 @@ export function useContextManagement(options: ContextManagementOptions) {
     optimizer,
   } = options;
 
-  // ==================== 状态定义 ====================
+  // ==================== State definitions ====================
 
-  // 上下文模式
+  // Context mode
   const contextMode =
     ref<import("@prompt-optimizer/core").ContextMode>("system");
 
-  // 优化阶段上下文状态
+  // Optimization-stage context state
   const optimizationContext = ref<ConversationMessage[]>([]);
   const optimizationContextTools = ref<ToolDefinition[]>([]);
 
-  // 标记是否已从持久化仓库加载过上下文
+  // Flag for whether the context has been loaded from the persistent repository
   const isContextLoaded = ref(false);
 
-  // 上下文持久化状态
+  // Context persistence state
   const currentContextId = ref<string | null>(null);
   const contextRepo = computed(() => services.value?.contextRepo);
 
-  // 内置预定义变量
+  // Built-in predefined variables
   const predefinedVariables = computed(() => {
-    // optimizer 可能在初始化时为 null,需要安全访问
+    // The optimizer may be null during initialization, so it must be accessed safely
     if (!optimizer || typeof optimizer !== "object") {
       return {
         originalPrompt: "",
@@ -68,9 +68,9 @@ export function useContextManagement(options: ContextManagementOptions) {
     };
   });
 
-  // ==================== 监听 contextMode 变化 ====================
+  // ==================== Watch contextMode changes ====================
 
-  // 监听 services 中的 contextMode 变化并同步到本地 ref
+  // Watch contextMode changes in services and sync them to the local ref
   watch(
     () => {
       const cm = services.value?.contextMode
@@ -86,24 +86,24 @@ export function useContextManagement(options: ContextManagementOptions) {
     { immediate: true },
   );
 
-  // ==================== 持久化相关 ====================
+  // ==================== Persistence-related ====================
 
-  // 初始化上下文持久化
+  // Initialize context persistence
   const initializeContextPersistence = async () => {
     if (!contextRepo.value) return;
 
     try {
-      // 获取当前上下文ID
+      // Get the current context ID
       currentContextId.value = await contextRepo.value.getCurrentId();
 
       if (currentContextId.value) {
-        // 加载当前上下文
+        // Load the current context
         const context = await contextRepo.value.get(currentContextId.value);
         if (context) {
           optimizationContext.value = [...context.messages];
           optimizationContextTools.value = [...(context.tools || [])];
 
-          // 同步上下文变量到 contextEditorState
+          // Sync the context variables to contextEditorState
           contextEditorState.value = {
             ...contextEditorState.value,
             messages: [...context.messages],
@@ -126,21 +126,21 @@ export function useContextManagement(options: ContextManagementOptions) {
     }
   };
 
-  // 持久化上下文更新（轻度节流）
+  // Persist context updates (lightly throttled)
   let persistContextUpdateTimer: ReturnType<typeof setTimeout> | null = null;
   const persistContextUpdate = async (patch: {
     messages?: ConversationMessage[];
-    // variables 已移除 - 临时变量由 useTemporaryVariables() 管理：Pro/Image 持久化到 session，Basic 仅内存态
+    // variables has been removed - temporary variables are managed by useTemporaryVariables(): persisted to the session for Pro/Image, in-memory only for Basic
     tools?: ToolDefinition[];
   }) => {
     if (!contextRepo.value || !currentContextId.value) return;
 
-    // 清除之前的定时器
+    // Clear the previous timer
     if (persistContextUpdateTimer) {
       clearTimeout(persistContextUpdateTimer);
     }
 
-    // 设置新的节流定时器（300ms延迟）
+    // Set a new throttle timer (300ms delay)
     persistContextUpdateTimer = setTimeout(async () => {
       try {
         await contextRepo.value!.update(currentContextId.value!, patch);
@@ -154,25 +154,25 @@ export function useContextManagement(options: ContextManagementOptions) {
     }, 300);
   };
 
-  // 监听主界面上下文管理器的消息变更，自动持久化
+  // Watch message changes in the main UI context manager and persist automatically
   watch(
     optimizationContext,
     async (newMessages) => {
-      // 避免与全屏编辑器重复持久化
+      // Avoid duplicate persistence with the fullscreen editor
       if (showContextEditor.value) return;
       await persistContextUpdate({ messages: newMessages });
     },
     { deep: true },
   );
 
-  // ==================== 上下文编辑器相关 ====================
+  // ==================== Context editor-related ====================
 
-  // 打开上下文编辑器
+  // Open the context editor
   const handleOpenContextEditor = async (
     messagesOrTab?: ConversationMessage[] | "messages" | "variables" | "tools",
     _variables?: Record<string, string>,
   ) => {
-    // 参数类型判断
+    // Parameter type check
     let messages: ConversationMessage[] | undefined;
     let defaultTab: "messages" | "variables" | "tools" = "messages";
 
@@ -183,10 +183,10 @@ export function useContextManagement(options: ContextManagementOptions) {
       messages = messagesOrTab;
     }
 
-    // 设置默认标签页
+    // Set the default tab
     contextEditorDefaultTab.value = defaultTab;
 
-    // 确保全局变量已加载并刷新
+    // Make sure the global variables are loaded and refreshed
     try {
       await variableManager?.refresh?.();
     } catch (e) {
@@ -196,68 +196,68 @@ export function useContextManagement(options: ContextManagementOptions) {
       );
     }
 
-    // 设置初始状态
+    // Set the initial state
     contextEditorState.value = {
       messages: messages || [...optimizationContext.value],
-      variables: {}, // 不再使用会话变量
+      variables: {}, // Session variables are no longer used
       tools: [...optimizationContextTools.value],
-      showVariablePreview: false, // 不再显示变量预览
+      showVariablePreview: false, // The variable preview is no longer shown
       showToolManager: contextMode.value === "user",
       mode: "edit",
     };
     showContextEditor.value = true;
   };
 
-  // 处理上下文编辑器保存
+  // Handle saving the context editor
   const handleContextEditorSave = async (context: {
     messages: ConversationMessage[];
-    variables: Record<string, string>; // 保留参数以保持接口兼容，但不使用
+    variables: Record<string, string>; // Parameter kept for interface compatibility but not used
     tools: ToolDefinition[];
   }) => {
-    // 更新优化上下文
+    // Update the optimization context
     optimizationContext.value = [...context.messages];
     optimizationContextTools.value = [...context.tools];
 
-    // 持久化到 contextRepo（不包含临时变量；临时变量走 session store / 内存态）
+    // Persist to contextRepo (without temporary variables; temporary variables go through the session store / in-memory state)
     await persistContextUpdate({
       messages: context.messages,
-      // variables 不持久化 - 临时变量由 useTemporaryVariables() 管理
+      // variables are not persisted - temporary variables are managed by useTemporaryVariables()
       tools: context.tools,
     });
 
-    // 关闭编辑器
+    // Close the editor
     showContextEditor.value = false;
 
-    // 显示成功提示
-    useToast().success("上下文已更新");
+    // Show a success message
+    useToast().success("Context updated");
   };
 
-  // 处理上下文编辑器实时状态更新
+  // Handle real-time state updates of the context editor
   const handleContextEditorStateUpdate = async (state: {
     messages: ConversationMessage[];
-    variables?: Record<string, string>; // 保留以保持兼容，但不使用
+    variables?: Record<string, string>; // Kept for compatibility but not used
     tools: ToolDefinition[];
   }) => {
-    // 实时同步状态到contextEditorState（不包含 variables）
+    // Sync the state to contextEditorState in real time (without variables)
     contextEditorState.value.messages = [...state.messages];
     contextEditorState.value.tools = [...state.tools];
-    // variables 不同步 - 临时变量由 useTemporaryVariables() 管理
+    // variables are not synced - temporary variables are managed by useTemporaryVariables()
 
-    // 实时更新优化上下文
+    // Update the optimization context in real time
     optimizationContext.value = [...state.messages];
     optimizationContextTools.value = [...(state.tools || [])];
 
-    // 实时持久化（不包含临时变量）
+    // Persist in real time (without temporary variables)
     await persistContextUpdate({
       messages: state.messages,
-      // variables 不持久化
+      // variables are not persisted
       tools: state.tools,
     });
 
     console.log("[useContextManagement] Context editor state synchronized");
   };
 
-  // ==================== 上下文模式切换 ====================
+  // ==================== Context mode switching ====================
 
   const handleContextModeChange = async (
     mode: import("@prompt-optimizer/core").ContextMode,
@@ -268,15 +268,15 @@ export function useContextManagement(options: ContextManagementOptions) {
     }
 
     try {
-      // 更新本地 contextMode (会通过 watch 同步到 App.vue)
+      // Update the local contextMode (synced to App.vue through the watch)
       if (contextMode.value !== mode) {
         contextMode.value = mode;
         console.log("[useContextManagement] Context mode changed to:", mode);
       }
 
-      // 更新 services 中的 contextMode (需要判断类型，因为可能已经是字符串)
+      // Update contextMode in services (type check needed, since it may already be a string)
       if (services.value?.contextMode) {
-        // 如果 contextMode 是 Ref，则更新其 value
+        // If contextMode is a Ref, update its value
         if (
           typeof services.value.contextMode === "object" &&
           "value" in services.value.contextMode
@@ -291,16 +291,16 @@ export function useContextManagement(options: ContextManagementOptions) {
         "[useContextManagement] Failed to change context mode:",
         error,
       );
-      useToast().error("切换上下文模式失败");
+      useToast().error("Failed to switch the context mode");
     }
   };
 
-  // 会话变量管理已移除 - 现在使用测试区临时变量
+  // Session variable management has been removed - the test area's temporary variables are used now
 
-  // ==================== 返回 ====================
+  // ==================== Return ====================
 
   return {
-    // 状态
+    // State
     contextMode,
     optimizationContext,
     optimizationContextTools,
@@ -309,7 +309,7 @@ export function useContextManagement(options: ContextManagementOptions) {
     contextRepo,
     predefinedVariables,
 
-    // 方法
+    // Methods
     initializeContextPersistence,
     persistContextUpdate,
     handleOpenContextEditor,

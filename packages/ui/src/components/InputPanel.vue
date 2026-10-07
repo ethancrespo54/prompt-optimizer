@@ -1,13 +1,13 @@
-<!-- 输入面板组件 - 纯Naive UI实现 -->
+<!-- Input panel component - pure Naive UI implementation -->
 <template>
     <NSpace vertical :size="16">
-        <!-- 标题区域 -->
+        <!-- Title area -->
         <NFlex justify="space-between" align="center" :wrap="false">
             <NFlex align="center" :size="8">
                 <NText :depth="1" style="font-size: 18px; font-weight: 500">{{
                     label
                 }}</NText>
-                <!-- 🆕 帮助提示图标 -->
+                <!-- 🆕 Help tooltip icon -->
                 <NPopover
                     v-if="helpText"
                     trigger="hover"
@@ -46,7 +46,7 @@
                 </NPopover>
             </NFlex>
             <NFlex align="center" :size="12">
-                <!-- 🆕 AI提取变量按钮（带文字） -->
+                <!-- 🆕 AI extract variables button (with text) -->
                 <NButton
                     v-if="enableVariableExtraction && showExtractButton"
                     type="tertiary"
@@ -66,7 +66,7 @@
                     </template>
                     {{ extracting ? $t('evaluation.variableExtraction.extracting') : $t('evaluation.variableExtraction.extractButton') }}
                 </NButton>
-                <!-- 预览按钮 -->
+                <!-- Preview button -->
                 <NButton
                     v-if="showPreview"
                     type="tertiary"
@@ -99,7 +99,7 @@
                         </NIcon>
                     </template>
                 </NButton>
-                <!-- 全屏按钮 -->
+                <!-- Fullscreen button -->
                 <NButton
                     type="tertiary"
                     size="small"
@@ -126,12 +126,12 @@
                         </NIcon>
                     </template>
                 </NButton>
-                <!-- 标题栏额外按钮插槽 -->
+                <!-- Extra button slot in the title bar -->
                 <slot name="header-extra"></slot>
             </NFlex>
         </NFlex>
 
-        <!-- 输入框 - 使用变量感知输入框 (支持变量提取) -->
+        <!-- Input box - uses the variable-aware input (supports variable extraction) -->
         <VariableAwareInput
             v-if="enableVariableExtraction"
             :model-value="modelValue"
@@ -151,7 +151,7 @@
             @add-missing-variable="handleAddMissingVariable"
         />
 
-        <!-- 原生输入框 (不支持变量提取) -->
+        <!-- Native input box (does not support variable extraction) -->
         <NInput
             v-else
             :value="modelValue"
@@ -165,9 +165,9 @@
             :data-testid="`${testIdPrefix}-input`"
         />
 
-        <!-- 控制面板 -->
+        <!-- Control panel -->
         <NGrid :cols="24" :x-gap="8" responsive="screen">
-            <!-- 模型选择 -->
+            <!-- Model selection -->
             <NGridItem :span="6" :xs="24" :sm="6">
                 <NSpace vertical :size="8">
                     <NText
@@ -179,7 +179,7 @@
                 </NSpace>
             </NGridItem>
 
-            <!-- 提示词模板选择 -->
+            <!-- Prompt template selection -->
             <NGridItem v-if="templateLabel" :span="11" :xs="24" :sm="11">
                 <NSpace vertical :size="8">
                     <NText
@@ -191,7 +191,7 @@
                 </NSpace>
             </NGridItem>
 
-            <!-- 控制按钮组 -->
+            <!-- Control button group -->
             <NGridItem
                 :span="templateLabel ? 2 : 13"
                 :xs="24"
@@ -202,10 +202,10 @@
                 </NSpace>
             </NGridItem>
 
-            <!-- 提交按钮区域 -->
+            <!-- Submit button area -->
             <NGridItem :span="5" :xs="24" :sm="5" class="flex items-end">
                 <NSpace :size="8" justify="end" style="width: 100%">
-                    <!-- 分析按钮（与优化同级） -->
+                    <!-- Analyze button (same level as optimize) -->
                     <NButton
                         v-if="showAnalyzeButton"
                         type="default"
@@ -217,7 +217,7 @@
                     >
                         {{ analyzeLoading ? $t('promptOptimizer.analyzing') : $t('promptOptimizer.analyze') }}
                     </NButton>
-                    <!-- 优化按钮 -->
+                    <!-- Optimize button -->
                     <NButton
                         type="primary"
                         size="medium"
@@ -233,7 +233,7 @@
         </NGrid>
     </NSpace>
 
-    <!-- 全屏弹窗 -->
+    <!-- Fullscreen dialog -->
     <FullscreenDialog v-model="isFullscreen" :title="label">
         <NInput
             v-model:value="fullscreenValue"
@@ -265,67 +265,67 @@ import FullscreenDialog from "./FullscreenDialog.vue";
 import { VariableAwareInput } from "./variable-extraction";
 
 /**
- * 输入面板组件
+ * Input panel component
  *
- * 功能：
- * 1. 提供输入框用于用户输入内容
- * 2. 支持全屏编辑模式
- * 3. 支持变量提取功能 (可选)
- * 4. 提供模型选择、模板选择等控制面板
+ * Features:
+ * 1. Provides an input box for user input
+ * 2. Supports fullscreen editing mode
+ * 3. Supports variable extraction (optional)
+ * 4. Provides a control panel for model selection, template selection, etc.
  */
 
 interface Props {
-    /** 输入框的值 */
+    /** Input box value */
     modelValue: string;
-    /** 选中的模型 */
+    /** Selected model */
     selectedModel: string;
-    /** 面板标题 */
+    /** Panel title */
     label: string;
-    /** 占位符文本 */
+    /** Placeholder text */
     placeholder?: string;
-    /** 模型选择标签 */
+    /** Model selection label */
     modelLabel: string;
-    /** 模板选择标签 */
+    /** Template selection label */
     templateLabel?: string;
-    /** 提交按钮文本 */
+    /** Submit button text */
     buttonText: string;
-    /** 加载中文本 */
+    /** Loading text */
     loadingText: string;
-    /** 是否正在加载 */
+    /** Whether loading */
     loading?: boolean;
-    /** 是否禁用 */
+    /** Whether disabled */
     disabled?: boolean;
-    /** 是否显示预览按钮 */
+    /** Whether to show the preview button */
     showPreview?: boolean;
-    /** 🆕 帮助提示文本（显示在标题旁边的问号图标，悬浮时显示） */
+    /** 🆕 Help tooltip text (shown on hover of the question mark icon next to the title) */
     helpText?: string;
 
-    /** 是否显示分析按钮 */
+    /** Whether to show the analyze button */
     showAnalyzeButton?: boolean;
-    /** 分析按钮是否正在加载 */
+    /** Whether the analyze button is loading */
     analyzeLoading?: boolean;
 
-    /** 🆕 是否显示AI提取变量按钮 */
+    /** 🆕 Whether to show the AI extract variables button */
     showExtractButton?: boolean;
-    /** 🆕 AI提取变量是否进行中 */
+    /** 🆕 Whether AI variable extraction is in progress */
     extracting?: boolean;
 
-    /** 🆕 是否启用变量提取功能 */
+    /** 🆕 Whether to enable variable extraction */
     enableVariableExtraction?: boolean;
-    /** 🆕 已存在的全局变量名列表 */
+    /** 🆕 List of existing global variable names */
     existingGlobalVariables?: string[];
-    /** 🆕 已存在的临时变量名列表 */
+    /** 🆕 List of existing temporary variable names */
     existingTemporaryVariables?: string[];
-    /** 🆕 系统预定义变量名列表 */
+    /** 🆕 List of system predefined variable names */
     predefinedVariables?: string[];
-    /** 🆕 全局变量名到变量值的映射 */
+    /** 🆕 Map of global variable names to values */
     globalVariableValues?: Record<string, string>;
-    /** 🆕 临时变量名到变量值的映射 */
+    /** 🆕 Map of temporary variable names to values */
     temporaryVariableValues?: Record<string, string>;
-    /** 🆕 预定义变量名到变量值的映射 */
+    /** 🆕 Map of predefined variable names to values */
     predefinedVariableValues?: Record<string, string>;
 
-    /** 🆕 测试 ID 前缀（用于区分不同模式，如 'basic-system', 'basic-user'） */
+    /** 🆕 Test ID prefix (used to distinguish modes, such as 'basic-system', 'basic-user') */
     testIdPrefix?: string;
 }
 
@@ -357,9 +357,9 @@ const emit = defineEmits<{
     analyze: [];
     configModel: [];
     "open-preview": [];
-    /** 🆕 AI提取变量事件 */
+    /** 🆕 AI extract variables event */
     "extract-variables": [];
-    /** 🆕 变量提取事件 */
+    /** 🆕 Variable extraction event */
     "variable-extracted": [
         data: {
             variableName: string;
@@ -367,17 +367,17 @@ const emit = defineEmits<{
             variableType: "global" | "temporary";
         },
     ];
-    /** 🆕 添加缺失变量事件 */
+    /** 🆕 Add missing variable event */
     "add-missing-variable": [varName: string];
 }>();
 
-// 使用全屏组合函数
+// Use the fullscreen composable
 const { isFullscreen, fullscreenValue, openFullscreen } = useFullscreen(
     computed(() => props.modelValue),
     (value) => emit("update:modelValue", value),
 );
 
-// 处理变量提取事件
+// Handle the variable extraction event
 const handleVariableExtracted = (data: {
     variableName: string;
     variableValue: string;
@@ -386,7 +386,7 @@ const handleVariableExtracted = (data: {
     emit("variable-extracted", data);
 };
 
-// 处理添加缺失变量事件
+// Handle the add missing variable event
 const handleAddMissingVariable = (varName: string) => {
     emit("add-missing-variable", varName);
 };

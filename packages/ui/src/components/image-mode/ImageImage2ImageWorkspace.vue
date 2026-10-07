@@ -5,16 +5,16 @@
             class="image-image2image-split"
             :style="{ gridTemplateColumns: `${mainSplitLeftPct}% 12px 1fr` }"
         >
-            <!-- 左侧：提示词优化区域（文本模型） -->
+            <!-- Left: prompt optimization area (text model) -->
             <div class="split-pane" style="min-width: 0; height: 100%; overflow: hidden;">
                 <NFlex
                     vertical
                     :style="{ overflow: 'auto', height: '100%', minHeight: 0 }"
                     size="medium"
                 >
-            <!-- 输入控制区域 - 对齐InputPanel布局 -->
+            <!-- Input control area - aligned with the InputPanel layout -->
             <NCard :style="{ flexShrink: 0 }">
-                <!-- 折叠态：只显示标题栏 -->
+                <!-- Collapsed state: only show the title bar -->
                 <NFlex
                     v-if="isInputPanelCollapsed"
                     justify="space-between"
@@ -50,9 +50,9 @@
                     </NButton>
                 </NFlex>
 
-                <!-- 展开态：完整输入面板 -->
+                <!-- Expanded state: full input panel -->
                 <NSpace v-else vertical :size="16">
-                    <!-- 标题区域 -->
+                    <!-- Title area -->
                     <NFlex justify="space-between" align="center" :wrap="false">
                         <NText
                             :depth="1"
@@ -88,7 +88,7 @@
                                     </NIcon>
                                 </template>
                             </NButton>
-                            <!-- 折叠按钮 -->
+                            <!-- Collapse button -->
                             <NButton
                                 type="tertiary"
                                 size="small"
@@ -108,7 +108,7 @@
                         </NFlex>
                     </NFlex>
 
-                    <!-- 输入框 -->
+                    <!-- Input box -->
                     <VariableAwareInput
                         v-if="variableInputData"
                         data-testid="image-image2image-input"
@@ -138,7 +138,7 @@
                         :disabled="isOptimizing"
                     />
 
-                    <!-- 图片上传区域 - Image2Image 模式始终显示 -->
+                    <!-- Image upload area - always shown in Image2Image mode -->
                     <NSpace
                         vertical
                         :size="8"
@@ -162,7 +162,7 @@
                                 {{ t("imageWorkspace.input.selectImage") }}
                             </NButton>
 
-                            <!-- 缩略图显示区域 -->
+                            <!-- Thumbnail display area -->
                             <div
                                 v-if="previewImageUrl"
                                 class="thumbnail-container"
@@ -181,7 +181,7 @@
                                 />
                             </div>
 
-                            <!-- 删除按钮 -->
+                            <!-- Delete button -->
                             <NButton
                                 v-if="previewImageUrl"
                                 @click="clearUploadedImage"
@@ -195,9 +195,9 @@
                         </NFlex>
                     </NSpace>
 
-                    <!-- 控制面板 - 使用网格布局 -->
+                    <!-- Control panel - uses a grid layout -->
                     <NGrid :cols="24" :x-gap="8" responsive="screen">
-                        <!-- 文本模型选择 -->
+                        <!-- Text model selection -->
                         <NGridItem :span="7" :xs="24" :sm="7">
                             <NSpace vertical :size="8">
                                 <NText
@@ -259,7 +259,7 @@
                             </NSpace>
                         </NGridItem>
 
-                        <!-- 优化模板选择 -->
+                        <!-- Optimization template selection -->
                         <NGridItem :span="11" :xs="24" :sm="11">
                             <NSpace vertical :size="8">
                                 <NText
@@ -312,10 +312,10 @@
                             </NSpace>
                         </NGridItem>
 
-                        <!-- 分析与优化按钮 -->
+                        <!-- Analyze and optimize buttons -->
                         <NGridItem :span="6" :xs="24" :sm="6" class="flex items-end justify-end">
                             <NSpace :size="8">
-                                <!-- 分析按钮（与优化同级） -->
+                                <!-- Analyze button (same level as optimize) -->
                                 <NButton
                                     type="default"
                                     size="medium"
@@ -334,7 +334,7 @@
                                             : t('promptOptimizer.analyze')
                                     }}
                                 </NButton>
-                                <!-- 优化按钮 -->
+                                <!-- Optimize button -->
                                 <NButton
                                     type="primary"
                                     size="medium"
@@ -361,7 +361,7 @@
                 </NSpace>
             </NCard>
 
-            <!-- 优化结果区域 - 使用与基础模式一致的卡片容器 -->
+            <!-- Optimization result area - uses the same card container as basic mode -->
             <NCard
                 :style="{ flex: 1, minHeight: '200px', overflow: 'hidden' }"
                 content-style="height: 100%; max-height: 100%; overflow: hidden;"
@@ -404,7 +404,7 @@
                 @keydown="onSplitKeydown"
             />
 
-            <!-- 右侧：图像生成测试区域（图像模型，多列 variants） -->
+            <!-- Right: image generation test area (image models, multi-column variants) -->
             <div ref="testPaneRef" class="split-pane" style="min-width: 0; height: 100%; overflow: hidden;">
                 <NFlex vertical :style="{ height: '100%', gap: '12px' }">
                     <TemporaryVariablesPanel
@@ -414,7 +414,7 @@
                         :is-generating="isGenerating"
                         @generate-values="handleGenerateValues"
                     />
-                    <!-- 顶部：列数与全局操作 -->
+                    <!-- Top: column count and global actions -->
                     <NCard size="small" :style="{ flexShrink: 0 }">
                         <div class="test-area-top">
                             <NFlex align="center" :size="8" :wrap="false" style="min-width: 0;">
@@ -447,7 +447,7 @@
                         </div>
                     </NCard>
 
-                    <!-- 配置区：与结果列对齐 -->
+                    <!-- Config area: aligned with the result columns -->
                     <NCard size="small" :style="{ flexShrink: 0 }">
                         <div class="variant-deck" :style="{ gridTemplateColumns: testGridTemplateColumns }">
                             <div v-for="id in activeVariantIds" :key="id" class="variant-cell">
@@ -520,7 +520,7 @@
                         </div>
                     </NCard>
 
-                    <!-- 结果区：多列网格（无横向滚动） -->
+                    <!-- Result area: multi-column grid (no horizontal scrolling) -->
                     <div class="variant-results-wrap">
                         <div class="variant-results" :style="{ gridTemplateColumns: testGridTemplateColumns }">
                             <NCard
@@ -624,7 +624,7 @@
             </div>
         </div>
 
-        <!-- 原始提示词 - 全屏编辑器 -->
+        <!-- Original prompt - fullscreen editor -->
         <FullscreenDialog
             v-model="isFullscreen"
             :title="t('imageWorkspace.input.originalPrompt')"
@@ -646,7 +646,7 @@
             @confirm="confirmBatchApply"
         />
 
-        <!-- 图片上传弹窗 -->
+        <!-- Image upload dialog -->
         <n-modal
             data-testid="image-image2image-upload-modal"
             v-model:show="showUploadModal"
@@ -678,7 +678,7 @@
                     </n-upload-dragger>
                 </n-upload>
 
-                <!-- 上传状态指示 -->
+                <!-- Upload status indicator -->
                 <div v-if="uploadStatus !== 'idle'" style="margin-top: 16px">
                     <n-progress
                         v-if="uploadStatus === 'uploading'"
@@ -718,7 +718,7 @@
             @retry="evaluationHandler.handleReEvaluate"
         />
 
-        <!-- 子模式本地预览面板：不再依赖 PromptOptimizerApp 的全局预览状态 -->
+        <!-- Sub-mode local preview panel: no longer depends on the global preview state of PromptOptimizerApp -->
         <PromptPreviewPanel
             v-model:show="showPromptPreview"
             :previewContent="previewContent"
@@ -729,7 +729,7 @@
             :renderPhase="previewRenderPhase"
         />
 
-        <!-- 模板管理器由 App 统一管理，这里不再渲染 -->
+        <!-- The template manager is managed uniformly by the App and is no longer rendered here -->
     </div>
 </template>
 
@@ -817,7 +817,7 @@ import {
 } from '@prompt-optimizer/core'
 import { v4 as uuidv4 } from 'uuid'
 
-// 国际化
+// Internationalization
 const { t } = useI18n();
 
 interface VariantInputImageInfo {
@@ -829,12 +829,12 @@ interface VariantInputImageInfo {
 // Toast
 const toast = useToast();
 
-// 服务注入
+// Service injection
 const services = inject<Ref<AppServices | null>>("services", ref(null));
 
-// 变量系统（全局变量 + 临时变量）
-// - 全局变量由 PromptOptimizerApp 创建并 provide
-// - 临时变量由 Pinia store 承载（刷新即丢失）
+// Variable system (global variables + temporary variables)
+// - Global variables are created and provided by PromptOptimizerApp
+// - Temporary variables are held by the Pinia store (lost on refresh)
 const variableManager = inject<VariableManagerHooks | null>('variableManager', null)
 const tempVarsManager = useTemporaryVariables()
 
@@ -898,10 +898,10 @@ const handleOriginalPromptInput = (value: string) => {
 
 // handleVariableExtracted / handleAddMissingVariable are provided by useVariableAwareInputBridge
 
-// Session store（单一真源）
+// Session store (single source of truth)
 const session = useImageImage2ImageSession()
 
-// 图像生成相关
+// Image generation-related
 const {
     imageModels,
     generateImage2Image,
@@ -909,22 +909,22 @@ const {
     loadImageModels,
 } = useImageGeneration()
 
-// 服务引用
+// Service references
 const historyManager = computed(() => services.value?.historyManager)
 const promptService = computed(() => services.value?.promptService)
 
-// 过程态（本地，不持久化）
+// Transient state (local, not persisted)
 const isOptimizing = ref(false)
 const isIterating = ref(false)
 const uploadStatus = ref<'idle' | 'uploading' | 'success' | 'error'>('idle')
 const uploadProgress = ref(0)
 
-// 历史管理专用 ref（不写入 session store）
+// Ref dedicated to history management (not written to the session store)
 const currentChainId = ref('')
 const currentVersions = ref<PromptRecordChain['versions']>([])
 const currentVersionId = ref('')
 
-// 字段级访问器（从 session state）
+// Field-level accessors (from the session state)
 const originalPrompt = computed<string>({
     get: () => session.originalPrompt || '',
     set: (value) => session.updatePrompt(value || ''),
@@ -954,7 +954,7 @@ const optimizedReasoning = computed<string>({
     },
 })
 
-// Text 模型选择（与模板选择对齐：自动刷新 + 兜底写回 session store）
+// Text model selection (aligned with template selection: auto refresh + fallback write-back to the session store)
 const modelSelection = useWorkspaceTextModelSelection(services, session)
 const selectedTextModelKey = modelSelection.selectedTextModelKey
 
@@ -978,7 +978,7 @@ const isCompareMode = computed<boolean>({
     set: (value) => session.toggleCompareMode(!!value),
 })
 
-// Image2Image 特有：输入图像
+// Image2Image-specific: input image
 const inputImageB64 = computed<string | null>({
     get: () => session.inputImageB64 || null,
     set: (value) => {
@@ -992,23 +992,23 @@ const inputImageMime = computed<string>({
     },
 })
 
-// 预览图像URL
+// Preview image URL
 const previewImageUrl = computed(() => {
     if (!inputImageB64.value) return null
     const mimeType = inputImageMime.value || 'image/png'
     return `data:${mimeType};base64,${inputImageB64.value}`
 })
 
-// 固定模板类型
+// Fixed template type
 const templateType = computed(() => "image2imageOptimize" as const)
 
-// 图像模式统一使用 user 模式
+// Image mode uniformly uses user mode
 const optimizationMode = 'user' as OptimizationMode
 const advancedModeEnabled = false
 
 const selectedTemplate = templateSelection.selectedTemplate
 
-// PromptPanel 需要 Template 对象的 v-model；用 wrapper 同步写回 iterateTemplateId
+// PromptPanel needs a v-model of a Template object; use a wrapper to sync back to iterateTemplateId
 const selectedIterateTemplate = computed<Template | null>({
     get: () => templateSelection.selectedIterateTemplate.value,
     set: (template) => {
@@ -1017,18 +1017,18 @@ const selectedIterateTemplate = computed<Template | null>({
     },
 })
 
-// 模型选项
+// Model options
 const textModelOptions = modelSelection.textModelOptions
 const imageModelOptions = ref<SelectOption<ImageModelConfig>[]>([])
 
-// ==================== 主布局：可拖拽分栏（左侧 25%~50%） ====================
+// ==================== Main layout: draggable split pane (left 25%~50%) ====================
 
 const splitRootRef = ref<HTMLElement | null>(null)
 const testPaneRef = ref<HTMLElement | null>(null)
 
 const clampLeftPct = (pct: number) => Math.min(50, Math.max(25, pct))
 
-// 使用本地 draft，避免拖拽过程频繁写入持久化存储
+// Use a local draft to avoid frequent writes to persistent storage while dragging
 const mainSplitLeftPct = ref<number>(50)
 watch(
     () => session.layout.mainSplitLeftPct,
@@ -1099,7 +1099,7 @@ onUnmounted(() => {
     endSplitDrag()
 })
 
-// ==================== 测试区：多列 variants（按提示词版本 + 图像模型） ====================
+// ==================== Test area: multi-column variants (by prompt version + image model) ====================
 
 const getVariant = (id: TestVariantId): TestVariantConfig | undefined => {
     const list = session.testVariants as unknown as TestVariantConfig[]
@@ -1173,7 +1173,7 @@ const variantModelKeyModels = {
     d: variantDModelKeyModel,
 } as const
 
-// 测试区宽度：用于禁用 4 列（避免横向滚动）
+// Test area width: used to disable 4 columns (avoids horizontal scrolling)
 const { width: testPaneWidth } = useElementSize(testPaneRef)
 const canUseFourColumns = computed(() => testPaneWidth.value >= 1000)
 watch(
@@ -1190,7 +1190,7 @@ const testGridTemplateColumns = computed(
     () => `repeat(${testColumnCountModel.value}, minmax(0, 1fr))`,
 )
 
-// 版本选项：原始(v0) + 中间版本(v1..v(n-1)) + 最新(latest)
+// Version options: original (v0) + intermediate versions (v1..v(n-1)) + latest (latest)
 const versionOptions = computed(() => {
     const versions = currentVersions.value || []
 
@@ -1210,7 +1210,7 @@ const versionOptions = computed(() => {
     ]
 })
 
-// 确保测试列的模型选择始终有效（模型列表变化时自动 fallback）
+// Make sure the model selection of the test columns is always valid (automatic fallback when the model list changes)
 watch(
     () => imageModelOptions.value,
     (opts) => {
@@ -1262,8 +1262,8 @@ const resolvePromptForSelection = (selection: TestPanelVersionValue): ResolvedPr
     return { text: optimizedPrompt.value || v0, resolvedVersion: 0 }
 }
 
-// 注意：Pinia setup store 会把 ref 自动解包；直接赋值会丢失响应性。
-// 这里用 computed 读取，确保 store 替换对象引用时 UI 能跟着更新。
+// Note: the Pinia setup store unwraps refs automatically; assigning directly would lose reactivity.
+// Read via computed here, to make sure the UI follows along when the store replaces the object reference.
 const variantResults = computed(
     () => session.testVariantResults as unknown as Record<TestVariantId, ImageResult | null>,
 )
@@ -1346,7 +1346,7 @@ const getVariantInputImageInfo = (id: TestVariantId): VariantInputImageInfo | nu
 }
 const hasVariantResult = (id: TestVariantId) => !!(variantResults.value[id]?.images?.length)
 
-// image 模式变量优先级：global < temporary < predefined
+// image mode variable priority: global < temporary < predefined
 const mergedGenerationVariables = computed<Record<string, string>>(() => ({
     ...(variableManager?.customVariables.value || {}),
     ...(tempVarsManager.temporaryVariables.value || {}),
@@ -1354,7 +1354,7 @@ const mergedGenerationVariables = computed<Record<string, string>>(() => ({
 }))
 
 // ========================
-// 子模式本地提示词预览（不经过 PromptOptimizerApp）
+// Sub-mode local prompt preview (does not go through PromptOptimizerApp)
 // ========================
 const previewContextMode = computed<ContextMode>(() => 'user')
 
@@ -1397,11 +1397,11 @@ const buildRuntimePredefinedVariables = (resolved: ResolvedPrompt): Record<strin
     }
 }
 
-// 仅用于 stale 检测：避免对完整 base64 扫描（可能很大）
+// Only used for stale detection: avoid scanning the full base64 (which may be very large)
 const getInputImageSignature = (): string => {
     const b64 = inputImageB64.value
-    // 优先使用 b64：saveSession() 可能会补全 inputImageId，但我们不会清空运行时 b64。
-    // 若优先使用 id，会导致保存前后 fingerprint 改变，从而误判为 stale。
+    // Prefer b64: saveSession() may fill in inputImageId, but we never clear the runtime b64.
+    // If the id were preferred, the fingerprint would change before and after saving, causing a false stale judgment.
     if (b64) {
         const head = b64.slice(0, 96)
         const tail = b64.slice(-96)
@@ -1482,7 +1482,7 @@ const getVariantRequest = (id: TestVariantId): Image2ImageRequest | null => {
     }
 }
 
-// 并行生成时避免 saveSession 竞态：串行化保存，最后一次写入应包含最新状态。
+// Avoid saveSession race conditions during parallel generation: serialize saves, and the last write should contain the latest state.
 let sessionSaveChain: Promise<void> = Promise.resolve()
 const queueSessionSave = () => {
     sessionSaveChain = sessionSaveChain
@@ -1608,7 +1608,7 @@ const runAllVariants = async () => {
     }
 }
 
-// 评估处理器（图像模式专用：testResults 不参与）
+// Evaluation handler (image mode only: testResults is not involved)
 const evaluationHandler = useEvaluationHandler({
     services,
     originalPrompt,
@@ -1621,7 +1621,7 @@ const evaluationHandler = useEvaluationHandler({
     persistedResults: toRef(session, 'evaluationResults'),
 })
 
-// 提供评估上下文给 PromptPanel（子模式私有；结果持久化在 session store）
+// Provide the evaluation context to PromptPanel (private to the sub-mode; results persisted in the session store)
 provideEvaluation(evaluationHandler.evaluation)
 
 const { evaluation } = evaluationHandler
@@ -1644,7 +1644,7 @@ const handleApplyPatch = (payload: { operation: PatchOperation }) => {
     toast.success(t('evaluation.diagnose.applyFix'))
 }
 
-// 保存本地编辑
+// Save local edits
 const handleSaveLocalEdit = async (payload: { note?: string }) => {
     if (!historyManager.value) {
         toast.error(t('toast.error.historyUnavailable'))
@@ -1726,13 +1726,13 @@ const handleClearEvaluation = () => {
     evaluation.clearAllResults()
 }
 
-// PromptPanel 引用，用于在语言切换后刷新迭代模板选择
+// PromptPanel reference, used to refresh the iterate template selection after a language switch
 const promptPanelRef = ref<InstanceType<typeof PromptPanelUI> | null>(null);
 
-// 输入区折叠状态（初始展开）
+// Input area collapsed state (expanded initially)
 const isInputPanelCollapsed = ref(false);
 
-// 提示词摘要（折叠态显示）
+// Prompt summary (shown in the collapsed state)
 const promptSummary = computed(() => {
     if (!originalPrompt.value) return '';
     return originalPrompt.value.length > 50
@@ -1740,11 +1740,11 @@ const promptSummary = computed(() => {
         : originalPrompt.value;
 });
 
-/** 是否正在执行分析 */
+/** Whether an analysis is running */
 const isAnalyzing = ref(false);
 
 /**
- * 处理分析操作
+ * Handle the analyze action
  */
 const handleAnalyze = async () => {
     if (!originalPrompt.value?.trim()) return;
@@ -1752,7 +1752,7 @@ const handleAnalyze = async () => {
 
     isAnalyzing.value = true;
 
-    // 1. 清空版本链，创建虚拟 V0
+    // 1. Clear the version chain and create a virtual V0
     const virtualV0Id = uuidv4()
     const virtualV0: PromptRecordChain['versions'][number] = {
         id: virtualV0Id,
@@ -1777,16 +1777,16 @@ const handleAnalyze = async () => {
         versionId: '',
     })
 
-    // 2. 清理旧的提示词评估结果，避免跨提示词残留
+    // 2. Clear the old prompt evaluation results to avoid leftovers across prompts
     evaluationHandler.evaluation.clearResult('prompt-only');
     evaluationHandler.evaluation.clearResult('prompt-iterate');
 
-    // 3. 收起输入区域
+    // 3. Collapse the input area
     isInputPanelCollapsed.value = true;
 
     await nextTick();
 
-    // 4. 触发 prompt-only 评估
+    // 4. Trigger the prompt-only evaluation
     try {
         await evaluationHandler.handleEvaluate('prompt-only');
     } finally {
@@ -1794,7 +1794,7 @@ const handleAnalyze = async () => {
     }
 };
 
-// 注入 App 层统一的 openTemplateManager / openModelManager / handleSaveFavorite 接口
+// Inject the App layer's unified openTemplateManager / openModelManager / handleSaveFavorite interfaces
 type TemplateEntryType =
     | "optimize"
     | "userOptimize"
@@ -1814,14 +1814,14 @@ const appHandleSaveFavorite = inject<
     ((data: { content: string; originalContent?: string }) => void) | null
 >("handleSaveFavorite", null);
 
-// 将迭代类型映射为图像迭代，并调用 App 入口
+// Map the iteration type to image iteration and call the App entry
 const onOpenTemplateManager = (type: TemplateEntryType) => {
     const target: TemplateEntryType =
         type === "iterate" || type === "contextIterate" ? "imageIterate" : type;
     appOpenTemplateManager?.(target);
 };
 
-// 全屏编辑：复用 useFullscreen 模式，编辑 originalPrompt
+// Fullscreen editing: reuse the useFullscreen pattern to edit originalPrompt
 const { isFullscreen, fullscreenValue, openFullscreen } = useFullscreen(
     computed(() => originalPrompt.value),
     (value) => {
@@ -1829,7 +1829,7 @@ const { isFullscreen, fullscreenValue, openFullscreen } = useFullscreen(
     },
 );
 
-// ========== 模板 SelectWithConfig 选中绑定 ==========
+// ========== Template SelectWithConfig selection binding ==========
 const selectedTemplateIdForSelect = computed<string>({
     get() {
         const id = selectedTemplateId.value || "";
@@ -1844,15 +1844,15 @@ const selectedTemplateIdForSelect = computed<string>({
     },
 });
 
-// 弹窗状态
+// Dialog state
 const showUploadModal = ref(false);
 
-// 弹窗相关方法
+// Dialog-related methods
 const openUploadModal = () => {
     showUploadModal.value = true;
 };
 
-// 文件上传处理
+// File upload handling
 interface ImageUploadChangePayload {
     file: UploadFileInfo | null | undefined
     fileList: UploadFileInfo[]
@@ -1870,14 +1870,14 @@ const handleUploadChange = async (data: ImageUploadChangePayload) => {
         return
     }
 
-    // 验证文件类型
+    // Validate the file type
     if (!/image\/(png|jpeg)/.test(file.type)) {
         toast.error(t('imageWorkspace.upload.fileTypeNotSupported'))
         uploadStatus.value = 'error'
         return
     }
 
-    // 验证文件大小
+    // Validate the file size
     if (file.size > 10 * 1024 * 1024) {
         toast.error(t('imageWorkspace.upload.fileTooLarge'))
         uploadStatus.value = 'error'
@@ -1912,11 +1912,11 @@ const handleUploadChange = async (data: ImageUploadChangePayload) => {
     reader.readAsDataURL(file)
 }
 
-// 弹窗中的上传处理
+// Upload handling in the dialog
 const handleModalUploadChange = (data: ImageUploadChangePayload) => {
-    // 复用原有的上传逻辑
+    // Reuse the existing upload logic
     handleUploadChange(data);
-    // 上传成功后关闭弹窗
+    // Close the dialog after a successful upload
     if (data?.file && data.file.status === "finished") {
         setTimeout(() => {
             showUploadModal.value = false;
@@ -1924,13 +1924,13 @@ const handleModalUploadChange = (data: ImageUploadChangePayload) => {
     }
 };
 
-// 清除上传的图片 - 通过重新触发上传变更来清除
+// Clear the uploaded image - by re-triggering the upload change handler
 const clearUploadedImage = () => {
-    // 调用上传变更处理器，传入空数据来清除图片
+    // Call the upload change handler with empty data to clear the image
     handleUploadChange({ file: null, fileList: [] });
 };
 
-// 处理收藏保存请求 - 调用 App.vue 提供的统一接口
+// Handle the save favorite request - calls the unified interface provided by App.vue
 const handleSaveFavorite = (data: {
     content: string;
     originalContent?: string;
@@ -1946,7 +1946,7 @@ const handleSaveFavorite = (data: {
     }
 };
 
-// 复制图像文本输出
+// Copy the image text output
 const copyImageText = async (text: string) => {
     try {
         await navigator.clipboard.writeText(text);
@@ -1957,7 +1957,7 @@ const copyImageText = async (text: string) => {
     }
 };
 
-// 处理收藏回填 - 从收藏夹恢复提示词到图像工作区
+// Handle favorite backfill - restore a prompt from favorites to the image workspace
 interface RestoreFavoriteDetail {
     content: string;
     imageSubMode?: "text2image" | "image2image";
@@ -1973,7 +1973,7 @@ const handleRestoreFavorite = async (event: Event) => {
     );
     const { content } = event.detail as RestoreFavoriteDetail;
 
-    // 设置原始提示词
+    // Set the original prompt
     originalPrompt.value = content;
 
     console.log("[ImageImage2ImageWorkspace] Favorite restored successfully");
@@ -2058,7 +2058,7 @@ const handleRestoreHistory = async (event: Event) => {
     }
 };
 
-// 在组件创建时立即注册收藏回填事件监听器
+// Register the favorite backfill event listener immediately when the component is created
 if (typeof window !== "undefined") {
     window.addEventListener(
         "image-workspace-restore-favorite",
@@ -2098,7 +2098,7 @@ const refreshImageModels = async () => {
     }
 }
 
-// 创建历史记录（并同步 chain/version 到 session store）
+// Create a history record (and sync chain/version to the session store)
 const createHistoryRecord = async () => {
     if (!selectedTemplate.value || !historyManager.value) return
 
@@ -2139,7 +2139,7 @@ const createHistoryRecord = async () => {
     }
 }
 
-// 优化提示词（流式写入 store.state）
+// Optimize the prompt (streaming writes to store.state)
 const handleOptimizePrompt = async () => {
     if (!originalPrompt.value.trim() || isOptimizing.value) return
     if (!selectedTemplate.value) {
@@ -2191,7 +2191,7 @@ const handleOptimizePrompt = async () => {
     }
 }
 
-// 迭代优化（流式写入 store.state）
+// Iterative optimization (streaming writes to store.state)
 const handleIteratePrompt = async (payload: {
     originalPrompt: string
     optimizedPrompt: string
@@ -2264,7 +2264,7 @@ const handleIteratePrompt = async (payload: {
     }
 }
 
-// 切换版本（仅影响当前 UI 展示，不持久化 versions）
+// Switch versions (only affects the current UI display, versions are not persisted)
 const handleSwitchVersion = async (version: PromptRecordChain['versions'][number]) => {
     optimizedPrompt.value = version.optimizedPrompt
     currentVersionId.value = version.id
@@ -2277,7 +2277,7 @@ const handleSwitchVersion = async (version: PromptRecordChain['versions'][number
     await nextTick()
 }
 
-// 获取图像显示源地址
+// Get the image display source address
 const getImageSrc = (imageItem: ImageResultItem | null | undefined) => {
     if (!imageItem) return ''
     if (imageItem.url) return imageItem.url
@@ -2288,7 +2288,7 @@ const getImageSrc = (imageItem: ImageResultItem | null | undefined) => {
     return ''
 }
 
-// 下载图像
+// Download the image
 const downloadImageFromResult = async (imageItem: ImageResultItem | null | undefined, prefix: string) => {
     if (!imageItem) return
 
@@ -2320,7 +2320,7 @@ const downloadImageFromResult = async (imageItem: ImageResultItem | null | undef
     }
 }
 
-// 初始化
+// Initialize
 const initialize = async () => {
     try {
         await modelSelection.refreshTextModels()
@@ -2332,13 +2332,13 @@ const initialize = async () => {
     }
 }
 
-// 初始化和语言切换事件处理器
+// Initialization and language-switch event handler
 const refreshIterateHandler = async () => {
     await templateSelection.refreshIterateTemplates()
     promptPanelRef.value?.refreshIterateTemplateSelect?.();
 };
 
-// 文本模型刷新事件处理器（模型管理器关闭后同步刷新）
+// Text model refresh event handler (refresh synchronously after the model manager closes)
 const refreshTextModelsHandler = async () => {
     try {
         await modelSelection.refreshTextModels();
@@ -2350,7 +2350,7 @@ const refreshTextModelsHandler = async () => {
     }
 };
 
-// 图像模型刷新事件处理器（模型管理器关闭后同步刷新）
+// Image model refresh event handler (refresh synchronously after the model manager closes)
 const refreshImageModelsHandler = async () => {
     try {
         await refreshImageModels();
@@ -2362,7 +2362,7 @@ const refreshImageModelsHandler = async () => {
     }
 };
 
-// 模板管理器关闭后刷新当前模板列表（并尽量保持当前选择）
+// Refresh the current template list after the template manager closes (keeping the current selection where possible)
 const refreshTemplatesHandler = async () => {
     try {
         await templateSelection.refreshOptimizeTemplates()
@@ -2377,12 +2377,12 @@ const refreshTemplatesHandler = async () => {
     }
 };
 
-// 下拉获得焦点时，主动刷新模板列表，确保新建/编辑后的模板可见
+// Actively refresh the template list when the dropdown gets focus, to make sure newly created/edited templates are visible
 const handleTemplateSelectFocus = async () => {
     await refreshTemplatesHandler();
 };
 
-// 文本模型下拉获得焦点时刷新，确保新建/编辑后的模型立即可用
+// Refresh when the text model dropdown gets focus, to make sure newly created/edited models are available immediately
 const handleTextModelSelectFocus = async () => {
     await refreshTextModelsHandler();
 };
@@ -2397,7 +2397,7 @@ onMounted(async () => {
         console.error("[ImageImage2ImageWorkspace] Initialization failed:", error);
     }
 
-    // 监听模板语言切换事件，刷新迭代模板选择
+    // Listen for the template language switch event and refresh the iterate template selection
     if (typeof window !== "undefined") {
         window.addEventListener(
             "image-workspace-refresh-iterate-select",
@@ -2421,7 +2421,7 @@ onMounted(async () => {
     await templateSelection.refreshIterateTemplates()
 });
 
-// 清理
+// Cleanup
 onUnmounted(() => {
     console.log("[ImageImage2ImageWorkspace] Cleaning up...");
     if (typeof window !== "undefined") {
@@ -2454,7 +2454,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* 缩略图容器样式 */
+/* Thumbnail container styles */
 .thumbnail-container {
     display: flex;
     align-items: center;

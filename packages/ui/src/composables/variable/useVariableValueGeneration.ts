@@ -1,7 +1,7 @@
 /**
- * 变量值生成服务 Composable
+ * Variable value generation service composable
  *
- * 提供 AI 智能变量值生成功能的响应式接口
+ * Provides a reactive interface for the AI smart variable value generation feature
  */
 
 import { ref, type Ref } from 'vue'
@@ -16,31 +16,31 @@ import type {
 } from '@prompt-optimizer/core'
 
 /**
- * 变量值生成 Composable 返回类型
+ * Return type of the variable value generation composable
  */
 export interface UseVariableValueGenerationReturn {
-  /** 是否正在生成 */
+  /** Whether generation is in progress */
   isGenerating: Ref<boolean>
-  /** 生成结果 */
+  /** Generation result */
   generationResult: Ref<VariableValueGenerationResponse | null>
-  /** 是否显示预览对话框 */
+  /** Whether to show the preview dialog */
   showPreviewDialog: Ref<boolean>
-  /** 生成变量值方法 */
+  /** Generate variable values method */
   generateValues: (
     promptContent: string,
     variables: VariableToGenerate[],
     generationModelKey: string
   ) => Promise<void>
-  /** 批量应用变量值方法 */
+  /** Batch apply variable values method */
   confirmBatchApply: (selectedValues: GeneratedVariableValue[]) => void
 }
 
 /**
- * 使用变量值生成功能
+ * Use the variable value generation feature
  *
- * @param services - 应用服务
- * @param onValueApplied - 变量值应用回调 (name, value) => void
- * @returns 变量值生成相关状态和方法
+ * @param services - App services
+ * @param onValueApplied - Variable value applied callback (name, value) => void
+ * @returns State and methods related to variable value generation
  */
 export function useVariableValueGeneration(
   services: Ref<AppServices | null>,
@@ -49,13 +49,13 @@ export function useVariableValueGeneration(
   const toast = useToast()
   const { t } = useI18n()
 
-  // 状态
+  // State
   const isGenerating = ref(false)
   const generationResult = ref<VariableValueGenerationResponse | null>(null)
   const showPreviewDialog = ref(false)
 
   /**
-   * 生成变量值
+   * Generate variable values
    */
   const generateValues = async (
     promptContent: string,
@@ -98,12 +98,12 @@ export function useVariableValueGeneration(
   }
 
   /**
-   * 批量应用变量值
+   * Batch apply variable values
    */
   const confirmBatchApply = (selectedValues: GeneratedVariableValue[]): void => {
     let successCount = 0
 
-    // 应用变量值
+    // Apply the variable values
     for (const item of selectedValues) {
       try {
         if (onValueApplied) {

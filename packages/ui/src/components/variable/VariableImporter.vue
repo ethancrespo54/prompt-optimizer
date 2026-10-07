@@ -13,7 +13,7 @@
     @esc="cancel"
   >
 
-    <!-- 导入方式选择 -->
+    <!-- Import method selection -->
     <NTabs v-model:value="activeMethod" type="segment">
       <NTabPane name="file" :tab="t('variables.importer.fromFile')">
         <NSpace vertical>
@@ -91,7 +91,7 @@
       </NTabPane>
     </NTabs>
 
-    <!-- 文件选择反馈 -->
+    <!-- File selection feedback -->
     <NAlert v-if="selectedFile && activeMethod === 'file'" type="success" size="small">
         <template #icon>
           <NIcon>
@@ -100,10 +100,10 @@
             </svg>
           </NIcon>
         </template>
-        已选择文件：{{ selectedFile.name }} ({{ (selectedFile.size / 1024).toFixed(1) }} KB)
+        Selected file: {{ selectedFile.name }} ({{ (selectedFile.size / 1024).toFixed(1) }} KB)
     </NAlert>
 
-    <!-- 预览区域 -->
+    <!-- Preview area -->
     <div v-if="hasPreviewData">
       <NCard size="small">
         <template #header>
@@ -124,7 +124,7 @@
       </NCard>
     </div>
 
-    <!-- 错误信息 -->
+    <!-- Error message -->
     <NAlert v-if="error" type="error" size="small">
         <template #icon>
           <NIcon>
@@ -174,7 +174,7 @@ interface Emits {
 }
 const emit = defineEmits<Emits>()
 
-// 可见性（与父组件同步，用于一致的过渡动画）
+// Visibility (synced with the parent component, for consistent transition animations)
 const props = defineProps<{ show?: boolean }>()
 const localVisible = computed({
   get: () => props.show ?? true,
@@ -183,7 +183,7 @@ const localVisible = computed({
 
 const modalStyle = { width: '600px', maxWidth: '90vw' }
 
-// 状态管理
+// State management
 const loading = ref(false)
 const activeMethod = ref<'file' | 'text'>('file')
 const importText = ref('')
@@ -192,7 +192,7 @@ const textFormat = ref<'csv' | 'txt'>('csv')
 const selectedFile = ref<File | null>(null)
 const previewVariables = ref<Record<string, string>>({})
 
-// 计算属性
+// Computed properties
 const canImport = computed(() => {
   if (activeMethod.value === 'file') {
     return selectedFile.value !== null && Object.keys(previewVariables.value).length > 0 && !error.value
@@ -206,13 +206,13 @@ const hasPreviewData = computed(() => {
 
 const formatVariableName = (name: string) => `{{${name}}}`
 
-// 工具函数
+// Utility functions
 const truncateValue = (value: string, maxLength: number = 60): string => {
   if (value.length <= maxLength) return value
   return value.substring(0, maxLength) + '...'
 }
 
-// 文本输入相关的计算方法
+// Computed methods related to text input
 const getTextInputLabel = (): string => {
   const labels = {
     csv: t('variables.importer.csvText'),
@@ -268,7 +268,7 @@ const parseCsvVariables = (content: string): Record<string, string> => {
       const name = cells[nameIndex]
       const value = cells[valueIndex]
       if (name && value !== undefined) {
-        // 验证变量名格式
+        // Validate the variable name format
         if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name)) {
           throw new Error(t('variables.importer.errors.invalidVariableName', { name }))
         }
@@ -298,7 +298,7 @@ const parseTxtVariables = (content: string): Record<string, string> => {
       const name = trimmedLine.substring(0, separatorIndex).trim()
       const value = trimmedLine.substring(separatorIndex + 1).trim()
       if (name && value) {
-        // 验证变量名格式
+        // Validate the variable name format
         if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name)) {
           throw new Error(t('variables.importer.errors.invalidVariableName', { name }))
         }
@@ -310,13 +310,13 @@ const parseTxtVariables = (content: string): Record<string, string> => {
   return variables
 }
 
-// 文件处理
+// File handling
 const handleBeforeUpload = (data: { file: UploadFileInfo }) => {
   const file = data.file.file
   if (file) {
     handleFile(file)
   }
-  return false // 阻止自动上传
+  return false // Prevent automatic upload
 }
 
 const handleFile = (file: File) => {
@@ -341,14 +341,14 @@ const handleFile = (file: File) => {
     const content = e.target?.result as string
     importText.value = content
     
-    // 根据文件类型设置文本格式
+    // Set the text format based on the file type
     if (fileExtension === 'csv') {
       textFormat.value = 'csv'
     } else if (fileExtension === 'txt') {
       textFormat.value = 'txt'
     }
     
-    // 立即解析并预览变量
+    // Parse and preview the variables immediately
     try {
       const variables = parseVariables(content, textFormat.value)
       previewVariables.value = variables
@@ -365,7 +365,7 @@ const handleFile = (file: File) => {
   reader.readAsText(file)
 }
 
-// 事件处理
+// Event handling
 const onAfterLeave = () => {
   emit('cancel')
 }
@@ -384,14 +384,14 @@ const importVariables = () => {
     let variables: Record<string, string>
     
     if (activeMethod.value === 'file' && Object.keys(previewVariables.value).length > 0) {
-      // 使用已预览的变量
+      // Use the already previewed variables
       variables = previewVariables.value
     } else {
-      // 从文本解析变量
+      // Parse variables from the text
       variables = parseVariables(importText.value, textFormat.value)
     }
     
-    // 过滤掉预定义变量
+    // Filter out predefined variables
     const predefinedNames = ['originalPrompt', 'lastOptimizedPrompt', 'iterateInput', 'currentPrompt', 'userQuestion', 'conversationContext', 'toolsContext']
     const filteredVariables: Record<string, string> = {}
     
@@ -409,7 +409,7 @@ const importVariables = () => {
   }
 }
 
-// 监听方法切换
+// Watch method switching
 watch(activeMethod, () => {
   error.value = ''
   selectedFile.value = null
@@ -420,7 +420,7 @@ watch(activeMethod, () => {
   }
 })
 
-// 监听文本变化，实时解析预览
+// Watch text changes and parse the preview in real time
 watch([importText, textFormat], () => {
   if (activeMethod.value === 'text' && importText.value.trim()) {
     try {
@@ -429,7 +429,7 @@ watch([importText, textFormat], () => {
       error.value = ''
     } catch (_err) {
       previewVariables.value = {}
-      // 不立即显示错误，等用户完成输入
+      // Do not show errors immediately; wait for the user to finish typing
     }
   } else if (activeMethod.value === 'text') {
     previewVariables.value = {}

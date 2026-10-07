@@ -65,17 +65,17 @@ type PopoverInst = {
 
 const props = withDefaults(
   defineProps<{
-    /** 分数值 (0-100) */
+    /** Score value (0-100) */
     score?: number | null
-    /** 评分等级 */
+    /** Score grade */
     level?: ScoreLevel | null
-    /** 是否正在加载 */
+    /** Whether loading */
     loading?: boolean
-    /** 尺寸 */
+    /** Size */
     size?: 'small' | 'medium'
-    /** 评估结果（用于悬浮预览） */
+    /** Evaluation result (used for the hover preview) */
     result?: EvaluationResponse | null
-    /** 评估类型 */
+    /** Evaluation type */
     type?: EvaluationType
   }>(),
   {
@@ -96,7 +96,7 @@ const emit = defineEmits<{
   (e: 'apply-patch', payload: { operation: PatchOperation }): void
 }>()
 
-// Popover 显示状态
+// Popover display state
 const popoverVisible = ref(false)
 const isHoveringBadge = ref(false)
 const isHoveringPopover = ref(false)
@@ -118,15 +118,15 @@ onBeforeUnmount(() => {
   clearCloseTimer()
 })
 
-// 由于内部内容（尤其是 textarea autosize）可能在挂载后产生布局变化，
-// 这里在打开后主动同步位置，降低靠近视口边缘时的遮挡概率。
+// Since the inner content (especially the textarea autosize) may change the layout after mounting,
+// the position is actively synced after opening to reduce the chance of being obscured near the viewport edge.
 watch(popoverVisible, (visible) => {
   if (!visible) return
 
   nextTick(() => {
     popoverInstRef.value?.syncPosition?.()
 
-    // 再同步一次，覆盖异步布局（如字体加载、组件内部测量）带来的高度变更
+    // Sync once more to cover height changes caused by async layout (such as font loading and internal component measurement)
     if (typeof requestAnimationFrame !== 'undefined') {
       requestAnimationFrame(() => popoverInstRef.value?.syncPosition?.())
     }
@@ -141,7 +141,7 @@ const closePopover = () => {
 }
 
 const scheduleClose = () => {
-  // 若用户正在 popover 内输入/操作（focus 在内部），不要因为 hover 状态变化而自动关闭。
+  // If the user is typing/interacting inside the popover (focus is inside), do not close it automatically because of hover state changes.
   if (isPinnedByClick.value || hasFocusWithinPopover.value) {
     clearCloseTimer()
     return
@@ -155,7 +155,7 @@ const scheduleClose = () => {
   }, POPOVER_CLOSE_DELAY)
 }
 
-// 计算等级（如果未提供则根据分数计算）
+// Compute the grade (computed from the score if not provided)
 const computedLevel = computed<ScoreLevel | null>(() => {
   if (props.level) return props.level
   if (props.score === null || props.score === undefined) return null
@@ -189,7 +189,7 @@ const badgeType = computed(() => {
   }
 })
 
-// 点击处理 - 显示/隐藏悬浮预览
+// Click handling - show/hide the hover preview
 const handleClick = () => {
   if (props.loading) return
 
@@ -203,7 +203,7 @@ const handleClick = () => {
   popoverVisible.value = true
 }
 
-// 鼠标进入徽章
+// Mouse enters the badge
 const handleMouseEnter = () => {
   if (!props.loading) {
     isHoveringBadge.value = true
@@ -215,19 +215,19 @@ const handleMouseEnter = () => {
   }
 }
 
-// 鼠标离开徽章
+// Mouse leaves the badge
 const handleMouseLeave = () => {
   isHoveringBadge.value = false
   scheduleClose()
 }
 
-// 鼠标进入 popover
+// Mouse enters the popover
 const handlePopoverMouseEnter = () => {
   isHoveringPopover.value = true
   clearCloseTimer()
 }
 
-// 鼠标离开 popover
+// Mouse leaves the popover
 const handlePopoverMouseLeave = () => {
   isHoveringPopover.value = false
   scheduleClose()
@@ -264,19 +264,19 @@ const handlePopoverFocusOut = () => {
   updateFocusState()
 }
 
-// 查看详情处理 - 关闭悬浮预览并打开详情面板
+// View details handling - close the hover preview and open the details panel
 const handleShowDetail = () => {
   closePopover()
   emit('show-detail')
 }
 
-// 评估处理 - 关闭悬浮预览并触发评估
+// Evaluate handling - close the hover preview and trigger the evaluation
 const handleEvaluate = () => {
   closePopover()
   emit('evaluate')
 }
 
-// 带反馈评估处理
+// Evaluate-with-feedback handling
 const handleEvaluateWithFeedback = (payload: { feedback: string }) => {
   closePopover()
   emit('evaluate-with-feedback', {
@@ -285,15 +285,15 @@ const handleEvaluateWithFeedback = (payload: { feedback: string }) => {
   })
 }
 
-// 应用改进建议处理 - 关闭悬浮预览并转发事件
+// Apply improvement suggestion handling - close the hover preview and forward the event
 const handleApplyImprovement = (payload: { improvement: string; type: EvaluationType }) => {
-  // 保持分析窗口打开，便于连续应用多条建议。
+  // Keep the analysis window open to make it easy to apply several suggestions in a row.
   emit('apply-improvement', payload)
 }
 
-// 应用补丁处理 - 关闭悬浮预览并转发事件
+// Apply patch handling - close the hover preview and forward the event
 const handleApplyPatch = (payload: { operation: PatchOperation }) => {
-  // 保持分析窗口打开，便于连续应用多个 patch。
+  // Keep the analysis window open to make it easy to apply several patches in a row.
   emit('apply-patch', payload)
 }
 </script>

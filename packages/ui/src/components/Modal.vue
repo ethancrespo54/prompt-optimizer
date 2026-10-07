@@ -78,20 +78,20 @@ const emit = defineEmits<{
   'after-leave': []
 }>()
 
-// 内部显示状态
+// Internal display state
 const isVisible = ref(props.modelValue)
 
-// 监听外部变化
+// Watch external changes
 watch(() => props.modelValue, (newVal) => {
   isVisible.value = newVal
 })
 
-// 监听内部变化，同步到外部
+// Watch internal changes and sync them to the outside
 watch(isVisible, (newVal) => {
   emit('update:modelValue', newVal)
 })
 
-// 模态框样式
+// Modal styles
 const modalStyle = computed(() => ({
   width: props.width,
   maxWidth: props.maxWidth
@@ -101,7 +101,7 @@ const modalClass = computed(() => [
   'modern-modal'
 ])
 
-// 事件处理
+// Event handling
 const handleConfirm = () => {
   emit('confirm')
 }
@@ -118,7 +118,7 @@ const handleAfterLeave = () => {
 
 <style scoped>
 .modern-modal {
-  /* 自定义模态框样式 */
+  /* Custom modal styles */
 }
 
 .modal-content {

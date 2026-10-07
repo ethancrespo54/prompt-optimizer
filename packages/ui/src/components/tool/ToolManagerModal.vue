@@ -8,7 +8,7 @@
         :mask-closable="true"
         @update:show="handleVisibilityChange"
     >
-        <!-- 工具列表 -->
+        <!-- Tool list -->
         <div class="tools-panel">
             <NEmpty
                 v-if="localTools.length === 0"
@@ -123,7 +123,7 @@
                 </NListItem>
             </NList>
 
-            <!-- 添加工具按钮 -->
+            <!-- Add tool button -->
             <div v-if="localTools.length > 0" class="mt-4">
                 <NCard size="small" embedded dashed>
                     <NSpace justify="center">
@@ -158,7 +158,7 @@
             </div>
         </div>
 
-        <!-- 底部操作栏 -->
+        <!-- Bottom action bar -->
         <template #action>
             <NSpace justify="end">
                 <NButton @click="handleCancel" :disabled="loading">
@@ -175,7 +175,7 @@
         </template>
     </NModal>
 
-    <!-- 工具编辑器 -->
+    <!-- Tool editor -->
     <NModal
         v-model:show="showEditor"
         preset="card"
@@ -187,7 +187,7 @@
         style="width: 600px"
     >
         <NSpace vertical>
-            <!-- 示例提示 -->
+            <!-- Example hint -->
             <NAlert
                 v-if="editingIndex === null"
                 type="info"
@@ -196,7 +196,7 @@
                 {{ t('contextEditor.exampleTemplateDesc') }}
             </NAlert>
 
-            <!-- 基本信息 -->
+            <!-- Basic info -->
             <NCard size="small" :title="t('contextEditor.basicInfo')">
                 <NSpace vertical v-if="editingTool">
                     <NInput
@@ -211,7 +211,7 @@
                 </NSpace>
             </NCard>
 
-            <!-- 参数配置 -->
+            <!-- Parameter config -->
             <NCard size="small" :title="t('contextEditor.parameters')">
                 <NInput
                     v-model:value="parametersJson"
@@ -310,7 +310,7 @@ const getParametersCount = (tool: ToolDefinition): number => {
     return Object.keys(properties as Record<string, unknown>).length
 }
 
-// 本地状态
+// Local state
 const localVisible = ref(props.visible)
 const localTools = ref<ToolDefinition[]>([])
 const showEditor = ref(false)
@@ -319,13 +319,13 @@ const editingTool = ref<ToolDefinition | null>(null)
 const parametersJson = ref('')
 const jsonError = ref('')
 
-// 样式
+// Styles
 const modalStyle = computed(() => ({
     width: props.width,
     maxWidth: '95vw',
 }))
 
-// 默认参数
+// Default parameters
 const defaultParametersJson = `{
   "type": "object",
   "properties": {},
@@ -338,7 +338,7 @@ const defaultParametersObject = {
     required: [],
 }
 
-// 工具模板
+// Tool templates
 const createWeatherToolTemplate = (): ToolDefinition => ({
     type: 'function',
     function: {
@@ -375,7 +375,7 @@ const createEmptyToolTemplate = (): ToolDefinition => ({
     },
 })
 
-// 工具验证
+// Tool validation
 const isValidTool = computed(() => {
     if (!editingTool.value) return false
     const name = editingTool.value.function?.name?.trim()
@@ -390,7 +390,7 @@ const isValidTool = computed(() => {
     }
 })
 
-// 初始化本地副本
+// Initialize the local copy
 watch(
     () => props.visible,
     (visible) => {
@@ -411,7 +411,7 @@ watch(
     { deep: true }
 )
 
-// 事件处理
+// Event handling
 const handleVisibilityChange = (visible: boolean) => {
     localVisible.value = visible
     emit('update:visible', visible)
@@ -428,7 +428,7 @@ const handleCancel = () => {
     emit('update:visible', false)
 }
 
-// 工具管理
+// Tool management
 const addTool = () => {
     editingIndex.value = null
     editingTool.value = createWeatherToolTemplate()

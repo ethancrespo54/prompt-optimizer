@@ -1,5 +1,5 @@
 /**
- * 数据格式转换器接口定义
+ * Data format converter interface definitions
  */
 
 import type { 
@@ -10,20 +10,20 @@ import type {
 } from './standard-prompt'
 import type { ConversationMessage } from './variable'
 
-// 基础转换器接口
+// Base converter interface
 export interface DataConverter {
   /**
-   * 从LangFuse trace数据转换为标准格式
+   * Convert from LangFuse trace data to the standard format
    */
   fromLangFuse(trace: LangFuseTrace): ConversionResult<StandardPromptData>
 
   /**
-   * 从OpenAI请求格式转换为标准格式
+   * Convert from the OpenAI request format to the standard format
    */
   fromOpenAI(request: OpenAIRequest): ConversionResult<StandardPromptData>
 
   /**
-   * 从会话消息格式转换为标准格式
+   * Convert from the conversation message format to the standard format
    */
   fromConversationMessages(
     messages: ConversationMessage[], 
@@ -31,7 +31,7 @@ export interface DataConverter {
   ): ConversionResult<StandardPromptData>
 
   /**
-   * 从标准格式转换为OpenAI请求格式
+   * Convert from the standard format to the OpenAI request format
    */
   toOpenAI(
     data: StandardPromptData, 
@@ -39,20 +39,20 @@ export interface DataConverter {
   ): ConversionResult<OpenAIRequest>
 
   /**
-   * 从标准格式转换为会话消息格式
+   * Convert from the standard format to the conversation message format
    */
   toConversationMessages(data: StandardPromptData): ConversionResult<ConversationMessage[]>
 
   /**
-   * 验证数据格式是否有效
+   * Validate whether the data format is valid
    */
   validate(data: unknown, format: 'standard' | 'langfuse' | 'openai' | 'conversation'): ConversionResult<boolean>
 }
 
-// 变量提取器接口
+// Variable extractor interface
 export interface VariableExtractor {
   /**
-   * 从选中文本提取变量
+   * Extract a variable from the selected text
    */
   extractVariable(
     messageContent: string, 
@@ -71,7 +71,7 @@ export interface VariableExtractor {
   }
 
   /**
-   * 智能建议变量名
+   * Smart variable name suggestions
    */
   suggestVariableNames(selectedText: string): Array<{
     name: string
@@ -81,12 +81,12 @@ export interface VariableExtractor {
   }>
 
   /**
-   * 替换变量为实际值
+   * Replace variables with actual values
    */
   replaceVariables(content: string, variables: Record<string, string>): string
 
   /**
-   * 扫描内容中的变量占位符
+   * Scan the content for variable placeholders
    */
   scanVariables(content: string): Array<{
     name: string
@@ -95,20 +95,20 @@ export interface VariableExtractor {
   }>
 }
 
-// 数据导入导出接口
+// Data import/export interface
 export interface DataImportExport {
   /**
-   * 从文件导入数据
+   * Import data from a file
    */
   importFromFile(file: File): Promise<ConversionResult<StandardPromptData>>
 
   /**
-   * 从剪贴板导入JSON数据
+   * Import JSON data from the clipboard
    */
   importFromClipboard(jsonText: string): ConversionResult<StandardPromptData>
 
   /**
-   * 导出为JSON文件
+   * Export to a JSON file
    */
   exportToFile(
     data: StandardPromptData, 
@@ -117,7 +117,7 @@ export interface DataImportExport {
   ): void
 
   /**
-   * 导出到剪贴板
+   * Export to the clipboard
    */
   exportToClipboard(
     data: StandardPromptData, 
@@ -125,15 +125,15 @@ export interface DataImportExport {
   ): Promise<boolean>
 
   /**
-   * 自动检测数据格式
+   * Automatically detect the data format
    */
   detectFormat(data: unknown): 'langfuse' | 'openai' | 'conversation' | 'unknown'
 }
 
-// 模板化相关接口
+// Template-related interface
 export interface TemplateProcessor {
   /**
-   * 将StandardPromptData转换为模板+变量形式
+   * Convert StandardPromptData into template + variables form
    */
   toTemplate(data: StandardPromptData): {
     template: StandardPromptData
@@ -148,7 +148,7 @@ export interface TemplateProcessor {
   }
 
   /**
-   * 从模板+变量生成完整的StandardPromptData
+   * Generate the full StandardPromptData from template + variables
    */
   fromTemplate(
     template: StandardPromptData, 
@@ -156,7 +156,7 @@ export interface TemplateProcessor {
   ): StandardPromptData
 
   /**
-   * 验证变量完整性
+   * Validate variable completeness
    */
   validateVariables(
     template: StandardPromptData, 

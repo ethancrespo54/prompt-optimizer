@@ -1,6 +1,6 @@
-<!-- Toast组件 - 基于Naive UI NMessageProvider -->
+<!-- Toast component - based on Naive UI NMessageProvider -->
 <template>
-    <!-- Naive UI的消息提供者组件 -->
+    <!-- Naive UI's message provider component -->
     <NMessageProvider
         placement="top-right"
         container-style="position: fixed; top: 20px; right: 20px;"
@@ -18,7 +18,7 @@ import { NMessageProvider, NDialogProvider, useMessage } from "naive-ui";
 
 import { setGlobalMessageApi } from '../composables/ui/useToast';
 
-// 内部组件用于在正确的上下文中初始化消息API
+// Internal component used to initialize the message API in the correct context
 const MessageApiInitializer = defineComponent({
     name: "MessageApiInitializer",
     setup() {

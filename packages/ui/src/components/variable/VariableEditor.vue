@@ -19,7 +19,7 @@
             :rules="formRules"
             label-placement="top"
         >
-            <!-- 变量名 -->
+            <!-- Variable name -->
             <NFormItem
                 path="name"
                 :label="t('variables.editor.variableName')"
@@ -41,7 +41,7 @@
                 </template>
             </NFormItem>
 
-            <!-- 变量值 -->
+            <!-- Variable value -->
             <NFormItem
                 path="value"
                 :label="t('variables.editor.variableValue')"
@@ -128,7 +128,7 @@ interface Emits {
 }
 const emit = defineEmits<Emits>();
 
-// 显隐受控，统一动画与尺寸
+// Visibility is controlled; animation and size are unified
 const localVisible = computed({
     get: () => props.show ?? true,
     set: (val: boolean) => emit("update:show", val),
@@ -136,7 +136,7 @@ const localVisible = computed({
 
 const modalStyle = { width: "600px", maxWidth: "90vw" };
 
-// 状态管理
+// State management
 const loading = ref(false);
 const formRef = ref<FormInst>();
 const valueInputRef = ref<InstanceType<typeof NInput> | null>(null);
@@ -145,7 +145,7 @@ const formData = ref({
     value: "",
 });
 
-// 计算属性
+// Computed properties
 const isEditing = computed(() => !!props.variable);
 
 const isValid = computed(() => {
@@ -154,7 +154,7 @@ const isValid = computed(() => {
     );
 });
 
-// 表单验证规则
+// Form validation rules
 const formRules: FormRules = {
     name: [
         {
@@ -218,7 +218,7 @@ const formRules: FormRules = {
     ],
 };
 
-// 事件处理
+// Event handling
 const save = async () => {
     if (!formRef.value) return;
 
@@ -244,7 +244,7 @@ const cancel = () => {
     localVisible.value = false;
 };
 
-// 初始化
+// Initialization
 onMounted(() => {
     if (props.variable) {
         formData.value = {
@@ -256,16 +256,16 @@ onMounted(() => {
                 valueInputRef.value?.focus();
             });
         }
-        // 如果是从缺失变量引导添加，通常会以新增模式打开，此处保持默认行为
+        // If opened via the missing-variable guide, it normally opens in add mode; keep the default behavior here
     } else {
-        // 新增模式：自动聚焦到值输入，方便直接填写
+        // Add mode: auto-focus the value input to make it easy to fill in directly
         nextTick(() => {
             valueInputRef.value?.focus();
         });
     }
 });
 
-// 监听props变化
+// Watch props changes
 watch(
     () => props.variable,
     (newVariable) => {

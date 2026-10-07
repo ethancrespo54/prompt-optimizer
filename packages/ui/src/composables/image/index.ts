@@ -1,2 +1,2 @@
-// 图像相关 composables
+// Image-related composables
 export * from './useImageGeneration'

@@ -10,7 +10,7 @@
     @positive-click="handleConfirm"
     @negative-click="handleCancel"
   >
-    <!-- 顶部总结 -->
+    <!-- Top summary -->
     <NAlert
       v-if="result"
       :type="result.values.length > 0 ? 'success' : 'warning'"
@@ -18,7 +18,7 @@
       style="margin-bottom: 16px"
     />
 
-    <!-- 变量值表格 (支持编辑) -->
+    <!-- Variable value table (editable) -->
     <NDataTable
       v-if="result && result.values.length > 0"
       :columns="columns"
@@ -30,13 +30,13 @@
       max-height="400"
     />
 
-    <!-- 空状态 -->
+    <!-- Empty state -->
     <NEmpty
       v-else-if="result && result.values.length === 0"
       :description="t('test.variableValueGeneration.noValues')"
     />
 
-    <!-- 底部统计 -->
+    <!-- Bottom statistics -->
     <template v-if="result && result.values.length > 0" #footer>
       <NSpace justify="space-between" style="width: 100%">
         <NText depth="3">
@@ -66,29 +66,29 @@ import type { VariableValueGenerationResponse, GeneratedVariableValue } from '@p
 type RowKey = string | number
 
 /**
- * 可编辑的变量值（添加了编辑状态）
+ * Editable variable value (with an editing state added)
  */
 interface EditableVariableValue extends GeneratedVariableValue {
-  // 继承 name, value, reason, confidence
+  // Inherits name, value, reason, confidence
 }
 
 /**
- * 组件 Props
+ * Component props
  */
 interface Props {
-  /** 是否显示对话框 */
+  /** Whether to show the dialog */
   show: boolean
-  /** 生成结果 */
+  /** Generation result */
   result: VariableValueGenerationResponse | null
 }
 
 /**
- * 组件 Emits
+ * Component emits
  */
 interface Emits {
-  /** 更新显示状态 */
+  /** Update the display state */
   (event: 'update:show', value: boolean): void
-  /** 确认批量应用 */
+  /** Confirm the batch apply */
   (event: 'confirm', values: GeneratedVariableValue[]): void
 }
 
@@ -96,26 +96,26 @@ const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 const { t } = useI18n()
 
-// 双向绑定显示状态
+// Two-way binding of the display state
 const visible = computed({
   get: () => props.show,
   set: (value: boolean) => emit('update:show', value),
 })
 
-// 可编辑的变量值列表（深拷贝）
+// Editable variable value list (deep copy)
 const editableValues = ref<EditableVariableValue[]>([])
 
-// 选中的变量键（变量名）
+// Selected variable keys (variable names)
 const selectedKeys = ref<string[]>([])
 
-// 监听结果变化，初始化可编辑数据
+// Watch result changes and initialize the editable data
 watch(
   () => props.result,
   (newResult) => {
     if (newResult && newResult.values.length > 0) {
-      // 深拷贝数据以支持编辑
+      // Deep-copy the data to support editing
       editableValues.value = newResult.values.map((v) => ({ ...v }))
-      // 默认仅选中非空生成值，避免覆盖现有变量值为 ''（LLM 漏返回会被服务补齐空值）
+      // By default, only select non-empty generated values, to avoid overwriting existing variable values with '' (when the LLM omits a variable, the service fills in an empty value)
       selectedKeys.value = newResult.values
         .filter((v) => String(v.value || '').trim() !== '')
         .map((v) => v.name)
@@ -127,7 +127,7 @@ watch(
   { immediate: true }
 )
 
-// 表格列定义
+// Table column definitions
 const columns = computed<DataTableColumns<EditableVariableValue>>(() => [
   {
     type: 'selection',
@@ -177,18 +177,18 @@ const columns = computed<DataTableColumns<EditableVariableValue>>(() => [
   },
 ])
 
-// 处理选择变化
+// Handle selection changes
 const handleSelectionChange = (keys: RowKey[]) => {
   selectedKeys.value = keys.map((key) => String(key))
 }
 
-// 处理确认
+// Handle confirmation
 const handleConfirm = () => {
   if (selectedKeys.value.length === 0) {
     return
   }
 
-  // 获取选中的变量值对象
+  // Get the selected variable value objects
   const selectedValues = editableValues.value.filter((v) =>
     selectedKeys.value.includes(v.name)
   )
@@ -196,7 +196,7 @@ const handleConfirm = () => {
   emit('confirm', selectedValues)
 }
 
-// 处理取消
+// Handle cancellation
 const handleCancel = () => {
   visible.value = false
 }

@@ -148,19 +148,19 @@ function detectIsDarkTheme(themeVars: ThemeCommonVars): boolean {
   return false
 }
 
-/** 变量名允许的字符集合 (支持 Unicode 字母与数字与分隔符) */
+/** Character set allowed in variable names (supports Unicode letters, digits, and separators) */
 const VARIABLE_CHAR_CLASS = '[\\p{L}\\p{N}_\\-.]'
 const VARIABLE_TRIGGER_REGEX = new RegExp(`\\{\\{${VARIABLE_CHAR_CLASS}*`, 'u')
 const VARIABLE_VALID_REGEX = new RegExp(`^${VARIABLE_CHAR_CLASS}*$`, 'u')
 
 /**
- * 变量高亮扩展
+ * Variable highlight extension
  *
- * 根据变量来源显示不同颜色的背景高亮:
- * - 全局变量: 蓝色
- * - 临时变量: 绿色
- * - 预定义变量: 紫色
- * - 缺失变量: 红色
+ * Shows different background highlight colors depending on the variable source:
+ * - Global variables: blue
+ * - Temporary variables: green
+ * - Predefined variables: purple
+ * - Missing variables: red
  */
 export function variableHighlighter(
   getVariables: (doc: string) => DetectedVariable[]
@@ -184,7 +184,7 @@ export function variableHighlighter(
         const variables = getVariables(view.state.doc.toString())
 
         for (const variable of variables) {
-          // 确保位置在文档范围内
+          // Make sure the position is within the document range
           if (variable.from >= 0 && variable.to <= view.state.doc.length) {
             const decoration = Decoration.mark({
               class: `cm-variable-${variable.source}`,
@@ -208,28 +208,28 @@ export function variableHighlighter(
 }
 
 /**
- * 变量自动完成扩展
+ * Variable autocomplete extension
  *
- * 当用户输入 {{ 时,显示可用变量列表
- * 包含变量名、来源标签和值预览
+ * When the user types {{, shows the list of available variables
+ * Includes the variable name, source label, and value preview
  */
 export function variableAutocompletion(
   globalVariables: Record<string, string>,
   temporaryVariables: Record<string, string>,
-  _predefinedVariables: Record<string, string>, // 预定义变量保留参数以兼容调用方，但不再参与自动补全
+  _predefinedVariables: Record<string, string>, // Predefined variables keep the parameter for caller compatibility but no longer take part in autocomplete
   labels: VariableDetectionLabels
 ) {
   return autocompletion({
     icons: false,
     override: [
       (context: CompletionContext): CompletionResult | null => {
-        // 检测是否在 {{ 后面
+        // Detect whether it comes after {{
         const word = context.matchBefore(VARIABLE_TRIGGER_REGEX)
         if (!word) return null
 
         const options = []
 
-        // 添加临时变量 (优先级最高)
+        // Add temporary variables (highest priority)
         for (const [name, value] of Object.entries(temporaryVariables)) {
           const preview = value
             ? `${value.substring(0, 50)}${value.length > 50 ? '...' : ''}`
@@ -245,7 +245,7 @@ export function variableAutocompletion(
           )
         }
 
-        // 添加全局变量
+        // Add global variables
         for (const [name, value] of Object.entries(globalVariables)) {
           const preview = value
             ? `${value.substring(0, 50)}${value.length > 50 ? '...' : ''}`
@@ -262,13 +262,13 @@ export function variableAutocompletion(
         }
 
         return {
-          from: word.from + 2, // 跳过 {{
+          from: word.from + 2, // Skip {{
           options,
           validFor: VARIABLE_VALID_REGEX
         }
       }
     ],
-    // 自动完成配置
+    // Autocomplete config
     activateOnTyping: true,
     maxRenderedOptions: 20,
     defaultKeymap: true,
@@ -294,7 +294,7 @@ interface VariableCompletionMeta extends Completion {
 }
 
 /**
- * 构建变量补全选项,自动处理右花括号补全逻辑
+ * Build variable completion options, handling the closing-brace completion logic automatically
  */
 export function createVariableCompletionOption({
   name,
@@ -308,7 +308,7 @@ export function createVariableCompletionOption({
     type: 'variable',
     boost,
     apply: (view, _completion, from, to) => {
-      // 计算光标之后已有的右花括号数量(最多检查两个)
+      // Count the closing braces already present after the cursor (check at most two)
       let existingClosings = 0
       for (let i = 0; i < 2; i += 1) {
         if (view.state.sliceDoc(to + i, to + i + 1) === '}') {
@@ -338,9 +338,9 @@ export function createVariableCompletionOption({
 }
 
 /**
- * 已存在变量悬浮提示扩展
+ * Existing-variable hover tooltip extension
  *
- * 当鼠标悬停在已存在的变量上时,显示变量来源标签和变量值
+ * When the mouse hovers over an existing variable, shows the variable source label and value
  */
 export function existingVariableTooltip(
   labels: VariableDetectionLabels,
@@ -492,9 +492,9 @@ export function existingVariableTooltip(
 }
 
 /**
- * 缺失变量悬浮提示扩展
+ * Missing-variable hover tooltip extension
  *
- * 当鼠标悬停在缺失变量上时,显示提示和"添加到临时变量"按钮
+ * When the mouse hovers over a missing variable, shows a hint and an "Add to temporary variables" button
  */
 export function missingVariableTooltip(
   onAddVariable: (varName: string) => void,
@@ -502,27 +502,27 @@ export function missingVariableTooltip(
   theme: MissingVariableTooltipTheme = {}
 ) {
   return hoverTooltip((view, pos, _side) => {
-    // 获取当前位置的元素
+    // Get the element at the current position
     const { node } = view.domAtPos(pos)
     const element = node instanceof Element ? node : node.parentElement
 
     if (!element) return null
 
-    // 检查是否是缺失变量
+    // Check whether it is a missing variable
     const isMissing =
       element.classList?.contains('cm-variable-missing') ||
       element.parentElement?.classList?.contains('cm-variable-missing')
 
     if (!isMissing) return null
 
-    // 获取变量名
+    // Get the variable name
     const varName =
       element.getAttribute('data-variable-name') ||
       element.parentElement?.getAttribute('data-variable-name')
 
     if (!varName) return null
 
-    // 获取变量的位置范围
+    // Get the position range of the variable
     const text = view.state.doc.toString()
     const escapedVarName = varName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     const regex = new RegExp(`\\{\\{${escapedVarName}\\}\\}`, 'gu')
@@ -604,8 +604,8 @@ export function missingVariableTooltip(
 }
 
 /**
- * 主题扩展 - 适配 Naive UI 主题
- * 根据亮色/暗色主题动态调整变量高亮颜色,确保可读性
+ * Theme extension - adapts to the Naive UI theme
+ * Dynamically adjusts the variable highlight colors based on the light/dark theme to ensure readability
  */
 export function createThemeExtension(
   themeVars: ThemeCommonVars,
@@ -715,7 +715,7 @@ export function createThemeExtension(
       color: themeVars.textColor3,
       border: 'none'
     },
-    // 变量高亮样式 - 根据主题动态调整背景色和文字颜色
+    // Variable highlight styles - dynamically adjust the background and text colors based on the theme
     '.cm-variable-global': {
       backgroundColor: highlightColors.global.backgroundColor,
       color: highlightColors.global.color,

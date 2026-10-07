@@ -6,9 +6,9 @@
     :data-testid="testId"
   >
     <NFlex vertical style="height: 100%; min-height: 0; overflow: hidden;">
-      <!-- 统一顶层工具栏 -->
+      <!-- Unified top-level toolbar -->
       <NFlex v-if="hasToolbar" justify="space-between" align="center" style="flex: 0 0 auto;">
-        <!-- 左侧：视图控制按钮组 -->
+        <!-- Left: view control button group -->
         <NButtonGroup>
           <NButton 
             @click="internalViewMode = 'render'"
@@ -37,7 +37,7 @@
           </NButton>
         </NButtonGroup>
         
-        <!-- 右侧：操作按钮 -->
+        <!-- Right: action buttons -->
         <NFlex align="center" :size="8" :wrap="false">
           <slot name="toolbar-right-extra"></slot>
           <NButtonGroup>
@@ -88,7 +88,7 @@
         </NFlex>
       </NFlex>
 
-      <!-- 推理内容区域 -->
+      <!-- Reasoning content area -->
       <NFlex v-if="shouldShowReasoning" style="flex: 0 0 auto;">
         <NCollapse v-model:expanded-names="reasoningExpandedNames" style="width: 100%;">
           <NCollapseItem name="reasoning">
@@ -119,9 +119,9 @@
           </NCollapseItem>
         </NCollapse>
       </NFlex>
-      <!-- 主要内容区域 -->
+      <!-- Main content area -->
       <NFlex vertical style="flex: 1; min-height: 0; max-height: 100%; overflow: hidden;">
-        <!-- 对比模式 -->
+        <!-- Compare mode -->
         <TextDiffUI v-if="internalViewMode === 'diff' && content && originalContent"
           :originalText="originalContent"
           :optimizedText="content"
@@ -130,9 +130,9 @@
           style="height: 100%; min-height: 0; overflow: auto;"
         />
 
-        <!-- 原文模式 -->
+        <!-- Original text mode -->
         <template v-if="internalViewMode === 'source'">
-          <!-- 🆕 Pro 模式：使用变量感知输入框 -->
+          <!-- 🆕 Pro mode: uses the variable-aware input -->
           <VariableAwareInput
             v-if="shouldEnableVariables && variableData"
             :model-value="content"
@@ -146,7 +146,7 @@
             style="height: 100%; min-height: 0;"
           />
 
-          <!-- Basic/Image 模式：使用普通输入框 -->
+          <!-- Basic/Image mode: uses a regular input -->
           <NInput
             v-else
             :value="content"
@@ -159,7 +159,7 @@
           />
         </template>
 
-        <!-- 渲染模式（默认） -->
+        <!-- Render mode (default) -->
         <NFlex v-else
           vertical
           :align="displayContent ? 'stretch' : 'center'"
@@ -214,37 +214,37 @@ const { copyText } = useClipboard()
 
 const message = useToast()
 
-// 🆕 注入 services（用于变量管理）
+// 🆕 Inject services (for variable management)
 const services = inject<Ref<AppServices | null>>('services') ?? ref<AppServices | null>(null)
 
-// 移除收藏状态管理(改由父组件处理)
+// Favorite state management removed (now handled by the parent component)
 
-// 组件 Props
+// Component props
 interface Props {
-  // 内容相关
+  // Content-related
   content?: string
   originalContent?: string
   reasoning?: string
 
-  /** E2E/测试定位用的 data-testid（挂在组件根节点） */
+  /** data-testid for E2E/test targeting (attached to the component root node) */
   testId?: string
   
-  // 显示模式
+  // Display mode
   mode: 'readonly' | 'editable'
   reasoningMode?: 'show' | 'hide' | 'auto'
   
-  // 功能开关
+  // Feature toggles
   enabledActions?: ActionName[]
   
-  // 样式配置
+  // Style config
   height?: string | number
   placeholder?: string
   
-  // 状态
+  // State
   loading?: boolean
   streaming?: boolean
   
-  // 服务
+  // Services
   compareService?: ICompareService
 }
 
@@ -262,7 +262,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const testId = computed(() => props.testId || undefined)
 
-// 事件定义
+// Event definitions
 const emit = defineEmits<{
   'update:content': [content: string]
   'update:reasoning': [reasoning: string]
@@ -275,8 +275,8 @@ const emit = defineEmits<{
   'save-favorite': [data: { content: string; originalContent?: string }]
 }>()
 
-// 🆕 变量管理功能（Pro / Image 模式）
-// 当前架构以路由为单一真源；不要依赖 legacy 的 Preference-based functionMode。
+// 🆕 Variable management (Pro / Image mode)
+// The current architecture treats the router as the single source of truth; do not rely on the legacy Preference-based functionMode.
 const routeFunctionMode = computed<'basic' | 'pro' | 'image'>(() => {
   const path = routerInstance.currentRoute.value.path || ''
   if (path.startsWith('/pro')) return 'pro'
@@ -286,11 +286,11 @@ const routeFunctionMode = computed<'basic' | 'pro' | 'image'>(() => {
 
 const shouldEnableVariables = computed(() => routeFunctionMode.value === 'pro' || routeFunctionMode.value === 'image')
 
-// ==================== 变量管理 Composables ====================
-// 临时变量管理器（全局单例）
+// ==================== Variable management composables ====================
+// Temporary variable manager (global singleton)
 const tempVars = useTemporaryVariables()
 
-// ✅ 无条件调用，composable 内部会等待 services.preferenceService 准备就绪
+// ✅ Called unconditionally; the composable waits internally for services.preferenceService to be ready
 const globalVarsManager = useVariableManager(services)
 
 const {
@@ -308,7 +308,7 @@ const {
   logPrefix: 'OutputDisplayCore',
 })
 
-// 内部状态
+// Internal state
 type ScrollbarLike = {
   scrollTo: (options: { top: number; behavior?: ScrollBehavior }) => void
 }
@@ -316,7 +316,7 @@ type ScrollbarLike = {
 const reasoningContentRef = ref<ScrollbarLike | null>(null)
 const userHasManuallyToggledReasoning = ref(false)
 
-// 新的视图状态机
+// New view state machine
 const internalViewMode = ref<'render' | 'source' | 'diff'>('render')
 const EMPTY_COMPARE_RESULT: CompareResult = {
   fragments: [],
@@ -324,7 +324,7 @@ const EMPTY_COMPARE_RESULT: CompareResult = {
 }
 const compareResult = ref<CompareResult>(EMPTY_COMPARE_RESULT)
 
-// 推理折叠面板状态
+// Reasoning collapse panel state
 const reasoningExpandedNames = ref<string[]>([])
 
 const isActionEnabled = (action: ActionName) => props.enabledActions.includes(action)
@@ -333,7 +333,7 @@ const hasToolbar = computed(() =>
   ['diff', 'copy', 'fullscreen', 'edit'].some(action => isActionEnabled(action as ActionName))
 )
 
-// 计算属性
+// Computed properties
 const displayContent = computed(() => (props.content || '').trim())
 const displayReasoning = computed(() => (props.reasoning || '').trim())
 
@@ -351,7 +351,7 @@ const shouldShowReasoning = computed(() => {
   return hasReasoning.value
 })
 
-// 推理展开/折叠状态的计算属性
+// Computed property for the reasoning expanded/collapsed state
 const isReasoningExpanded = computed({
   get: () => reasoningExpandedNames.value.includes('reasoning'),
   set: (expanded: boolean) => {
@@ -364,12 +364,12 @@ const isReasoningExpanded = computed({
   }
 })
 
-// 处理原文模式输入
+// Handle input in original text mode
 const handleSourceInput = (value: string) => {
   emit('update:content', value)
 }
 
-// 复制功能
+// Copy feature
 const handleCopy = (type: 'content' | 'reasoning' | 'all') => {
   let textToCopy = ''
   const emitType: 'content' | 'reasoning' | 'all' = type
@@ -383,8 +383,8 @@ const handleCopy = (type: 'content' | 'reasoning' | 'all') => {
       break
     case 'all':
       textToCopy = [
-        displayReasoning.value && `推理过程：\n${displayReasoning.value}`,
-        `主要内容：\n${displayContent.value}`
+        displayReasoning.value && `Reasoning:\n${displayReasoning.value}`,
+        `Main content:\n${displayContent.value}`
       ].filter(Boolean).join('\n\n')
       break
   }
@@ -395,7 +395,7 @@ const handleCopy = (type: 'content' | 'reasoning' | 'all') => {
   }
 }
 
-// 全屏功能
+// Fullscreen feature
 const handleFullscreen = () => {
   emit('fullscreen')
 }
@@ -405,7 +405,7 @@ const scrollReasoningToBottom = () => {
     nextTick(() => {
       if (reasoningContentRef.value) {
         reasoningContentRef.value.scrollTo({
-          top: 999999, // 滚动到底部
+          top: 999999, // Scroll to the bottom
           behavior: 'smooth'
         })
       }
@@ -413,7 +413,7 @@ const scrollReasoningToBottom = () => {
   }
 }
 
-// 对比功能
+// Compare feature
 const updateCompareResult = async () => {
   if (internalViewMode.value === 'diff' && props.originalContent && props.content) {
     try {
@@ -434,28 +434,28 @@ const updateCompareResult = async () => {
   }
 }
 
-// 智能自动切换逻辑
+// Smart auto-switch logic
 const previousViewMode = ref<'render' | 'source' | 'diff' | null>(null)
 
 watch(() => props.streaming, (isStreaming, wasStreaming) => {
   if (isStreaming && !wasStreaming) {
-    // 新任务开始，重置用户记忆
+    // A new task starts; reset the user memory
     userHasManuallyToggledReasoning.value = false
   } else if (!isStreaming && wasStreaming) {
-    // 任务结束，如果用户未干预且思考区域仍然展开，自动折叠
+    // When the task ends, if the user has not intervened and the reasoning area is still expanded, collapse it automatically
     if (!userHasManuallyToggledReasoning.value && isReasoningExpanded.value) {
       isReasoningExpanded.value = false
     }
   }
 
   if (isStreaming) {
-    // 记住当前模式，并强制切换到原文模式
+    // Remember the current mode and force a switch to original text mode
     if (internalViewMode.value !== 'source') {
       previousViewMode.value = internalViewMode.value
       internalViewMode.value = 'source'
     }
   } else {
-    // 流式结束后，恢复之前的模式
+    // After streaming ends, restore the previous mode
     if (previousViewMode.value) {
       internalViewMode.value = previousViewMode.value
       previousViewMode.value = null
@@ -471,26 +471,26 @@ watch(() => [props.content, props.originalContent], () => {
 })
 
 watch(() => props.reasoning, (newReasoning, oldReasoning) => {
-  // 当推理内容从无到有，且用户未手动干预时，自动展开
+  // When reasoning content goes from none to some and the user has not intervened manually, expand automatically
   if (newReasoning && !oldReasoning && !userHasManuallyToggledReasoning.value) {
     isReasoningExpanded.value = true
   }
   
-  // 如果思考过程已展开且有新内容，滚动到底部
+  // If the reasoning process is expanded and has new content, scroll to the bottom
   if (isReasoningExpanded.value && newReasoning) {
     scrollReasoningToBottom()
   }
 }, { flush: 'post' })
 
 watch(() => props.content, (newContent, oldContent) => {
-  // 当主要内容开始流式输出时，如果用户未干预，自动折叠思考过程
+  // When main content starts streaming, if the user has not intervened, collapse the reasoning process automatically
   const mainContentJustStarted = newContent && !oldContent
   if (props.streaming && mainContentJustStarted && !userHasManuallyToggledReasoning.value) {
     isReasoningExpanded.value = false
   }
 })
 
-// 监听推理折叠状态变化
+// Watch reasoning collapse state changes
 watch(reasoningExpandedNames, (newNames) => {
   const expanded = newNames.includes('reasoning')
   if (expanded !== isReasoningExpanded.value) {
@@ -498,7 +498,7 @@ watch(reasoningExpandedNames, (newNames) => {
   }
 })
 
-// 暴露方法给父组件
+// Expose methods to the parent component
 const resetReasoningState = (initialState: boolean) => {
   isReasoningExpanded.value = initialState
   userHasManuallyToggledReasoning.value = false
@@ -513,38 +513,38 @@ const forceExitEditing = () => {
 }
 
 const forceRefreshContent = () => {
-  // V2版本中这个方法不再需要，但保留以确保向后兼容
+  // This method is no longer needed in V2, but is kept to ensure backward compatibility
 }
 
-// 收藏相关方法 - 触发保存对话框而不是直接保存
+// Favorite-related methods - trigger the save dialog rather than saving directly
 const handleFavorite = () => {
   if (!props.content) {
-    message.warning('没有内容可以收藏');
+    message.warning('No content to favorite');
     return;
   }
 
-  // 触发保存收藏事件,由父组件打开保存对话框
+  // Trigger the save favorite event; the parent component opens the save dialog
   emit('save-favorite', {
     content: props.content,
     originalContent: props.originalContent
   });
 };
 
-// 组件挂载时设置初始视图模式
+// Set the initial view mode when the component mounts
 onMounted(() => {
-  // ⚠️ 不在此处初始化 functionMode
-  // 原因：useFunctionMode 是全局单例，不应由单个组件控制初始化时机
-  // - 如果 services 未就绪，初始化会失败但仍标记为已完成，导致永久卡在 'basic'
-  // - 应该在应用级别统一初始化（如 App.vue）
-  // - functionMode 有默认值 'basic'，可以正常工作
+  // ⚠️ Do not initialize functionMode here
+  // Reason: useFunctionMode is a global singleton and should not have its initialization timing controlled by a single component
+  // - If services are not ready, initialization fails but is still marked as done, leaving it stuck on 'basic' permanently
+  // - It should be initialized uniformly at the application level (such as App.vue)
+  // - functionMode has a default value of 'basic' and works normally
 
-  // 如果是可编辑模式，默认显示原文
+  // In editable mode, show the original text by default
   if (props.mode === 'editable') {
     internalViewMode.value = 'source';
   }
 });
 
-// 监听 mode 变化，自动切换视图模式
+// Watch mode changes and switch the view mode automatically
 watch(() => props.mode, (newMode) => {
   if (newMode === 'editable' && internalViewMode.value === 'render') {
     internalViewMode.value = 'source';

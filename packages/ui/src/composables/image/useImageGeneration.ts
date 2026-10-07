@@ -25,7 +25,7 @@ export function useImageGeneration() {
       return
     }
     try {
-      // 直接使用 getEnabledConfigs 获取自包含的配置数据
+      // Use getEnabledConfigs directly to get self-contained config data
       const enabledConfigs = await services.value.imageModelManager.getEnabledConfigs()
       imageModels.value = enabledConfigs
     } catch (error) {
@@ -55,13 +55,13 @@ export function useImageGeneration() {
     }
   }
 
-  // 兼容入口：保留原 generate（内部可能仍会按 inputImage 推断模式）
+  // Compatibility entry: keep the original generate (internally it may still infer the mode from inputImage)
   const generate = async (req: ImageRequest) => {
     if (!services?.value?.imageService) throw new Error('Image service not available')
     return await callGenerate(() => services.value!.imageService!.generate(req))
   }
 
-  // 显式入口：由 UI 明确决定模式
+  // Explicit entry: the UI decides the mode explicitly
   const generateText2Image = async (req: Text2ImageRequest) => {
     if (!services?.value?.imageService) throw new Error('Image service not available')
     return await callGenerate(() => services.value!.imageService!.generateText2Image(req))

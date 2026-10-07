@@ -1647,7 +1647,7 @@ export default {
     },
   },
   contextEditor: {
-    // Variables tab (新增)
+    // Variables tab (new)
     contextVariables: "Context Variables",
     contextVariablesDesc:
       "Manage context-level variable overrides without affecting global variables",
@@ -2336,7 +2336,7 @@ export default {
     },
   },
 
-  // Centralized error code translations | 集中式错误代码翻译
+  // Centralized error code translations
   error: {
     evaluation: {
       validation: "Evaluation validation error: {details}",

@@ -3,13 +3,13 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import type { ResponsiveConfig } from '../../types/components'
 
 /**
- * 响应式布局 Composable
- * 提供断点检测和响应式配置
+ * Responsive layout composable
+ * Provides breakpoint detection and responsive config
  */
 export function useResponsive() {
   const windowWidth = ref(window.innerWidth)
 
-  // 断点配置
+  // Breakpoint config
   const breakpoints = {
     xs: 0,
     sm: 640,
@@ -18,12 +18,12 @@ export function useResponsive() {
     xl: 1280
   }
 
-  // 更新窗口宽度
+  // Update the window width
   const updateWidth = () => {
     windowWidth.value = window.innerWidth
   }
 
-  // 当前断点
+  // Current breakpoint
   const currentBreakpoint = computed(() => {
     const width = windowWidth.value
     if (width >= breakpoints.xl) return 'xl'
@@ -33,12 +33,12 @@ export function useResponsive() {
     return 'xs'
   })
 
-  // 设备类型检测
+  // Device type detection
   const isMobile = computed(() => currentBreakpoint.value === 'xs')
   const isTablet = computed(() => currentBreakpoint.value === 'sm')
   const isDesktop = computed(() => ['md', 'lg', 'xl'].includes(currentBreakpoint.value))
 
-  // 响应式配置
+  // Responsive config
   const responsiveConfig = computed((): ResponsiveConfig => ({
     breakpoints,
     currentBreakpoint: currentBreakpoint.value,
@@ -47,7 +47,7 @@ export function useResponsive() {
     isDesktop: isDesktop.value
   }))
 
-  // 响应式网格配置
+  // Responsive grid config
   const gridConfig = computed(() => {
     switch (currentBreakpoint.value) {
       case 'xs':
@@ -65,7 +65,7 @@ export function useResponsive() {
     }
   })
 
-  // 响应式间距
+  // Responsive spacing
   const spaceSize = computed(() => {
     switch (currentBreakpoint.value) {
       case 'xs':
@@ -83,7 +83,7 @@ export function useResponsive() {
     }
   })
 
-  // 响应式按钮大小
+  // Responsive button size
   const buttonSize = computed(() => {
     switch (currentBreakpoint.value) {
       case 'xs':
@@ -95,7 +95,7 @@ export function useResponsive() {
     }
   })
 
-  // 响应式输入框大小
+  // Responsive input size
   const inputSize = computed(() => {
     switch (currentBreakpoint.value) {
       case 'xs':
@@ -107,7 +107,7 @@ export function useResponsive() {
     }
   })
 
-  // 响应式模态框宽度
+  // Responsive modal width
   const modalWidth = computed(() => {
     switch (currentBreakpoint.value) {
       case 'xs':
@@ -125,7 +125,7 @@ export function useResponsive() {
     }
   })
 
-  // 响应式卡片内边距
+  // Responsive card padding
   const cardPadding = computed(() => {
     switch (currentBreakpoint.value) {
       case 'xs':
@@ -137,17 +137,17 @@ export function useResponsive() {
     }
   })
 
-  // 是否应该使用垂直布局
+  // Whether to use a vertical layout
   const shouldUseVerticalLayout = computed(() => {
     return isMobile.value || isTablet.value
   })
 
-  // 是否应该使用紧凑模式
+  // Whether to use compact mode
   const shouldUseCompactMode = computed(() => {
     return isMobile.value
   })
 
-  // 响应式字体大小
+  // Responsive font size
   const fontSize = computed(() => {
     switch (currentBreakpoint.value) {
       case 'xs':
@@ -168,7 +168,7 @@ export function useResponsive() {
   })
 
   return {
-    // 基础响应式状态
+    // Base responsive state
     windowWidth,
     currentBreakpoint,
     isMobile,
@@ -176,7 +176,7 @@ export function useResponsive() {
     isDesktop,
     responsiveConfig,
     
-    // 组件配置
+    // Component config
     gridConfig,
     spaceSize,
     buttonSize,
@@ -185,11 +185,11 @@ export function useResponsive() {
     cardPadding,
     fontSize,
     
-    // 布局决策
+    // Layout decisions
     shouldUseVerticalLayout,
     shouldUseCompactMode,
     
-    // 断点配置
+    // Breakpoint config
     breakpoints
   }
 }

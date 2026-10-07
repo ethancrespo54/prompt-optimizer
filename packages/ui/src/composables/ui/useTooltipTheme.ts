@@ -15,9 +15,9 @@ interface UseTooltipThemeOptions {
 }
 
 /**
- * Naive UI 默认会将 Tooltip 叠加层合成成接近黑色的背景，这在浅色主题下会显得突兀。
- * 这里基于 ConfigProvider 的主题变量构建 tooltip 的 themeOverrides，并提供常用的内容样式，
- * 让 Tooltip 的背景与弹层类组件保持一致，同时限制尺寸防止遮挡。
+ * Naive UI composites the Tooltip overlay into a near-black background by default, which looks abrupt under light themes.
+ * Here the tooltip's themeOverrides are built from the ConfigProvider theme variables, with commonly used content styles provided,
+ * so the Tooltip background stays consistent with popup-type components, while its size is limited to prevent obscuring content.
  */
 export function useTooltipTheme(options: UseTooltipThemeOptions = {}) {
   const themeVars = useThemeVars();

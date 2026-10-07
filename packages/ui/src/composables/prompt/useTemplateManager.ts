@@ -14,16 +14,16 @@ export interface TemplateManagerHooks {
 }
 
 /**
- * TemplateManager Hook（无持久化副作用）
+ * TemplateManager hook (no persistence side effects)
  *
- * Phase 1/2 迁移说明：
- * - 模板选择的持久化已迁移到各 mode 的 Session Store（单一真源）
- * - 本 hook 仅负责：
- *   1) 控制 TemplateManager Modal 展示
- *   2) 将“选择的模板对象”写入调用方提供的 refs（UI 需要）
+ * Phase 1/2 migration notes:
+ * - Persistence of template selection has moved to the Session Store of each mode (single source of truth)
+ * - This hook is only responsible for:
+ *   1) Controlling the display of the TemplateManager Modal
+ *   2) Writing the "selected template object" into the refs provided by the caller (needed by the UI)
  *
  * IMPORTANT：
- * - 禁止在此处读写 TEMPLATE_SELECTION_KEYS（避免双真源）
+ * - Reading or writing TEMPLATE_SELECTION_KEYS here is forbidden (avoids dual sources)
  */
 export function useTemplateManager(
   _services: unknown

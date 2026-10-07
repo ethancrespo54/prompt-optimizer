@@ -8,7 +8,7 @@
     @update:show="$emit('update:show', $event)"
   >
     <n-space vertical :size="16" style="height: 100%;">
-      <!-- 搜索栏和统计 -->
+      <!-- Search bar and statistics -->
       <n-space justify="space-between" align="center">
         <n-input
           v-model:value="searchQuery"
@@ -30,7 +30,7 @@
         </n-space>
       </n-space>
 
-      <!-- 标签表格 -->
+      <!-- Tag table -->
       <n-data-table
         :columns="columns"
         :data="filteredTags"
@@ -42,7 +42,7 @@
       />
     </n-space>
 
-    <!-- 新增标签对话框 -->
+    <!-- Add tag dialog -->
     <n-modal
       v-model:show="showAddDialog"
       preset="dialog"
@@ -60,7 +60,7 @@
       </n-space>
     </n-modal>
 
-    <!-- 重命名对话框 -->
+    <!-- Rename dialog -->
     <n-modal
       v-model:show="showRenameDialog"
       preset="dialog"
@@ -79,7 +79,7 @@
       </n-space>
     </n-modal>
 
-    <!-- 合并对话框 -->
+    <!-- Merge dialog -->
     <n-modal
       v-model:show="showMergeDialog"
       preset="dialog"
@@ -150,26 +150,26 @@ const loading = ref(false);
 const allTags = ref<TagStatistics[]>([]);
 const searchQuery = ref('');
 
-// 新增相关
+// Add-related
 const showAddDialog = ref(false);
 
-// 重命名相关
+// Rename-related
 const showRenameDialog = ref(false);
 const currentTag = ref<TagStatistics | null>(null);
 const newTagName = ref('');
 
-// 合并相关
+// Merge-related
 const showMergeDialog = ref(false);
 const mergeTargetTag = ref<string>('');
 
-// 分页配置
+// Pagination config
 const pagination = {
   pageSize: 10,
   showSizePicker: true,
   pageSizes: [10, 20, 50, 100]
 };
 
-// 过滤后的标签
+// Filtered tags
 const filteredTags = computed(() => {
   if (!searchQuery.value) {
     return allTags.value;
@@ -178,7 +178,7 @@ const filteredTags = computed(() => {
   return allTags.value.filter(tag => tag.name.toLowerCase().includes(query));
 });
 
-// 合并目标选项(排除当前标签)
+// Merge target options (excluding the current tag)
 const mergeTargetOptions = computed(() => {
   return allTags.value
     .filter(tag => tag.name !== currentTag.value?.name)
@@ -188,7 +188,7 @@ const mergeTargetOptions = computed(() => {
     }));
 });
 
-// 表格列定义
+// Table column definitions
 const columns = computed<DataTableColumns<TagStatistics>>(() => [
   {
     title: t('favorites.manager.tagManager.tagName'),
@@ -276,7 +276,7 @@ const columns = computed<DataTableColumns<TagStatistics>>(() => [
   }
 ]);
 
-// 加载标签数据
+// Load tag data
 const loadTags = async () => {
   const servicesValue = services?.value;
   if (!servicesValue?.favoriteManager) {
@@ -286,16 +286,16 @@ const loadTags = async () => {
   loading.value = true;
   try {
     const tags = await servicesValue.favoriteManager.getAllTags();
-    // 使用统一的类型转换器转换数据格式
+    // Use the unified type converter to convert the data format
     allTags.value = TagTypeConverter.toTagStatistics(tags);
   } catch (error: unknown) {
-    message.error(t('favorites.manager.tagManager.messages.loadFailed') + `: ${error instanceof Error ? error.message : '未知错误'}`);
+    message.error(t('favorites.manager.tagManager.messages.loadFailed') + `: ${error instanceof Error ? error.message : 'Unknown error'}`);
   } finally {
     loading.value = false;
   }
 };
 
-// 新增标签
+// Add a tag
 const handleAdd = () => {
   newTagName.value = '';
   showAddDialog.value = true;
@@ -313,29 +313,29 @@ const handleAddConfirm = async () => {
     return false;
   }
 
-  // 检查标签是否已存在
+  // Check whether the tag already exists
   if (allTags.value.some(tag => tag.name === trimmedName)) {
     message.warning(t('favorites.manager.tagManager.addDialog.existWarning'));
     return false;
   }
 
   try {
-    // 调用 addTag API 持久化标签
+    // Call the addTag API to persist the tag
     await servicesValue.favoriteManager.addTag(trimmedName);
 
-    // 重新加载标签列表
+    // Reload the tag list
     await loadTags();
 
     message.success(t('favorites.manager.tagManager.messages.addSuccess'));
     showAddDialog.value = false;
     return true;
   } catch (error: unknown) {
-    message.error(t('favorites.manager.tagManager.messages.addFailed') + `: ${error instanceof Error ? error.message : '未知错误'}`);
+    message.error(t('favorites.manager.tagManager.messages.addFailed') + `: ${error instanceof Error ? error.message : 'Unknown error'}`);
     return false;
   }
 };
 
-// 重命名标签
+// Rename a tag
 const handleRename = (tag: TagStatistics) => {
   currentTag.value = tag;
   newTagName.value = tag.name;
@@ -367,12 +367,12 @@ const handleRenameConfirm = async () => {
     showRenameDialog.value = false;
     return true;
   } catch (error: unknown) {
-    message.error(t('favorites.manager.tagManager.messages.renameFailed') + `: ${error instanceof Error ? error.message : '未知错误'}`);
+    message.error(t('favorites.manager.tagManager.messages.renameFailed') + `: ${error instanceof Error ? error.message : 'Unknown error'}`);
     return false;
   }
 };
 
-// 合并标签
+// Merge tags
 const handleMerge = (tag: TagStatistics) => {
   currentTag.value = tag;
   mergeTargetTag.value = '';
@@ -394,12 +394,12 @@ const handleMergeConfirm = async () => {
     showMergeDialog.value = false;
     return true;
   } catch (error: unknown) {
-    message.error(t('favorites.manager.tagManager.messages.mergeFailed') + `: ${error instanceof Error ? error.message : '未知错误'}`);
+    message.error(t('favorites.manager.tagManager.messages.mergeFailed') + `: ${error instanceof Error ? error.message : 'Unknown error'}`);
     return false;
   }
 };
 
-// 删除标签
+// Delete a tag
 const handleDelete = async (tag: TagStatistics) => {
   const servicesValue = services?.value;
   if (!servicesValue?.favoriteManager) {
@@ -412,11 +412,11 @@ const handleDelete = async (tag: TagStatistics) => {
     await loadTags();
     emit('updated');
   } catch (error: unknown) {
-    message.error(t('favorites.manager.tagManager.messages.deleteFailed') + `: ${error instanceof Error ? error.message : '未知错误'}`);
+    message.error(t('favorites.manager.tagManager.messages.deleteFailed') + `: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 };
 
-// 监听对话框显示状态,打开时加载数据
+// Watch the dialog display state and load data when it opens
 watch(() => props.show, (newShow) => {
   if (newShow) {
     loadTags();

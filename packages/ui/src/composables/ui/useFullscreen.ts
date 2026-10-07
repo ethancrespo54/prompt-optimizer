@@ -5,17 +5,17 @@ export function useFullscreen(
   modelValue: ComputedRef<string> | { value: string }, 
   emitUpdateValue: (value: string) => void
 ) {
-  // 全屏状态
+  // Fullscreen state
   const isFullscreen = ref(false)
   
-  // 全屏模式下的文本值
+  // The text value in fullscreen mode
   const fullscreenValue = ref(modelValue.value || '')
 
-  // 防止“外部同步 -> 触发回写 -> 再同步”的回路
-  // 仅在用户处于全屏编辑状态时才允许回写外部值
+  // Prevent the loop "external sync -> triggers write-back -> sync again"
+  // Only allow writing back the external value while the user is in the fullscreen editing state
   const isSyncingFromModel = ref(false)
   
-  // 监听外部值变化，同步到全屏值
+  // Watch external value changes and sync them to the fullscreen value
   watch(() => modelValue.value, (newValue) => {
     isSyncingFromModel.value = true
     fullscreenValue.value = newValue || ''
@@ -24,22 +24,22 @@ export function useFullscreen(
     })
   })
   
-  // 监听全屏值变化，同步到外部
+  // Watch fullscreen value changes and sync them outward
   watch(fullscreenValue, (newValue) => {
-    // 仅在全屏编辑时回写；非全屏输入由原组件自身的 v-model/update 处理
+    // Only write back during fullscreen editing; non-fullscreen input is handled by the original component's own v-model/update
     if (!isFullscreen.value) return
-    // 外部同步导致的变更不回写（避免循环/重复写入）
+    // Changes caused by external sync are not written back (avoids loops / duplicate writes)
     if (isSyncingFromModel.value) return
 
     emitUpdateValue(newValue)
   })
   
-  // 打开全屏
+  // Enter fullscreen
   const openFullscreen = () => {
     isFullscreen.value = true
   }
   
-  // 关闭全屏
+  // Exit fullscreen
   const closeFullscreen = () => {
     isFullscreen.value = false
   }

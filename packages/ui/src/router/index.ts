@@ -3,22 +3,22 @@ import { beforeRouteSwitch } from './guards'
 import RootBootstrapRoute from './RootBootstrapRoute'
 
 /**
- * Vue Router 配置
+ * Vue Router config
  *
- * 设计说明：
- * - 使用 hash 模式（#/basic/system），Electron 兼容
- * - 路由懒加载，减少初始 bundle
- * - 路由守卫：监控导航事件
+ * Design notes:
+ * - Uses hash mode (#/basic/system), Electron compatible
+ * - Routes are lazy-loaded to reduce the initial bundle
+ * - Route guard: monitors navigation events
  */
 
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
-    // 根路径重定向由 RootBootstrapRoute 处理：等待 globalSettings 恢复完成后决定初始工作区
+    // The root path redirect is handled by RootBootstrapRoute: it waits for the globalSettings restore to complete before deciding the initial workspace
     name: 'root',
     component: RootBootstrapRoute
   },
-  // ✨ Basic 模式重构：2 个独立路由
+  // ✨ Basic mode refactoring: 2 independent routes
   {
     path: '/basic/system',
     name: 'basic-system',
@@ -29,9 +29,9 @@ const routes: RouteRecordRaw[] = [
     name: 'basic-user',
     component: () => import('../components/basic-mode/BasicUserWorkspace.vue')
   },
-  // ✨ Pro 模式：2 个独立路由
-  // - /pro/multi: 多消息模式（ContextSystemWorkspace）
-  // - /pro/variable: 变量模式（ContextUserWorkspace）
+  // ✨ Pro mode: 2 independent routes
+  // - /pro/multi: multi-message mode (ContextSystemWorkspace)
+  // - /pro/variable: variable mode (ContextUserWorkspace)
   {
     path: '/pro/multi',
     name: 'pro-multi',
@@ -42,7 +42,7 @@ const routes: RouteRecordRaw[] = [
     name: 'pro-variable',
     component: () => import('../components/context-mode/ContextUserWorkspace.vue')
   },
-  // ✨ Image 模式重构：2 个独立路由
+  // ✨ Image mode refactoring: 2 independent routes
   {
     path: '/image/text2image',
     name: 'image-text2image',
@@ -60,7 +60,7 @@ export const router = createRouter({
   routes
 })
 
-// 挂载路由守卫
+// Mount the route guard
 router.beforeEach(beforeRouteSwitch)
 
 export default router

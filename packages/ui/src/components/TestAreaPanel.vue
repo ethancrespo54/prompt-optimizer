@@ -1,6 +1,6 @@
 <template>
     <NFlex vertical :style="{ height: '100%', gap: '12px' }">
-        <!-- 测试输入区域 (仅在系统提示词优化模式下显示) -->
+        <!-- Test input area (only shown in system prompt optimization mode) -->
         <NCard v-if="showTestInput" :style="{ flexShrink: 0 }" size="small">
             <TestInputSection
                 v-model="testContentProxy"
@@ -15,7 +15,7 @@
             />
         </NCard>
 
-        <!-- 控制工具栏 -->
+        <!-- Control toolbar -->
         <NCard :style="{ flexShrink: 0 }" size="small">
             <TestControlBar
                 :model-label="t('test.model')"
@@ -43,7 +43,7 @@
             </TestControlBar>
         </NCard>
 
-        <!-- 测试结果区域 -->
+        <!-- Test result area -->
         <TestResultSection
             :is-compare-mode="props.isCompareMode && enableCompareMode"
             :vertical-layout="adaptiveResultVerticalLayout"
@@ -79,7 +79,7 @@
         >
             <template #original-result>
                 <div class="result-container">
-                    <!-- 原始结果的工具调用显示 - 移到正文之前 -->
+                    <!-- Tool call display for the original result - moved before the body -->
                     <ToolCallDisplay
                         v-if="originalToolCalls.length > 0"
                         :tool-calls="originalToolCalls"
@@ -96,7 +96,7 @@
             </template>
             <template #optimized-result>
                 <div class="result-container">
-                    <!-- 优化结果的工具调用显示 - 移到正文之前 -->
+                    <!-- Tool call display for the optimized result - moved before the body -->
                     <ToolCallDisplay
                         v-if="optimizedToolCalls.length > 0"
                         :tool-calls="optimizedToolCalls"
@@ -113,7 +113,7 @@
             </template>
             <template #single-result>
                 <div class="result-container">
-                    <!-- 单一结果的工具调用显示 - 移到正文之前（使用优化结果的数据） -->
+                    <!-- Tool call display for a single result - moved before the body (uses the optimized result's data) -->
                     <ToolCallDisplay
                         v-if="optimizedToolCalls.length > 0"
                         :tool-calls="optimizedToolCalls"
@@ -160,60 +160,60 @@ import ToolCallDisplay from "./ToolCallDisplay.vue";
 
 const { t } = useI18n();
 
-// 性能监控
+// Performance monitoring
 const {
     recordUpdate,
     getPerformanceReport,
-    // performanceGrade  // 保留用于性能监控
+    // performanceGrade  // Kept for performance monitoring
 } = usePerformanceMonitor("TestAreaPanel");
 
-// 防抖节流
+// Debounce/throttle
 const { debounce, throttle } = useDebounceThrottle();
 
-// 响应式配置
+// Responsive config
 const {
     shouldUseVerticalLayout,
     shouldUseCompactMode,
-    // spaceSize,  // 保留用于响应式布局
+    // spaceSize,  // Kept for responsive layout
     buttonSize,
     inputSize,
-    // gridConfig  // 保留用于网格布局
+    // gridConfig  // Kept for grid layout
 } = useResponsive();
 
 interface Props {
-    // 核心状态
+    // Core state
     optimizationMode: OptimizationMode;
     isTestRunning?: boolean;
 
-    // 测试内容
+    // Test content
     testContent?: string;
-    optimizedPrompt?: string; // 优化后的提示词（用于变量检测）
+    optimizedPrompt?: string; // Optimized prompt (used for variable detection)
     isCompareMode?: boolean;
 
-    // 模型信息（用于显示标签）
+    // Model info (used to display tags)
     modelName?: string;
 
-    // 功能开关
+    // Feature toggles
     enableCompareMode?: boolean;
     enableFullscreen?: boolean;
 
-    // 布局配置
+    // Layout config
     inputMode?: "compact" | "normal";
     buttonSize?: "small" | "medium" | "large";
 
-    // 结果显示配置
+    // Result display config
     showOriginalResult?: boolean;
     resultVerticalLayout?: boolean;
     originalResultTitle?: string;
     optimizedResultTitle?: string;
     singleResultTitle?: string;
 
-    // 高级功能：测试结果数据（支持工具调用显示）
+    // Advanced feature: test result data (supports tool call display)
     originalResult?: AdvancedTestResult;
     optimizedResult?: AdvancedTestResult;
     singleResult?: AdvancedTestResult;
 
-    // 评估功能配置
+    // Evaluation feature config
     showEvaluation?: boolean;
     hasOriginalResult?: boolean;
     hasOptimizedResult?: boolean;
@@ -223,7 +223,7 @@ interface Props {
     optimizedScore?: number | null;
     hasOriginalEvaluation?: boolean;
     hasOptimizedEvaluation?: boolean;
-    // 新增：评估结果和等级，用于悬浮预览
+    // New: evaluation results and grades, used for the hover preview
     originalEvaluationResult?: EvaluationResponse | null;
     optimizedEvaluationResult?: EvaluationResponse | null;
     originalScoreLevel?: ScoreLevel | null;
@@ -246,7 +246,7 @@ const props = withDefaults(defineProps<Props>(), {
     originalResultTitle: "",
     optimizedResultTitle: "",
     singleResultTitle: "",
-    // 评估默认值
+    // Evaluation defaults
     showEvaluation: false,
     hasOriginalResult: false,
     hasOptimizedResult: false,
@@ -266,22 +266,22 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
     "update:testContent": [value: string];
     "update:isCompareMode": [value: boolean];
-    test: []; // 🆕 传递测试变量
+    test: []; // 🆕 Pass the test variables
     "compare-toggle": [];
-    // 高级功能事件
+    // Advanced feature events
     "open-variable-manager": [];
     "open-context-editor": [];
     "context-change": [
         messages: ConversationMessage[],
         variables: Record<string, string>,
     ];
-    // 工具调用事件
+    // Tool call events
     "tool-call": [toolCall: ToolCallResult, testType: "original" | "optimized"];
     "tool-calls-updated": [
         toolCalls: ToolCallResult[],
         testType: "original" | "optimized",
     ];
-    // 评估事件
+    // Evaluation events
     "evaluate-original": [];
     "evaluate-optimized": [];
     "evaluate-with-feedback": [payload: { type: EvaluationType; feedback: string }];
@@ -291,7 +291,7 @@ const emit = defineEmits<{
     "apply-patch": [payload: { operation: PatchOperation }];
 }>();
 
-// 内部状态管理 - 去除防抖，保证输入即时响应
+// Internal state management - debouncing removed to keep input responsive
 const testContentProxy = computed({
     get: () => props.testContent,
     set: (value: string) => {
@@ -300,11 +300,11 @@ const testContentProxy = computed({
     },
 });
 
-// 工具调用状态管理
+// Tool call state management
 const originalToolCalls = ref<ToolCallResult[]>([]);
 const optimizedToolCalls = ref<ToolCallResult[]>([]);
 
-// 处理工具调用的方法
+// Method for handling tool calls
 const handleToolCall = (
     toolCall: ToolCallResult,
     testType: "original" | "optimized",
@@ -326,7 +326,7 @@ const handleToolCall = (
     recordUpdate();
 };
 
-// 清除工具调用数据的方法
+// Method for clearing tool call data
 const clearToolCalls = (
     testType: "original" | "optimized" | "both" = "both",
 ) => {
@@ -338,15 +338,15 @@ const clearToolCalls = (
     }
 };
 
-// 移除结果缓存与相关节流逻辑，避免不必要的复杂度
+// Removed result caching and related throttling logic to avoid unnecessary complexity
 
-// 关键计算属性：showTestInput 取决于优化模式
-// 基础模式：仅在系统提示词优化时需要测试内容输入
+// Key computed property: showTestInput depends on the optimization mode
+// Basic mode: only needs test content input when optimizing the system prompt
 const showTestInput = computed(() => {
     return props.optimizationMode === "system";
 });
 
-// 响应式布局配置
+// Responsive layout config
 const adaptiveInputMode = computed(() => {
     if (shouldUseCompactMode.value) return "compact";
     return props.inputMode || "normal";
@@ -360,7 +360,7 @@ const adaptiveResultVerticalLayout = computed(() => {
     return shouldUseVerticalLayout.value || props.resultVerticalLayout;
 });
 
-// 主要操作按钮文本
+// Primary action button text
 const primaryActionText = computed(() => {
     if (props.isTestRunning) {
         return t("test.testing");
@@ -370,11 +370,11 @@ const primaryActionText = computed(() => {
         : t("test.startTest");
 });
 
-// 主要操作按钮禁用状态
+// Primary action button disabled state
 const primaryActionDisabled = computed(() => {
     if (props.isTestRunning) return true;
 
-    // 系统提示词模式需要测试内容
+    // System prompt mode requires test content
     if (props.optimizationMode === "system" && !props.testContent.trim()) {
         return true;
     }
@@ -382,7 +382,7 @@ const primaryActionDisabled = computed(() => {
     return false;
 });
 
-// 事件处理 - 立即切换对比模式，避免点击延迟
+// Event handling - switch the compare mode immediately to avoid click delay
 const handleCompareToggle = () => {
     const newValue = !props.isCompareMode;
     emit("update:isCompareMode", newValue);
@@ -399,7 +399,7 @@ const handleTest = throttle(
     "handleTest",
 );
 
-// ========== 评估事件处理 ==========
+// ========== Evaluation event handling ==========
 const handleEvaluateOriginal = () => {
     emit("evaluate-original");
 };
@@ -420,32 +420,32 @@ const handleShowOptimizedDetail = () => {
     emit("show-optimized-detail");
 };
 
-// 应用改进建议处理
+// Apply improvement suggestions handling
 const handleApplyImprovement = (payload: { improvement: string; type: EvaluationType }) => {
     emit("apply-improvement", payload);
 };
 
-// 应用补丁处理
+// Apply patch handling
 const handleApplyPatch = (payload: { operation: PatchOperation }) => {
     emit("apply-patch", payload);
 };
 
-// ========== 变量管理 ==========
+// ========== Variable management ==========
 
-// 🆕 添加变量对话框状态
-
-
+// 🆕 Add variable dialog state
 
 
 
 
-// 开发环境下的性能调试
+
+
+// Performance debugging in the development environment
 if (import.meta.env.DEV) {
     const logPerformance = debounce(
         () => {
             const report = getPerformanceReport();
             if (report.grade.grade === "F") {
-                console.warn("TestAreaPanel 性能较差:", report);
+                console.warn("TestAreaPanel performance is poor:", report);
             }
         },
         5000,
@@ -453,16 +453,16 @@ if (import.meta.env.DEV) {
         "performanceLog",
     );
 
-    // 定期检查性能
+    // Check performance periodically
     const timer = setInterval(logPerformance, 10000);
     onUnmounted(() => clearInterval(timer));
 }
 
-// 暴露方法供父组件调用
+// Expose methods for the parent component to call
 defineExpose({
     handleToolCall,
     clearToolCalls,
-    // 获取当前工具调用状态
+    // Get the current tool call state
     getToolCalls: () => ({
         original: originalToolCalls.value,
         optimized: optimizedToolCalls.value,
@@ -489,8 +489,8 @@ defineExpose({
     flex: 0 0 auto;
 }
 
-/* 当存在工具调用列表时，隐藏结果区中的空内容占位 */
-/* 依赖同级容器存在 .tool-call-display 时，隐藏 Naive UI 的 NEmpty */
+/* When a tool call list exists, hide the empty placeholder in the result area */
+/* Relies on a sibling container with .tool-call-display to hide Naive UI's NEmpty */
 .result-container:has(.tool-call-display) :deep(.n-empty) {
     display: none;
 }

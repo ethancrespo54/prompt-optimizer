@@ -1,8 +1,8 @@
 /**
- * 评估处理器 Composable
+ * Evaluation handler composable
  *
- * 封装评估功能的完整处理逻辑，便于在不同组件中复用
- * 将 useEvaluation 与业务逻辑整合，提供开箱即用的评估功能
+ * Encapsulates the complete handling logic of the evaluation feature for reuse across components
+ * Integrates useEvaluation with business logic, providing an out-of-the-box evaluation feature
  */
 
 import { computed, watch, type Ref, type ComputedRef } from 'vue'
@@ -12,7 +12,7 @@ import type { EvaluationType, EvaluationResponse, ProEvaluationContext } from '@
 import type { PersistedEvaluationResults } from '../../types/evaluation'
 
 /**
- * 测试结果数据结构
+ * Test result data structure
  */
 export interface TestResultsData {
   originalResult?: string
@@ -20,40 +20,40 @@ export interface TestResultsData {
 }
 
 /**
- * 评估处理器选项
+ * Evaluation handler options
  */
 export interface UseEvaluationHandlerOptions {
-  /** 服务实例 */
+  /** Service instance */
   services: Ref<AppServices | null>
-  /** 原始提示词 */
+  /** Original prompt */
   originalPrompt: Ref<string> | ComputedRef<string>
-  /** 优化后的提示词 */
+  /** Optimized prompt */
   optimizedPrompt: Ref<string> | ComputedRef<string>
-  /** 测试内容 */
+  /** Test content */
   testContent: Ref<string> | ComputedRef<string>
-  /** 测试结果数据 */
+  /** Test result data */
   testResults: Ref<TestResultsData | null>
-  /** 评估模型 Key */
+  /** Evaluation model key */
   evaluationModelKey: Ref<string> | ComputedRef<string>
-  /** 功能模式（必填） */
+  /** Function mode (required) */
   functionMode: Ref<string> | ComputedRef<string>
-  /** 子模式（必填） */
+  /** Sub-mode (required) */
   subMode: Ref<string> | ComputedRef<string>
   /**
-   * Pro 模式上下文（可选）
-   * - Pro-System: 包含 targetMessage 和 conversationMessages
-   * - Pro-User: 包含 variables, rawPrompt, resolvedPrompt
+   * Pro mode context (optional)
+   * - Pro-System: contains targetMessage and conversationMessages
+   * - Pro-User: contains variables, rawPrompt, resolvedPrompt
    */
   proContext?: Ref<ProEvaluationContext | undefined> | ComputedRef<ProEvaluationContext | undefined>
   /**
-   * 当前迭代需求（可选）
-   * 用于 prompt-iterate 类型的重新评估，来自当前版本的 iterationNote
+   * Current iteration requirement (optional)
+   * Used for the re-evaluation of the prompt-iterate type, taken from the iterationNote of the current version
    */
   currentIterateRequirement?: Ref<string> | ComputedRef<string>
   /**
-   * 外部评估实例（可选）
-   * 如果提供，则使用该实例而不是创建新的
-   * 用于 Workspace 共享全局评估状态的场景
+   * External evaluation instance (optional)
+   * If provided, that instance is used instead of creating a new one
+   * Used in scenarios where the Workspace shares the global evaluation state
    */
   externalEvaluation?: UseEvaluationReturn
 
@@ -66,47 +66,47 @@ export interface UseEvaluationHandlerOptions {
 }
 
 /**
- * PromptPanel 组件引用类型（用于打开迭代弹窗）
+ * PromptPanel component reference type (used to open the iterate dialog)
  */
 export interface PromptPanelRef {
   openIterateDialog?: (input?: string) => void
 }
 
 /**
- * 评估处理器返回类型
+ * Evaluation handler return type
  */
 export interface UseEvaluationHandlerReturn {
-  /** 原始 useEvaluation 返回值 */
+  /** Original useEvaluation return value */
   evaluation: UseEvaluationReturn
 
-  /** 执行评估 */
+  /** Run an evaluation */
   handleEvaluate: (type: EvaluationType, options?: { userFeedback?: string }) => Promise<void>
 
-  /** 带用户反馈的评估 */
+  /** Evaluation with user feedback */
   handleEvaluateWithFeedback: (type: EvaluationType, userFeedback: string) => Promise<void>
 
-  /** 重新评估（从详情面板触发） */
+  /** Re-evaluate (triggered from the details panel) */
   handleReEvaluate: () => Promise<void>
 
-  /** 带反馈评估（基于当前详情类型触发） */
+  /** Evaluate with feedback (triggered based on the current details type) */
   handleEvaluateActiveWithFeedback: (userFeedback: string) => Promise<void>
 
   /**
-   * 测试前清空评估结果
-   * 应在执行测试前调用，确保旧的评估结果不会残留
+   * Clear the evaluation results before testing
+   * Should be called before running a test, to make sure old evaluation results do not linger
    */
   clearBeforeTest: () => void
 
   /**
-   * 创建应用改进建议的处理器
-   * @param promptPanelRef PromptPanel 组件引用
-   * @returns 处理函数，可直接绑定到 @apply-improvement 事件
+   * Create a handler for applying improvement suggestions
+   * @param promptPanelRef PromptPanel component reference
+   * @returns A handler function that can be bound directly to the @apply-improvement event
    */
   createApplyImprovementHandler: (
     promptPanelRef: Ref<PromptPanelRef | null>
   ) => (payload: { improvement: string; type: EvaluationType }) => void
 
-  /** TestAreaPanel 评估事件处理器 */
+  /** TestAreaPanel evaluation event handlers */
   handlers: {
     onEvaluateOriginal: () => Promise<void>
     onEvaluateOptimized: () => Promise<void>
@@ -116,7 +116,7 @@ export interface UseEvaluationHandlerReturn {
     onShowCompareDetail: () => void
   }
 
-  /** 用于 TestAreaPanel 的评估相关 props（响应式） */
+  /** Evaluation-related props for TestAreaPanel (reactive) */
   testAreaEvaluationProps: ComputedRef<{
     showEvaluation: boolean
     hasOriginalResult: boolean
@@ -127,21 +127,21 @@ export interface UseEvaluationHandlerReturn {
     optimizedScore: number | null
     hasOriginalEvaluation: boolean
     hasOptimizedEvaluation: boolean
-    // 新增：评估结果和等级，用于悬浮预览
+    // New: evaluation results and grades, used for the hover preview
     originalEvaluationResult: EvaluationResponse | null
     optimizedEvaluationResult: EvaluationResponse | null
     originalScoreLevel: ScoreLevel | null
     optimizedScoreLevel: ScoreLevel | null
   }>
 
-  /** 用于对比评估的计算属性 */
+  /** Computed property for compare evaluation */
   compareEvaluation: {
     hasCompareResult: ComputedRef<boolean>
     isEvaluatingCompare: ComputedRef<boolean>
     compareScore: ComputedRef<number | null>
   }
 
-  /** 用于 EvaluationPanel 的 props（响应式） */
+  /** Props for EvaluationPanel (reactive) */
   panelProps: ComputedRef<{
     show: boolean
     isEvaluating: boolean
@@ -154,10 +154,10 @@ export interface UseEvaluationHandlerReturn {
 }
 
 /**
- * 评估处理器 Composable
+ * Evaluation handler composable
  *
- * @param options 配置选项
- * @returns 评估处理器接口
+ * @param options Config options
+ * @returns Evaluation handler interface
  *
  * @example
  * ```ts
@@ -170,7 +170,7 @@ export interface UseEvaluationHandlerReturn {
  *   evaluationModelKey: computed(() => modelManager.selectedOptimizeModel),
  * })
  *
- * // 在 TestAreaPanel 中使用
+ * // Use in TestAreaPanel
  * <TestAreaPanel
  *   v-bind="evaluationHandler.testAreaEvaluationProps.value"
  *   @evaluate-original="evaluationHandler.handlers.onEvaluateOriginal"
@@ -198,8 +198,8 @@ export function useEvaluationHandler(
     persistedResults,
   } = options
 
-  // 使用外部评估实例或创建新的
-  // 当 Workspace 需要共享全局评估状态时，应传入 externalEvaluation
+  // Use the external evaluation instance or create a new one
+  // When the Workspace needs to share the global evaluation state, externalEvaluation should be passed in
   const evaluation = externalEvaluation ?? useEvaluation(services, {
     evaluationModelKey,
     functionMode,
@@ -241,7 +241,7 @@ export function useEvaluationHandler(
   }
 
   /**
-   * 执行评估
+   * Run an evaluation
    */
   const handleEvaluate = async (
     type: EvaluationType,
@@ -254,7 +254,7 @@ export function useEvaluationHandler(
     const context = proContext?.value
     const userFeedback = options?.userFeedback?.trim() || ''
 
-    // 🔧 预先计算 trim 结果，避免重复调用
+    // 🔧 Precompute the trim result to avoid repeated calls
     const originalTrimmed = original?.trim()
     const optimizedTrimmed = optimized?.trim()
     const shouldPassOriginal =
@@ -290,9 +290,9 @@ export function useEvaluationHandler(
         userFeedback: userFeedback || undefined,
       })
     } else if (type === 'prompt-only') {
-      // 仅提示词评估（无需测试结果）
-      // 🔧 如果原始和优化内容一致，说明是分析模式，不传 originalPrompt
-      // 让评估聚焦在提示词本身，避免"优化前后无变化"的误判
+      // Prompt-only evaluation (no test results needed)
+      // 🔧 If the original and optimized content are identical, this is analysis mode and originalPrompt is not passed
+      // Let the evaluation focus on the prompt itself, avoiding a "no change before and after optimization" misjudgment
       await evaluation.evaluatePromptOnly({
         originalPrompt: shouldPassOriginal ? original : '',
         optimizedPrompt: optimized,
@@ -300,11 +300,11 @@ export function useEvaluationHandler(
         userFeedback: userFeedback || undefined,
       })
     } else if (type === 'prompt-iterate') {
-      // 带迭代需求的提示词评估
+      // Prompt evaluation with an iteration requirement
       const iterateRequirement = currentIterateRequirement?.value?.trim() || ''
       if (!iterateRequirement) {
-        // 迭代需求为空时，降级为 prompt-only 评估
-        // 🔧 同样处理分析模式场景
+        // When the iteration requirement is empty, degrade to a prompt-only evaluation
+        // 🔧 Handle the analysis mode scenario the same way
         await evaluation.evaluatePromptOnly({
           originalPrompt: shouldPassOriginal ? original : '',
           optimizedPrompt: optimized,
@@ -312,7 +312,7 @@ export function useEvaluationHandler(
           userFeedback: userFeedback || undefined,
         })
       } else {
-        // 🔧 迭代评估同样处理分析模式场景
+        // 🔧 Iterative evaluation handles the analysis mode scenario the same way
         await evaluation.evaluatePromptIterate({
           originalPrompt: shouldPassOriginal ? original : '',
           optimizedPrompt: optimized,
@@ -332,10 +332,10 @@ export function useEvaluationHandler(
   }
 
   /**
-   * 重新评估（从详情面板触发）
-   * 规则：始终使用“当前业务状态”重新组装请求并执行一次评估
+   * Re-evaluate (triggered from the details panel)
+   * Rule: always reassemble the request from the "current business state" and run one evaluation
    *
-   * 说明：该策略不保存/重放 lastRequest，且不会隐式复用历史反馈。
+   * Note: this strategy does not save/replay lastRequest, and does not implicitly reuse historical feedback.
    */
   const handleReEvaluate = async (): Promise<void> => {
     const currentType = evaluation.state.activeDetailType
@@ -352,7 +352,7 @@ export function useEvaluationHandler(
   }
 
   /**
-   * 事件处理器
+   * Event handlers
    */
   const handlers = {
     onEvaluateOriginal: () => handleEvaluate('original'),
@@ -364,7 +364,7 @@ export function useEvaluationHandler(
   }
 
   /**
-   * TestAreaPanel 评估相关 props
+   * Evaluation-related props for TestAreaPanel
    */
   const testAreaEvaluationProps = computed(() => ({
     showEvaluation: true,
@@ -376,7 +376,7 @@ export function useEvaluationHandler(
     optimizedScore: evaluation.optimizedScore.value,
     hasOriginalEvaluation: evaluation.hasOriginalResult.value,
     hasOptimizedEvaluation: evaluation.hasOptimizedResult.value,
-    // 新增：评估结果和等级，用于悬浮预览
+    // New: evaluation results and grades, used for the hover preview
     originalEvaluationResult: evaluation.state.original.result,
     optimizedEvaluationResult: evaluation.state.optimized.result,
     originalScoreLevel: evaluation.originalLevel.value,
@@ -384,7 +384,7 @@ export function useEvaluationHandler(
   }))
 
   /**
-   * 对比评估相关
+   * Compare evaluation-related
    */
   const compareEvaluation = {
     hasCompareResult: evaluation.hasCompareResult,
@@ -426,9 +426,9 @@ export function useEvaluationHandler(
   })
 
   /**
-   * 测试前清空评估结果
-   * 应在执行测试前调用，确保旧的评估结果不会残留
-   * 注：只清除测试相关的评估（original/optimized/compare），保留左侧提示词评估（prompt-only/prompt-iterate）
+   * Clear the evaluation results before testing
+   * Should be called before running a test, to make sure old evaluation results do not linger
+   * Note: only clears the test-related evaluations (original/optimized/compare), keeping the left-side prompt evaluations (prompt-only/prompt-iterate)
    */
   const clearBeforeTest = (): void => {
     evaluation.clearResult('original')
@@ -437,11 +437,11 @@ export function useEvaluationHandler(
   }
 
   /**
-   * 创建应用改进建议的处理器
-   * 关闭评估面板并打开迭代弹窗，将改进建议预填充
+   * Create a handler for applying improvement suggestions
+   * Closes the evaluation panel and opens the iterate dialog, prefilling the improvement suggestions
    *
-   * @param promptPanelRef PromptPanel 组件引用
-   * @returns 处理函数，可直接绑定到 @apply-improvement 事件
+   * @param promptPanelRef PromptPanel component reference
+   * @returns A handler function that can be bound directly to the @apply-improvement event
    */
   const createApplyImprovementHandler = (
     promptPanelRef: Ref<PromptPanelRef | null>
@@ -449,10 +449,10 @@ export function useEvaluationHandler(
     return (payload: { improvement: string; type: EvaluationType }): void => {
       const { improvement } = payload
 
-      // 关闭评估面板
+      // Close the evaluation panel
       evaluation.closePanel()
 
-      // 打开迭代弹窗并预填充改进建议
+      // Open the iterate dialog and prefill the improvement suggestions
       if (promptPanelRef.value?.openIterateDialog) {
         promptPanelRef.value.openIterateDialog(improvement)
       }

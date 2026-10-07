@@ -3,13 +3,13 @@ import { computed, readonly, type Ref, type ComputedRef } from 'vue'
 import type { OptimizationMode } from '@prompt-optimizer/core'
 
 export interface TestModeConfigOptions {
-  // 是否启用高级模式功能
+  // Whether to enable advanced mode features
   enableAdvancedFeatures?: boolean
   
-  // 自定义模式配置
+  // Custom mode config
   customModeConfig?: Partial<TestModeConfigMap>
   
-  // 默认配置覆盖
+  // Default config overrides
   defaultOverrides?: {
     showTestInput?: boolean
     enableCompareMode?: boolean
@@ -18,25 +18,25 @@ export interface TestModeConfigOptions {
 }
 
 export interface TestModeConfig {
-  // 显示控制
+  // Display control
   showTestInput: boolean
   showConversationManager: boolean
   
-  // 功能开关
+  // Feature toggles
   enableCompareMode: boolean
   enableFullscreen: boolean
   
-  // UI配置
+  // UI config
   inputMode: 'compact' | 'normal'
   controlBarLayout: 'default' | 'compact' | 'minimal'
   
-  // 文本配置
+  // Text config
   inputLabel: string
   inputPlaceholder: string
   inputHelpText: string
   primaryButtonText: string
   
-  // 验证配置
+  // Validation config
   requiresTestContent: boolean
   canStartTest: (testContent: string, hasPrompt: boolean) => boolean
 }
@@ -58,28 +58,28 @@ export function useTestModeConfig(
     defaultOverrides
   } = options
 
-  // 默认模式配置
+  // Default mode config
   const defaultModeConfigs: TestModeConfigMap = {
     system: {
-      // 显示控制
-      showTestInput: true, // 系统提示词模式需要测试输入
+      // Display control
+      showTestInput: true, // System prompt mode needs test input
       showConversationManager: enableAdvancedFeatures,
       
-      // 功能开关
+      // Feature toggles
       enableCompareMode: true,
       enableFullscreen: true,
       
-      // UI配置
+      // UI config
       inputMode: 'normal',
       controlBarLayout: 'default',
       
-      // 文本配置
+      // Text config
       inputLabel: 'test.content',
       inputPlaceholder: 'test.placeholder', 
       inputHelpText: 'test.simpleMode.help',
       primaryButtonText: 'test.startTest',
       
-      // 验证配置
+      // Validation config
       requiresTestContent: true,
       canStartTest: (testContent: string, hasPrompt: boolean) => {
         return hasPrompt && testContent.trim() !== ''
@@ -87,33 +87,33 @@ export function useTestModeConfig(
     },
     
     user: {
-      // 显示控制
-      showTestInput: false, // 用户提示词模式不需要额外测试输入
+      // Display control
+      showTestInput: false, // User prompt mode needs no extra test input
       showConversationManager: enableAdvancedFeatures,
       
-      // 功能开关
+      // Feature toggles
       enableCompareMode: true,
       enableFullscreen: true,
       
-      // UI配置
+      // UI config
       inputMode: 'normal',
       controlBarLayout: 'default',
       
-      // 文本配置
+      // Text config
       inputLabel: 'test.userPromptTest',
       inputPlaceholder: '',
       inputHelpText: '',
       primaryButtonText: 'test.startTest',
       
-      // 验证配置
+      // Validation config
       requiresTestContent: false,
       canStartTest: (testContent: string, hasPrompt: boolean) => {
-        return hasPrompt // 只需要有提示词即可
+        return hasPrompt // Only a prompt is required
       }
     }
   }
 
-  // 合并自定义配置
+  // Merge the custom config
   const modeConfigs = computed(() => {
     const merged = { ...defaultModeConfigs }
     
@@ -126,7 +126,7 @@ export function useTestModeConfig(
       })
     }
     
-    // 应用默认覆盖
+    // Apply the default overrides
     if (defaultOverrides) {
       Object.keys(merged).forEach(mode => {
         const modeKey = mode as keyof TestModeConfigMap
@@ -137,12 +137,12 @@ export function useTestModeConfig(
     return merged
   })
 
-  // 当前模式配置
+  // Current mode config
   const currentModeConfig = computed<TestModeConfig>(() => {
     return modeConfigs.value[optimizationMode.value] || modeConfigs.value.system
   })
 
-  // 关键计算属性：解决接口冗余问题
+  // Key computed property: solves the interface redundancy problem
   const showTestInput = computed(() => currentModeConfig.value.showTestInput)
   
   const showConversationManager = computed(() => currentModeConfig.value.showConversationManager)
@@ -151,12 +151,12 @@ export function useTestModeConfig(
   
   const enableFullscreen = computed(() => currentModeConfig.value.enableFullscreen)
 
-  // UI 配置
+  // UI config
   const inputMode = computed(() => currentModeConfig.value.inputMode)
   
   const controlBarLayout = computed(() => currentModeConfig.value.controlBarLayout)
 
-  // 文本配置
+  // Text config
   const inputLabel = computed(() => currentModeConfig.value.inputLabel)
   
   const inputPlaceholder = computed(() => currentModeConfig.value.inputPlaceholder)
@@ -165,44 +165,44 @@ export function useTestModeConfig(
   
   const primaryButtonText = computed(() => currentModeConfig.value.primaryButtonText)
 
-  // 验证相关
+  // Validation-related
   const requiresTestContent = computed(() => currentModeConfig.value.requiresTestContent)
 
-  // 测试启动验证
+  // Test start validation
   const canStartTest = computed(() => {
     return (testContent: string, hasPrompt: boolean) => {
       return currentModeConfig.value.canStartTest(testContent, hasPrompt)
     }
   })
 
-  // 模式特定的帮助信息
+  // Mode-specific help info
   const getModeHelpInfo = computed(() => {
     switch (optimizationMode.value) {
       case 'system':
         return {
-          title: '系统提示词测试模式',
-          description: '在此模式下，原始/优化提示词作为系统消息，您需要提供用户问题进行测试。',
-          requirements: ['需要提供测试内容作为用户问题', '支持对比测试原始和优化版本'],
-          features: ['智能输入框', '对比模式', '全屏编辑', '高级对话管理']
+          title: 'System Prompt Test Mode',
+          description: 'In this mode, the original/optimized prompt is used as the system message, and you need to provide a user question for testing.',
+          requirements: ['Test content must be provided as the user question', 'Supports comparing the original and optimized versions'],
+          features: ['Smart input box', 'Compare mode', 'Fullscreen editing', 'Advanced conversation management']
         }
       case 'user':
         return {
-          title: '用户提示词测试模式', 
-          description: '在此模式下，原始/优化提示词直接作为用户消息进行测试。',
-          requirements: ['无需额外测试内容', '直接测试提示词效果'],
-          features: ['简化界面', '对比模式', '全屏编辑', '高级对话管理']
+          title: 'User Prompt Test Mode',
+          description: 'In this mode, the original/optimized prompt is tested directly as the user message.',
+          requirements: ['No extra test content needed', 'Test the prompt effect directly'],
+          features: ['Simplified interface', 'Compare mode', 'Fullscreen editing', 'Advanced conversation management']
         }
       default:
         return {
-          title: '未知模式',
-          description: '当前模式配置不正确',
+          title: 'Unknown Mode',
+          description: 'The current mode configuration is incorrect',
           requirements: [],
           features: []
         }
     }
   })
 
-  // 动态按钮文本
+  // Dynamic button text
   const getDynamicButtonText = (isCompareMode: boolean, isLoading: boolean) => {
     if (isLoading) return 'test.testing'
     
@@ -213,16 +213,16 @@ export function useTestModeConfig(
     return baseText
   }
 
-  // 验证辅助函数
+  // Validation helper function
   const validateTestSetup = (testContent: string, hasPrompt: boolean) => {
     const errors: string[] = []
     
     if (!hasPrompt) {
-      errors.push('需要提供提示词')
+      errors.push('A prompt is required')
     }
     
     if (requiresTestContent.value && !testContent.trim()) {
-      errors.push('需要提供测试内容')
+      errors.push('Test content is required')
     }
     
     return {
@@ -231,12 +231,12 @@ export function useTestModeConfig(
     }
   }
 
-  // 获取特定模式的配置
+  // Get the config of a specific mode
   const getModeConfig = (mode: OptimizationMode): TestModeConfig => {
     return modeConfigs.value[mode] || modeConfigs.value.system
   }
 
-  // 检查模式切换的兼容性
+  // Check the compatibility of a mode switch
   const checkModeCompatibility = (fromMode: OptimizationMode, toMode: OptimizationMode) => {
     const fromConfig = getModeConfig(fromMode)
     const toConfig = getModeConfig(toMode)
@@ -249,34 +249,34 @@ export function useTestModeConfig(
   }
 
   return {
-    // 核心配置
+    // Core config
     currentModeConfig: readonly(currentModeConfig),
     modeConfigs: readonly(modeConfigs),
     
-    // 关键计算属性
+    // Key computed properties
     showTestInput: readonly(showTestInput),
     showConversationManager: readonly(showConversationManager),
     enableCompareMode: readonly(enableCompareMode),
     enableFullscreen: readonly(enableFullscreen),
     
-    // UI 配置
+    // UI config
     inputMode: readonly(inputMode),
     controlBarLayout: readonly(controlBarLayout),
     
-    // 文本配置
+    // Text config
     inputLabel: readonly(inputLabel),
     inputPlaceholder: readonly(inputPlaceholder), 
     inputHelpText: readonly(inputHelpText),
     primaryButtonText: readonly(primaryButtonText),
     
-    // 验证配置
+    // Validation config
     requiresTestContent: readonly(requiresTestContent),
     canStartTest: readonly(canStartTest),
     
-    // 帮助信息
+    // Help info
     getModeHelpInfo: readonly(getModeHelpInfo),
     
-    // 工具函数
+    // Utility functions
     getDynamicButtonText,
     validateTestSetup,
     getModeConfig,

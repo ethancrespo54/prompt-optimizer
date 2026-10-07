@@ -1,15 +1,15 @@
 /**
- * Basic 模式工作区业务逻辑（通用）
+ * Basic mode workspace business logic (shared)
  *
- * 职责：
- * - 提取 BasicSystemWorkspace 和 BasicUserWorkspace 的共享业务逻辑
- * - 参数化 session store 和优化/迭代模板类型
- * - 优化、迭代、测试、版本管理、评估等核心功能
+ * Responsibilities:
+ * - Extract the business logic shared by BasicSystemWorkspace and BasicUserWorkspace
+ * - Parameterize the session store and the optimize/iterate template types
+ * - Core features such as optimization, iteration, testing, version management, and evaluation
  *
- * @param services - AppServices 实例
- * @param sessionStore - Session store（BasicSystemSession 或 BasicUserSession）
- * @param optimizationMode - 优化模式（'system' | 'user'）
- * @param templateType - 优化模板类型（'optimize' | 'userOptimize'）
+ * @param services - AppServices instance
+ * @param sessionStore - Session store (BasicSystemSession or BasicUserSession)
+ * @param optimizationMode - Optimization mode ('system' | 'user')
+ * @param templateType - Optimization template type ('optimize' | 'userOptimize')
  */
 import { ref, computed, type Ref, type ComputedRef } from 'vue'
 import type { AppServices } from '../../types/services'
@@ -73,18 +73,18 @@ export function useBasicWorkspaceLogic(options: UseBasicWorkspaceLogicOptions) {
   const toast = useToast()
   const { t } = useI18n()
 
-  // 过程态状态
+  // Transient state
   const isOptimizing = ref(false)
   const isIterating = ref(false)
   const isTestingOriginal = ref(false)
   const isTestingOptimized = ref(false)
 
-  // 历史管理专用 ref（不写入 session store）
+  // Ref dedicated to history management (not written to the session store)
   const currentChainId = ref('')
   const currentVersions = ref<PromptRecordChain['versions']>([])
   const currentVersionId = ref('')
 
-  // 状态代理（从 session store 读取）
+  // State proxy (read from the session store)
   const prompt = computed<string>({
     get: () => sessionStore.prompt || '',
     set: (value) => sessionStore.updatePrompt(value || '')
@@ -121,8 +121,8 @@ export function useBasicWorkspaceLogic(options: UseBasicWorkspaceLogicOptions) {
 
   const testResults = computed<BasicSessionStore['testResults']>({
     get: () => {
-      // ✅ 关键修复：始终返回 sessionStore.testResults（即使是 null/undefined）
-      // 避免返回临时对象导致响应式追踪失效
+      // ✅ Key fix: always return sessionStore.testResults (even if null/undefined)
+      // Avoid returning a temporary object, which would break reactive tracking
       return sessionStore.testResults
     },
     set: (value) => {
@@ -150,10 +150,10 @@ export function useBasicWorkspaceLogic(options: UseBasicWorkspaceLogicOptions) {
     set: (value) => sessionStore.updateIterateTemplate(value)
   })
 
-  // ==================== 核心业务逻辑 ====================
+  // ==================== Core business logic ====================
 
   /**
-   * 1. 优化提示词
+   * 1. Optimize the prompt
    */
   const handleOptimize = async () => {
     if (!prompt.value?.trim() || isOptimizing.value) return
@@ -178,7 +178,7 @@ export function useBasicWorkspaceLogic(options: UseBasicWorkspaceLogicOptions) {
 
     isOptimizing.value = true
 
-    // 清理历史绑定，避免“旧 chainId/versionId”污染本次优化过程态
+    // Clear the history binding to avoid the "old chainId/versionId" polluting this optimization's transient state
     sessionStore.updateOptimizedResult({
       optimizedPrompt: '',
       reasoning: '',
@@ -234,11 +234,11 @@ export function useBasicWorkspaceLogic(options: UseBasicWorkspaceLogicOptions) {
               onOptimizeComplete?.(chain)
               toast.success(t('toast.success.optimizeSuccess'))
             } catch (error) {
-              console.error('[useBasicWorkspaceLogic] 创建历史记录失败:', error)
+              console.error('[useBasicWorkspaceLogic] Failed to create the history record:', error)
               currentVersions.value = []
               currentChainId.value = ''
               currentVersionId.value = ''
-              // 清理绑定，避免残留旧 chainId/versionId
+              // Clear the binding to avoid leaving the old chainId/versionId behind
               sessionStore.updateOptimizedResult({
                 optimizedPrompt: optimizedPrompt.value,
                 reasoning: optimizedReasoning.value,
@@ -251,7 +251,7 @@ export function useBasicWorkspaceLogic(options: UseBasicWorkspaceLogicOptions) {
             currentVersions.value = []
             currentChainId.value = ''
             currentVersionId.value = ''
-            // 无历史服务：确保 session 不残留旧 chainId/versionId
+            // No history service: make sure the session does not retain the old chainId/versionId
             sessionStore.updateOptimizedResult({
               optimizedPrompt: optimizedPrompt.value,
               reasoning: optimizedReasoning.value,
@@ -279,7 +279,7 @@ export function useBasicWorkspaceLogic(options: UseBasicWorkspaceLogicOptions) {
   }
 
   /**
-   * 2. 迭代优化
+   * 2. Iterative optimization
    */
   const handleIterate = async (payload: IteratePayload) => {
     if (!optimizedPrompt.value?.trim() || isIterating.value) return
@@ -332,7 +332,7 @@ export function useBasicWorkspaceLogic(options: UseBasicWorkspaceLogicOptions) {
             try {
               const chainId = currentChainId.value || sessionStore.chainId || ''
 
-              // 如果当前没有链（例如：历史服务存在但此前未写入/被清空），先创建新链再继续
+              // If there is currently no chain (for example: the history service exists but nothing was written before / it was cleared), create a new chain first and then continue
               const chain = chainId
                 ? await historyManager.addIteration({
                     chainId,
@@ -367,7 +367,7 @@ export function useBasicWorkspaceLogic(options: UseBasicWorkspaceLogicOptions) {
               onIterateComplete?.(chain)
               toast.success(t('toast.success.iterateComplete'))
             } catch (error) {
-              console.error('[useBasicWorkspaceLogic] 保存迭代记录失败:', error)
+              console.error('[useBasicWorkspaceLogic] Failed to save the iteration record:', error)
               currentVersions.value = []
               currentChainId.value = ''
               currentVersionId.value = ''
@@ -412,7 +412,7 @@ export function useBasicWorkspaceLogic(options: UseBasicWorkspaceLogicOptions) {
   }
 
   /**
-   * 3. 测试提示词
+   * 3. Test the prompt
    */
   const handleTest = async (_testVariables?: Record<string, string>) => {
     void _testVariables
@@ -436,16 +436,16 @@ export function useBasicWorkspaceLogic(options: UseBasicWorkspaceLogicOptions) {
     const isCompareMode = !!sessionStore.isCompareMode
     const testInput = testContent.value || ''
 
-    // system 模式：必须有测试输入
+    // system mode: test input is required
     if (optimizationMode === 'system' && !testInput.trim()) {
       toast.error(t('test.simpleMode.help'))
       return
     }
 
-    // 🔧 先清空 session store 的 testResults（避免旧数据影响新测试）
+    // 🔧 Clear the session store's testResults first (to avoid old data affecting the new test)
     sessionStore.updateTestResults(null)
 
-    // 初始化测试结果
+    // Initialize the test results
     testResults.value = {
       originalResult: '',
       originalReasoning: '',
@@ -454,7 +454,7 @@ export function useBasicWorkspaceLogic(options: UseBasicWorkspaceLogicOptions) {
     }
 
     try {
-      // 对比模式：先测试原始提示词
+      // Compare mode: test the original prompt first
       if (isCompareMode) {
         isTestingOriginal.value = true
         const systemPrompt = optimizationMode === 'system' ? prompt.value : ''
@@ -486,7 +486,7 @@ export function useBasicWorkspaceLogic(options: UseBasicWorkspaceLogicOptions) {
         )
       }
 
-      // 测试优化后的提示词
+      // Test the optimized prompt
       isTestingOptimized.value = true
       const optimizedSystemPrompt = optimizationMode === 'system' ? optimizedPrompt.value : ''
       const optimizedUserPrompt = optimizationMode === 'system' ? testInput : optimizedPrompt.value
@@ -530,9 +530,9 @@ export function useBasicWorkspaceLogic(options: UseBasicWorkspaceLogicOptions) {
   }
 
   /**
-   * 3.5 保存本地编辑为新版本（不触发 LLM）
-   * - 将当前编辑后的 optimizedPrompt 写入历史链
-   * - 清空 reasoning（避免误用旧的推理内容）
+   * 3.5 Save local edits as a new version (does not trigger the LLM)
+   * - Write the currently edited optimizedPrompt into the history chain
+   * - Clear reasoning (to avoid misusing old reasoning content)
    */
   const handleSaveLocalEdit = async (payload: { optimizedPrompt: string; note?: string; source?: 'patch' | 'manual' }) => {
     const historyManager = services.value?.historyManager
@@ -602,13 +602,13 @@ export function useBasicWorkspaceLogic(options: UseBasicWorkspaceLogicOptions) {
       onLocalEditComplete?.(chain)
       toast.success(t('toast.success.localEditSaved'))
     } catch (error) {
-      console.error('[useBasicWorkspaceLogic] 保存本地编辑失败:', error)
+      console.error('[useBasicWorkspaceLogic] Failed to save local edits:', error)
       toast.warning(t('toast.warning.saveHistoryFailed'))
     }
   }
 
   /**
-   * 4. 切换版本
+   * 4. Switch version
    */
   const handleSwitchVersion = (version: PromptRecord) => {
     if (!version?.id) return
@@ -627,7 +627,7 @@ export function useBasicWorkspaceLogic(options: UseBasicWorkspaceLogicOptions) {
   }
 
   /**
-   * 5. 加载版本列表
+   * 5. Load the version list
    */
   const loadVersions = async () => {
     const historyManager = services.value?.historyManager
@@ -652,7 +652,7 @@ export function useBasicWorkspaceLogic(options: UseBasicWorkspaceLogicOptions) {
       currentChainId.value = chain.chainId
       currentVersionId.value = sessionStore.versionId || chain.currentRecord.id
     } catch (error) {
-      console.error('[useBasicWorkspaceLogic] 加载版本失败:', error)
+      console.error('[useBasicWorkspaceLogic] Failed to load versions:', error)
       currentVersions.value = []
       currentChainId.value = ''
       currentVersionId.value = ''
@@ -660,7 +660,7 @@ export function useBasicWorkspaceLogic(options: UseBasicWorkspaceLogicOptions) {
   }
 
   return {
-    // 状态代理
+    // State proxy
     prompt,
     optimizedPrompt,
     optimizedReasoning,
@@ -671,18 +671,18 @@ export function useBasicWorkspaceLogic(options: UseBasicWorkspaceLogicOptions) {
     selectedTemplateId,
     selectedIterateTemplateId,
 
-    // 过程态
+    // Transient state
     isOptimizing,
     isIterating,
     isTestingOriginal,
     isTestingOptimized,
 
-    // 历史管理
+    // History management
     currentChainId,
     currentVersions,
     currentVersionId,
 
-    // 业务逻辑
+    // Business logic
     handleOptimize,
     handleIterate,
     handleTest,

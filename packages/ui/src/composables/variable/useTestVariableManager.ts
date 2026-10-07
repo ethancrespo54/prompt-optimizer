@@ -1,7 +1,7 @@
 /**
- * 测试变量管理 Composable
+ * Test variable management composable
  *
- * 用于测试面板的变量管理，包含 UI 交互逻辑
+ * Used for variable management in the test panel, including UI interaction logic
  */
 
 import { ref, computed, watch, type Ref } from 'vue'
@@ -16,19 +16,19 @@ interface TestVariable {
 }
 
 export interface TestVariableManagerOptions {
-  /** 全局变量（持久化） */
+  /** Global variables (persisted) */
   globalVariables: Ref<Record<string, string>>
-  /** 预定义变量（内置） */
+  /** Predefined variables (built in) */
   predefinedVariables: Ref<Record<string, string>>
-  /** 临时变量（从外部同步） */
+  /** Temporary variables (synced from outside) */
   temporaryVariables: Ref<Record<string, string>>
-  /** 变量值变化回调 */
+  /** Variable value change callback */
   onVariableChange?: (name: string, value: string) => void
-  /** 保存到全局回调 */
+  /** Save-to-global callback */
   onSaveToGlobal?: (name: string, value: string) => void
-  /** 删除变量回调 */
+  /** Delete variable callback */
   onVariableRemove?: (name: string) => void
-  /** 清空所有变量回调 */
+  /** Clear-all-variables callback */
   onVariablesClear?: () => void
 }
 
@@ -39,16 +39,16 @@ export function useTestVariableManager(options: TestVariableManagerOptions) {
   const hasOwn = (obj: Record<string, unknown>, key: string) =>
     Object.prototype.hasOwnProperty.call(obj, key)
 
-  // 添加变量对话框状态
+  // Add variable dialog state
   const showAddVariableDialog = ref(false)
   const newVariableName = ref('')
   const newVariableValue = ref('')
   const newVariableNameError = ref('')
 
-  // 内部测试变量（带时间戳）
+  // Internal test variables (with timestamps)
   const testVariables = ref<Record<string, TestVariable>>({})
 
-  // 监听外部临时变量变化
+  // Watch external temporary variable changes
   watch(
     () => options.temporaryVariables.value,
     (newVars) => {
@@ -70,7 +70,7 @@ export function useTestVariableManager(options: TestVariableManagerOptions) {
     { deep: true, immediate: true }
   )
 
-  // 三层变量合并（优先级：全局 < 临时 < 预定义）
+  // Merge the three layers of variables (priority: global < temporary < predefined)
   const mergedVariables = computed(() => {
     const testVarsFlat: Record<string, string> = {}
     for (const [name, data] of Object.entries(testVariables.value)) {
@@ -84,14 +84,14 @@ export function useTestVariableManager(options: TestVariableManagerOptions) {
     }
   })
 
-  // 按时间排序的变量列表
+  // Variable list sorted by time
   const sortedVariables = computed(() => {
     return Object.entries(testVariables.value)
       .sort((a, b) => b[1].timestamp - a[1].timestamp)
       .map(([name]) => name)
   })
 
-  // 获取变量来源
+  // Get the variable source
   const getVariableSource = (
     varName: string
   ): 'predefined' | 'test' | 'global' | 'empty' => {
@@ -104,12 +104,12 @@ export function useTestVariableManager(options: TestVariableManagerOptions) {
     return 'empty'
   }
 
-  // 获取变量显示值
+  // Get the variable display value
   const getVariableDisplayValue = (varName: string): string => {
     return mergedVariables.value[varName] || ''
   }
 
-  // 获取变量占位符
+  // Get the variable placeholder
   const getVariablePlaceholder = (varName: string): string => {
     if (hasOwn(options.predefinedVariables.value, varName)) {
       return t('test.variables.inputPlaceholder') + ` (${t('variables.source.predefined')})`
@@ -128,7 +128,7 @@ export function useTestVariableManager(options: TestVariableManagerOptions) {
     return t('test.variables.inputPlaceholder')
   }
 
-  // 验证变量名
+  // Validate the variable name
   const validateVariableName = (name: string): string => {
     if (!name) return ''
 
@@ -165,14 +165,14 @@ export function useTestVariableManager(options: TestVariableManagerOptions) {
     return ''
   }
 
-  // 验证新变量名
+  // Validate the new variable name
   const validateNewVariableName = () => {
     const name = newVariableName.value.trim()
     newVariableNameError.value = validateVariableName(name)
     return !newVariableNameError.value
   }
 
-  // 变量值变化
+  // Variable value change
   const handleVariableValueChange = (varName: string, value: string) => {
     if (testVariables.value[varName]) {
       testVariables.value[varName].value = value
@@ -182,7 +182,7 @@ export function useTestVariableManager(options: TestVariableManagerOptions) {
     options.onVariableChange?.(varName, value)
   }
 
-  // 添加变量
+  // Add a variable
   const handleAddVariable = () => {
     if (!validateNewVariableName()) {
       if (!newVariableName.value.trim()) {
@@ -202,7 +202,7 @@ export function useTestVariableManager(options: TestVariableManagerOptions) {
     return true
   }
 
-  // 删除变量
+  // Delete a variable
   const handleDeleteVariable = (varName: string) => {
     delete testVariables.value[varName]
 
@@ -216,7 +216,7 @@ export function useTestVariableManager(options: TestVariableManagerOptions) {
     message.success(t('test.variables.deleteSuccess', { name: varName }))
   }
 
-  // 清空所有变量
+  // Clear all variables
   const handleClearAllVariables = () => {
     const removedNames = Object.keys(testVariables.value)
     testVariables.value = {}
@@ -233,7 +233,7 @@ export function useTestVariableManager(options: TestVariableManagerOptions) {
     message.success(t('test.variables.clearSuccess'))
   }
 
-  // 保存到全局
+  // Save to global
   const handleSaveToGlobal = (varName: string) => {
     const varData = testVariables.value[varName]
     if (!varData || !varData.value.trim()) {
@@ -258,12 +258,12 @@ export function useTestVariableManager(options: TestVariableManagerOptions) {
     }
   }
 
-  // 获取所有变量值
+  // Get all variable values
   const getVariableValues = () => {
     return { ...mergedVariables.value }
   }
 
-  // 设置变量值
+  // Set a variable value
   const setVariableValues = (values: Record<string, string>) => {
     for (const [name, value] of Object.entries(values)) {
       options.onVariableChange?.(name, value)
@@ -271,7 +271,7 @@ export function useTestVariableManager(options: TestVariableManagerOptions) {
   }
 
   return {
-    // 状态
+    // State
     showAddVariableDialog,
     newVariableName,
     newVariableValue,
@@ -279,7 +279,7 @@ export function useTestVariableManager(options: TestVariableManagerOptions) {
     sortedVariables,
     mergedVariables,
 
-    // 方法
+    // Methods
     getVariableSource,
     getVariableDisplayValue,
     getVariablePlaceholder,

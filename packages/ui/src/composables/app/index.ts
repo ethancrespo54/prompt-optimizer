@@ -1,14 +1,14 @@
 /**
  * App-level Composables
  *
- * 这些 composables 专门用于 App.vue 级别的复杂业务逻辑，
- * 帮助减少 App.vue 的代码量并提高可维护性。
+ * These composables are dedicated to complex business logic at the App.vue level,
+ * helping reduce the amount of code in App.vue and improve maintainability.
  */
 
 export { useAppHistoryRestore } from './useAppHistoryRestore'
 export { useAppFavorite } from './useAppFavorite'
 
-// 导出类型
+// Export types
 export type {
     AppHistoryRestoreOptions,
     AppHistoryRestoreReturn,

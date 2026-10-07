@@ -23,7 +23,7 @@
     </template>
   </NTreeSelect>
 
-  <!-- 分类管理对话框 -->
+  <!-- Category management dialog -->
   <NModal
     v-if="showManageButton"
     v-model:show="managerVisible"
@@ -49,19 +49,19 @@ import type { AppServices } from '../types/services';
 const { t } = useI18n();
 
 interface Props {
-  /** 当前选中的分类ID */
+  /** Currently selected category ID */
   modelValue?: string;
-  /** 占位符文本 */
+  /** Placeholder text */
   placeholder?: string;
-  /** 是否可清除 */
+  /** Whether clearable */
   clearable?: boolean;
-  /** 是否显示"全部分类"选项(用于筛选场景) */
+  /** Whether to show the "All categories" option (for filtering scenarios) */
   showAllOption?: boolean;
-  /** 是否显示管理按钮 */
+  /** Whether to show the management button */
   showManageButton?: boolean;
-  /** 自定义样式 */
+  /** Custom style */
   style?: string;
-  /** 是否保持菜单宽度一致 */
+  /** Whether to keep the menu width consistent */
   consistentMenuWidth?: boolean;
 }
 
@@ -83,12 +83,12 @@ const emit = defineEmits<{
 
 const services = inject<Ref<AppServices | null> | null>('services', null);
 
-// 内部状态
+// Internal state
 const internalValue = ref(props.modelValue);
 const categories = ref<FavoriteCategory[]>([]);
 const managerVisible = ref(false);
 
-// 计算树状分类选项
+// Compute the tree category options
 const treeOptions = computed<TreeSelectOption[]>(() => {
   const buildTree = (parentId?: string): TreeSelectOption[] => {
     return categories.value
@@ -102,7 +102,7 @@ const treeOptions = computed<TreeSelectOption[]>(() => {
 
   const tree = buildTree(undefined);
 
-  // 如果是筛选模式,添加"全部分类"选项
+  // In filter mode, add the "All categories" option
   if (props.showAllOption) {
     return [
       { label: t('favorites.manager.allCategories'), key: '' },
@@ -113,57 +113,57 @@ const treeOptions = computed<TreeSelectOption[]>(() => {
   return tree;
 });
 
-// 计算样式
+// Compute the style
 const computedStyle = computed(() => props.style);
 
-// 加载分类数据
+// Load category data
 const loadCategories = async () => {
   const servicesValue = services?.value;
   if (!servicesValue?.favoriteManager) {
-    console.warn('收藏管理器未初始化,跳过分类加载');
+    console.warn('Favorite manager is not initialized, skipping category loading');
     return;
   }
 
   try {
     categories.value = await servicesValue.favoriteManager.getCategories();
   } catch (error) {
-    console.error('加载分类失败:', error);
+    console.error('Failed to load categories:', error);
   }
 };
 
-// 处理值变化
+// Handle value changes
 const handleValueChange = (value: string) => {
   internalValue.value = value;
   emit('update:modelValue', value);
   emit('change', value);
 };
 
-// 打开分类管理器
+// Open the category manager
 const handleOpenManager = () => {
   managerVisible.value = true;
 };
 
-// 分类更新后刷新数据
+// Refresh the data after categories are updated
 const handleCategoryUpdated = async () => {
   await loadCategories();
   emit('category-updated');
 };
 
-// 监听外部值变化
+// Watch for external value changes
 watch(() => props.modelValue, (newValue) => {
   if (newValue !== internalValue.value) {
     internalValue.value = newValue;
   }
 });
 
-// 监听服务初始化
+// Watch for service initialization
 watch(() => services?.value?.favoriteManager, (favoriteManager) => {
   if (favoriteManager) {
     loadCategories();
   }
 }, { immediate: true });
 
-// 暴露方法
+// Expose methods
 defineExpose({
   reloadCategories: loadCategories
 });

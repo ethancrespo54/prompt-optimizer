@@ -10,10 +10,10 @@
       :segmented="true"
       @update:show="(value) => !value && close()"
     >
-      <!-- 工具栏（固定） -->
+      <!-- Toolbar (fixed) -->
       <div class="toolbar">
         <NSpace justify="space-between" align="center" :wrap="false">
-          <!-- 左侧：搜索和筛选 -->
+          <!-- Left: search and filters -->
           <NSpace :size="12" align="center" :wrap="false" style="flex: 1; min-width: 0;">
             <NInput
               v-model:value="searchKeyword"
@@ -52,7 +52,7 @@
             </NText>
           </NSpace>
 
-          <!-- 右侧：操作按钮 -->
+          <!-- Right: action buttons -->
           <NSpace :size="8" align="center" :wrap="false">
             <NDropdown
               :options="actionMenuOptions"
@@ -82,7 +82,7 @@
         </NSpace>
       </div>
 
-      <!-- 收藏列表（固定区域，无滚动） -->
+      <!-- Favorites list (fixed area, no scrolling) -->
       <div class="content">
       <template v-if="filteredFavorites.length === 0">
         <n-empty
@@ -98,7 +98,7 @@
       </template>
 
       <template v-else>
-        <!-- 固定网格布局：使用 NGrid 确保卡片大小一致 -->
+        <!-- Fixed grid layout: use NGrid to ensure uniform card sizes -->
         <NGrid :x-gap="20" :y-gap="20" :cols="gridCols">
           <NGridItem v-for="favorite in paginatedFavorites" :key="favorite.id">
             <FavoriteCard
@@ -118,7 +118,7 @@
       </template>
       </div>
 
-      <!-- 分页（固定在底部，始终显示） -->
+      <!-- Pagination (fixed at the bottom, always shown) -->
     <NSpace v-if="filteredFavorites.length > 0" justify="center" class="pagination">
       <NPagination
         v-model:page="currentPage"
@@ -128,12 +128,12 @@
         :page-slot="7"
       >
         <template #prefix="{ itemCount }">
-          <NText depth="3">共 {{ itemCount }} 项</NText>
+          <NText depth="3">{{ itemCount }} items in total</NText>
         </template>
       </NPagination>
     </NSpace>
 
-    <!-- 收藏预览 -->
+    <!-- Favorite preview -->
     <OutputDisplayFullscreen
       v-if="previewFavorite"
       v-model="previewVisible"
@@ -158,7 +158,7 @@
       </template>
     </OutputDisplayFullscreen>
 
-    <!-- 收藏导入 -->
+    <!-- Favorites import -->
     <n-modal
       v-model:show="importState.visible"
       preset="card"
@@ -213,7 +213,7 @@
       </template>
     </n-modal>
 
-    <!-- 收藏编辑对话框 -->
+    <!-- Favorite edit dialog -->
     <SaveFavoriteDialog
       :show="editState.visible"
       mode="edit"
@@ -222,7 +222,7 @@
       @saved="handleFavoriteSaved"
     />
 
-    <!-- 分类管理 -->
+    <!-- Category management -->
     <n-modal
       :show="categoryManagerVisible"
       preset="card"
@@ -234,14 +234,14 @@
       <CategoryManager @category-updated="handleCategoryUpdated" />
     </n-modal>
 
-    <!-- 标签管理 -->
+    <!-- Tag management -->
     <TagManager
       :show="tagManagerVisible"
       @update:show="tagManagerVisible = $event"
       @updated="loadFavorites"
     />
 
-    <!-- 新建/编辑收藏对话框 -->
+    <!-- New/edit favorite dialog -->
     <SaveFavoriteDialog
       :show="createState.visible"
       mode="create"
@@ -327,12 +327,12 @@ const services = inject<Ref<AppServices | null> | null>('services', null);
 
 const message = useToast();
 
-// 初始化默认分类(仅在首次使用时创建)
+// Initialize default categories (created only on first use)
 const { ensureDefaultCategories } = services?.value?.favoriteManager
   ? useFavoriteInitializer(services.value.favoriteManager)
   : { ensureDefaultCategories: async () => {} };
 
-// 响应式数据
+// Reactive data
 const loading = ref(false);
 const favorites = ref<FavoritePrompt[]>([]);
 const categories = ref<FavoriteCategory[]>([]);
@@ -358,27 +358,27 @@ const previewFavorite = ref<FavoritePrompt | null>(null);
 const categoryManagerVisible = ref(false);
 const tagManagerVisible = ref(false);
 
-// 响应式的视口宽度
+// Reactive viewport width
 const viewportWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1280);
 
-// 计算属性
+// Computed properties
 const filteredFavorites = computed(() => {
   let result = favorites.value;
 
-  // 分类过滤（支持树状结构，选中父分类包含所有子分类）
+  // Category filtering (supports a tree structure; selecting a parent category includes all child categories)
   if (selectedCategory.value) {
     const categoryIds = getCategoryWithDescendants(selectedCategory.value);
     result = result.filter(f => !!f.category && categoryIds.includes(f.category));
   }
 
-  // 标签过滤（需要包含所有选中的标签）
+  // Tag filtering (must include all selected tags)
   if (selectedTags.value.length > 0) {
     result = result.filter(f =>
       selectedTags.value.every(tag => f.tags.includes(tag))
     );
   }
 
-  // 关键词搜索
+  // Keyword search
   if (searchKeyword.value) {
     const keyword = searchKeyword.value.toLowerCase();
     result = result.filter(f =>
@@ -399,7 +399,7 @@ const paginatedFavorites = computed(() => {
 
 
 
-// 获取分类及其所有子分类的ID列表
+// Get the list of IDs of a category and all its child categories
 const getCategoryWithDescendants = (categoryId: string): string[] => {
   if (!categoryId) return [];
 
@@ -416,7 +416,7 @@ const getCategoryWithDescendants = (categoryId: string): string[] => {
   return result;
 };
 
-// 标签选项（从所有收藏中提取唯一标签）
+// Tag options (unique tags extracted from all favorites)
 const tagOptions = computed(() => {
   const allTags = new Set<string>();
   favorites.value.forEach(fav => {
@@ -458,10 +458,10 @@ const handleFavoritePreviewUpdated = async (favoriteId: string) => {
   previewFavorite.value = favorites.value.find((favorite) => favorite.id === favoriteId) || null;
 };
 
-// 网格布局配置：根据视口宽度自适应列数
-// 移动端 (< 768px): 1 列
-// 平板 (768-1023px): 2 列
-// 桌面 (>= 1024px): 4 列
+// Grid layout config: adapt the number of columns to the viewport width
+// Mobile (< 768px): 1 column
+// Tablet (768-1023px): 2 columns
+// Desktop (>= 1024px): 4 columns
 const gridCols = computed(() => {
   const width = viewportWidth.value;
   if (width < 768) return 1;
@@ -469,12 +469,12 @@ const gridCols = computed(() => {
   return 4;
 });
 
-// 计算每个卡片的高度：根据列数动态计算
+// Compute the height of each card: computed dynamically based on the number of columns
 const cardHeight = computed(() => {
   const cols = gridCols.value;
-  const rows = cols === 1 ? 4 : 2; // 1列显示4行，其他显示2行
+  const rows = cols === 1 ? 4 : 2; // 4 rows for 1 column, 2 rows otherwise
   const gap = 20; // y-gap
-  const contentPadding = 32; // content 的 padding
+  const contentPadding = 32; // Padding of the content
   const availableHeight = 540 - contentPadding; // 508px
   const totalGapHeight = gap * (rows - 1);
   const availableForCards = availableHeight - totalGapHeight;
@@ -482,7 +482,7 @@ const cardHeight = computed(() => {
   return height;
 });
 
-// 每页显示数量：根据列数和行数计算
+// Items per page: computed from the number of columns and rows
 const pageSize = computed(() => {
   const cols = gridCols.value;
   const rows = cols === 1 ? 4 : 2;
@@ -576,7 +576,7 @@ const tryCopyToClipboard = async (text: string, successMessage: string) => {
     message.success(successMessage);
     return true;
   } catch (error) {
-    console.error('复制失败:', error);
+    console.error('Copy failed:', error);
     message.error(t('favorites.manager.actions.copyFailed'));
     return false;
   }
@@ -591,7 +591,7 @@ const handleCreateFavorite = () => {
   createState.visible = true;
 };
 
-// 收藏保存成功后的回调
+// Callback after a favorite is saved successfully
 const handleFavoriteSaved = async () => {
   await loadFavorites();
   createState.visible = false;
@@ -629,7 +629,7 @@ const handleImportConfirm = async () => {
       try {
         payload = await readFileAsText(file);
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : '未知错误';
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         message.error(`${t('favorites.manager.importDialog.readFileFailed')}: ${errorMessage}`);
         return;
       }
@@ -653,7 +653,7 @@ const handleImportConfirm = async () => {
     await loadFavorites();
     closeImportDialog();
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : '未知错误';
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     message.error(`${t('favorites.manager.importDialog.importFailed')}: ${errorMessage}`);
   } finally {
     importState.importing = false;
@@ -688,7 +688,7 @@ const bumpUseCountLocally = (id: string) => {
   }
 };
 
-// 方法
+// Methods
 const loadFavorites = async () => {
   const servicesValue = services?.value;
   if (!servicesValue) return;
@@ -706,8 +706,8 @@ const loadFavorites = async () => {
       previewFavorite.value = updated ? { ...updated } : null;
     }
   } catch (error) {
-    console.error('加载收藏失败:', error);
-    const errorMessage = error instanceof Error ? error.message : '未知错误';
+    console.error('Failed to load favorites:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     message.error(`${t('favorites.manager.messages.loadFailed')}: ${errorMessage}`);
   } finally {
     loading.value = false;
@@ -725,8 +725,8 @@ const loadCategories = async () => {
   try {
     categories.value = await servicesValue.favoriteManager.getCategories();
   } catch (error) {
-    console.error('加载分类失败:', error);
-    const errorMessage = error instanceof Error ? error.message : '未知错误';
+    console.error('Failed to load categories:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     message.error(`${t('favorites.manager.messages.loadCategoryFailed')}: ${errorMessage}`);
   }
 };
@@ -773,7 +773,7 @@ const handleDeleteFavorite = (favorite: FavoritePrompt) => {
         message.warning(t('favorites.manager.messages.unavailable'));
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '未知错误';
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       message.error(`${t('favorites.manager.actions.deleteFailed')}: ${errorMessage}`);
     }
   })();
@@ -785,7 +785,7 @@ const handleDeleteFavorite = (favorite: FavoritePrompt) => {
 const handleUseFavorite = (favorite: FavoritePrompt) => {
   emit('use-favorite', favorite);
 
-  // 增加使用次数
+  // Increment the usage count
   const servicesValue = services?.value;
   if (servicesValue?.favoriteManager) {
     servicesValue.favoriteManager.incrementUseCount(favorite.id).catch(console.error);
@@ -828,7 +828,7 @@ const handleActionMenuSelect = (key: string) => {
             message.warning(t('favorites.manager.messages.unavailable'));
           }
         } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : '未知错误';
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
           message.error(`${t('favorites.manager.actions.clearFailed')}: ${errorMessage}`);
         }
       })();
@@ -856,7 +856,7 @@ const handleExportFavorites = async () => {
       message.warning(t('favorites.manager.messages.unavailable'));
     }
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : '未知错误';
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     message.error(`${t('favorites.manager.actions.exportFailed')}: ${errorMessage}`);
   }
 };
@@ -903,7 +903,7 @@ const previewDialogTitle = computed(() => {
   return parts.join(' · ');
 });
 
-// 监听服务初始化完成后再加载数据
+// Watch for service initialization to complete before loading data
 watch(() => services?.value?.favoriteManager, (favoriteManager) => {
   if (favoriteManager) {
     loadFavorites();
@@ -911,7 +911,7 @@ watch(() => services?.value?.favoriteManager, (favoriteManager) => {
   }
 }, { immediate: true });
 
-// 🆕 监听收藏夹对话框打开事件，自动刷新数据
+// 🆕 Watch for the favorites dialog open event and refresh data automatically
 watch(() => props.show, (newShow) => {
   if (newShow && services?.value?.favoriteManager) {
     loadFavorites();
@@ -931,7 +931,7 @@ watch(() => editState.visible, (visible) => {
   }
 });
 
-// 窗口大小变化处理
+// Window resize handling
 const handleResize = () => {
   if (typeof window !== 'undefined') {
     viewportWidth.value = window.innerWidth;
@@ -939,10 +939,10 @@ const handleResize = () => {
 };
 const debouncedResize = useDebounceFn(handleResize, 150);
 
-// 生命周期
+// Lifecycle
 onMounted(async () => {
   if (services?.value?.favoriteManager) {
-    // 确保默认分类存在(仅在首次使用时创建)
+    // Ensure default categories exist (created only on first use)
     await ensureDefaultCategories();
     loadFavorites();
     loadCategories();
@@ -965,7 +965,7 @@ defineExpose({
 </script>
 
 <style scoped>
-/* 固定工具栏 */
+/* Fixed toolbar */
 .toolbar {
   @apply p-4 border-b border-gray-200 dark:border-gray-700;
   background: var(--n-color);
@@ -975,22 +975,22 @@ defineExpose({
   @apply ml-1;
 }
 
-/* 小屏幕优化：隐藏按钮文字 */
+/* Small-screen optimization: hide button text */
 @media (max-width: 768px) {
   .button-text {
     @apply hidden;
   }
 }
 
-/* 固定内容区域 */
+/* Fixed content area */
 .content {
   @apply p-4;
-  /* 固定内容区域高度，正好容纳网格 */
-  height: 540px; /* 500px 网格 + 40px padding */
+  /* Fixed content area height, exactly fitting the grid */
+  height: 540px; /* 500px grid + 40px padding */
   overflow: hidden;
 }
 
-/* 分页固定在底部 */
+/* Pagination fixed at the bottom */
 .pagination {
   @apply p-4 border-t border-gray-200 dark:border-gray-700;
   background: var(--n-color);

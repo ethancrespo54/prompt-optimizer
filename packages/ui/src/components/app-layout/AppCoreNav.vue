@@ -1,23 +1,23 @@
 <template>
     <!--
-        App 核心导航组件
+        App core navigation component
 
-        职责:
-        - 功能模式选择器 (Basic / Pro / Image)
-        - 各模式的子模式选择器
+        Responsibilities:
+        - Function mode selector (Basic / Pro / Image)
+        - Sub-mode selectors for each mode
 
-        🔧 路由架构：直接使用 router.push 进行导航
-        - 从路由参数计算当前模式
-        - 导航操作直接调用 router.push
+        🔧 Router architecture: navigate directly with router.push
+        - Compute the current mode from the route parameters
+        - Navigation actions call router.push directly
     -->
     <NSpace :size="12" align="center" data-testid="core-nav">
-        <!-- 功能模式选择器 -->
+        <!-- Function mode selector -->
         <FunctionModeSelector
             :modelValue="functionMode"
             @update:modelValue="handleFunctionModeChange"
         />
 
-        <!-- 子模式选择器 - 基础模式 -->
+        <!-- Sub-mode selector - basic mode -->
         <OptimizationModeSelectorUI
             v-if="functionMode === 'basic'"
             :modelValue="basicSubMode"
@@ -25,7 +25,7 @@
             @change="handleBasicSubModeChange"
         />
 
-        <!-- 子模式选择器 - 上下文模式 -->
+        <!-- Sub-mode selector - context mode -->
         <OptimizationModeSelectorUI
             v-if="functionMode === 'pro'"
             :modelValue="proSubMode"
@@ -33,7 +33,7 @@
             @change="handleProSubModeChange"
         />
 
-        <!-- 子模式选择器 - 图像模式 -->
+        <!-- Sub-mode selector - image mode -->
         <ImageModeSelector
             v-if="functionMode === 'image'"
             :modelValue="imageSubMode"
@@ -44,19 +44,19 @@
 
 <script setup lang="ts">
 /**
- * App 核心导航组件
+ * App core navigation component
  *
  * @description
- * 用于 MainLayoutUI 的 #core-nav slot。
- * 包含功能模式选择器和各模式的子模式选择器。
+ * Used for the #core-nav slot of MainLayoutUI.
+ * Contains the function mode selector and the sub-mode selectors for each mode.
  *
  * @features
- * - 功能模式切换: Basic / Pro / Image
- * - 基础模式子模式: system / user
- * - Pro 模式子模式: multi / variable
- * - 图像模式子模式: text2image / image2image
+ * - Function mode switch: Basic / Pro / Image
+ * - Basic mode sub-modes: system / user
+ * - Pro mode sub-modes: multi / variable
+ * - Image mode sub-modes: text2image / image2image
  *
- * 🔧 路由架构：直接使用 router.push 进行导航
+ * 🔧 Router architecture: navigate directly with router.push
  */
 import { computed } from 'vue'
 import { router as routerInstance } from '../../router'
@@ -69,37 +69,37 @@ import type { FunctionMode, BasicSubMode, ProSubMode, ImageSubMode } from '@prom
 type SubMode = BasicSubMode | ProSubMode
 
 // ========================
-// Router（使用 router 单例，避免注入失败/多实例）
+// Router (uses the router singleton to avoid injection failures / multiple instances)
 // ========================
-// 从当前路由计算模式
+// Compute the mode from the current route
 const functionMode = computed<FunctionMode>(() => {
     const path = routerInstance.currentRoute.value.path
     if (path.startsWith('/basic')) return 'basic'
     if (path.startsWith('/pro')) return 'pro'
     if (path.startsWith('/image')) return 'image'
-    return 'basic' // 默认
+    return 'basic' // Default
 })
 
 const basicSubMode = computed<BasicSubMode>(() => {
     const rawSubMode = routerInstance.currentRoute.value.path.split('/')[2]
 
-    // ✅ 静态路由映射：system 或 user
+    // ✅ Static route mapping: system or user
     if (rawSubMode === 'system' || rawSubMode === 'user') {
         return rawSubMode as BasicSubMode
     }
 
-    return 'system' // 默认值
+    return 'system' // Default value
 })
 
 const proSubMode = computed<ProSubMode>(() => {
     const rawSubMode = routerInstance.currentRoute.value.path.split('/')[2]
 
-    // ✅ 标准值
+    // ✅ Standard values
     if (rawSubMode === 'multi' || rawSubMode === 'variable') {
         return rawSubMode as ProSubMode
     }
 
-    // ✅ 兼容旧路由值：system/user -> multi/variable
+    // ✅ Compatible with legacy route values: system/user -> multi/variable
     if (rawSubMode === 'system') return 'multi'
     if (rawSubMode === 'user') return 'variable'
 
@@ -109,18 +109,18 @@ const proSubMode = computed<ProSubMode>(() => {
 const imageSubMode = computed<ImageSubMode>(() => {
     const rawSubMode = routerInstance.currentRoute.value.path.split('/')[2]
 
-    // ✅ 静态路由映射：text2image 或 image2image
+    // ✅ Static route mapping: text2image or image2image
     if (rawSubMode === 'text2image' || rawSubMode === 'image2image') {
         return rawSubMode as ImageSubMode
     }
 
-    return 'text2image' // 默认值
+    return 'text2image' // Default value
 })
 
 // ========================
-// 导航处理
+// Navigation handling
 // ========================
-// 🔧 各模式的默认子模式（避免跨模式污染）
+// 🔧 Default sub-mode of each mode (avoids cross-mode contamination)
 const DEFAULT_SUB_MODES = {
     basic: 'system',
     pro: 'variable',
@@ -128,8 +128,8 @@ const DEFAULT_SUB_MODES = {
 } as const
 
 const handleFunctionModeChange = (mode: FunctionMode) => {
-    // 切换 functionMode 时使用默认 subMode，避免跨模式污染
-    // 例如：从 /image/text2image 切到 pro，不应使用 text2image（非法）
+    // When switching functionMode, use the default subMode to avoid cross-mode contamination
+    // For example: switching from /image/text2image to pro should not use text2image (invalid)
     const defaultSubMode = DEFAULT_SUB_MODES[mode]
     routerInstance.push(`/${mode}/${defaultSubMode}`)
 }

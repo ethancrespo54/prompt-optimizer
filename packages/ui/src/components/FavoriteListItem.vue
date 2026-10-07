@@ -28,7 +28,7 @@
               <n-button
                 quaternary
                 @click="$emit('copy', favorite)"
-                title="复制"
+                title="Copy"
               >
                 <template #icon>
                   <n-icon><Copy /></n-icon>
@@ -37,7 +37,7 @@
               <n-button
                 quaternary
                 @click="$emit('use', favorite)"
-                title="使用"
+                title="Use"
                 type="primary"
               >
                 <template #icon>
@@ -63,7 +63,7 @@
       <template #footer>
         <div class="item-footer">
           <div class="footer-left">
-            <!-- 标签 -->
+            <!-- Tags -->
             <div v-if="favorite.tags.length > 0" class="item-tags">
               <n-tag
                 v-for="tag in favorite.tags"
@@ -154,22 +154,22 @@ const emit = defineEmits<{
 
 const actionMenuOptions = [
   {
-    label: '编辑',
+    label: 'Edit',
     key: 'edit',
     icon: () => h(NIcon, null, { default: () => h(Edit) })
   },
   {
-    label: '复制',
+    label: 'Copy',
     key: 'copy',
     icon: () => h(NIcon, null, { default: () => h(Copy) })
   },
   {
-    label: '分享',
+    label: 'Share',
     key: 'share',
     icon: () => h(NIcon, null, { default: () => h(Share) })
   },
   {
-    label: '切换分类',
+    label: 'Switch category',
     key: 'category',
     icon: () => h(NIcon, null, { default: () => h(Tag) })
   },
@@ -177,7 +177,7 @@ const actionMenuOptions = [
     type: 'divider'
   },
   {
-    label: '删除',
+    label: 'Delete',
     key: 'delete',
     icon: () => h(NIcon, null, { default: () => h(Trash) })
   }
@@ -193,13 +193,13 @@ const formatDate = (timestamp: number) => {
     const hours = Math.floor(diff / (1000 * 60 * 60));
     if (hours === 0) {
       const minutes = Math.floor(diff / (1000 * 60));
-      return minutes <= 1 ? '刚刚' : `${minutes}分钟前`;
+      return minutes <= 1 ? 'Just now' : `${minutes} minutes ago`;
     }
-    return `${hours}小时前`;
+    return `${hours} hours ago`;
   } else if (days === 1) {
-    return '昨天';
+    return 'Yesterday';
   } else if (days < 7) {
-    return `${days}天前`;
+    return `${days} days ago`;
   } else {
     return date.toLocaleDateString();
   }

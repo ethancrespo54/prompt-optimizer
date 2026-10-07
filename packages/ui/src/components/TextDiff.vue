@@ -1,6 +1,6 @@
 <template>
   <NCard class="text-diff" :style="{ height: '100%' }" :bordered="false" content-style="padding: 0; height: 100%; display: flex; flex-direction: column;">
-    <!-- 统计信息 -->
+    <!-- Statistics -->
     <NFlex v-if="compareResult" justify="flex-end" align="center" :size="8" class="px-3 py-2 border-b" style="flex: 0 0 auto;">
       <NTag v-if="compareResult.summary.additions > 0" type="success" size="small">
         +{{ compareResult.summary.additions }}
@@ -10,9 +10,9 @@
       </NTag>
     </NFlex>
 
-    <!-- 文本内容 -->
+    <!-- Text content -->
     <NScrollbar class="text-diff-content" style="flex: 1; min-height: 0;">
-      <!-- 对比模式：显示高亮的差异 -->
+      <!-- Compare mode: show highlighted differences -->
       <div class="diff-text" v-if="compareResult">
         <span
           v-for="fragment in compareResult.fragments"
@@ -33,17 +33,17 @@ import type { CompareResult, ChangeType } from '@prompt-optimizer/core'
 import { useNaiveTheme } from '../composables/ui/useNaiveTheme'
   
   interface Props {
-    /** 原始文本 */
+    /** Original text */
     originalText: string
-    /** 优化后的文本 */
+    /** Optimized text */
     optimizedText: string
-    /** 对比结果 */
+    /** Compare result */
     compareResult: CompareResult
   }
   
   defineProps<Props>()
 
-// 获取当前主题配置
+// Get the current theme config
 const { themeOverrides } = useNaiveTheme()
 const theme = computed(() => themeOverrides.value)
 
@@ -99,7 +99,7 @@ const getFragmentClass = (type: ChangeType): string => {
   color: v-bind('theme.common?.textColor3 || "#6b7280"');
 }
 
-/* 响应式设计 */
+/* Responsive design */
 @media (max-width: 768px) {
   .diff-text,
   .normal-text {

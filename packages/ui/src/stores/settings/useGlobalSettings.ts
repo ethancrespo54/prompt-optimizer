@@ -1,15 +1,15 @@
 /**
  * Global Settings Store
  *
- * 管理跨会话的全局 UI 配置（Phase 1）。
+ * Manages global UI config across sessions (Phase 1).
  *
- * 设计原则：
- * - 使用 Pinia 统一管理状态边界
- * - 使用 PreferenceService 进行持久化（Web/Electron 统一，异步）
- * - 全量快照存储（单 key）：'global-settings/v1'
+ * Design principles:
+ * - Use Pinia to manage the state boundary uniformly
+ * - Use PreferenceService for persistence (unified for Web/Electron, async)
+ * - Full snapshot storage (single key): 'global-settings/v1'
  *
- * 迁移策略（一次性，restore 时执行）：
- * - 若 'global-settings/v1' 不存在或字段缺失，则从旧的 UI_SETTINGS_KEYS 读取并填充
+ * Migration strategy (one-time, executed at restore):
+ * - If 'global-settings/v1' does not exist or fields are missing, read from the old UI_SETTINGS_KEYS and fill in
  */
 
 import { defineStore } from 'pinia'
@@ -69,12 +69,12 @@ const isImageSubMode = (value: unknown): value is ImageSubMode =>
 
 export const useGlobalSettings = defineStore('globalSettings', () => {
   /**
-   * 全局配置快照（可持久化）
+   * Global settings snapshot (persistable)
    */
   const state: Ref<GlobalSettingsState> = ref(createDefaultState())
 
   /**
-   * restore 标志（防止“默认值 + watch”在 restore 前覆盖持久化内容）
+   * Restore flag (prevents "defaults + watch" from overwriting persisted content before the restore)
    */
   const isInitialized = ref(false)
   const hasRestored = ref(false)
@@ -82,7 +82,7 @@ export const useGlobalSettings = defineStore('globalSettings', () => {
   const isRestoring = ref(false)
 
   /**
-   * 保存互斥（避免并发写入）
+   * Save mutex (avoids concurrent writes)
    */
   const saveInFlight = ref(false)
   const saveQueued = ref(false)
@@ -97,7 +97,7 @@ export const useGlobalSettings = defineStore('globalSettings', () => {
     touch()
   }
 
-  // ✅ 对外统一命名：updateThemeId
+  // ✅ Unified external naming: updateThemeId
   const updateThemeId = (themeId: string) => updateSelectedThemeId(themeId)
 
   const updatePreferredLanguage = (language: string) => {
@@ -141,8 +141,8 @@ export const useGlobalSettings = defineStore('globalSettings', () => {
   }
 
   /**
-   * 保存到持久化存储
-   * 使用 PreferenceService
+   * Save to persistent storage
+   * Uses PreferenceService
    */
   const saveGlobalSettings = async () => {
     if (!hasRestored.value) return
@@ -155,7 +155,7 @@ export const useGlobalSettings = defineStore('globalSettings', () => {
 
     const $services = getPiniaServices()
     if (!$services?.preferenceService) {
-      console.warn('[GlobalSettings] PreferenceService 不可用，无法保存全局配置')
+      console.warn('[GlobalSettings] PreferenceService is unavailable, cannot save the global settings')
       return
     }
 
@@ -167,7 +167,7 @@ export const useGlobalSettings = defineStore('globalSettings', () => {
         await $services.preferenceService.set(STORAGE_KEY, snapshot)
       } while (saveQueued.value)
     } catch (error) {
-      console.error('[GlobalSettings] 保存全局配置失败:', error)
+      console.error('[GlobalSettings] Failed to save the global settings:', error)
     } finally {
       saveInFlight.value = false
     }
@@ -176,9 +176,9 @@ export const useGlobalSettings = defineStore('globalSettings', () => {
   type MigrationMode = 'fill-empty' | 'override-defaults'
 
   /**
-   * 从旧的 UI_SETTINGS_KEYS 迁移
-   * - fill-empty：仅在字段为空/缺失时补齐
-   * - override-defaults：当字段为默认值时允许覆盖（用于首次引入 global-settings/v1 的迁移）
+   * Migrate from the old UI_SETTINGS_KEYS
+   * - fill-empty: only fill in when a field is empty/missing
+   * - override-defaults: allow overriding when a field is at its default value (used for the migration when global-settings/v1 is first introduced)
    */
   const migrateFromUiSettingsKeys = async (mode: MigrationMode) => {
     const $services = getPiniaServices()
@@ -251,17 +251,17 @@ export const useGlobalSettings = defineStore('globalSettings', () => {
         if (isImageSubMode(mode)) state.value.imageSubMode = mode
       }
     } catch (error) {
-      console.warn('[GlobalSettings] 从 UI_SETTINGS_KEYS 迁移失败（忽略）:', error)
+      console.warn('[GlobalSettings] Migration from UI_SETTINGS_KEYS failed (ignored):', error)
     }
   }
 
   /**
-   * 从持久化存储恢复
-   * 使用 PreferenceService
+   * Restore from persistent storage
+   * Uses PreferenceService
    */
   const restoreGlobalSettings = async () => {
-    // 已经完成从持久化恢复：无需重复执行
-    // 注意：isInitialized 仅表示“可用”，不等价于“已从持久化恢复”
+    // Restore from persistence is already done: no need to run it again
+    // Note: isInitialized only means "available", not "already restored from persistence"
     if (hasRestored.value) return
 
     if (restoreInFlight.value) {
@@ -274,10 +274,10 @@ export const useGlobalSettings = defineStore('globalSettings', () => {
       try {
         const $services = getPiniaServices()
         if (!$services?.preferenceService) {
-          // 启动阶段 PreferenceService 可能尚未注入：
-          // - 不在此处输出 console warning（E2E 会将 warning 视为失败）
-          // - 先标记为 initialized，允许路由/界面继续运行（例如 RootBootstrapRoute 跳转到默认工作区）
-          // - 保留 hasRestored=false，以便后续 PreferenceService 注入后可再次恢复
+          // PreferenceService may not be injected yet during startup:
+          // - Do not output a console warning here (E2E treats warnings as failures)
+          // - Mark as initialized first, allowing the router/UI to continue running (e.g. RootBootstrapRoute jumping to the default workspace)
+          // - Keep hasRestored=false so that a restore can run again once PreferenceService is injected
           isInitialized.value = true
           return
         }
@@ -302,7 +302,7 @@ export const useGlobalSettings = defineStore('globalSettings', () => {
             lastActiveAt: Date.now(),
           }
         } else {
-          // 无快照：保留当前内存值（可能已被 legacy localStorage 等写入），并补齐默认字段
+          // No snapshot: keep the current in-memory values (possibly already written by legacy localStorage, etc.) and fill in the default fields
           state.value = {
             ...defaults,
             ...state.value,
@@ -320,20 +320,20 @@ export const useGlobalSettings = defineStore('globalSettings', () => {
           }
         }
 
-        // 迁移：
-        // - 有快照：只补齐空字段
-        // - 无快照：允许覆盖默认值（首次引入 global-settings/v1）
+        // Migration:
+        // - With a snapshot: only fill in empty fields
+        // - Without a snapshot: allow overriding defaults (first introduction of global-settings/v1)
         await migrateFromUiSettingsKeys(saved ? 'fill-empty' : 'override-defaults')
 
         state.value.lastActiveAt = Date.now()
         hasRestored.value = true
         isInitialized.value = true
 
-        // 迁移后落盘一次，确保写入新 key（best-effort）
+        // Persist once after the migration to make sure the new key is written (best-effort)
         await saveGlobalSettings()
       } catch (error) {
-        console.error('[GlobalSettings] 恢复全局配置失败:', error)
-        // 恢复失败时降级为默认值，但不阻止后续继续使用
+        console.error('[GlobalSettings] Failed to restore the global settings:', error)
+        // On a restore failure, degrade to the defaults without blocking continued use
         reset()
         hasRestored.value = true
         isInitialized.value = true
@@ -350,7 +350,7 @@ export const useGlobalSettings = defineStore('globalSettings', () => {
     }
   }
 
-  // 自动持久化：监听 state 变化保存（restore 完成后才生效）
+  // Automatic persistence: watch state changes and save (only effective after the restore completes)
   watch(
     state,
     () => {
@@ -360,16 +360,16 @@ export const useGlobalSettings = defineStore('globalSettings', () => {
   )
 
   return {
-    // 状态
+    // State
     state,
     isInitialized,
     hasRestored,
 
-    // 持久化
+    // Persistence
     saveGlobalSettings,
     restoreGlobalSettings,
 
-    // 更新方法
+    // Update methods
     updateThemeId,
     updateSelectedThemeId, // backward-compatible alias
     updatePreferredLanguage,
@@ -379,7 +379,7 @@ export const useGlobalSettings = defineStore('globalSettings', () => {
     updateProSubMode,
     updateImageSubMode,
 
-    // 工具方法
+    // Utility methods
     reset,
   }
 })

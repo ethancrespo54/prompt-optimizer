@@ -24,7 +24,7 @@ import type {
 } from '@prompt-optimizer/core'
 
 /**
- * 统一的应用服务接口定义
+ * Unified app service interface definition
  */
 export interface AppServices {
   modelManager: IModelManager;
@@ -38,22 +38,22 @@ export interface AppServices {
   compareService: ICompareService;
   contextRepo: ContextRepo;
   favoriteManager: IFavoriteManager;
-  // 🆕 上下文模式（兼容：早期实现可能传 string，当前推荐传 Ref）
+  // 🆕 Context mode (compatible: early implementations may pass a string; passing a Ref is recommended now)
   contextMode: Ref<ContextMode> | ContextMode;
-  // 文本模型适配器注册表（本地实例）
+  // Text model adapter registry (local instance)
   textAdapterRegistry?: ITextAdapterRegistry;
-  // 图像相关（Web 优先，可选）
+  // Image-related (Web first, optional)
   imageModelManager?: IImageModelManager;
   imageService?: IImageService;
   imageAdapterRegistry?: IImageAdapterRegistry;
-  // 🆕 图像存储服务（可选）
+  // 🆕 Image storage service (optional)
   imageStorageService?: IImageStorageService;
-  // 收藏快照图像存储（与 session 图像存储隔离）
+  // Favorite snapshot image storage (isolated from the session image storage)
   favoriteImageStorageService?: IImageStorageService;
-  // 🆕 评估服务（可选）
+  // 🆕 Evaluation service (optional)
   evaluationService?: IEvaluationService;
-  // 🆕 变量提取服务（可选）
+  // 🆕 Variable extraction service (optional)
   variableExtractionService?: IVariableExtractionService;
-  // 🆕 变量值生成服务（可选）
+  // 🆕 Variable value generation service (optional)
   variableValueGenerationService?: IVariableValueGenerationService;
 }

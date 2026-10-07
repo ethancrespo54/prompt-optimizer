@@ -51,7 +51,7 @@
         </NCard>
       </div>
 
-      <!-- 导出功能 -->
+      <!-- Export feature -->
       <div>
         <NText tag="h3" :depth="1" strong style="font-size: 18px; margin-bottom: 12px;">
           {{ $t('dataManager.export.title') }}
@@ -73,7 +73,7 @@
         </NButton>
       </div>
 
-      <!-- 导入功能 -->
+      <!-- Import feature -->
       <div>
         <NText tag="h3" :depth="1" strong style="font-size: 18px; margin-bottom: 12px;">
           {{ $t('dataManager.import.title') }}
@@ -82,7 +82,7 @@
           {{ $t('dataManager.import.description') }}
         </NText>
         
-        <!-- 文件选择区域 -->
+        <!-- File selection area -->
         <NUpload
           :file-list="selectedFile ? [selectedFile] : []"
           accept=".json"
@@ -120,7 +120,7 @@
           </NUploadDragger>
         </NUpload>
 
-        <!-- 导入按钮 -->
+        <!-- Import button -->
         <NButton
           @click="handleImport"
           :disabled="!selectedFile || isImporting"
@@ -136,7 +136,7 @@
         </NButton>
       </div>
 
-      <!-- 上下文导入导出功能 -->
+      <!-- Context import/export feature -->
       <div>
         <NText tag="h3" :depth="1" strong style="font-size: 18px; margin-bottom: 12px;">
           {{ $t('dataManager.contexts.title') }}
@@ -146,7 +146,7 @@
         </NText>
         
         <NSpace vertical :size="12">
-          <!-- 上下文导出 -->
+          <!-- Context export -->
           <NButton
             @click="handleContextExportToFile"
             :disabled="isContextExporting"
@@ -173,8 +173,8 @@
             {{ isContextExporting ? $t('common.exporting') : $t('dataManager.contexts.exportClipboard') }}
           </NButton>
           
-          <!-- 上下文导入 -->
-          <!-- 文件导入 -->
+          <!-- Context import -->
+          <!-- File import -->
           <NUpload
             class="context-upload"
             :file-list="[]"
@@ -198,7 +198,7 @@
             </NButton>
           </NUpload>
           
-          <!-- 剪贴板导入 -->
+          <!-- Clipboard import -->
           <NButton
             @click="handleContextImportFromClipboard"
             :disabled="isContextImporting"
@@ -214,7 +214,7 @@
         </NSpace>
       </div>
 
-      <!-- 警告信息 -->
+      <!-- Warning message -->
       <NAlert type="warning" :show-icon="true">
         {{ $t('dataManager.warning') }}
       </NAlert>
@@ -236,7 +236,7 @@ import type { AppServices } from '../types/services'
 
 interface Props {
   show: boolean;
-  // dataManager现在通过inject获取，不再需要props
+  // dataManager is now obtained via inject; props are no longer needed
 }
 
 interface Emits {
@@ -251,21 +251,21 @@ const emit = defineEmits<Emits>()
 const { t } = useI18n()
 const toast = useToast()
 
-// 统一使用inject获取services
+// Obtain services uniformly via inject
 const services = inject<Ref<AppServices | null>>('services')
 if (!services) {
-  throw new Error('[DataManager] services未正确注入，请确保在App组件中正确provide了services')
+  throw new Error('[DataManager] services was not injected correctly; make sure services is provided in the App component')
 }
 
 const getDataManager = computed(() => {
   const servicesValue = services.value
   if (!servicesValue) {
-    throw new Error('[DataManager] services未初始化，请确保应用已正确启动')
+    throw new Error('[DataManager] services is not initialized; make sure the app has started correctly')
   }
 
   const manager = servicesValue.dataManager
   if (!manager) {
-    throw new Error('[DataManager] dataManager未初始化，请确保服务已正确配置')
+    throw new Error('[DataManager] dataManager is not initialized; make sure the services are configured correctly')
   }
 
   return manager
@@ -291,10 +291,10 @@ const isContextBundle = (data: unknown): data is ContextBundle => {
   )
 }
 
-// 上下文导入导出状态
+// Context import/export state
 const isContextExporting = ref(false)
 const isContextImporting = ref(false)
-const isContextImportingFromFile = ref(false) // 区分文件和剪贴板导入
+const isContextImportingFromFile = ref(false) // Distinguishes file import from clipboard import
 
 // Storage Info State
 const storageInfo = ref<{
@@ -323,7 +323,7 @@ const openStorageDir = () => {
   window.electronAPI.data.openStorageDirectory()
 }
 
-// 处理文件变化
+// Handle file changes
 const handleFileChange = (options: { fileList: UploadFileInfo[] }) => {
   selectedFile.value = options.fileList[0] ?? null
 }
@@ -351,7 +351,7 @@ onUnmounted(() => {
   document.removeEventListener('keydown', handleKeyDown)
 })
 
-// 处理导出
+// Handle export
 const handleExport = async () => {
   try {
     const dataManager = getDataManager.value
@@ -364,7 +364,7 @@ const handleExport = async () => {
     
     const data = await dataManager.exportAllData()
     
-    // 创建下载链接
+    // Create the download link
     const blob = new Blob([data], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
@@ -377,21 +377,21 @@ const handleExport = async () => {
     
     toast.success(t('dataManager.export.success'))
   } catch (error) {
-    console.error('导出失败:', error)
+    console.error('Export failed:', error)
     toast.error(t('dataManager.export.failed'))
   } finally {
     isExporting.value = false
   }
 }
 
-// 处理文件选择 - 已移除，使用 handleFileChange 代替
+// Handle file selection - removed, use handleFileChange instead
 
-// 清除选中的文件
+// Clear the selected file
 const clearSelectedFile = () => {
   selectedFile.value = null
 }
 
-// 处理导入
+// Handle import
 const handleImport = async () => {
   if (!selectedFile.value) return
 
@@ -417,14 +417,14 @@ const handleImport = async () => {
     emit('close')
     clearSelectedFile()
   } catch (error) {
-    console.error('导入失败:', error)
+    console.error('Import failed:', error)
     toast.error(t('dataManager.import.failed') + ': ' + (error as Error).message)
   } finally {
     isImporting.value = false
   }
 }
 
-// 格式化文件大小
+// Format the file size
 const formatFileSize = (bytes: number): string => {
   if (bytes === 0) return '0 B'
   const k = 1024
@@ -433,28 +433,28 @@ const formatFileSize = (bytes: number): string => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
 
-// 处理上下文导出到文件
+// Handle exporting contexts to a file
 const handleContextExportToFile = async () => {
   try {
     const servicesValue = services.value
     if (!servicesValue) {
-      toast.error('服务不可用，请稍后重试')
+      toast.error('Service unavailable, please try again later')
       return
     }
 
     const contextRepo = servicesValue.contextRepo
     if (!contextRepo) {
-      toast.error('上下文服务不可用，请稍后重试')
+      toast.error('Context service unavailable, please try again later')
       return
     }
 
     isContextExporting.value = true
     
-    // 使用 exportAll 获取 ContextBundle 格式
+    // Use exportAll to get the ContextBundle format
     const contextBundle = await contextRepo.exportAll()
     const exportContent = JSON.stringify(contextBundle, null, 2)
     
-    // 创建下载链接
+    // Create the download link
     const blob = new Blob([exportContent], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
@@ -465,41 +465,41 @@ const handleContextExportToFile = async () => {
     document.body.removeChild(link)
     URL.revokeObjectURL(url)
     
-    toast.success(`已导出 ${contextBundle.contexts.length} 个上下文集合到文件`)
+    toast.success(`Exported ${contextBundle.contexts.length} context collections to a file`)
   } catch (error) {
-    console.error('上下文文件导出失败:', error)
-    toast.error('上下文导出失败: ' + (error as Error).message)
+    console.error('Context file export failed:', error)
+    toast.error('Context export failed: ' + (error as Error).message)
   } finally {
     isContextExporting.value = false
   }
 }
 
-// 处理上下文导出到剪贴板
+// Handle exporting contexts to the clipboard
 const handleContextExportToClipboard = async () => {
   try {
     const servicesValue = services.value
     if (!servicesValue) {
-      toast.error('服务不可用，请稍后重试')
+      toast.error('Service unavailable, please try again later')
       return
     }
 
     const contextRepo = servicesValue.contextRepo
     if (!contextRepo) {
-      toast.error('上下文服务不可用，请稍后重试')
+      toast.error('Context service unavailable, please try again later')
       return
     }
 
     isContextExporting.value = true
     
-    // 使用 exportAll 获取 ContextBundle 格式
+    // Use exportAll to get the ContextBundle format
     const contextBundle = await contextRepo.exportAll()
     const exportContent = JSON.stringify(contextBundle, null, 2)
     
-    // 复制到剪贴板
+    // Copy to the clipboard
     if (navigator.clipboard) {
       await navigator.clipboard.writeText(exportContent)
     } else {
-      // 降级方案
+      // Fallback
       const textarea = document.createElement('textarea')
       textarea.value = exportContent
       textarea.style.position = 'fixed'
@@ -510,16 +510,16 @@ const handleContextExportToClipboard = async () => {
       document.body.removeChild(textarea)
     }
     
-    toast.success(`已导出 ${contextBundle.contexts.length} 个上下文集合到剪贴板`)
+    toast.success(`Exported ${contextBundle.contexts.length} context collections to the clipboard`)
   } catch (error) {
-    console.error('上下文剪贴板导出失败:', error)
-    toast.error('上下文导出失败: ' + (error as Error).message)
+    console.error('Context clipboard export failed:', error)
+    toast.error('Context export failed: ' + (error as Error).message)
   } finally {
     isContextExporting.value = false
   }
 }
 
-// 处理上下文文件选择和导入
+// Handle context file selection and import
 const handleContextFileChange = async (options: { fileList: UploadFileInfo[] }) => {
   if (options.fileList.length === 0 || !options.fileList[0].file) return
 
@@ -528,37 +528,37 @@ const handleContextFileChange = async (options: { fileList: UploadFileInfo[] }) 
   await handleContextImportFromFile(file)
 }
 
-// 处理从文件导入上下文
+// Handle importing contexts from a file
 const handleContextImportFromFile = async (file: File) => {
   try {
     const servicesValue = services.value
     if (!servicesValue) {
-      toast.error('服务不可用，请稍后重试')
+      toast.error('Service unavailable, please try again later')
       return
     }
 
     const contextRepo = servicesValue.contextRepo
     if (!contextRepo) {
-      toast.error('上下文服务不可用，请稍后重试')
+      toast.error('Context service unavailable, please try again later')
       return
     }
 
     isContextImporting.value = true
     isContextImportingFromFile.value = true
     
-    // 读取文件内容
+    // Read the file content
     const content = await file.text()
     
-    // 解析JSON数据
+    // Parse the JSON data
     let importData: unknown
     try {
       importData = JSON.parse(content)
     } catch (_parseError) {
-      toast.error('无效的JSON格式，请检查文件内容')
+      toast.error('Invalid JSON format, please check the file content')
       return
     }
     
-    // 使用 importAll 并获取详细统计
+    // Use importAll and get detailed statistics
     if (!isContextBundle(importData)) {
       toast.error(t('dataManager.context.invalidContextBundle'))
       return
@@ -566,66 +566,66 @@ const handleContextImportFromFile = async (file: File) => {
 
     const result = await contextRepo.importAll(importData, 'replace')
     
-    // 显示详细的导入统计
+    // Show the detailed import statistics
     const stats = []
-    if (result.imported > 0) stats.push(`导入 ${result.imported} 个上下文`)
-    if (result.skipped > 0) stats.push(`跳过 ${result.skipped} 个`)
-    if (result.predefinedVariablesRemoved > 0) stats.push(`剔除 ${result.predefinedVariablesRemoved} 个预定义变量覆盖`)
+    if (result.imported > 0) stats.push(`Imported ${result.imported} contexts`)
+    if (result.skipped > 0) stats.push(`Skipped ${result.skipped}`)
+    if (result.predefinedVariablesRemoved > 0) stats.push(`Removed ${result.predefinedVariablesRemoved} predefined variable overrides`)
     
-    const message = stats.length > 0 ? `成功：${stats.join('，')}` : '导入完成'
+    const message = stats.length > 0 ? `Success: ${stats.join(', ')}` : 'Import complete'
     toast.success(message)
-    emit('imported') // 触发父组件的导入成功事件
+    emit('imported') // Trigger the parent component's import success event
   } catch (error) {
-    console.error('上下文文件导入失败:', error)
-    toast.error('上下文导入失败: ' + (error as Error).message)
+    console.error('Context file import failed:', error)
+    toast.error('Context import failed: ' + (error as Error).message)
   } finally {
     isContextImporting.value = false
     isContextImportingFromFile.value = false
   }
 }
 
-// 处理从剪贴板导入上下文（修正版本）
+// Handle importing contexts from the clipboard (corrected version)
 const handleContextImportFromClipboard = async () => {
   try {
     const servicesValue = services.value
     if (!servicesValue) {
-      toast.error('服务不可用，请稍后重试')
+      toast.error('Service unavailable, please try again later')
       return
     }
 
     const contextRepo = servicesValue.contextRepo
     if (!contextRepo) {
-      toast.error('上下文服务不可用，请稍后重试')
+      toast.error('Context service unavailable, please try again later')
       return
     }
 
     isContextImporting.value = true
     isContextImportingFromFile.value = false
     
-    // 从剪贴板读取内容
+    // Read the content from the clipboard
     let clipboardContent = ''
     if (navigator.clipboard) {
       clipboardContent = await navigator.clipboard.readText()
     } else {
-      // 如果无法访问剪贴板，提示用户手动粘贴
-      clipboardContent = prompt('请粘贴要导入的上下文数据:') || ''
+      // If the clipboard is not accessible, ask the user to paste manually
+      clipboardContent = prompt('Please paste the context data to import:') || ''
     }
     
     if (!clipboardContent.trim()) {
-      toast.warning('剪贴板内容为空，请先复制要导入的数据')
+      toast.warning('Clipboard is empty; please copy the data to import first')
       return
     }
     
-    // 解析JSON数据
+    // Parse the JSON data
     let importData: unknown
     try {
       importData = JSON.parse(clipboardContent)
     } catch (_parseError) {
-      toast.error('无效的JSON格式，请检查数据格式')
+      toast.error('Invalid JSON format, please check the data format')
       return
     }
     
-    // 使用 importAll 并获取详细统计
+    // Use importAll and get detailed statistics
     if (!isContextBundle(importData)) {
       toast.error(t('dataManager.context.invalidContextBundle'))
       return
@@ -633,18 +633,18 @@ const handleContextImportFromClipboard = async () => {
 
     const result = await contextRepo.importAll(importData, 'replace')
     
-    // 显示详细的导入统计
+    // Show the detailed import statistics
     const stats = []
-    if (result.imported > 0) stats.push(`导入 ${result.imported} 个上下文`)
-    if (result.skipped > 0) stats.push(`跳过 ${result.skipped} 个`)
-    if (result.predefinedVariablesRemoved > 0) stats.push(`剔除 ${result.predefinedVariablesRemoved} 个预定义变量覆盖`)
+    if (result.imported > 0) stats.push(`Imported ${result.imported} contexts`)
+    if (result.skipped > 0) stats.push(`Skipped ${result.skipped}`)
+    if (result.predefinedVariablesRemoved > 0) stats.push(`Removed ${result.predefinedVariablesRemoved} predefined variable overrides`)
     
-    const message = stats.length > 0 ? `成功：${stats.join('，')}` : '导入完成'
+    const message = stats.length > 0 ? `Success: ${stats.join(', ')}` : 'Import complete'
     toast.success(message)
-    emit('imported') // 触发父组件的导入成功事件
+    emit('imported') // Trigger the parent component's import success event
   } catch (error) {
-    console.error('上下文剪贴板导入失败:', error)
-    toast.error('上下文导入失败: ' + (error as Error).message)
+    console.error('Context clipboard import failed:', error)
+    toast.error('Context import failed: ' + (error as Error).message)
   } finally {
     isContextImporting.value = false
     isContextImportingFromFile.value = false

@@ -27,14 +27,14 @@ import { useNaiveTheme } from '../composables/ui/useNaiveTheme'
 
 const { t } = useI18n()
 
-// 使用新的主题系统
+// Use the new theme system
 const { 
   themeId, 
   availableThemes, 
   changeTheme 
 } = useNaiveTheme()
 
-// 创建更美观的SVG图标组件
+// Create nicer SVG icon components
 const createThemeIcon = (themeId: string, isColored: boolean = false) => {
   const baseClass = 'w-4 h-4'
   
@@ -118,15 +118,15 @@ const createThemeIcon = (themeId: string, isColored: boolean = false) => {
   }
 }
 
-// 当前主题的图标
+// Icon of the current theme
 const currentThemeIcon = computed(() => createThemeIcon(themeId.value, true))
 
-// 当前主题的标签（使用国际化）
+// Label of the current theme (uses i18n)
 const currentThemeLabel = computed(() => {
   return t(`theme.${themeId.value}`)
 })
 
-// 为Naive UI Dropdown创建选项
+// Create options for the Naive UI Dropdown
 const dropdownOptions = computed<DropdownOption[]>(() => {
   return availableThemes.map(theme => ({
     key: theme.id,
@@ -135,7 +135,7 @@ const dropdownOptions = computed<DropdownOption[]>(() => {
   }))
 })
 
-// 处理主题选择
+// Handle theme selection
 const handleThemeSelect = (key: string) => {
   changeTheme(key)
 }

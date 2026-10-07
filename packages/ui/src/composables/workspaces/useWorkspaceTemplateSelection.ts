@@ -1,16 +1,16 @@
 /**
- * 工作区模板选择逻辑（通用）
+ * Workspace template selection logic (shared)
  *
- * 功能：
- * - 从 session store 读取/写入 selectedTemplateId 和 selectedIterateTemplateId
- * - 根据模板类型过滤选项列表
- * - 刷新模板选项列表（支持竞态保护）
- * - 提供模板对象（由 id 派生）
+ * Features:
+ * - Read/write selectedTemplateId and selectedIterateTemplateId from the session store
+ * - Filter the option list by template type
+ * - Refresh the template option list (with race protection)
+ * - Provide template objects (derived from the id)
  *
- * @param services - AppServices 实例
- * @param sessionStore - Session store 实例
- * @param optimizeTemplateType - 优化模板类型（如 'conversationMessageOptimize' 或 'contextUserOptimize'）
- * @param iterateTemplateType - 迭代模板类型（如 'contextIterate'）
+ * @param services - AppServices instance
+ * @param sessionStore - Session store instance
+ * @param optimizeTemplateType - Optimization template type (such as 'conversationMessageOptimize' or 'contextUserOptimize')
+ * @param iterateTemplateType - Iterate template type (such as 'contextIterate')
  */
 import { computed, ref, watch, type Ref } from 'vue'
 import type { AppServices } from '../../types/services'
@@ -39,11 +39,11 @@ export function useWorkspaceTemplateSelection<T extends WorkspaceTemplateSession
   const selectedTemplate = ref<Template | null>(null)
   const selectedIterateTemplate = ref<Template | null>(null)
 
-  // 避免在 refresh 内部“兜底写回”触发 watch(selectedId) 再次刷新
+  // Avoid a "fallback write-back" inside refresh triggering watch(selectedId) to refresh again
   let skipNextOptimizeRefresh = false
   let skipNextIterateRefresh = false
 
-  // 优化模板 ID（双向绑定）
+  // Optimize template ID (two-way binding)
   const selectedTemplateId = computed<string>({
     get: () => sessionStore.selectedTemplateId ?? '',
     set: (value: string) => {
@@ -51,7 +51,7 @@ export function useWorkspaceTemplateSelection<T extends WorkspaceTemplateSession
     }
   })
 
-  // 迭代模板 ID（双向绑定）
+  // Iterate template ID (two-way binding)
   const selectedIterateTemplateId = computed<string>({
     get: () => sessionStore.selectedIterateTemplateId ?? '',
     set: (value: string) => {
@@ -59,7 +59,7 @@ export function useWorkspaceTemplateSelection<T extends WorkspaceTemplateSession
     }
   })
 
-  // 刷新优化模板列表
+  // Refresh the optimize template list
   let optimizeTemplateResolveToken = 0
   const refreshOptimizeTemplates = async () => {
     const mgr = services.value?.templateManager
@@ -89,7 +89,7 @@ export function useWorkspaceTemplateSelection<T extends WorkspaceTemplateSession
         return
       }
 
-      // 无选择或已失效：统一兜底为第一个模板
+      // No selection or it is no longer valid: uniformly fall back to the first template
       const fallback = templates[0] || null
       if (fallback) {
         skipNextOptimizeRefresh = true
@@ -106,7 +106,7 @@ export function useWorkspaceTemplateSelection<T extends WorkspaceTemplateSession
     }
   }
 
-  // 刷新迭代模板列表
+  // Refresh the iterate template list
   let iterateTemplateResolveToken = 0
   const refreshIterateTemplates = async () => {
     const mgr = services.value?.templateManager
@@ -136,7 +136,7 @@ export function useWorkspaceTemplateSelection<T extends WorkspaceTemplateSession
         return
       }
 
-      // 无选择或已失效：统一兜底为第一个模板
+      // No selection or it is no longer valid: uniformly fall back to the first template
       const fallback = templates[0] || null
       if (fallback) {
         skipNextIterateRefresh = true
@@ -153,7 +153,7 @@ export function useWorkspaceTemplateSelection<T extends WorkspaceTemplateSession
     }
   }
 
-  // 监听 templateManager 变化，刷新模板选项
+  // Watch templateManager changes and refresh the template options
   watch(
     () => services.value?.templateManager,
     () => {
@@ -163,7 +163,7 @@ export function useWorkspaceTemplateSelection<T extends WorkspaceTemplateSession
     { immediate: true }
   )
 
-  // 监听 selectedTemplateId 变化，更新 selectedTemplate 对象
+  // Watch selectedTemplateId changes and update the selectedTemplate object
   watch(
     () => selectedTemplateId.value,
     () => {
@@ -175,7 +175,7 @@ export function useWorkspaceTemplateSelection<T extends WorkspaceTemplateSession
     }
   )
 
-  // 监听 selectedIterateTemplateId 变化，更新 selectedIterateTemplate 对象
+  // Watch selectedIterateTemplateId changes and update the selectedIterateTemplate object
   watch(
     () => selectedIterateTemplateId.value,
     () => {

@@ -5,14 +5,14 @@
             class="context-system-split"
             :style="{ gridTemplateColumns: `${mainSplitLeftPct}% 12px 1fr` }"
         >
-            <!-- 左侧：优化区域 -->
+            <!-- Left: optimization area -->
             <div class="split-pane" style="min-width: 0; height: 100%; overflow: hidden;">
                 <NFlex
                     vertical
                     :style="{ overflow: 'auto', height: '100%', minHeight: 0 }"
                     :size="12"
                 >
-                    <!-- 会话管理器 (系统模式专属，也是消息输入界面) -->
+                    <!-- Conversation manager (exclusive to system mode, and also the message input interface) -->
                     <NCard
                         :style="{ flexShrink: 0, overflow: 'auto' }"
                         content-style="padding: 0;"
@@ -21,7 +21,7 @@
                             :messages="conversationMessages"
                             @update:messages="handleConversationMessagesUpdated"
                             @message-change="(index, message, action) => {
-                                // Pro Multi：新增/更新消息后自动选中最新消息，确保“优化”按钮可用
+                                // Pro Multi: after adding/updating a message, automatically select the latest message so the Optimize button is available
                                 if ((action === 'add' || action === 'update') && (message.role === 'system' || message.role === 'user') && message.id) {
                                     void conversationOptimization.selectMessage(message)
                                 }
@@ -48,12 +48,12 @@
                         />
                     </NCard>
 
-                    <!-- 优化控制区 -->
+                    <!-- Optimization control area -->
                     <NCard :style="{ flexShrink: 0 }" size="small">
                         <NFlex vertical :size="12">
-                            <!-- 模型和模板选择行 -->
+                            <!-- Model and template selection row -->
                             <NFlex :size="12" :wrap="false">
-                                <!-- 优化模型选择 -->
+                                <!-- Optimization model selection -->
                                 <NFlex vertical :size="4" style="flex: 1">
                                     <NText :depth="3" style="font-size: 12px">
                                         {{ $t('promptOptimizer.optimizeModel') }}
@@ -68,7 +68,7 @@
                                     />
                                 </NFlex>
 
-                                <!-- 模板选择 -->
+                                <!-- Template selection -->
                                 <NFlex vertical :size="4" style="flex: 1">
                                     <NText :depth="3" style="font-size: 12px">
                                         {{ $t('promptOptimizer.templateLabel') }}
@@ -84,7 +84,7 @@
                                 </NFlex>
                             </NFlex>
 
-                            <!-- 优化按钮 -->
+                            <!-- Optimize button -->
                             <NButton
                                 type="primary"
                                 :loading="displayAdapter.displayedIsOptimizing.value"
@@ -98,7 +98,7 @@
                         </NFlex>
                     </NCard>
 
-                    <!-- 优化结果面板 -->
+                    <!-- Optimization result panel -->
                     <NCard
                         :style="{ flex: 1, minHeight: '200px', overflow: 'hidden' }"
                         content-style="height: 100%; max-height: 100%; overflow: hidden;"
@@ -153,10 +153,10 @@
                 @keydown="onSplitKeydown"
             />
 
-            <!-- 右侧：测试区域（变量共享 + 多列 variants） -->
+            <!-- Right: test area (shared variables + multi-column variants) -->
             <div ref="testPaneRef" class="split-pane" style="min-width: 0; height: 100%; overflow: hidden;">
                 <NFlex vertical :style="{ height: '100%', gap: '12px' }">
-                    <!-- 变量表单（共享所有列） -->
+                    <!-- Variable form (shared by all columns) -->
                     <ConversationTestPanel
                         ref="testAreaPanelRef"
                         mode="variables-only"
@@ -172,7 +172,7 @@
                         @temporary-variables-clear="handleVariablesClear"
                     />
 
-                    <!-- 顶部：列数与全局操作 -->
+                    <!-- Top: column count and global actions -->
                     <NCard size="small" :style="{ flexShrink: 0 }">
                         <div class="test-area-top">
                             <NFlex align="center" :size="8" :wrap="false" style="min-width: 0;">
@@ -231,7 +231,7 @@
                         </div>
                     </NCard>
 
-                    <!-- 配置区：与结果列对齐 -->
+                    <!-- Config area: aligned with the result columns -->
                     <NCard size="small" :style="{ flexShrink: 0 }">
                         <div class="variant-deck" :style="{ gridTemplateColumns: testGridTemplateColumns }">
                             <div v-for="id in activeVariantIds" :key="id" class="variant-cell">
@@ -296,7 +296,7 @@
                         </div>
                     </NCard>
 
-                    <!-- 结果区：多列网格（无横向滚动） -->
+                    <!-- Result area: multi-column grid (no horizontal scrolling) -->
                     <div class="variant-results-wrap">
                         <div class="variant-results" :style="{ gridTemplateColumns: testGridTemplateColumns }">
                             <NCard
@@ -414,7 +414,7 @@
             @retry="evaluationHandler.handleReEvaluate"
         />
 
-        <!-- 子模式本地预览面板：不再依赖 PromptOptimizerApp 的全局预览状态 -->
+        <!-- Sub-mode local preview panel: no longer depends on the global preview state of PromptOptimizerApp -->
         <PromptPreviewPanel
             v-model:show="showPromptPreview"
             :previewContent="previewContent"
@@ -506,41 +506,41 @@ import type { VariableManagerHooks } from '../../composables/prompt/useVariableM
 import type { AppServices } from '../../types/services'
 
 interface Props {
-    // 核心状态
+    // Core state
     optimizedReasoning?: string;
 
-    // 优化状态
+    // Optimization state
     isOptimizing?: boolean;
     isIterating?: boolean;
 
-    // 外部状态注入（用于初始化本地 hook）
-    // ✅ 已移除：selectedOptimizeModel, selectedTemplate, selectedIterateTemplate - 现在从 session store 直接读取
-    // 🆕 评估模型（用于评估功能）
+    // External state injection (used to initialize the local hook)
+    // ✅ Removed: selectedOptimizeModel, selectedTemplate, selectedIterateTemplate - now read directly from the session store
+    // 🆕 Evaluation model (used for the evaluation feature)
     evaluationModelKey?: string;
 
-    // ✅ 已移除：optimizationContext - 改为从 inject('optimizationContext') 获取
-    // ✅ 已移除：toolCount - 可从 optimizationContextTools 派生
+    // ✅ Removed: optimizationContext - now obtained from inject('optimizationContext')
+    // ✅ Removed: toolCount - can be derived from optimizationContextTools
 
-    // ✅ 已移除：变量相关 props - 改为从 inject('variableManager') 获取
+    // ✅ Removed: variable-related props - now obtained from inject('variableManager')
     // globalVariables, predefinedVariables, availableVariables, scanVariables
 
-    // ✅ 已移除：enableMessageOptimization - 消息优化功能已移除
+    // ✅ Removed: enableMessageOptimization - the message optimization feature was removed
 
-    // 全局优化链（用于历史记录恢复）
+    // Global optimization chain (used for history restore)
     versions?: PromptRecord[];
     currentVersionId?: string;
 
-    // 响应式布局配置
+    // Responsive layout config
     inputMode?: "compact" | "normal";
     buttonSize?: "small" | "medium" | "large";
     conversationMaxHeight?: number;
     resultVerticalLayout?: boolean;
 
-    // 对比模式
+    // Compare mode
     isCompareMode?: boolean;
 
-    // ✅ 已移除：selectedTestModel - 现在从 session store 直接读取
-    /** 测试模型名称（用于显示标签） */
+    // ✅ Removed: selectedTestModel - now read directly from the session store
+    /** Test model name (used for the display label) */
     testModelName?: string;
 }
 
@@ -571,34 +571,34 @@ const props = withDefaults(defineProps<Props>(), {
     testModelName: undefined,
 });
 
-// Emits 定义
+// Emits definition
 const emit = defineEmits<{
-    // 数据更新
+    // Data updates
     (e: "update:selectedIterateTemplate", value: Template | null): void;
     (e: "update:optimizationContext", value: ConversationMessage[]): void;
 
-    // 操作事件（用于历史记录查看场景）
+    // Action events (used in the history viewing scenario)
     (e: "test", testVariables: Record<string, string>): void;
     (e: "switch-version", version: PromptRecord): void;
     (e: "switch-to-v0", version: PromptRecord): void;
     (e: "save-favorite", data: SaveFavoritePayload): void;
     (e: "message-change", index: number, message: ConversationMessage, action: "add" | "update" | "delete"): void;
 
-    // 打开面板/管理器
+    // Open panels/managers
     (e: "open-variable-manager"): void;
     (e: "open-context-editor", tab?: string): void;
     (e: "open-template-manager", type?: string): void;
     (e: "open-tool-manager"): void;
     (e: "config-model"): void;
 
-    // 预览相关
+    // Preview-related
     (e: "open-prompt-preview"): void;
 
-    // 变量管理
+    // Variable management
     (e: "variable-change", name: string, value: string): void;
     (e: "save-to-global", name: string, value: string): void;
 
-    // 🆕 对比模式
+    // 🆕 Compare mode
     (e: "update:isCompareMode", value: boolean): void;
     (e: "compare-toggle"): void;
 }>();
@@ -606,12 +606,12 @@ const emit = defineEmits<{
 const { t } = useI18n();
 const toast = useToast();
 
-// 注入服务和变量管理器
+// Inject services and the variable manager
 const injectedServices = inject<Ref<AppServices | null>>('services')
 const servicesRef = injectedServices ?? ref<AppServices | null>(null)
 const variableManager = inject<VariableManagerHooks | null>('variableManager', null)
 
-// 注入 App 层统一的 open* 接口（避免 Pro 工作区 emit 链断导致按钮无响应）
+// Inject the App layer's unified open* interfaces (avoids buttons being unresponsive when the Pro workspace emit chain is broken)
 const appOpenModelManager = inject<
     ((tab?: 'text' | 'image' | 'function') => void) | null
 >('openModelManager', null)
@@ -655,7 +655,7 @@ const handleOpenModelManager = () => {
 }
 
 const handleOpenTemplateManager = (typeOrPayload?: string | Record<string, unknown>) => {
-    // SelectWithConfig 的 @config 可能会传入 payload（非字符串），这里统一兜底处理。
+    // The @config of SelectWithConfig may pass a payload (not a string), so it is handled uniformly with a fallback here.
     const type = typeof typeOrPayload === 'string' ? typeOrPayload : undefined
     if (appOpenTemplateManager) {
         appOpenTemplateManager(type || 'optimize')
@@ -672,18 +672,18 @@ const handleOpenContextEditor = (
         appOpenContextEditor(messages, variables)
         return
     }
-    // 兜底：旧链路（如果宿主仍通过 emit 打开编辑器）
+    // Fallback: legacy path (if the host still opens the editor through emit)
     emit('open-context-editor')
 }
 
-// ✅ 优化模式：固定为 'system'（此组件专门用于系统模式优化）
+// ✅ Optimization mode: fixed to 'system' (this component is dedicated to system mode optimization)
 const optimizationMode: OptimizationMode = 'system';
 
-// 🆕 访问变量数据（从 variableManager inject）
+// 🆕 Access variable data (from the variableManager inject)
 const globalVariables = computed(() => variableManager?.variableManager.value?.listVariables() || {})
 
 const predefinedVariables = computed(() => {
-    // 从 PREDEFINED_VARIABLES 常量获取预定义变量
+    // Get the predefined variables from the PREDEFINED_VARIABLES constant
     return PREDEFINED_VARIABLES.reduce((acc, name) => {
         acc[name] = variableManager?.variableManager.value?.getVariable(name) || ''
         return acc
@@ -691,7 +691,7 @@ const predefinedVariables = computed(() => {
 })
 
 const availableVariables = computed(() => {
-    // 合并全局变量和预定义变量
+    // Merge global variables and predefined variables
     return { ...globalVariables.value, ...predefinedVariables.value }
 })
 
@@ -700,21 +700,21 @@ const scanVariables = (content: string) => {
 }
 
 const toolCount = computed(() => {
-    // 从 optimizationContextTools 派生
+    // Derived from optimizationContextTools
     return optimizationContextToolsRef.value?.length || 0
 })
 
 const enableMessageOptimization = computed(() => {
-    // Pro Multi：自动选中最新消息进行优化（不需要显式“选择”按钮）
-    // 这里仍需启用“消息优化模式”，以便 PromptPanel 展示优化结果区。
+    // Pro Multi: automatically select the latest message for optimization (no explicit "select" button needed)
+    // Message optimization mode must still be enabled here so PromptPanel can show the optimization result area.
     return optimizationMode === 'system'
 })
 
-// 🆕 初始化临时变量管理器（与 ContextEditor 共享）
+// 🆕 Initialize the temporary variable manager (shared with ContextEditor)
 const tempVars = useTemporaryVariables()
 
 // ========================
-// 子模式本地提示词预览（不经过 PromptOptimizerApp）
+// Sub-mode local prompt preview (does not go through PromptOptimizerApp)
 // ========================
 const previewContextMode = computed<ContextMode>(() => 'system')
 
@@ -739,9 +739,9 @@ const handleOpenPromptPreview = () => {
     openPromptPreview(displayAdapter.displayedOptimizedPrompt.value || '', { renderPhase: 'optimize' })
 }
 
- // 🆕 测试结果持久化（Pro-system）
+ // 🆕 Test result persistence (Pro-system)
 
-// ✨ 新增：直接使用 session store 管理模型和模板选择
+// ✨ New: use the session store directly to manage model and template selection
 const modelSelection = useWorkspaceModelSelection(servicesRef, proMultiSession)
 const templateSelection = useWorkspaceTemplateSelection(
     servicesRef,
@@ -750,7 +750,7 @@ const templateSelection = useWorkspaceTemplateSelection(
     'contextIterate'
 )
 
-// 🆕 初始化本地会话优化逻辑
+// 🆕 Initialize the local conversation optimization logic
  const conversationOptimization = useConversationOptimization(
      servicesRef,
      conversationMessages,
@@ -760,10 +760,10 @@ const templateSelection = useWorkspaceTemplateSelection(
      templateSelection.selectedIterateTemplate
  )
 
-// 暴露给子组件（虽然目前主要通过 Props 传递给 ConversationManager，但保持 Provide 以防万一）
+// Expose to child components (currently mainly passed to ConversationManager via props, but Provide is kept just in case)
 provide('conversationOptimization', conversationOptimization);
 
-// 🆕 初始化显示适配器（根据模式自动切换数据源）
+// 🆕 Initialize the display adapter (automatically switches the data source by mode)
  const displayAdapter = usePromptDisplayAdapter(
      conversationOptimization,
      {
@@ -775,12 +775,12 @@ provide('conversationOptimization', conversationOptimization);
      }
  )
 
-// 从 inject 获取 optimizationContextTools（由 App.vue 提供）
+// Get optimizationContextTools from inject (provided by App.vue)
 const optimizationContextToolsRef = inject<Ref<ToolDefinition[]>>('optimizationContextTools', ref([]))
-// 使用本地 managed 的 selectedMessageId
+// Use the locally managed selectedMessageId
 const selectedMessageId = conversationOptimization.selectedMessageId
 
-// 🔧 为 SelectWithConfig 的 v-model 创建解包的 computed（避免 Vue prop 类型警告）
+// 🔧 Create unwrapped computed for the v-model of SelectWithConfig (avoids Vue prop type warnings)
 const selectedOptimizeModelKeyModel = computed({
     get: () => modelSelection.selectedOptimizeModelKey.value,
     set: (value) => { modelSelection.selectedOptimizeModelKey.value = value }
@@ -799,33 +799,33 @@ const selectedIterateTemplate = computed<Template | null>({
     }
 })
 
-// 🆕 从 session store 恢复测试结果（只恢复稳定字段，不恢复过程态）
+// 🆕 Restore test results from the session store (only stable fields, not transient state)
  onMounted(() => {
-    // ✅ 刷新模型列表
+    // ✅ Refresh the model list
     modelSelection.refreshTextModels()
 
-     // Pro Multi：初始态保持“未选择消息”，让用户明确选择要优化的消息。
-     // 仅在 session store 有选中记录时尝试恢复（刷新/恢复场景）。
+     // Pro Multi: keep the initial state as "no message selected", so the user explicitly chooses the message to optimize.
+     // Only try to restore when the session store has a selection record (refresh/restore scenarios).
      if (proMultiSession.selectedMessageId) {
          const restored = (conversationMessages.value || []).find((m) => m.id === proMultiSession.selectedMessageId)
          if (restored) {
              void conversationOptimization.selectMessage(restored)
          } else {
-             // 防止选中 ID 指向已不存在的消息，导致 UI 误判为“已选中”。
+             // Prevent the selected ID from pointing to a message that no longer exists, which would make the UI wrongly think it is "selected".
              proMultiSession.selectMessage('')
          }
      }
 
 })
 
-// ==================== 主布局：可拖拽分栏（左侧 25%~50%） ====================
+// ==================== Main layout: draggable split pane (left 25%~50%) ====================
 
 const splitRootRef = ref<HTMLElement | null>(null)
 const testPaneRef = ref<HTMLElement | null>(null)
 
 const clampLeftPct = (pct: number) => Math.min(50, Math.max(25, pct))
 
-// 使用本地 draft，避免拖拽过程频繁写入持久化存储
+// Use a local draft to avoid frequent writes to persistent storage while dragging
 const mainSplitLeftPct = ref<number>(50)
 watch(
     () => proMultiSession.layout.mainSplitLeftPct,
@@ -896,7 +896,7 @@ onUnmounted(() => {
     endSplitDrag()
 })
 
-// ==================== 测试区：多列 variants（当前选中消息版本） ====================
+// ==================== Test area: multi-column variants (the currently selected message version) ====================
 
 const getVariant = (id: TestVariantId): TestVariantConfig | undefined => {
     const list = proMultiSession.testVariants as unknown as TestVariantConfig[]
@@ -970,14 +970,14 @@ const variantModelKeyModels = {
     d: variantDModelKeyModel,
 } as const
 
-// pro-multi 变量优先级：global < temporary < predefined
+// pro-multi variable priority: global < temporary < predefined
 const mergedTestVariables = computed<Record<string, string>>(() => ({
     ...globalVariables.value,
     ...(tempVars.temporaryVariables.value || {}),
     ...predefinedVariables.value,
 }))
 
-// 测试区宽度：用于禁用 4 列（避免横向滚动）
+// Test area width: used to disable 4 columns (avoids horizontal scrolling)
 const { width: testPaneWidth } = useElementSize(testPaneRef)
 const canUseFourColumns = computed(() => testPaneWidth.value >= 1000)
 
@@ -995,7 +995,7 @@ const testGridTemplateColumns = computed(
     () => `repeat(${testColumnCountModel.value}, minmax(0, 1fr))`,
 )
 
-// 版本选项：仅显示“原始(v0)”与“最新(latest)”，若存在中间版本，则额外显示 v1..v(n-1)。
+// Version options: only show "Original (v0)" and "Latest (latest)"; if intermediate versions exist, additionally show v1..v(n-1).
 const versionOptions = computed(() => {
     const versions = conversationOptimization.currentVersions.value || []
 
@@ -1015,7 +1015,7 @@ const versionOptions = computed(() => {
     ]
 })
 
-// 确保测试列的模型选择始终有效（模型列表变化时自动 fallback）
+// Make sure the model selection of the test columns is always valid (automatic fallback when the model list changes)
 watch(
     () => modelSelection.textModelOptions.value,
     (opts) => {
@@ -1080,7 +1080,7 @@ const resolvedOptimizedTestPrompt = computed(() =>
     resolveSelectedMessageContent(variantBVersionModel.value),
 )
 
-// Pinia setup store 会自动解包 refs，这里是直接可变的响应式对象（非 Ref）
+// The Pinia setup store unwraps refs automatically, so this is a directly mutable reactive object (not a Ref)
 const variantResults = proMultiSession.testVariantResults
 const variantLastRunFingerprint = proMultiSession.testVariantLastRunFingerprint
 
@@ -1137,9 +1137,9 @@ const formatToolsAsText = (tools: ToolDefinition[]): string => {
     return tools
         .map((tool) => {
             const func = tool.function
-            let text = `工具名称: ${func.name}`
-            if (func.description) text += `\n描述: ${func.description}`
-            if (func.parameters) text += `\n参数结构: ${JSON.stringify(func.parameters, null, 2)}`
+            let text = `Tool name: ${func.name}`
+            if (func.description) text += `\nDescription: ${func.description}`
+            if (func.parameters) text += `\nParameter schema: ${JSON.stringify(func.parameters, null, 2)}`
             return text
         })
         .join('\n\n')
@@ -1303,7 +1303,7 @@ const runVariant = async (
                     variantToolCalls[id].push(toolCallResult)
                 },
                 onComplete: () => {
-                    // 由 finally 统一收尾
+                    // Finalized uniformly by finally
                 },
                 onError: (error: Error) => {
                     throw error
@@ -1359,7 +1359,7 @@ const runAllVariants = async () => {
     }
 }
 
-// 🆕 构建 Pro-System 评估上下文（基于 A/B 的消息版本）
+// 🆕 Build the Pro-System evaluation context (based on the message versions of A/B)
  const proContext = computed<ProSystemEvaluationContext | undefined>(() => {
      const selectedMsg = conversationOptimization.selectedMessage.value
      if (!selectedMsg?.id) return undefined
@@ -1381,16 +1381,16 @@ const runAllVariants = async () => {
      }
  })
 
-// 🆕 提供 Pro 模式上下文给子组件（如 PromptPanel），用于评估时传递多消息上下文
+// 🆕 Provide the Pro mode context to child components (such as PromptPanel), used to pass the multi-message context during evaluation
 provideProContext(proContext)
 
-// 🆕 测试结果数据（仅取 A/B）
+// 🆕 Test result data (only A/B)
 const testResultsData = computed(() => ({
     originalResult: variantResults.a.result || undefined,
     optimizedResult: variantResults.b.result || undefined,
 }))
 
-// 🆕 计算当前迭代需求（用于 prompt-iterate 的 re-evaluate）
+// 🆕 Compute the current iteration requirement (used for the re-evaluate of prompt-iterate)
 const currentIterateRequirement = computed(() => {
     const versions = displayAdapter.displayedVersions.value
     const versionId = displayAdapter.displayedCurrentVersionId.value
@@ -1399,12 +1399,12 @@ const currentIterateRequirement = computed(() => {
     return currentVersion?.iterationNote || ''
 })
 
-// 🆕 初始化评估处理器（使用全局 evaluation 实例，避免双套状态）
+// 🆕 Initialize the evaluation handler (uses the global evaluation instance to avoid two sets of state)
 const evaluationHandler = useEvaluationHandler({
     services: servicesRef,
     originalPrompt: computed(() => resolvedOriginalTestPrompt.value.text),
     optimizedPrompt: computed(() => resolvedOptimizedTestPrompt.value.text),
-    testContent: computed(() => ''), // Pro-Multi 无测试内容输入
+    testContent: computed(() => ''), // Pro-Multi has no test content input
     testResults: testResultsData,
     evaluationModelKey: computed(() => {
         const key = props.evaluationModelKey || modelSelection.selectedOptimizeModelKey.value
@@ -1434,7 +1434,7 @@ const optimizedEvaluationResult = computed(() => testAreaProps.value.optimizedEv
 const originalScoreLevel = computed(() => testAreaProps.value.originalScoreLevel)
 const optimizedScoreLevel = computed(() => testAreaProps.value.optimizedScoreLevel)
 
-// 对比评估状态
+// Compare evaluation state
 const isEvaluatingCompare = evaluationHandler.compareEvaluation.isEvaluatingCompare
 const compareScore = computed(() => evaluationHandler.compareEvaluation.compareScore.value ?? 0)
 const hasCompareEvaluation = evaluationHandler.compareEvaluation.hasCompareResult
@@ -1482,22 +1482,22 @@ watch(selectedMessageId, (next, prev) => {
     handleClearEvaluation()
 })
 
-// 处理迭代优化事件
-// 注意：由于 displayedOptimizedPrompt 在未选中消息时为空，迭代按钮不会显示，所以此函数调用时必定处于消息优化模式
+// Handle the iterative optimization event
+// Note: since displayedOptimizedPrompt is empty when no message is selected, the iterate button is not shown, so this function is always called in message optimization mode
 const handleIterate = (payload: IteratePayload) => {
     conversationOptimization.iterateMessage(payload)
 }
 
-// 处理优化点击事件
-// 注意：优化按钮在没有选中消息时会被禁用，所以此函数调用时必定处于消息优化模式
+// Handle the optimize click event
+// Note: the optimize button is disabled when no message is selected, so this function is always called in message optimization mode
 const handleOptimizeClick = () => {
     conversationOptimization.optimizeMessage()
 }
 
-// 🆕 ConversationTestPanel 引用
+// 🆕 ConversationTestPanel reference
 const testAreaPanelRef = ref<TestAreaPanelInstance | null>(null);
 
-/** PromptPanel 组件引用,用于打开迭代弹窗 */
+/** PromptPanel component reference, used to open the iterate dialog */
 const promptPanelRef = ref<InstanceType<typeof PromptPanelUI> | null>(null);
 
 const isObjectRecord = (value: unknown): value is Record<string, unknown> =>
@@ -1552,7 +1552,7 @@ const restoreFromHistory = async (payload: unknown) => {
             let mappingCount = 0;
             conversationSnapshot.forEach((snapshotMsg) => {
                 if (snapshotMsg.id && snapshotMsg.chainId) {
-                    // 🔧 Codex 修复：使用纯 messageId 作为 key，与 useConversationOptimization 统一
+                    // 🔧 Codex fix: use the plain messageId as the key, unified with useConversationOptimization
                     conversationOptimization.messageChainMap.value.set(
                         snapshotMsg.id,
                         snapshotMsg.chainId,
@@ -1562,7 +1562,7 @@ const restoreFromHistory = async (payload: unknown) => {
             });
             if (mappingCount > 0) {
                 console.log(
-                    `[ContextSystemWorkspace] 已重建 ${mappingCount} 个消息的优化链映射关系`,
+                    `[ContextSystemWorkspace] Rebuilt the optimization chain mapping of ${mappingCount} messages`,
                 );
             }
         }
@@ -1577,13 +1577,13 @@ const restoreFromHistory = async (payload: unknown) => {
         conversationOptimization.currentRecordId.value = record.id;
         conversationOptimization.optimizedPrompt.value = record.optimizedPrompt;
     } catch (error) {
-        console.error('[ContextSystemWorkspace] 历史记录恢复失败:', error);
-        // 错误会向上传播到 App.vue 的 handleHistoryReuse 中统一处理
+        console.error('[ContextSystemWorkspace] History restore failed:', error);
+        // The error propagates up to handleHistoryReuse in App.vue for unified handling
         throw error;
     }
 };
 
-// 🆕 处理版本切换
+// 🆕 Handle version switching
 const handleSwitchVersion = (version: PromptRecord) => {
     if (displayAdapter.isInMessageOptimizationMode.value) {
         conversationOptimization.switchVersion(version);
@@ -1592,7 +1592,7 @@ const handleSwitchVersion = (version: PromptRecord) => {
     }
 };
 
-// 🆕 处理 V0 切换
+// 🆕 Handle V0 switching
 const handleSwitchToV0 = (version: PromptRecord) => {
     if (displayAdapter.isInMessageOptimizationMode.value) {
         conversationOptimization.switchToV0(version);
@@ -1606,8 +1606,8 @@ const handleApplyToConversation = () => {
     conversationOptimization.applyCurrentVersion();
 };
 
-// 🆕 处理变量提取
-// 注意：toast 已在 VariableAwareInput 中显示，这里不重复（参考 ContextUserWorkspace 的实现）
+// 🆕 Handle variable extraction
+// Note: the toast is already shown in VariableAwareInput, so it is not repeated here (see the ContextUserWorkspace implementation)
 const handleVariableExtracted = (data: {
     variableName: string;
     variableValue: string;
@@ -1620,35 +1620,35 @@ const handleVariableExtracted = (data: {
     }
 };
 
-// 🆕 处理添加缺失变量
-// 注意：toast 已在 VariableAwareInput 中显示，这里不重复（参考 ContextUserWorkspace 的实现）
+// 🆕 Handle adding a missing variable
+// Note: the toast is already shown in VariableAwareInput, so it is not repeated here (see the ContextUserWorkspace implementation)
 const handleAddMissingVariable = (varName: string) => {
     tempVars.setVariable(varName, "");
 };
 
-// 🆕 处理临时变量变更
+// 🆕 Handle temporary variable changes
 const handleVariableChange = (name: string, value: string) => {
     tempVars.setVariable(name, value);
     emit('variable-change', name, value);
 };
 
-// 🆕 处理临时变量移除
+// 🆕 Handle temporary variable removal
 const handleVariableRemove = (name: string) => {
     tempVars.deleteVariable(name);
     emit('variable-change', name, '');
 };
 
-// 🆕 处理清空所有临时变量
+// 🆕 Handle clearing all temporary variables
 const handleVariablesClear = () => {
     const removedNames = Object.keys(tempVars.temporaryVariables.value);
     tempVars.clearAll();
     removedNames.forEach(name => emit('variable-change', name, ''));
 };
 
-// 🆕 处理应用改进建议事件（使用 evaluationHandler 提供的工厂方法）
+// 🆕 Handle the apply-improvement-suggestion event (using the factory method provided by evaluationHandler)
 const handleApplyImprovement = evaluationHandler.createApplyImprovementHandler(promptPanelRef);
 
-// 处理保存本地编辑
+// Handle saving local edits
 const handleSaveLocalEdit = async (payload: { note?: string }) => {
     await conversationOptimization.saveLocalEdit({
         optimizedPrompt: conversationOptimization.optimizedPrompt.value || '',
@@ -1657,7 +1657,7 @@ const handleSaveLocalEdit = async (payload: { note?: string }) => {
     });
 };
 
-// 暴露引用
+// Expose references
 defineExpose({
     testAreaPanelRef,
     restoreFromHistory,
@@ -1670,7 +1670,7 @@ defineExpose({
     reEvaluateActive: async () => {
         await evaluationHandler.handleReEvaluate();
     },
-    // 🔧 Codex 修复：暴露 session store 恢复方法，供父组件在 session restore 完成后调用
+    // 🔧 Codex fix: expose the session store restore method for the parent component to call after the session restore completes
     restoreConversationOptimizationFromSession: () => {
         conversationOptimization.restoreFromSessionStore();
     },
@@ -1755,7 +1755,7 @@ defineExpose({
 }
 
 .variant-cell__model {
-    /* 让模型选择不要无限拉伸：保持紧凑，避免把右侧按钮/布局挤散 */
+    /* Keep the model selection from stretching indefinitely: stay compact to avoid scattering the right-hand buttons/layout */
     flex: 0 1 220px;
     max-width: 220px;
     min-width: 0;

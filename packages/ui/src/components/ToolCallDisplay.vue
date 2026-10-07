@@ -38,7 +38,7 @@
                 </NSpace>
               </template>
               
-              <!-- 工具参数 -->
+              <!-- Tool parameters -->
               <div v-if="toolCall.toolCall.function.arguments" class="tool-arguments">
                 <NText depth="3" :size="textSize" class="section-title">
                   {{ t('toolCall.arguments') }}
@@ -51,7 +51,7 @@
                 />
               </div>
               
-              <!-- 工具结果 -->
+              <!-- Tool result -->
               <div v-if="toolCall.result" class="tool-result mt-3">
                 <NText depth="3" :size="textSize" class="section-title">
                   {{ t('toolCall.result') }}
@@ -64,7 +64,7 @@
                 />
               </div>
               
-              <!-- 错误信息 -->
+              <!-- Error message -->
               <div v-if="toolCall.error" class="tool-error mt-3">
                 <NText depth="3" :size="textSize" class="section-title">
                   {{ t('toolCall.error') }}
@@ -98,13 +98,13 @@ import type { ToolCallResult } from '@prompt-optimizer/core'
 const { t } = useI18n()
 
 interface Props {
-  /** 工具调用结果列表 */
+  /** Tool call result list */
   toolCalls?: ToolCallResult[]
-  /** 组件尺寸 */
+  /** Component size */
   size?: 'small' | 'medium' | 'large'
-  /** 卡片尺寸 */
+  /** Card size */
   cardSize?: 'small' | 'medium' | 'large'
-  /** 默认是否展开 */
+  /** Whether expanded by default */
   defaultExpanded?: boolean
 }
 
@@ -114,21 +114,21 @@ const props = withDefaults(defineProps<Props>(), {
   defaultExpanded: true
 })
 
-// 展开状态管理
+// Expanded state management
 const expandedNames = ref<string[]>([])
 
 
-// 监听工具调用变化，自动展开
+// Watch tool call changes and expand automatically
 watch(() => props.toolCalls, (newToolCalls) => {
   if (newToolCalls && newToolCalls.length > 0 && props.defaultExpanded) {
-    // 有新工具调用时自动展开
+    // Expand automatically when there are new tool calls
     if (!expandedNames.value.includes('tool-calls')) {
       expandedNames.value = ['tool-calls']
     }
   }
 }, { immediate: true })
 
-// 计算属性
+// Computed properties
 const tagSize = computed(() => {
   const sizeMap = { small: 'small', medium: 'small', large: 'medium' } as const
   return sizeMap[props.size] || 'small'
@@ -139,7 +139,7 @@ const textSize = computed(() => {
   return sizeMap[props.size] || 'small'
 })
 
-// 工具函数
+// Utility functions
 const getStatusTagType = (status: string) => {
   switch (status) {
     case 'success':
@@ -179,7 +179,7 @@ const formatResult = (result: string | Record<string, unknown> | Array<unknown>)
 }
 
 .tool-call-item {
-  /* 工具调用项样式 */
+  /* Tool call item styles */
 }
 
 .section-title {

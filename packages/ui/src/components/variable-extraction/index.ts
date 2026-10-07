@@ -1,5 +1,5 @@
 /**
- * 变量提取组件导出
+ * Variable extraction component exports
  */
 
 export { default as VariableExtractionResultDialog } from './VariableExtractionResultDialog.vue'

@@ -40,15 +40,15 @@ import { NButton, NForm, NFormItem, NInput, NSpace, NText } from 'naive-ui'
 const props = withDefaults(
   defineProps<{
     /**
-     * 受控输入（可选）。
-     * - 传入时：组件作为受控输入，透出 update:modelValue。
-     * - 不传时：组件维护内部状态（兼容旧用法）。
+     * Controlled input (optional).
+     * - When provided: the component acts as a controlled input and emits update:modelValue.
+     * - When omitted: the component maintains its own internal state (compatible with the old usage).
      */
     modelValue?: string
 
     showTitle?: boolean
     showHint?: boolean
-    /** 是否显示内置的取消/提交操作按钮（默认显示） */
+    /** Whether to show the built-in cancel/submit action buttons (shown by default) */
     showActions?: boolean
     title?: string
     placeholder?: string
@@ -111,7 +111,7 @@ const cancelText = computed(() => t('common.cancel'))
 const submitText = computed(() => t('evaluation.feedbackSubmit'))
 
 const handleKeydown = (event: KeyboardEvent) => {
-  // 在没有内置动作区时，不拦截快捷键，避免影响外部容器（如 Drawer 的 Esc 关闭）
+  // When there is no built-in action area, do not intercept shortcut keys, to avoid affecting the outer container (such as the Esc close of a Drawer)
   if (!props.showActions) return
 
   if (event.key === 'Escape') {
@@ -147,7 +147,7 @@ const handleSubmit = () => {
   width: 100%;
 }
 
-/* 更紧凑的表单项：可选反馈场景不需要额外留白 */
+/* More compact form items: the optional feedback scenario does not need extra spacing */
 .feedback-form :deep(.n-form-item) {
   margin-bottom: 0;
 }
@@ -158,8 +158,8 @@ const handleSubmit = () => {
 }
 
 /*
- * Naive UI 的 NSpace 默认是 inline-flex，会导致内部子元素在某些布局下无法自然铺满。
- * 这里强制 space 及其 item 占满，以确保 textarea 不会“被挤窄”。
+ * Naive UI's NSpace is inline-flex by default, which prevents inner children from filling naturally in some layouts.
+ * Here the space and its items are forced to fill, to make sure the textarea is not "squeezed narrow".
  */
 .feedback-body {
   width: 100%;

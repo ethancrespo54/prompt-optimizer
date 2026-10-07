@@ -37,7 +37,7 @@
       </template>
     </NInput>
     
-    <!-- 提示文本 -->
+    <!-- Hint text -->
     <transition name="fade">
       <div v-if="!isOpen && !isLoading && showHint" 
           class="absolute right-12 top-0 bottom-0 min-w-[120px] flex items-center text-xs text-gray-500 pointer-events-none">
@@ -129,7 +129,7 @@ const isOpen = ref(false);
 const inputRef = ref(null);
 const searchText = ref('');
 
-// 根据输入内容筛选选项
+// Filter options based on the input
 const filteredOptions = computed(() => {
   if (!searchText.value) return props.options;
   return props.options.filter(option => 
@@ -138,7 +138,7 @@ const filteredOptions = computed(() => {
   );
 });
 
-// 处理输入事件
+// Handle the input event
 const handleInput = (value) => {
   emit('update:modelValue', value);
   searchText.value = value;
@@ -148,10 +148,10 @@ const handleInput = (value) => {
 const toggleDropdown = async () => {
   isOpen.value = !isOpen.value;
   
-  // 如果打开下拉菜单，聚焦到输入框
+  // If the dropdown menu opens, focus the input
   if (isOpen.value) {
     emit('fetchOptions');
-    // 等待DOM更新后聚焦
+    // Wait for the DOM to update before focusing
     setTimeout(() => {
       if (inputRef.value && inputRef.value.focus) {
         inputRef.value.focus();
@@ -176,7 +176,7 @@ const handleClickOutside = (event) => {
     target: event.target
   });
   
-  // 只有在下拉菜单打开且点击的是组件外部时才关闭下拉菜单
+  // Only close the dropdown when it is open and the click is outside the component
   if (isOpen.value && componentRef.value && !componentRef.value.contains(event.target)) {
     console.log('Closing dropdown');
     isOpen.value = false;
@@ -184,13 +184,13 @@ const handleClickOutside = (event) => {
   }
 };
 
-// 组件引用
+// Component reference
 const componentRef = ref(null);
 
 // Add and remove event listener
 onMounted(() => {
   if (typeof document !== 'undefined') {
-    // 使用捕获阶段以确保事件能够被正确捕获
+    // Use the capture phase to make sure the event is captured correctly
     document.addEventListener('mousedown', handleClickOutside, true);
   }
 });
@@ -203,7 +203,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* 提示文本的淡入淡出效果 */
+/* Fade in/out effect for the hint text */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.5s ease;

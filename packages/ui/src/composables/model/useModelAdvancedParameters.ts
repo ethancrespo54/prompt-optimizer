@@ -19,8 +19,8 @@ type ParameterizedModel = {
 }
 
 /**
- * 简化后的参数访问器接口
- * 现在只有统一的 paramOverrides,不再区分 built-in 和 custom
+ * Simplified parameter accessor interface
+ * There is now only the unified paramOverrides, with no distinction between built-in and custom
  */
 interface OverrideAccessors {
   getParamOverrides: () => Record<string, unknown>
@@ -28,8 +28,8 @@ interface OverrideAccessors {
 }
 
 /**
- * 简化后的选项接口
- * 直接传入必要的参数,而不是复杂的 resolver 函数
+ * Simplified options interface
+ * Pass the necessary parameters directly instead of complex resolver functions
  */
 interface UseModelAdvancedParametersOptions extends OverrideAccessors {
   mode: 'text' | 'image'
@@ -40,19 +40,19 @@ interface UseModelAdvancedParametersOptions extends OverrideAccessors {
 }
 
 /**
- * 统一的高级参数管理组合式函数
+ * Unified advanced parameter management composable
  *
- * 简化说明:
- * 1. 移除了 customOverrides 的概念,统一使用 paramOverrides
- * 2. 移除了 candidateModelIds 数组,直接使用 modelId
- * 3. 简化了模型元数据解析逻辑:savedModelMeta → static → buildDefault
+ * Simplification notes:
+ * 1. Removed the concept of customOverrides and uniformly use paramOverrides
+ * 2. Removed the candidateModelIds array and use modelId directly
+ * 3. Simplified the model metadata resolution logic: savedModelMeta → static → buildDefault
  */
 export function useModelAdvancedParameters(
   options: UseModelAdvancedParametersOptions
 ) {
   /**
-   * 解析当前模型元数据
-   * 优先级: savedModelMeta → static models → buildDefault
+   * Resolve the current model metadata
+   * Priority: savedModelMeta → static models → buildDefault
    */
   const currentModelMeta = computed(() => {
     const providerId = options.providerId.value
@@ -61,12 +61,12 @@ export function useModelAdvancedParameters(
 
     if (!providerId || !modelId) return undefined
 
-    // 优先使用已保存的模型元数据(配置中的快照)
+    // Prefer the saved model metadata (the snapshot in the config)
     if (savedMeta && savedMeta.id === modelId) {
       return savedMeta
     }
 
-    // 尝试从静态模型列表获取
+    // Try to get it from the static model list
     try {
       const registry = options.registry.value
       const staticModels = options.mode === 'text'
@@ -82,7 +82,7 @@ export function useModelAdvancedParameters(
       )
     }
 
-    // 最后使用 buildDefaultModel 构建
+    // Finally build it with buildDefaultModel
     try {
       const registry = options.registry.value
       const adapter = options.mode === 'text'
@@ -118,18 +118,18 @@ export function useModelAdvancedParameters(
   }
 
   /**
-   * 应用模型默认参数
-   * @param mergeWithExisting 是否与现有参数合并（true: 保留用户配置，补充缺失默认值；false: 完全替换）
+   * Apply the model default parameters
+   * @param mergeWithExisting Whether to merge with existing parameters (true: keep the user's config and fill in missing defaults; false: replace completely)
    */
   const applyDefaultsFromModel = (mergeWithExisting = false) => {
     const defaults = currentModelMeta.value?.defaultParameterValues
     if (!defaults) return
 
     if (mergeWithExisting) {
-      // 合并模式：保留用户已有配置，只补充缺失的默认值
+      // Merge mode: keep the user's existing config and only fill in missing defaults
       const currentOverrides = options.getParamOverrides()
       const merged = { ...defaults }
-      // 用户已配置的参数优先
+      // The user's configured parameters take priority
       for (const key of Object.keys(currentOverrides)) {
         if (currentOverrides[key] !== undefined) {
           merged[key] = currentOverrides[key]
@@ -137,7 +137,7 @@ export function useModelAdvancedParameters(
       }
       options.setParamOverrides(merged)
     } else {
-      // 替换模式：直接使用默认值
+      // Replace mode: use the default values directly
       options.setParamOverrides({ ...defaults })
     }
   }
@@ -152,5 +152,5 @@ export function useModelAdvancedParameters(
   }
 }
 
-// ✅ 已移除废弃函数：createTextModelMetaResolver, createImageModelMetaResolver
-// 请直接使用 useModelAdvancedParameters 并传入简化后的参数
+// ✅ Removed deprecated functions: createTextModelMetaResolver, createImageModelMetaResolver
+// Please use useModelAdvancedParameters directly and pass in the simplified parameters

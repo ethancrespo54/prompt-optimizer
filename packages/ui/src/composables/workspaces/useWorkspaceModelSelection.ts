@@ -1,15 +1,15 @@
 /**
- * 工作区模型选择逻辑（通用）
+ * Workspace model selection logic (shared)
  *
- * 功能：
- * - 从 session store 读取/写入 selectedOptimizeModelKey 和 selectedTestModelKey
- * - 刷新文本模型选项列表
- * - 提供 selectedTestModelInfo（用于测试区域显示）
- * - 自动设置默认值（fallback，单一真源：写回 session store）
- * - 竞态保护（避免快速切换/刷新导致的旧请求覆盖新请求）
+ * Features:
+ * - Read/write selectedOptimizeModelKey and selectedTestModelKey from the session store
+ * - Refresh the text model option list
+ * - Provide selectedTestModelInfo (used for display in the test area)
+ * - Set defaults automatically (fallback, single source of truth: write back to the session store)
+ * - Race protection (avoids old requests overwriting new ones caused by rapid switching/refreshing)
  *
- * @param services - AppServices 实例
- * @param sessionStore - Session store 实例（ProMultiMessageSession 或 ProVariableSession）
+ * @param services - AppServices instance
+ * @param sessionStore - Session store instance (ProMultiMessageSession or ProVariableSession)
  */
 import { computed, ref, watch, type Ref } from 'vue'
 import type { AppServices } from '../../types/services'
@@ -29,7 +29,7 @@ export function useWorkspaceModelSelection<T extends WorkspaceModelSessionStore>
 ) {
   const textModelOptions = ref<ModelSelectOption[]>([])
 
-  // 优化模型（双向绑定）
+  // Optimize model (two-way binding)
   const selectedOptimizeModelKey = computed<string>({
     get: () => sessionStore.selectedOptimizeModelKey ?? '',
     set: (value: string) => {
@@ -37,7 +37,7 @@ export function useWorkspaceModelSelection<T extends WorkspaceModelSessionStore>
     }
   })
 
-  // 测试模型（双向绑定）
+  // Test model (two-way binding)
   const selectedTestModelKey = computed<string>({
     get: () => sessionStore.selectedTestModelKey ?? '',
     set: (value: string) => {
@@ -45,7 +45,7 @@ export function useWorkspaceModelSelection<T extends WorkspaceModelSessionStore>
     }
   })
 
-  // 优化模型信息（派生）
+  // Optimize model info (derived)
   const selectedOptimizeModelInfo = computed(() => {
     const key = selectedOptimizeModelKey.value
     const option = textModelOptions.value.find(opt => opt.value === key)
@@ -55,7 +55,7 @@ export function useWorkspaceModelSelection<T extends WorkspaceModelSessionStore>
     }
   })
 
-  // 测试模型信息（派生）
+  // Test model info (derived)
   const selectedTestModelInfo = computed(() => {
     const key = selectedTestModelKey.value
     const option = textModelOptions.value.find(opt => opt.value === key)
@@ -65,7 +65,7 @@ export function useWorkspaceModelSelection<T extends WorkspaceModelSessionStore>
     }
   })
 
-  // 刷新模型列表
+  // Refresh the model list
   let refreshModelToken = 0
   const ensureInitializedIfSupported = async (manager: unknown) => {
     if (!manager || typeof manager !== 'object') return
@@ -91,20 +91,20 @@ export function useWorkspaceModelSelection<T extends WorkspaceModelSessionStore>
 
       textModelOptions.value = DataTransformer.modelsToSelectOptions(enabledModels)
 
-      // 自动 fallback：如果当前选中模型不在列表中，使用第一个
+      // Automatic fallback: if the currently selected model is not in the list, use the first one
       const fallback = textModelOptions.value[0]?.value || ''
       const modelKeys = new Set(textModelOptions.value.map(opt => opt.value))
 
-       // 优化模型
+       // Optimize model
        if (selectedOptimizeModelKey.value && !modelKeys.has(selectedOptimizeModelKey.value)) {
         selectedOptimizeModelKey.value = fallback
        }
-       // 测试模型
+       // Test model
        if (selectedTestModelKey.value && !modelKeys.has(selectedTestModelKey.value)) {
         selectedTestModelKey.value = fallback
        }
  
-       // 只在完全没有选中模型时设置默认值
+       // Only set the default when no model is selected at all
       if (!selectedOptimizeModelKey.value && fallback) {
         selectedOptimizeModelKey.value = fallback
        }
@@ -118,7 +118,7 @@ export function useWorkspaceModelSelection<T extends WorkspaceModelSessionStore>
     }
   }
 
-  // 监听 modelManager 变化：与模板选择对齐（组件 ready 后自动刷新）
+  // Watch modelManager changes: aligned with template selection (refresh automatically once the component is ready)
   watch(
     () => services.value?.modelManager,
     () => {

@@ -4,7 +4,7 @@
     :size="size"
     :disabled="loading"
     @click="handleToggleFavorite"
-    :title="isFavorited ? '取消收藏' : '添加到收藏'"
+    :title="isFavorited ? 'Remove from favorites' : 'Add to favorites'"
     class="favorite-button"
   >
       <template #icon>
@@ -13,14 +13,14 @@
         <Star v-else />
       </n-icon>
     </template>
-    {{ isFavorited ? '已收藏' : '收藏' }}
+    {{ isFavorited ? 'Favorited' : 'Favorite' }}
   </n-button>
 
-  <!-- 收藏对话框 -->
+  <!-- Favorite dialog -->
   <n-modal v-model:show="showFavoriteModal">
     <n-card
       style="max-width: 500px"
-      title="添加到收藏"
+      title="Add to favorites"
       :bordered="false"
       size="huge"
       role="dialog"
@@ -32,40 +32,40 @@
         :rules="formRules"
         label-placement="top"
       >
-        <n-form-item label="标题" path="title">
+        <n-form-item label="Title" path="title">
           <n-input
             v-model:value="favoriteForm.title"
-            placeholder="为这个提示词起个名字"
+            placeholder="Give this prompt a name"
             maxlength="100"
             show-count
           />
         </n-form-item>
 
-        <n-form-item label="描述" path="description">
+        <n-form-item label="Description" path="description">
           <n-input
             v-model:value="favoriteForm.description"
             type="textarea"
-            placeholder="描述这个提示词的用途和特点"
+            placeholder="Describe the purpose and characteristics of this prompt"
             :rows="3"
             maxlength="300"
             show-count
           />
         </n-form-item>
 
-        <n-form-item label="分类" path="category">
+        <n-form-item label="Category" path="category">
           <n-select
             v-model:value="favoriteForm.category"
             :options="categoryOptions"
-            placeholder="选择分类"
+            placeholder="Select a category"
             clearable
           />
         </n-form-item>
 
-        <n-form-item label="标签" path="tags">
+        <n-form-item label="Tags" path="tags">
           <n-dynamic-tags
             v-model:value="favoriteForm.tags"
             :max="10"
-            placeholder="输入标签后按回车添加"
+            placeholder="Type a tag and press Enter to add"
           />
         </n-form-item>
 
@@ -74,14 +74,14 @@
       <template #footer>
         <div class="flex justify-end gap-2">
           <n-button @click="showFavoriteModal = false">
-            取消
+            Cancel
           </n-button>
           <n-button
             type="primary"
             :loading="loading"
             @click="handleSaveFavorite"
           >
-            保存
+            Save
           </n-button>
         </div>
       </template>
@@ -111,13 +111,13 @@ import type { FavoriteCategory } from '@prompt-optimizer/core';
 import type { AppServices } from '../types/services';
 
 interface Props {
-  /** 提示词内容 */
+  /** Prompt content */
   content: string;
-  /** 原始提示词内容 */
+  /** Original prompt content */
   originalContent?: string;
-  /** 按钮大小 */
+  /** Button size */
   size?: 'tiny' | 'small' | 'medium' | 'large';
-  /** 是否显示加载状态 */
+  /** Whether to show the loading state */
   loading?: boolean;
 }
 
@@ -135,17 +135,17 @@ const services = inject<Ref<AppServices | null> | null>('services', null);
 
 const message = useToast();
 
-// 表单相关
+// Form-related
 const formRef = ref<FormInst | null>(null);
 const showFavoriteModal = ref(false);
 const loading = ref(false);
 const categories = ref<FavoriteCategory[]>([]);
 
-// 收藏状态
+// Favorite state
 const isFavorited = ref(false);
 const favoriteId = ref<string | null>(null);
 
-// 表单数据
+// Form data
 const favoriteForm = ref({
   title: '',
   description: '',
@@ -153,25 +153,25 @@ const favoriteForm = ref({
   tags: [] as string[]
 });
 
-// 表单验证规则
+// Form validation rules
 const formRules: FormRules = {
   title: [
     {
       required: true,
-      message: '请输入标题',
+      message: 'Please enter a title',
       trigger: ['input', 'blur']
     }
   ],
   category: [
     {
       required: false,
-      message: '请选择分类',
+      message: 'Please select a category',
       trigger: ['change', 'blur']
     }
   ]
 };
 
-// 分类选项
+// Category options
 const categoryOptions = computed(() => {
   return categories.value.map(cat => ({
     label: cat.name,
@@ -180,13 +180,13 @@ const categoryOptions = computed(() => {
   }));
 });
 
-// 检查是否已收藏
+// Check whether it is already favorited
 const checkFavoriteStatus = async () => {
   if (!services?.value || !props.content) return;
   const servicesValue = services?.value;
   if (!servicesValue) return;
   if (!servicesValue.favoriteManager) {
-    console.warn('收藏管理器未初始化，跳过收藏状态检查');
+    console.warn('Favorite manager is not initialized, skipping the favorite state check');
     return;
   }
 
@@ -202,29 +202,29 @@ const checkFavoriteStatus = async () => {
       favoriteId.value = null;
     }
   } catch (error) {
-    console.error('检查收藏状态失败:', error);
+    console.error('Failed to check favorite state:', error);
   }
 };
 
-// 加载分类列表
+// Load the category list
 const loadCategories = async () => {
   if (!services?.value) return;
   const servicesValue = services?.value;
   if (!servicesValue) return;
   if (!servicesValue.favoriteManager) {
-    console.warn('收藏管理器未初始化，跳过分类加载');
+    console.warn('Favorite manager is not initialized, skipping category loading');
     return;
   }
 
   try {
     categories.value = await servicesValue.favoriteManager.getCategories();
   } catch (error) {
-    console.error('加载分类失败:', error);
-    message.error('加载分类失败');
+    console.error('Failed to load categories:', error);
+    message.error('Failed to load categories');
   }
 };
 
-// 切换收藏状态
+// Toggle the favorite state
 const handleToggleFavorite = () => {
   if (isFavorited.value) {
     handleRemoveFavorite();
@@ -234,19 +234,19 @@ const handleToggleFavorite = () => {
   }
 };
 
-// 初始化收藏表单
+// Initialize the favorite form
 const initFavoriteForm = () => {
-  // 自动生成标题
+  // Auto-generate the title
   let title = props.content.slice(0, 50);
   if (props.content.length > 50) {
     title += '...';
   }
 
-  // 根据内容智能分类
+  // Categorize intelligently based on the content
   let defaultCategory = '';
   if (props.originalContent) {
-    // 如果有原始内容，说明是优化后的提示词
-    defaultCategory = categories.value.find(c => c.name === '系统提示词')?.id || '';
+    // If there is original content, this is an optimized prompt
+    defaultCategory = categories.value.find(c => c.name === 'System Prompts')?.id || '';
   }
 
   favoriteForm.value = {
@@ -257,14 +257,14 @@ const initFavoriteForm = () => {
   };
 };
 
-// 保存收藏
+// Save the favorite
 const handleSaveFavorite = async () => {
   if (!services?.value) return;
   const servicesValue = services?.value;
   if (!servicesValue) return;
   if (!servicesValue.favoriteManager) {
-    console.warn('收藏管理器未初始化，无法执行收藏操作');
-    message.warning('收藏功能暂不可用，请稍后再试');
+    console.warn('Favorite manager is not initialized, cannot perform the favorite operation');
+    message.warning('Favorites feature is currently unavailable, please try again later');
     return;
   }
 
@@ -278,10 +278,10 @@ const handleSaveFavorite = async () => {
       description: favoriteForm.value.description,
       category: favoriteForm.value.category,
       tags: favoriteForm.value.tags,
-      functionMode: 'basic' as const,  // 默认为基础模式
-      optimizationMode: 'system' as const,  // 默认为系统优化模式
+      functionMode: 'basic' as const,  // Defaults to basic mode
+      optimizationMode: 'system' as const,  // Defaults to system optimization mode
       metadata: {
-        originalContent: props.originalContent,  // 移到 metadata 中
+        originalContent: props.originalContent,  // Moved into metadata
         hasOriginalContent: !!props.originalContent
       }
     };
@@ -292,24 +292,24 @@ const handleSaveFavorite = async () => {
     favoriteId.value = id;
     showFavoriteModal.value = false;
 
-    message.success('添加到收藏成功');
+    message.success('Added to favorites');
     emit('favorited', id);
   } catch (error) {
-    console.error('添加收藏失败:', error);
-    const errorMessage = error instanceof Error ? error.message : '未知错误';
-    message.error(`添加收藏失败: ${errorMessage}`);
+    console.error('Failed to add favorite:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    message.error(`Failed to add favorite: ${errorMessage}`);
   } finally {
     loading.value = false;
   }
 };
 
-// 移除收藏
+// Remove a favorite
 const handleRemoveFavorite = async () => {
   const servicesValue = services?.value;
   if (!servicesValue || !favoriteId.value) return;
   if (!servicesValue.favoriteManager) {
-    console.warn('收藏管理器未初始化，无法执行取消收藏操作');
-    message.warning('收藏功能暂不可用，请稍后再试');
+    console.warn('Favorite manager is not initialized, cannot perform the unfavorite operation');
+    message.warning('Favorites feature is currently unavailable, please try again later');
     return;
   }
 
@@ -319,16 +319,16 @@ const handleRemoveFavorite = async () => {
     isFavorited.value = false;
     favoriteId.value = null;
 
-    message.success('取消收藏成功');
+    message.success('Removed from favorites');
     emit('unfavorited');
   } catch (error) {
-    console.error('取消收藏失败:', error);
-    const errorMessage = error instanceof Error ? error.message : '未知错误';
-    message.error(`取消收藏失败: ${errorMessage}`);
+    console.error('Failed to remove favorite:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    message.error(`Failed to remove favorite: ${errorMessage}`);
   }
 };
 
-// 监听服务初始化完成后再执行相关操作
+// Watch for service initialization to complete before running related operations
 watch(() => services?.value?.favoriteManager, (favoriteManager) => {
   if (favoriteManager) {
     loadCategories();
@@ -343,7 +343,7 @@ onMounted(() => {
   checkFavoriteStatus();
 });
 
-// 监听内容变化，重新检查收藏状态
+// Watch for content changes and re-check the favorite state
 watch(() => props.content, () => {
   checkFavoriteStatus();
 });

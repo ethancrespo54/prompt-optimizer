@@ -1,18 +1,18 @@
 /**
- * Pinia Stores 统一导出
+ * Pinia Stores unified exports
  */
 
-// 临时变量 store
+// Temporary variable store
 export {
   useTemporaryVariablesStore,
   type TemporaryVariablesMap,
   type TemporaryVariablesStoreApi,
 } from './temporaryVariables'
 
-// PromptDraft store（计划废弃，将被 session stores 替代）
+// PromptDraft store (planned for deprecation, to be replaced by the session stores)
 export { usePromptDraftStore, type PromptDraftStoreApi } from './promptDraft'
 
-// Session 管理
+// Session management
 export {
   useSessionManager,
   type SubModeKey,
@@ -20,7 +20,7 @@ export {
   type SessionManagerApi,
 } from './session/useSessionManager'
 
-// Session Stores（按子模式组织）
+// Session Stores (organized by sub-mode)
 export {
   useBasicSystemSession,
   type BasicSystemSessionState,

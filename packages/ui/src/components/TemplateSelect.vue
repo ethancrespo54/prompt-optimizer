@@ -57,7 +57,7 @@ const props = defineProps({
     type: String as () => OptimizationMode,
     required: true
   },
-  // 移除services prop，统一使用inject
+  // Removed the services prop; inject is used uniformly
 })
 
 const emit = defineEmits<{
@@ -68,22 +68,22 @@ const emit = defineEmits<{
 
 const isReady = ref(false)
 
-// 通过inject获取services，要求不能为null
+// Get services via inject; it must not be null
 const services = inject<Ref<AppServices | null>>('services')
 if (!services) {
-  throw new Error('[TemplateSelect] services未正确注入，请确保在App组件中正确provide了services')
+  throw new Error('[TemplateSelect] services was not injected correctly; make sure services is provided in the App component')
 }
 
-// 从services中获取templateManager
+// Get templateManager from services
 const templateManager = computed(() => {
   const servicesValue = services.value
   if (!servicesValue) {
-    throw new Error('[TemplateSelect] services未初始化，请确保应用已正确启动')
+    throw new Error('[TemplateSelect] services is not initialized; make sure the app has started correctly')
   }
 
   const manager = servicesValue.templateManager
   if (!manager) {
-    throw new Error('[TemplateSelect] templateManager未初始化，请确保服务已正确配置')
+    throw new Error('[TemplateSelect] templateManager is not initialized; make sure the services are configured correctly')
   }
 
   console.debug('[TemplateSelect] templateManager computed:', {
@@ -94,7 +94,7 @@ const templateManager = computed(() => {
   return manager
 })
 
-// 选择框选项
+// Select options
 const selectOptions = computed(() => {
   const templateOptions = templates.value.map(template => ({
     label: template.name,
@@ -105,12 +105,12 @@ const selectOptions = computed(() => {
     type: 'template'
   }))
   
-  // 如果没有模板，返回空数组让placeholder显示
+  // If there are no templates, return an empty array so the placeholder shows
   if (templateOptions.length === 0) {
     return []
   }
   
-  // 添加配置按钮选项
+  // Add the config button option
   const configOption = {
     label: '📝' + t('template.configure'),
     value: '__config__',
@@ -120,9 +120,9 @@ const selectOptions = computed(() => {
   return [...templateOptions, configOption]
 })
 
-// 处理模板选择
+// Handle template selection
 const handleTemplateSelect = (value: string | null) => {
-  // 如果选择的是配置选项，不更新值，直接触发配置事件
+  // If the config option is selected, do not update the value; trigger the config event directly
   if (value === '__config__') {
     emit('manage', props.type)
     return
@@ -135,7 +135,7 @@ const handleTemplateSelect = (value: string | null) => {
   }
 }
 
-// 处理焦点事件
+// Handle the focus event
 const handleFocus = async () => {
   if (!isReady.value) {
     await ensureTemplateManagerReady()
@@ -143,38 +143,38 @@ const handleFocus = async () => {
   }
 }
 
-// 确保模板管理器已准备就绪
+// Make sure the template manager is ready
 const ensureTemplateManagerReady = async () => {
-  // templateManager的检查已经在computed中进行，这里直接使用
+  // The templateManager check is already done in the computed, so use it directly here
   isReady.value = true
-  console.debug('[TemplateSelect] 模板管理器已就绪')
+  console.debug('[TemplateSelect] Template manager is ready')
   return true
 }
 
-// 改为响应式数据，因为需要异步加载
+// Changed to reactive data since it needs async loading
 const templates = ref<Template[]>([])
 
-// 异步加载模板列表
+// Load the template list asynchronously
 const loadTemplatesByType = async () => {
   if (!isReady.value || !templateManager.value) {
     throw new Error('Template manager is not ready or not available')
   }
 
-  // 统一使用异步方法，立即抛错不静默处理
+  // Use the async method uniformly and throw immediately without silently swallowing errors
   const typeTemplates = await templateManager.value.listTemplatesByType(props.type)
   templates.value.splice(0, templates.value.length, ...typeTemplates)
 }
 
-// 添加对services变化的监听
+// Add a watcher for services changes
 watch(
   () => services.value?.templateManager,
   async (newTemplateManager) => {
     if (newTemplateManager) {
-      console.debug('[TemplateSelect] 检测到模板管理器变化，开始初始化...')
+      console.debug('[TemplateSelect] Detected a template manager change, starting initialization...')
       await ensureTemplateManagerReady()
       await loadTemplatesByType()
     } else {
-      // 立即抛错，不静默处理
+      // Throw immediately without silently swallowing the error
       isReady.value = false
       templates.value.splice(0, templates.value.length)
       throw new Error('[TemplateSelect] Template manager is not available')
@@ -183,7 +183,7 @@ watch(
   { immediate: true, deep: true }
 )
 
-// 监听props.type变化，重新加载模板
+// Watch props.type changes and reload the templates
 watch(
   () => props.type,
   async () => {
@@ -195,29 +195,29 @@ watch(
   }
 )
 
-// 添加对optimizationMode变化的监听
+// Add a watcher for optimizationMode changes
 watch(
   () => props.optimizationMode,
   (newOptimizationMode, oldOptimizationMode) => {
     if (newOptimizationMode !== oldOptimizationMode) {
-      // optimizationMode变化时，静默刷新模板列表（避免重复toast）
+      // When optimizationMode changes, silently refresh the template list (avoiding duplicate toasts)
       refreshTemplates()
     }
   }
 )
 
-// 添加对模板列表变化的监听
+// Add a watcher for template list changes
 watch(
-  templates,  // 监听模板列表
+  templates,  // Watch the template list
   (newTemplates) => {
     const currentTemplate = props.modelValue
-    // 只有在模板列表真正发生变化，且当前模板不在新列表中时才自动切换
+    // Only switch automatically when the template list has really changed and the current template is not in the new list
     if (currentTemplate && !newTemplates.find(t => t.id === currentTemplate.id)) {
       const firstTemplate = newTemplates.find(t => t.metadata.templateType === props.type) || null
-      // 避免重复触发：只在实际发生变化时emit
+      // Avoid duplicate triggers: only emit when there is an actual change
       if (firstTemplate && firstTemplate.id !== currentTemplate?.id) {
         emit('update:modelValue', firstTemplate)
-        // 静默选择，不显示toast
+        // Select silently without showing a toast
         emit('select', firstTemplate, false)
       }
     }
@@ -226,22 +226,22 @@ watch(
 )
 
 /**
- * 深度比较模板内容
- * 支持 string 和 Array<{role: string; content: string}> 两种类型
- * 修复 BugBot 发现的数组引用比较问题
+ * Deep-compare template content
+ * Supports both string and Array<{role: string; content: string}> types
+ * Fixes the array reference comparison problem found by BugBot
  */
 const deepCompareTemplateContent = (content1: string | Array<{role: string; content: string}>, content2: string | Array<{role: string; content: string}>): boolean => {
-  // 类型相同性检查
+  // Check that the types are the same
   if (typeof content1 !== typeof content2) {
     return false
   }
   
-  // 字符串类型直接比较
+  // Compare string types directly
   if (typeof content1 === 'string') {
     return content1 === content2
   }
   
-  // 数组类型深度比较
+  // Deep-compare array types
   if (Array.isArray(content1) && Array.isArray(content2)) {
     if (content1.length !== content2.length) {
       return false
@@ -253,40 +253,40 @@ const deepCompareTemplateContent = (content1: string | Array<{role: string; cont
     })
   }
   
-  // 其他情况使用 JSON 序列化比较（兜底方案）
+  // For other cases, compare using JSON serialization (fallback)
   return JSON.stringify(content1) === JSON.stringify(content2)
 }
 
 /**
- * 刷新模板列表和当前选中的模板
- * 职责：
- * 1. 刷新模板列表显示
- * 2. 检查当前选中模板是否需要更新（如语言切换）
- * 3. 处理模板不存在的情况（自动选择默认模板）
+ * Refresh the template list and the currently selected template
+ * Responsibilities:
+ * 1. Refresh the template list display
+ * 2. Check whether the currently selected template needs updating (e.g. a language switch)
+ * 3. Handle a template that no longer exists (automatically select the default template)
  */
 const refreshTemplates = async () => {
   try {
-    // 重新加载模板列表
+    // Reload the template list
     await loadTemplatesByType()
     
-    // 检查当前选中的模板是否仍然有效
+    // Check whether the currently selected template is still valid
     const currentTemplate = props.modelValue
     if (currentTemplate && currentTemplate.isBuiltin) {
-      // 对于内置模板，需要重新获取以确保语言正确
+      // For built-in templates, re-fetch to make sure the language is correct
       try {
         const updatedTemplate = await templateManager.value?.getTemplate(currentTemplate.id)
         if (updatedTemplate && deepCompareTemplateContent(updatedTemplate.content, currentTemplate.content) === false) {
-          // 模板内容已更新（比如语言切换），通知父组件
+          // The template content has been updated (e.g. a language switch); notify the parent component
           emit('update:modelValue', updatedTemplate)
-          emit('select', updatedTemplate, false) // 静默更新，不显示toast
+          emit('select', updatedTemplate, false) // Silent update, no toast
         }
       } catch (error) {
         console.warn('[TemplateSelect] Failed to get updated template:', error)
-        // 如果获取失败，尝试选择第一个可用的模板
+        // If fetching fails, try to select the first available template
         const availableTemplates = templates.value.filter(t => t.metadata.templateType === props.type)
         if (availableTemplates.length > 0) {
           emit('update:modelValue', availableTemplates[0])
-          emit('select', availableTemplates[0], false) // 静默选择
+          emit('select', availableTemplates[0], false) // Silent selection
         }
       }
     }
@@ -296,15 +296,15 @@ const refreshTemplates = async () => {
 }
 
 /**
- * 暴露给父组件的接口
+ * Interface exposed to the parent component
  * 
- * refresh(): 当外部状态变化（如语言切换、模板管理操作）时，
- * 父组件可以调用此方法通知子组件刷新数据。
- * 子组件负责检查数据变化并通过 v-model 更新父组件状态。
+ * refresh(): when external state changes (such as a language switch or a template management operation),
+ * the parent component can call this method to notify the child component to refresh its data.
+ * The child component checks for data changes and updates the parent state through v-model.
  * 
- * 职责分工：
- * - 父组件：检测需要刷新的时机，调用 refresh()
- * - 子组件：执行具体的刷新逻辑，管理自身状态，通过事件通知父组件
+ * Division of responsibilities:
+ * - Parent component: detects when a refresh is needed and calls refresh()
+ * - Child component: runs the concrete refresh logic, manages its own state, and notifies the parent via events
  */
 defineExpose({
   refresh: refreshTemplates

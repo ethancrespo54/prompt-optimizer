@@ -10,8 +10,8 @@ export interface TagSuggestion {
 }
 
 /**
- * 标签建议 Composable
- * 提供标签自动完成功能，基于现有收藏中的标签使用情况
+ * Tag suggestions composable
+ * Provides tag autocomplete based on tag usage in existing favorites
  */
 export function useTagSuggestions() {
   const services = inject<Ref<AppServices | null>>('services');
@@ -19,7 +19,7 @@ export function useTagSuggestions() {
   const loading = ref(false);
 
   /**
-   * 加载所有标签统计数据
+   * Load all tag statistics data
    */
   const loadTags = async () => {
     if (!services?.value?.favoriteManager) {
@@ -29,7 +29,7 @@ export function useTagSuggestions() {
     loading.value = true;
     try {
       const tagStats = await services.value.favoriteManager.getAllTags();
-      // 使用统一的类型转换器转换为自动完成选项格式
+      // Use the unified type converter to convert to the autocomplete option format
       allTags.value = TagTypeConverter.toAutoCompleteOptions(tagStats);
     } catch (error) {
       console.error('Failed to load tags:', error);
@@ -40,45 +40,45 @@ export function useTagSuggestions() {
   };
 
   /**
-   * 根据输入查询过滤标签建议
-   * @param query 查询字符串
-   * @param excludeTags 需要排除的标签(已选中的标签)
-   * @returns 过滤后的标签建议列表
+   * Filter tag suggestions based on the input query
+   * @param query Query string
+   * @param excludeTags Tags to exclude (already selected tags)
+   * @returns Filtered list of tag suggestions
    */
   const filterTags = (query: string, excludeTags: string[] = []): TagSuggestion[] => {
     if (!query) {
-      // 如果没有输入，返回所有未选中的标签，按使用次数排序
+      // If there is no input, return all unselected tags, sorted by usage count
       return allTags.value
         .filter(tag => !excludeTags.includes(tag.value))
         .sort((a, b) => b.count - a.count);
     }
 
-    // 模糊搜索匹配
+    // Fuzzy search matching
     const lowerQuery = query.toLowerCase();
     return allTags.value
       .filter(tag => {
-        // 排除已选中的标签
+        // Exclude already selected tags
         if (excludeTags.includes(tag.value)) {
           return false;
         }
-        // 包含查询字符串
+        // Contains the query string
         return tag.value.toLowerCase().includes(lowerQuery);
       })
       .sort((a, b) => {
-        // 优先匹配前缀
+        // Prefer prefix matches
         const aStartsWith = a.value.toLowerCase().startsWith(lowerQuery);
         const bStartsWith = b.value.toLowerCase().startsWith(lowerQuery);
         if (aStartsWith && !bStartsWith) return -1;
         if (!aStartsWith && bStartsWith) return 1;
-        // 其次按使用次数排序
+        // Then sort by usage count
         return b.count - a.count;
       });
   };
 
   /**
-   * 获取热门标签(使用次数最多的前N个)
-   * @param limit 返回数量限制
-   * @param excludeTags 需要排除的标签
+   * Get popular tags (the top N most used)
+   * @param limit Limit on the number returned
+   * @param excludeTags Tags to exclude
    */
   const getPopularTags = computed(() => {
     return (limit = 10, excludeTags: string[] = []): TagSuggestion[] => {
@@ -90,13 +90,13 @@ export function useTagSuggestions() {
   });
 
   /**
-   * 获取最近使用的标签(暂时与热门标签相同，未来可以基于时间戳优化)
-   * @param limit 返回数量限制
-   * @param excludeTags 需要排除的标签
+   * Get recently used tags (currently the same as popular tags; can be optimized by timestamp in the future)
+   * @param limit Limit on the number returned
+   * @param excludeTags Tags to exclude
    */
   const getRecentTags = computed(() => {
     return (limit = 10, excludeTags: string[] = []): TagSuggestion[] => {
-      // TODO: 未来可以基于收藏的更新时间来优化这个逻辑
+      // TODO: in the future this logic can be optimized based on the favorites' update time
       return getPopularTags.value(limit, excludeTags);
     };
   });

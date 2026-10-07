@@ -8,7 +8,7 @@
       flexDirection: 'column'
     }"
   >
-    <!-- 对比模式：双列布局 -->
+    <!-- Compare mode: two-column layout -->
     <NFlex
       v-if="isCompareMode && showOriginal"
       :vertical="verticalLayout"
@@ -20,7 +20,7 @@
         gap: '12px'
       }"
     >
-      <!-- 原始结果 -->
+      <!-- Original result -->
       <NCard
         size="small"
         :style="{
@@ -35,7 +35,7 @@
             <NText style="font-size: 16px; font-weight: 600;">
               {{ originalTitle }}
             </NText>
-            <!-- 原始结果评估入口 -->
+            <!-- Original result evaluation entry -->
             <div v-if="showEvaluation && hasOriginalResult" class="evaluation-entry">
               <EvaluationScoreBadge
                 v-if="hasOriginalEvaluation || isEvaluatingOriginal"
@@ -66,7 +66,7 @@
         <div class="result-body">
           <slot name="original-result"></slot>
         </div>
-        <!-- 原始结果的工具调用 -->
+        <!-- Tool calls of the original result -->
         <ToolCallDisplay
           v-if="originalResult?.toolCalls"
           :tool-calls="originalResult.toolCalls"
@@ -75,7 +75,7 @@
         />
       </NCard>
 
-      <!-- 优化结果 -->
+      <!-- Optimized result -->
       <NCard
         size="small"
         :style="{
@@ -90,7 +90,7 @@
             <NText style="font-size: 16px; font-weight: 600;">
               {{ optimizedTitle }}
             </NText>
-            <!-- 优化结果评估入口 -->
+            <!-- Optimized result evaluation entry -->
             <div v-if="showEvaluation && hasOptimizedResult" class="evaluation-entry">
               <EvaluationScoreBadge
                 v-if="hasOptimizedEvaluation || isEvaluatingOptimized"
@@ -121,7 +121,7 @@
         <div class="result-body">
           <slot name="optimized-result"></slot>
         </div>
-        <!-- 优化结果的工具调用 -->
+        <!-- Tool calls of the optimized result -->
         <ToolCallDisplay
           v-if="optimizedResult?.toolCalls"
           :tool-calls="optimizedResult.toolCalls"
@@ -131,7 +131,7 @@
       </NCard>
     </NFlex>
 
-    <!-- 单一模式：单列布局 -->
+    <!-- Single mode: single-column layout -->
     <NCard
       v-else
       size="small"
@@ -147,7 +147,7 @@
           <NText style="font-size: 16px; font-weight: 600;">
             {{ singleResultTitle }}
           </NText>
-          <!-- 单一结果评估入口（使用优化结果的评估状态） -->
+          <!-- Single result evaluation entry (uses the optimized result's evaluation state) -->
           <div v-if="showEvaluation && hasOptimizedResult" class="evaluation-entry">
             <EvaluationScoreBadge
               v-if="hasOptimizedEvaluation || isEvaluatingOptimized"
@@ -165,7 +165,7 @@
             <FocusAnalyzeButton
               v-else
               type="optimized"
-              :label="t('evaluation.evaluate', '评估')"
+              :label="t('evaluation.evaluate', 'Evaluate')"
               :loading="isEvaluatingOptimized"
               :button-props="{ size: 'tiny', secondary: true }"
               @evaluate="handleEvaluateOptimized"
@@ -177,7 +177,7 @@
       <div class="result-body">
         <slot name="single-result"></slot>
       </div>
-      <!-- 单一结果的工具调用 -->
+      <!-- Tool calls of the single result -->
       <ToolCallDisplay
         v-if="singleResult?.toolCalls"
         :tool-calls="singleResult.toolCalls"
@@ -200,43 +200,43 @@ import type { ScoreLevel } from './evaluation/types'
 const { t } = useI18n()
 
 interface Props {
-  // 布局模式
+  // Layout mode
   isCompareMode?: boolean
   verticalLayout?: boolean
   showOriginal?: boolean
 
-  // 标题配置
+  // Title config
   originalTitle?: string
   optimizedTitle?: string
   singleResultTitle?: string
 
-  // 测试结果数据（用于工具调用显示）
+  // Test result data (used for tool call display)
   originalResult?: AdvancedTestResult
   optimizedResult?: AdvancedTestResult
   singleResult?: AdvancedTestResult
 
-  // 尺寸配置
+  // Size config
   cardSize?: 'small' | 'medium' | 'large'
   size?: 'small' | 'medium' | 'large'
 
-  // 间距配置
+  // Spacing config
   gap?: string | number
 
-  // 评估功能配置
+  // Evaluation feature config
   showEvaluation?: boolean
-  // 是否有测试结果（用于显示评估按钮）
+  // Whether there are test results (used to show the evaluate button)
   hasOriginalResult?: boolean
   hasOptimizedResult?: boolean
-  // 评估状态
+  // Evaluation state
   isEvaluatingOriginal?: boolean
   isEvaluatingOptimized?: boolean
-  // 评估分数
+  // Evaluation score
   originalScore?: number | null
   optimizedScore?: number | null
-  // 是否有评估结果
+  // Whether there are evaluation results
   hasOriginalEvaluation?: boolean
   hasOptimizedEvaluation?: boolean
-  // 评估结果和等级（用于悬浮预览）
+  // Evaluation results and grades (used for the hover preview)
   originalEvaluationResult?: EvaluationResponse | null
   optimizedEvaluationResult?: EvaluationResponse | null
   originalScoreLevel?: ScoreLevel | null
@@ -253,7 +253,7 @@ const props = withDefaults(defineProps<Props>(), {
   cardSize: 'small',
   size: 'small',
   gap: 12,
-  // 评估默认值
+  // Evaluation defaults
   showEvaluation: false,
   hasOriginalResult: false,
   hasOptimizedResult: false,
@@ -279,20 +279,20 @@ const emit = defineEmits<{
   'apply-patch': [payload: { operation: PatchOperation }]
 }>()
 
-// 计算属性
+// Computed properties
 const originalTitle = computed(() =>
-  props.originalTitle || t('test.originalResult', '原始结果')
+  props.originalTitle || t('test.originalResult', 'Original Result')
 )
 
 const optimizedTitle = computed(() =>
-  props.optimizedTitle || t('test.optimizedResult', '优化结果')
+  props.optimizedTitle || t('test.optimizedResult', 'Optimized Result')
 )
 
 const singleResultTitle = computed(() =>
-  props.singleResultTitle || t('test.testResult', '测试结果')
+  props.singleResultTitle || t('test.testResult', 'Test Result')
 )
 
-// 事件处理
+// Event handling
 const handleEvaluateOriginal = () => {
   emit('evaluate-original')
 }
@@ -313,12 +313,12 @@ const handleShowOptimizedDetail = () => {
   emit('show-optimized-detail')
 }
 
-// 应用改进建议处理
+// Apply improvement suggestions handling
 const handleApplyImprovement = (payload: { improvement: string; type: EvaluationType }) => {
   emit('apply-improvement', payload)
 }
 
-// 应用补丁处理
+// Apply patch handling
 const handleApplyPatch = (payload: { operation: PatchOperation }) => {
   emit('apply-patch', payload)
 }
@@ -326,12 +326,12 @@ const handleApplyPatch = (payload: { operation: PatchOperation }) => {
 
 <style scoped>
 .test-result-section {
-  /* 确保正确的flex行为和高度管理 */
+  /* Make sure flex behavior and height management are correct */
   min-height: 0;
   max-height: 100%;
 }
 
-/* 卡片头部布局 */
+/* Card header layout */
 .card-header-content {
   display: flex;
   align-items: center;
@@ -344,16 +344,16 @@ const handleApplyPatch = (payload: { operation: PatchOperation }) => {
   margin-left: 8px;
 }
 
-/* 三段式布局样式 */
+/* Three-section layout styles */
 .result-body {
   flex: 1;
   min-height: 0;
   overflow: auto;
-  /* 为正文区域提供独立滚动 */
+  /* Provide independent scrolling for the body area */
 }
 
 .tool-calls-section {
   flex: 0 0 auto;
-  /* 工具调用区域根据内容自适应高度 */
+  /* The tool call area adapts its height to the content */
 }
 </style>

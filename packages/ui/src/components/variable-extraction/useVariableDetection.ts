@@ -4,32 +4,32 @@ import { isValidVariableName } from '../../types/variable'
 
 
 /**
- * 检测到的变量信息
+ * Detected variable info
  */
 export interface DetectedVariable {
-  /** 变量名 */
+  /** Variable name */
   name: string;
-  /** 变量来源 */
+  /** Variable source */
   source: "global" | "temporary" | "predefined" | "missing";
-  /** 变量值 */
+  /** Variable value */
   value: string;
-  /** 在文档中的起始位置 */
+  /** Start position in the document */
   from: number;
-  /** 在文档中的结束位置 */
+  /** End position in the document */
   to: number;
 }
 
 /**
- * 变量检测 Composable
+ * Variable detection composable
  *
- * 功能:
- * 1. 从文本中提取所有 {{variable}} 占位符
- * 2. 根据变量来源分类 (全局/临时/预定义/缺失)
- * 3. 返回变量的位置信息,用于高亮渲染
+ * Features:
+ * 1. Extract all {{variable}} placeholders from the text
+ * 2. Classify variables by source (global / temporary / predefined / missing)
+ * 3. Return the position info of variables, used for highlight rendering
  *
- * @param globalVariables 全局变量
- * @param temporaryVariables 临时变量
- * @param predefinedVariables 预定义变量
+ * @param globalVariables Global variables
+ * @param temporaryVariables Temporary variables
+ * @param predefinedVariables Predefined variables
  */
 export function useVariableDetection(
   globalVariables: Ref<Record<string, string>>,
@@ -37,10 +37,10 @@ export function useVariableDetection(
   predefinedVariables: Ref<Record<string, string>>,
 ) {
   /**
-   * 从文本中提取所有变量
+   * Extract all variables from the text
    *
-   * @param text 要分析的文本
-   * @returns 检测到的变量列表
+   * @param text Text to analyze
+   * @returns List of detected variables
    */
   const extractVariables = (text: string): DetectedVariable[] => {
     const regex = /\{\{\s*([^\d{}\s][^{}\s]*)\s*\}\}/gu;
@@ -49,18 +49,18 @@ export function useVariableDetection(
 
     while ((match = regex.exec(text)) !== null) {
       const name = match[1];
-      // 防止异常键/不合法变量名进入高亮与缺失提示
+      // Prevent abnormal keys / invalid variable names from entering highlighting and missing-variable hints
       if (!isValidVariableName(name)) {
         continue
       }
       const from = match.index;
       const to = from + match[0].length;
 
-      // 分类变量并获取值
+      // Classify the variable and get its value
       let source: DetectedVariable["source"];
       let value = "";
 
-      // 优先级: 预定义 > 全局 > 临时 > 缺失
+      // Priority: predefined > global > temporary > missing
       if (predefinedVariables.value[name] !== undefined) {
         source = "predefined";
         value = predefinedVariables.value[name];
@@ -82,18 +82,18 @@ export function useVariableDetection(
   };
 
   /**
-   * 获取缺失的变量列表
+   * Get the list of missing variables
    */
   const missingVariables = computed(() => {
-    // 这个方法需要在外部调用 extractVariables 后使用
-    // 这里提供一个辅助方法
+    // This method must be used after calling extractVariables externally
+    // A helper method is provided here
     return (text: string) => {
       return extractVariables(text).filter((v) => v.source === "missing");
     };
   });
 
   /**
-   * 获取变量统计信息
+   * Get variable statistics
    */
   const getVariableStats = (text: string) => {
     const variables = extractVariables(text);

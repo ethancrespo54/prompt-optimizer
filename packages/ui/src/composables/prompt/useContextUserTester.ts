@@ -7,28 +7,28 @@ import type { ConversationMessage } from '../../types/variable'
 import type { VariableManagerHooks } from './useVariableManager'
 
 /**
- * ContextUser 模式测试结果接口
+ * ContextUser mode test result interface
  */
 export interface ContextUserTestResults {
-  // 原始提示词结果
+  // Original prompt result
   originalResult: string
   originalReasoning: string
   isTestingOriginal: boolean
 
-  // 优化提示词结果
+  // Optimized prompt result
   optimizedResult: string
   optimizedReasoning: string
   isTestingOptimized: boolean
 }
 
 /**
- * ContextUser 模式测试器接口
+ * ContextUser mode tester interface
  */
 export interface UseContextUserTester {
-  // 测试结果状态
+  // Test result state
   testResults: ContextUserTestResults
 
-  // 方法
+  // Methods
   executeTest: (
     prompt: string,
     optimizedPrompt: string,
@@ -38,18 +38,18 @@ export interface UseContextUserTester {
 }
 
 /**
- * ContextUser 模式提示词测试器 Composable
+ * ContextUser mode prompt tester composable
  *
- * 专门用于 ContextUserWorkspace 的测试逻辑，特点：
- * - 只处理用户模式测试（user mode）
- * - 独立的测试结果状态管理
- * - 支持对比模式（原始 vs 优化）
- * - 与 ContextSystem 的 useConversationTester 对称
+ * Dedicated to the test logic of ContextUserWorkspace, with these characteristics:
+ * - Only handles user mode testing (user mode)
+ * - Independent test result state management
+ * - Supports compare mode (original vs optimized)
+ * - Symmetric with useConversationTester of ContextSystem
  *
- * @param services 服务实例引用
- * @param selectedTestModel 测试模型选择
- * @param variableManager 变量管理器
- * @returns ContextUser 测试器接口
+ * @param services Service instance reference
+ * @param selectedTestModel Test model selection
+ * @param variableManager Variable manager
+ * @returns ContextUser tester interface
  *
  * @example
  * ```ts
@@ -59,7 +59,7 @@ export interface UseContextUserTester {
  *   variableManager
  * )
  *
- * // 执行测试
+ * // Run the test
  * await contextUserTester.executeTest(
  *   prompt,
  *   optimizedPrompt,
@@ -85,22 +85,22 @@ export function useContextUserTester(
     ) => Promise<void>
   }
 
-  // 创建响应式状态对象
+  // Create the reactive state object
   const state = reactive<InternalTesterState>({
-    // 测试结果状态
+    // Test result state
     testResults: {
-      // 原始提示词结果
+      // Original prompt result
       originalResult: '',
       originalReasoning: '',
       isTestingOriginal: false,
 
-      // 优化提示词结果
+      // Optimized prompt result
       optimizedResult: '',
       optimizedReasoning: '',
       isTestingOptimized: false,
     },
 
-    // 执行测试（支持对比模式）
+    // Run the test (supports compare mode)
     executeTest: async (
       prompt: string,
       optimizedPrompt: string,
@@ -118,7 +118,7 @@ export function useContextUserTester(
       }
 
       if (isCompareMode) {
-        // 对比模式：并发测试原始和优化提示词
+        // Compare mode: test the original and optimized prompts concurrently
         await Promise.all([
           state.testPromptWithType(
             'original',
@@ -134,7 +134,7 @@ export function useContextUserTester(
           )
         ])
       } else {
-        // 单一模式：只测试优化后的提示词
+        // Single mode: only test the optimized prompt
         await state.testPromptWithType(
           'optimized',
           prompt,
@@ -145,7 +145,7 @@ export function useContextUserTester(
     },
 
     /**
-     * 测试特定类型的提示词（内部方法）
+     * Test a specific kind of prompt (internal method)
      */
     testPromptWithType: async (
       type: 'original' | 'optimized',
@@ -156,7 +156,7 @@ export function useContextUserTester(
       const isOriginal = type === 'original'
       const selectedPrompt = isOriginal ? prompt : optimizedPrompt
 
-      // 检查提示词
+      // Check the prompt
       if (!selectedPrompt) {
         toast.error(
           isOriginal ? t('test.error.noOriginalPrompt') : t('test.error.noOptimizedPrompt')
@@ -164,7 +164,7 @@ export function useContextUserTester(
         return
       }
 
-      // 设置测试状态
+      // Set the test state
       if (isOriginal) {
         state.testResults.isTestingOriginal = true
         state.testResults.originalResult = ''
@@ -202,12 +202,12 @@ export function useContextUserTester(
           },
         }
 
-        // ContextUser 模式：提示词作为用户输入
-        // 固定 optimizationMode 为 'user'
+        // ContextUser mode: the prompt is used as the user input
+        // optimizationMode is fixed to 'user'
         const systemPrompt = ''
         const userPrompt = selectedPrompt
 
-        // 变量：合并全局变量 + 测试变量
+        // Variables: merge global variables + test variables
         const baseVars = variableManager?.variableManager.value?.resolveAllVariables() || {}
         const variables = {
           ...baseVars,
@@ -216,18 +216,18 @@ export function useContextUserTester(
           userQuestion: userPrompt,
         }
 
-        // 构造简单的消息列表（ContextUser 模式只有用户消息）
+        // Construct a simple message list (ContextUser mode only has user messages)
         const messages: ConversationMessage[] = [
           { role: 'user' as const, content: userPrompt },
         ]
 
-        // 使用自定义会话测试
+        // Use the custom conversation test
         await services.value!.promptService.testCustomConversationStream(
           {
             modelKey: selectedTestModel.value,
             messages,
             variables,
-            tools: [], // ContextUser 模式基础不支持工具调用（如需支持可扩展）
+            tools: [], // ContextUser mode does not support tool calls by default (can be extended if needed)
           },
           streamHandler
         )
@@ -237,7 +237,7 @@ export function useContextUserTester(
         const testTypeKey = type === 'original' ? 'originalTestFailed' : 'optimizedTestFailed'
         toast.error(`${t(`test.error.${testTypeKey}`)}: ${errorMessage}`)
       } finally {
-        // 重置测试状态
+        // Reset the test state
         if (isOriginal) {
           state.testResults.isTestingOriginal = false
         } else {

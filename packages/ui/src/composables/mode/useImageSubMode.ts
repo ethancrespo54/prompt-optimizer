@@ -13,39 +13,39 @@ interface UseImageSubModeApi {
 }
 
 /**
- * 图像模式的子模式管理（基于 Vue Router）
+ * Image mode sub-mode management (based on Vue Router)
  *
- * ✅ 重构说明：
- * - 路由是唯一的真源（/image/text2image 或 /image/image2image）
- * - 不再使用 preference 存储，避免双写不一致
- * - setImageSubMode 通过路由导航更新子模式
+ * ✅ Refactoring notes:
+ * - The route is the single source of truth (/image/text2image or /image/image2image)
+ * - Preference storage is no longer used, avoiding inconsistent double writes
+ * - setImageSubMode updates the sub-mode through route navigation
  */
 export function useImageSubMode(services: Ref<AppServices | null>): UseImageSubModeApi {
-  // services 参数保留用于调用方兼容；该 composable 不再持久化任何偏好
+  // The services parameter is kept for caller compatibility; this composable no longer persists any preferences
   void services
 
   const route = useRoute()
   const router = useRouter()
 
-  // 从路由参数读取子模式（text2image 或 image2image）
+  // Read the sub-mode from the route params (text2image or image2image)
   const imageSubMode = computed<ImageSubMode>(() => {
-    // 路由架构（重构后）：/image/text2image | /image/image2image（无 params）
+    // Route architecture (after refactoring): /image/text2image | /image/image2image (no params)
     if (route.path.startsWith('/image/image2image')) return 'image2image'
     if (route.path.startsWith('/image/text2image')) return 'text2image'
     return 'text2image'
   })
 
   const ensureInitialized = async () => {
-    // 路由已初始化，无需额外操作
-    console.log(`[useImageSubMode] 当前子模式（来自路由）: ${imageSubMode.value}`)
+    // The route is already initialized; no extra action is needed
+    console.log(`[useImageSubMode] Current sub-mode (from the route): ${imageSubMode.value}`)
   }
 
   const setImageSubMode = async (mode: ImageSubMode) => {
-    // 通过路由导航更新子模式
+    // Update the sub-mode through route navigation
     const targetPath = `/image/${mode}`
     if (route.path !== targetPath) {
       await router.push(targetPath)
-      console.log(`[useImageSubMode] 子模式已切换（路由导航）: ${mode}`)
+      console.log(`[useImageSubMode] Sub-mode switched (route navigation): ${mode}`)
     }
   }
 

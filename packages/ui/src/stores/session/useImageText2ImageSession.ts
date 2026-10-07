@@ -1,9 +1,9 @@
 /**
  * Image-Text2Image Session Store
  *
- * 管理 Image 模式下 Text2Image 子模式的会话状态
- * - 原始提示词和优化结果
- * - 图像生成结果（使用 ImageRef 引用，base64 数据存储在 ImageStorageService）
+ * Manages the session state of the Text2Image sub-mode under Image mode
+ * - Original prompt and optimization result
+ * - Image generation results (uses ImageRef references; the base64 data is stored in ImageStorageService)
  */
 
 import { defineStore } from 'pinia'
@@ -30,10 +30,10 @@ import {
 type ImageResultItem = ImageResult['images'][number]
 
 /**
- * image 模式测试面板的版本选择：
- * - 0: v0（原始提示词）
- * - >=1: v1..vn（历史链版本号）
- * - 'latest': 跟随最新 vn
+ * Version selection of the image mode test panel:
+ * - 0: v0 (original prompt)
+ * - >=1: v1..vn (history chain version number)
+ * - 'latest': follows the latest vn
  */
 export type TestPanelVersionValue = 0 | number | 'latest'
 
@@ -42,17 +42,17 @@ export type TestVariantId = 'a' | 'b' | 'c' | 'd'
 export type TestColumnCount = 2 | 3 | 4
 
 export interface ImageWorkspaceLayoutConfig {
-  /** 主布局左侧宽度（百分比，25..50） */
+  /** Left width of the main layout (percentage, 25..50) */
   mainSplitLeftPct: number
-  /** 测试区列数（2..4） */
+  /** Number of test area columns (2..4) */
   testColumnCount: TestColumnCount
 }
 
 export interface TestVariantConfig {
   id: TestVariantId
-  /** 提示词版本（v0 / vN / latest） */
+  /** Prompt version (v0 / vN / latest) */
   version: TestPanelVersionValue
-  /** 图像模型配置 key（configId） */
+  /** Image model config key (configId) */
   modelKey: string
 }
 
@@ -68,15 +68,15 @@ export interface ImageText2ImageSessionState {
   versionId: string
 
   /**
-   * 临时变量（子模式隔离 + 持久化）
-   * - image-text2image 维度持久化（刷新不丢）
-   * - 不与 image-image2image / pro-* 共享
+   * Temporary variables (sub-mode isolated + persisted)
+   * - Persisted at the image-text2image level (survives refresh)
+   * - Not shared with image-image2image / pro-*
    */
   temporaryVariables: Record<string, string>
 
   originalImageResult: ImageResult | null
   optimizedImageResult: ImageResult | null
-  // v2: 多列测试（最多 4 列）
+  // v2: multi-column testing (up to 4 columns)
   layout: ImageWorkspaceLayoutConfig
   testVariants: TestVariantConfig[]
   testVariantResults: TestVariantResults
@@ -91,7 +91,7 @@ export interface ImageText2ImageSessionState {
 }
 
 /**
- * 默认状态
+ * Default state
  */
 const createDefaultState = (): ImageText2ImageSessionState => ({
   originalPrompt: '',
@@ -102,7 +102,7 @@ const createDefaultState = (): ImageText2ImageSessionState => ({
   temporaryVariables: {},
   originalImageResult: null,
   optimizedImageResult: null,
-  // v2: 多列测试（最多 4 列）
+  // v2: multi-column testing (up to 4 columns)
   layout: { mainSplitLeftPct: 50, testColumnCount: 2 },
   testVariants: [
     { id: 'a', version: 0, modelKey: '' },
@@ -132,7 +132,7 @@ const createDefaultState = (): ImageText2ImageSessionState => ({
 })
 
 export const useImageText2ImageSession = defineStore('imageText2ImageSession', () => {
-  // ========== 状态定义（使用独立 ref，而非包装在 state 对象中）==========
+  // ========== State definitions (uses independent refs rather than wrapping them in a state object) ==========
 
   const originalPrompt = ref('')
   const optimizedPrompt = ref('')
@@ -143,7 +143,7 @@ export const useImageText2ImageSession = defineStore('imageText2ImageSession', (
   const evaluationResults = ref<PersistedEvaluationResults>(createDefaultEvaluationResults())
   const originalImageResult = ref<ImageResult | null>(null)
   const optimizedImageResult = ref<ImageResult | null>(null)
-  // v2: 多列测试（最多 4 列）
+  // v2: multi-column testing (up to 4 columns)
   const layout = ref<ImageWorkspaceLayoutConfig>({ mainSplitLeftPct: 50, testColumnCount: 2 })
   const testVariants = ref<TestVariantConfig[]>([
     { id: 'a', version: 0, modelKey: '' },
@@ -219,7 +219,7 @@ export const useImageText2ImageSession = defineStore('imageText2ImageSession', (
     layout.value = { ...layout.value, testColumnCount: count }
     lastActiveAt.value = Date.now()
     saveSession().catch(error => {
-      console.error('[ImageText2ImageSession] 自动保存会话失败:', error)
+      console.error('[ImageText2ImageSession] Failed to auto-save the session:', error)
     })
   }
 
@@ -230,7 +230,7 @@ export const useImageText2ImageSession = defineStore('imageText2ImageSession', (
     layout.value = { ...layout.value, mainSplitLeftPct: next }
     lastActiveAt.value = Date.now()
     saveSession().catch(error => {
-      console.error('[ImageText2ImageSession] 自动保存会话失败:', error)
+      console.error('[ImageText2ImageSession] Failed to auto-save the session:', error)
     })
   }
 
@@ -245,7 +245,7 @@ export const useImageText2ImageSession = defineStore('imageText2ImageSession', (
     testVariants.value = nextList
     lastActiveAt.value = Date.now()
     saveSession().catch(error => {
-      console.error('[ImageText2ImageSession] 自动保存会话失败:', error)
+      console.error('[ImageText2ImageSession] Failed to auto-save the session:', error)
     })
   }
 
@@ -268,7 +268,7 @@ export const useImageText2ImageSession = defineStore('imageText2ImageSession', (
     selectedTextModelKey.value = modelKey
     lastActiveAt.value = Date.now()
     saveSession().catch(error => {
-      console.error('[ImageText2ImageSession] 自动保存会话失败:', error)
+      console.error('[ImageText2ImageSession] Failed to auto-save the session:', error)
     })
   }
 
@@ -276,9 +276,9 @@ export const useImageText2ImageSession = defineStore('imageText2ImageSession', (
     if (selectedImageModelKey.value === modelKey) return
     selectedImageModelKey.value = modelKey
     lastActiveAt.value = Date.now()
-    // 异步保存完整状态（best-effort）
+    // Save the full state asynchronously (best-effort)
     saveSession().catch(error => {
-      console.error('[ImageText2ImageSession] 自动保存会话失败:', error)
+      console.error('[ImageText2ImageSession] Failed to auto-save the session:', error)
     })
   }
 
@@ -287,7 +287,7 @@ export const useImageText2ImageSession = defineStore('imageText2ImageSession', (
     selectedTemplateId.value = templateId
     lastActiveAt.value = Date.now()
     saveSession().catch(error => {
-      console.error('[ImageText2ImageSession] 自动保存会话失败:', error)
+      console.error('[ImageText2ImageSession] Failed to auto-save the session:', error)
     })
   }
 
@@ -296,7 +296,7 @@ export const useImageText2ImageSession = defineStore('imageText2ImageSession', (
     selectedIterateTemplateId.value = templateId
     lastActiveAt.value = Date.now()
     saveSession().catch(error => {
-      console.error('[ImageText2ImageSession] 自动保存会话失败:', error)
+      console.error('[ImageText2ImageSession] Failed to auto-save the session:', error)
     })
   }
 
@@ -307,7 +307,7 @@ export const useImageText2ImageSession = defineStore('imageText2ImageSession', (
     lastActiveAt.value = Date.now()
   }
 
-  // 临时变量（持久化到 session）
+  // Temporary variables (persisted to the session)
   const setTemporaryVariable = (name: string, value: string) => {
     if (!isValidVariableName(name)) {
       console.warn('[ImageText2ImageSession] Ignoring invalid temporary variable name:', name)
@@ -358,8 +358,8 @@ export const useImageText2ImageSession = defineStore('imageText2ImageSession', (
   }
 
   /**
-   * 准备 ImageResult 用于保存
-   * 将 base64 图像提取到 ImageStorageService，返回仅包含引用的 ImageResult
+   * Prepare an ImageResult for saving
+   * Extracts the base64 image into ImageStorageService and returns an ImageResult containing only references
    */
   const prepareForSave = async (
     result: ImageResult | null,
@@ -372,13 +372,13 @@ export const useImageText2ImageSession = defineStore('imageText2ImageSession', (
     const processedImages: ImageResultItem[] = []
 
     for (const img of result.images) {
-      // 如果已经是引用，直接保留
+      // If it is already a reference, keep it directly
       if (isImageRef(img)) {
         processedImages.push(img)
         continue
       }
 
-      // 如果有 base64 数据，保存到存储服务并创建引用
+      // If there is base64 data, save it to the storage service and create a reference
       if (img.b64) {
         const mimeType = img.mimeType || 'image/png'
         const imageId = await computeStableImageId(img.b64, mimeType)
@@ -406,7 +406,7 @@ export const useImageText2ImageSession = defineStore('imageText2ImageSession', (
 
         processedImages.push(createImageRef(imageId))
       } else {
-        // URL 或其他格式，直接保留
+        // URL or another format, keep directly
         processedImages.push(img)
       }
     }
@@ -418,7 +418,7 @@ export const useImageText2ImageSession = defineStore('imageText2ImageSession', (
   }
 
   /**
-   * 从 ImageRef 加载完整图像数据
+   * Load the full image data from an ImageRef
    */
   const loadFromRef = async (
     result: ImageResult | null,
@@ -431,7 +431,7 @@ export const useImageText2ImageSession = defineStore('imageText2ImageSession', (
     const loadedImages: ImageResultItem[] = []
 
     for (const img of result.images) {
-      // 如果是引用，从存储服务加载
+      // If it is a reference, load it from the storage service
       if (isImageRef(img)) {
         try {
           const fullImageData = await storageService.getImage(img.id)
@@ -441,17 +441,17 @@ export const useImageText2ImageSession = defineStore('imageText2ImageSession', (
               mimeType: fullImageData.metadata.mimeType
             })
           } else {
-            console.warn(`[ImageText2ImageSession] 图像 ${img.id} 未找到`)
-            // 图像未找到，保留引用（UI 会显示错误）
+            console.warn(`[ImageText2ImageSession] Image ${img.id} not found`)
+            // Image not found, keep the reference (the UI will show an error)
             loadedImages.push(img)
           }
         } catch (error) {
-          console.error(`[ImageText2ImageSession] 加载图像 ${img.id} 失败:`, error)
-          // 加载失败，保留引用
+          console.error(`[ImageText2ImageSession] Failed to load image ${img.id}:`, error)
+          // Loading failed, keep the reference
           loadedImages.push(img)
         }
       } else {
-        // 非引用格式（URL 或 base64），直接保留
+        // Not a reference format (URL or base64), keep directly
         loadedImages.push(img)
       }
     }
@@ -466,13 +466,13 @@ export const useImageText2ImageSession = defineStore('imageText2ImageSession', (
     return await queueImageStorageMaintenance(async () => {
       const $services = getPiniaServices()
       if (!$services?.preferenceService) {
-        throw new Error('[ImageText2ImageSession] PreferenceService 不可用，无法保存会话')
+        throw new Error('[ImageText2ImageSession] PreferenceService is unavailable, cannot save the session')
       }
       if (!$services?.imageStorageService) {
-        throw new Error('[ImageText2ImageSession] ImageStorageService 不可用，无法保存会话')
+        throw new Error('[ImageText2ImageSession] ImageStorageService is unavailable, cannot save the session')
       }
 
-      // v2: 多列测试结果（最多 4 列）
+      // v2: multi-column test results (up to 4 columns)
       const baseVariantResults: TestVariantResults = {
         a: testVariantResults.value.a ?? originalImageResult.value,
         b: testVariantResults.value.b ?? optimizedImageResult.value,
@@ -487,10 +487,10 @@ export const useImageText2ImageSession = defineStore('imageText2ImageSession', (
         d: await prepareForSave(baseVariantResults.d, $services.imageStorageService),
       }
 
-      // ✅ 修复：不修改运行时 ref，只在序列化时使用转换后的数据
-      // 原代码会导致界面上的图像消失，因为 ImageRef 不包含实际图像数据
+      // ✅ Fix: do not modify the runtime ref; only use the converted data when serializing
+      // The original code made the image on the UI disappear, because ImageRef does not contain the actual image data
 
-      // 构建快照（仅包含引用，不包含 base64）
+      // Build the snapshot (references only, without base64)
       const snapshot = {
         originalPrompt: originalPrompt.value,
         optimizedPrompt: optimizedPrompt.value,
@@ -498,10 +498,10 @@ export const useImageText2ImageSession = defineStore('imageText2ImageSession', (
         chainId: chainId.value,
         versionId: versionId.value,
         temporaryVariables: sanitizeVariableRecord(temporaryVariables.value),
-        // legacy: 仍保留 original/optimized 字段（对应 A/B）
+        // legacy: still keep the original/optimized fields (corresponding to A/B)
         originalImageResult: variantResultsToSave.a,
         optimizedImageResult: variantResultsToSave.b,
-        // v2: 多列 variants
+        // v2: multi-column variants
         layout: layout.value,
         testVariants: testVariants.value,
         testVariantResults: variantResultsToSave,
@@ -523,10 +523,10 @@ export const useImageText2ImageSession = defineStore('imageText2ImageSession', (
   const restoreSession = async () => {
     const $services = getPiniaServices()
     if (!$services?.preferenceService) {
-      throw new Error('[ImageText2ImageSession] PreferenceService 不可用，无法恢复会话')
+      throw new Error('[ImageText2ImageSession] PreferenceService is unavailable, cannot restore the session')
     }
     if (!$services?.imageStorageService) {
-      throw new Error('[ImageText2ImageSession] ImageStorageService 不可用，无法恢复会话')
+      throw new Error('[ImageText2ImageSession] ImageStorageService is unavailable, cannot restore the session')
     }
 
     try {
@@ -541,7 +541,7 @@ export const useImageText2ImageSession = defineStore('imageText2ImageSession', (
             ? (JSON.parse(saved) as Record<string, unknown>)
             : (saved as Record<string, unknown>)
 
-        // ==================== v2: 多列 variants ====================
+        // ==================== v2: multi-column variants ====================
         const defaultState = createDefaultState()
 
         // layout
@@ -589,7 +589,7 @@ export const useImageText2ImageSession = defineStore('imageText2ImageSession', (
           testVariants.value = defaultState.testVariants
         }
 
-        // testVariantResults (优先使用 v2 字段)
+        // testVariantResults (prefer the v2 fields)
         const rawVariantResults = parsed.testVariantResults
         let variantResultsLoaded: TestVariantResults | null = null
         if (rawVariantResults && typeof rawVariantResults === 'object') {
@@ -618,7 +618,7 @@ export const useImageText2ImageSession = defineStore('imageText2ImageSession', (
           }
         }
 
-        // 从引用加载完整图像数据
+        // Load the full image data from references
         const loaded: TestVariantResults = {
           a: await loadFromRef(variantResultsLoaded.a, $services.imageStorageService),
           b: await loadFromRef(variantResultsLoaded.b, $services.imageStorageService),
@@ -666,7 +666,7 @@ export const useImageText2ImageSession = defineStore('imageText2ImageSession', (
         selectedIterateTemplateId.value = typeof parsed.selectedIterateTemplateId === 'string' ? parsed.selectedIterateTemplateId : null
         lastActiveAt.value = Date.now()
 
-        // 如果 variants 的 modelKey 为空，尝试用 legacy selectedImageModelKey 填充一次
+        // If the modelKey of a variant is empty, try filling it once with the legacy selectedImageModelKey
         const seedModelKey = selectedImageModelKey.value
         if (seedModelKey) {
           let changed = false
@@ -680,7 +680,7 @@ export const useImageText2ImageSession = defineStore('imageText2ImageSession', (
           }
         }
       }
-      // else: 没有保存的会话，使用默认状态
+      // else: no saved session, use the default state
     } catch (error) {
       reset()
       throw error
@@ -688,7 +688,7 @@ export const useImageText2ImageSession = defineStore('imageText2ImageSession', (
   }
 
   return {
-    // ========== 状态（直接返回，Pinia 会自动追踪响应式）==========
+    // ========== State (returned directly; Pinia tracks reactivity automatically) ==========
     originalPrompt,
     optimizedPrompt,
     reasoning,
@@ -709,7 +709,7 @@ export const useImageText2ImageSession = defineStore('imageText2ImageSession', (
     selectedIterateTemplateId,
     lastActiveAt,
 
-    // ========== 更新方法 ==========
+    // ========== Update methods ==========
     updatePrompt,
     updateOptimizedResult,
     updateOriginalImageResult,
@@ -732,7 +732,7 @@ export const useImageText2ImageSession = defineStore('imageText2ImageSession', (
 
     reset,
 
-    // ========== 持久化方法 ==========
+    // ========== Persistence methods ==========
     saveSession,
     restoreSession,
   }

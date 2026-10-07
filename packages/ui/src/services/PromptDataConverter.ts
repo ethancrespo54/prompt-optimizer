@@ -1,5 +1,5 @@
 /**
- * 多格式数据转换器实现
+ * Multi-format data converter implementation
  */
 
 import type {
@@ -14,11 +14,11 @@ import type {
 
 export class PromptDataConverter implements DataConverter {
   /**
-   * 从LangFuse trace数据转换为标准格式
-   * 支持多种LangFuse数据结构：
-   * 1. 手工复制的消息列表: [{"role":"","content":""}]
-   * 2. LangFuse官方导出: [{"id":"","input":[消息列表]}]
-   * 3. 工具调用消息分离处理
+   * Convert from LangFuse trace data to the standard format
+   * Supports multiple LangFuse data structures:
+   * 1. Manually copied message list: [{"role":"","content":""}]
+   * 2. Official LangFuse export: [{"id":"","input":[message list]}]
+   * 3. Separate handling of tool call messages
    */
   fromLangFuse(langfuseData: unknown): ConversionResult<StandardPromptData> {
     try {
@@ -201,7 +201,7 @@ export class PromptDataConverter implements DataConverter {
   }
 
   /**
-   * 从OpenAI请求格式转换为标准格式
+   * Convert from the OpenAI request format to the standard format
    */
   fromOpenAI(request: OpenAIRequest): ConversionResult<StandardPromptData> {
     try {
@@ -242,7 +242,7 @@ export class PromptDataConverter implements DataConverter {
   }
 
   /**
-   * 从会话消息格式转换为标准格式
+   * Convert from the conversation message format to the standard format
    */
   fromConversationMessages(
     messages: Array<Partial<ConversationMessage>>, 
@@ -317,7 +317,7 @@ export class PromptDataConverter implements DataConverter {
   }
 
   /**
-   * 从标准格式转换为OpenAI请求格式
+   * Convert from the standard format to the OpenAI request format
    */
   toOpenAI(
     data: StandardPromptData, 
@@ -331,7 +331,7 @@ export class PromptDataConverter implements DataConverter {
         }
       }
 
-      // 替换变量
+      // Replace variables
       let processedMessages = data.messages
       if (variables) {
         processedMessages = data.messages.map(msg => ({
@@ -366,7 +366,7 @@ export class PromptDataConverter implements DataConverter {
   }
 
   /**
-   * 从标准格式转换为会话消息格式
+   * Convert from the standard format to the conversation message format
    */
   toConversationMessages(data: StandardPromptData): ConversionResult<ConversationMessage[]> {
     try {
@@ -420,7 +420,7 @@ export class PromptDataConverter implements DataConverter {
   }
 
   /**
-   * 验证数据格式是否有效
+   * Validate whether the data format is valid
    */
   validate(data: unknown, format: 'standard' | 'langfuse' | 'openai' | 'conversation'): ConversionResult<boolean> {
     try {
@@ -447,7 +447,7 @@ export class PromptDataConverter implements DataConverter {
     }
   }
 
-  // 私有方法：替换变量
+  // Private method: replace variables
   private replaceVariables(content: string, variables: Record<string, string>): string {
     let result = content
     for (const [name, value] of Object.entries(variables)) {
@@ -457,7 +457,7 @@ export class PromptDataConverter implements DataConverter {
     return result
   }
 
-  // 私有方法：验证标准格式
+  // Private method: validate the standard format
   private validateStandardFormat(data: unknown): ConversionResult<boolean> {
     if (!data || typeof data !== 'object') {
       return { success: false, error: 'Data must be an object' }
@@ -487,7 +487,7 @@ export class PromptDataConverter implements DataConverter {
     return { success: true, data: true }
   }
 
-  // 私有方法：验证LangFuse格式
+  // Private method: validate the LangFuse format
   private validateLangFuseFormat(data: unknown): ConversionResult<boolean> {
     if (!data || typeof data !== 'object') {
       return { success: false, error: 'LangFuse data must be an object' }
@@ -502,7 +502,7 @@ export class PromptDataConverter implements DataConverter {
     return this.validateStandardFormat({ messages: payload.input.messages })
   }
 
-  // 私有方法：验证OpenAI格式
+  // Private method: validate the OpenAI format
   private validateOpenAIFormat(data: unknown): ConversionResult<boolean> {
     if (!data || typeof data !== 'object') {
       return { success: false, error: 'OpenAI data must be an object' }
@@ -521,7 +521,7 @@ export class PromptDataConverter implements DataConverter {
     return this.validateStandardFormat({ messages: payload.messages })
   }
 
-  // 私有方法：验证会话格式
+  // Private method: validate the conversation format
   private validateConversationFormat(data: unknown): ConversionResult<boolean> {
     if (!Array.isArray(data)) {
       return { success: false, error: 'Conversation data must be an array' }

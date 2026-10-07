@@ -1,15 +1,15 @@
 <template>
     <!--
-        PromptOptimizerApp - 主应用组件
+        PromptOptimizerApp - main application component
 
-        职责:
-        - 提供完整的 Prompt Optimizer 应用功能
-        - 统一 web 和 extension 应用的核心逻辑
-        - 管理所有状态、composables 和事件处理
+        Responsibilities:
+        - Provide the complete Prompt Optimizer application functionality
+        - Unify the core logic of the web and extension apps
+        - Manage all state, composables, and event handling
 
-        设计说明:
-        - 从 App.vue 提取的核心逻辑
-        - 减少 web/extension 应用的重复代码
+        Design notes:
+        - Core logic extracted from App.vue
+        - Reduces duplicated code between the web/extension apps
     -->
     <NConfigProvider
         :theme="naiveTheme"
@@ -52,7 +52,7 @@
                     />
                 </template>
                 <template #main>
-                    <!-- 🔧 路由架构：使用 RouterView 自动渲染对应的工作区容器 -->
+                    <!-- 🔧 Router architecture: use RouterView to automatically render the matching workspace container -->
                     <!-- - /basic/system → BasicSystemWorkspace -->
                     <!-- - /basic/user → BasicUserWorkspace -->
                     <!-- - /pro/multi → ContextSystemWorkspace -->
@@ -103,7 +103,7 @@
                 @imported="handleDataImported"
             />
 
-            <!-- 收藏管理对话框 -->
+            <!-- Favorites management dialog -->
             <FavoriteManagerUI
                 v-if="isReady"
                 :show="showFavoriteManager"
@@ -116,7 +116,7 @@
                 @use-favorite="handleUseFavorite"
             />
 
-            <!-- 保存收藏对话框 -->
+            <!-- Save favorite dialog -->
             <SaveFavoriteDialog
                 v-if="isReady"
                 v-model:show="showSaveFavoriteDialog"
@@ -128,7 +128,7 @@
                 @saved="handleSaveFavoriteComplete"
             />
 
-            <!-- 变量管理弹窗 -->
+            <!-- Variable management dialog -->
             <VariableManagerModal
                 v-if="isReady"
                 v-model:visible="showVariableManager"
@@ -136,7 +136,7 @@
                 :focus-variable="focusVariableName"
             />
 
-            <!-- 🆕 AI 变量提取结果对话框 -->
+            <!-- 🆕 AI variable extraction result dialog -->
             <VariableExtractionResultDialog
                 v-if="isReady"
                 v-model:show="variableExtraction.showResultDialog.value"
@@ -144,7 +144,7 @@
                 @confirm="variableExtraction.confirmBatchCreate"
             />
 
-            <!-- 工具管理弹窗 -->
+            <!-- Tool management dialog -->
             <ToolManagerModal
                 v-if="isReady"
                 v-model:visible="showToolManager"
@@ -153,7 +153,7 @@
                 @cancel="showToolManager = false"
             />
 
-            <!-- 上下文编辑器弹窗 -->
+            <!-- Context editor dialog -->
             <ContextEditor
                 v-if="isReady"
                 v-model:visible="showContextEditor"
@@ -189,7 +189,7 @@
                 @open-variable-manager="handleOpenVariableManager"
             />
 
-            <!-- 提示词预览面板 -->
+            <!-- Prompt preview panel -->
             <PromptPreviewPanel
                 v-if="isReady"
                 :show="showPreviewPanel"
@@ -202,7 +202,7 @@
                 :renderPhase="renderPhase"
             />
 
-            <!-- 关键:使用NGlobalStyle同步全局样式到body,消除CSS依赖 -->
+            <!-- Key: use NGlobalStyle to sync global styles to the body, eliminating the CSS dependency -->
             <NGlobalStyle />
         </template>
     </NConfigProvider>
@@ -210,11 +210,11 @@
 
 <script setup lang="ts">
 /**
- * PromptOptimizerApp - 主应用组件
+ * PromptOptimizerApp - main application component
  *
  * @description
- * 从 App.vue 提取的核心应用逻辑，统一 web 和 extension 应用。
- * 包含所有状态管理、composables 和事件处理。
+ * The core application logic extracted from App.vue, unifying the web and extension apps.
+ * Contains all state management, composables, and event handling.
  */
 import {
     ref,
@@ -239,7 +239,7 @@ import hljs from "highlight.js/lib/core";
 import jsonLang from "highlight.js/lib/languages/json";
 hljs.registerLanguage("json", jsonLang);
 
-// 内部组件导入
+// Internal component imports
 import MainLayoutUI from '../MainLayout.vue'
 import ModelManagerUI from '../ModelManager.vue'
 import TemplateManagerUI from '../TemplateManager.vue'
@@ -255,37 +255,37 @@ import PromptPreviewPanel from '../PromptPreviewPanel.vue'
 import AppHeaderActions from './AppHeaderActions.vue'
 import AppCoreNav from './AppCoreNav.vue'
 
-// Composables - 使用 barrel exports
+// Composables - use barrel exports
 import {
-    // 提示词相关
+    // Prompt-related
     usePromptOptimizer,
     usePromptHistory,
     usePromptPreview,
     usePromptTester,
-    // 模型相关
+    // Model-related
     useModelManager,
     useModelSelectRefs,
     useFunctionModelManager,
-    // 模式相关
+    // Mode-related
     useFunctionMode,
     useBasicSubMode,
     useProSubMode,
     useImageSubMode,
-    // 上下文相关
+    // Context-related
     useContextManagement,
     useContextEditorUIState,
-    // 变量相关
+    // Variable-related
     useVariableManager,
     useAggregatedVariables,
     useVariableExtraction,
     useTemporaryVariables,
-    // UI 相关
+    // UI-related
     useToast,
     useNaiveTheme,
-     // 系统相关
+     // System-related
      useAppInitializer,
      useTemplateManager,
-     // App 级别
+     // App-level
      useAppHistoryRestore,
      useAppFavorite,
 } from '../../composables'
@@ -295,7 +295,7 @@ import { initializeI18nWithStorage, setI18nServices } from '../../plugins/i18n'
 
 // Pinia functions
 import { setPiniaServices, getPiniaServices } from '../../plugins/pinia'
-// ⚠️ Codex 建议：改用直接路径导入，避免 barrel exports 循环依赖导致 TDZ
+// ⚠️ Codex suggestion: switch to direct path imports to avoid TDZ caused by circular barrel exports
 import { useSessionManager, type SubModeKey } from '../../stores/session/useSessionManager'
 import { useBasicSystemSession } from '../../stores/session/useBasicSystemSession'
 import { useBasicUserSession } from '../../stores/session/useBasicUserSession'
@@ -315,11 +315,11 @@ import { DataTransformer } from '../../utils/data-transformer'
 import type { ModelSelectOption, TestAreaPanelInstance } from '../../types'
 import { type IPromptService, type PromptRecordChain, type PatchOperation, type Template, type TemplateType, type FunctionMode, type BasicSubMode, type ProSubMode, type ImageSubMode, type OptimizationMode, type ConversationMessage, type ToolDefinition, type ContextEditorState, type ContextMode } from "@prompt-optimizer/core";
 
-// 1. 基础 composables
+// 1. Base composables
 const hljsInstance = hljs;
 const i18n = useI18n();
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const t = i18n.t;  // 在模板中使用
+const t = i18n.t;  // Used in the template
 const toast = useToast();
 
 // ========= Chunk-load failure recovery =========
@@ -379,24 +379,24 @@ const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
   void promptRefreshForNewDeploy(event.reason);
 };
 
-// 2. 初始化应用服务
+// 2. Initialize app services
 const { services, isInitializing } = useAppInitializer();
 
-// 3. 初始化功能模式和子模式（必须在 sessionManager 之前）
+// 3. Initialize function modes and sub-modes (must come before sessionManager)
 //
-// ⚠️ 重要：这些 composable 仅用于一次性初始化（ensureInitialized），不得作为状态来源！
-// 🔧 Step E 完成：所有模式/子模式的读取已统一使用 route-computed（routeFunctionMode/route*SubMode）
-// 🔴 禁止事项：
-//   - 严禁在业务逻辑中读取 functionMode/basicSubMode/proSubMode/imageSubMode 的 .value
-//   - 严禁使用这些 composable 的 set* 方法（已被 navigateToSubModeKey 替代）
-//   - 严禁基于这些 state 注册新的 watch（路由是唯一真源）
-// ✅ 允许用途：
-//   - 仅在 services ready watch 中调用 ensureInitialized 进行一次性初始化
-//   - 确保 PreferenceService 中的历史偏好能够加载（但不影响路由驱动的行为）
+// ⚠️ Important: these composables are only for one-time initialization (ensureInitialized) and must not be used as a state source!
+// 🔧 Step E done: all mode/sub-mode reads now use route-computed values (routeFunctionMode/route*SubMode)
+// 🔴 Prohibited:
+//   - Never read the .value of functionMode/basicSubMode/proSubMode/imageSubMode in business logic
+//   - Never use the set* methods of these composables (replaced by navigateToSubModeKey)
+//   - Never register new watches based on these states (the route is the single source of truth)
+// ✅ Allowed uses:
+//   - Only call ensureInitialized in the services-ready watch for one-time initialization
+//   - Make sure historical preferences in PreferenceService can be loaded (without affecting route-driven behavior)
 //
-// TODO（后续重构）：将 ensureInitialized 拆为纯 initModePreferences() 函数，完全移除这些 composable 的依赖
-// ⚠️ 注意：这些 composable 的调用会触发初始化副作用，但返回的 state 不得作为业务逻辑的状态来源
-// 🔧 修复：保存 composable 返回值，避免在 watch 回调中重复调用（导致 inject() 错误）
+// TODO (later refactor): split ensureInitialized into a pure initModePreferences() function and fully remove the dependency on these composables
+// ⚠️ Note: calling these composables triggers initialization side effects, but the returned state must not be used as a state source for business logic
+// 🔧 Fix: keep the composable return values to avoid repeated calls inside watch callbacks (which cause inject() errors)
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const functionModeApi = useFunctionMode(services);
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -406,43 +406,43 @@ const proSubModeApi = useProSubMode(services);
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const imageSubModeApi = useImageSubMode(services);
 
-// 3.5. 🔧 Step A: 建立路由驱动的单一真源（优先于 state，避免双真源）
+// 3.5. 🔧 Step A: establish the route-driven single source of truth (takes priority over state to avoid dual sources)
 //
-// ⚠️ 注意：PromptOptimizerApp 不在 RouterView 上下文中，无法使用 useRoute/useRouter
-// 解决方案：直接导入 router 实例，使用 currentRoute 访问路由状态
-// ⚠️ 重要：computed 只做纯解析，纠错逻辑移到独立的 watch（避免循环导航）
+// ⚠️ Note: PromptOptimizerApp is not inside a RouterView context, so useRoute/useRouter cannot be used
+// Solution: import the router instance directly and access the route state via currentRoute
+// ⚠️ Important: computed only does pure parsing; correction logic is moved to a separate watch (to avoid circular navigation)
 //
-// 纯解析函数：从路由路径提取模式和子模式
+// Pure parsing function: extract the mode and sub-mode from the route path
 const parseRouteInfo = () => {
   const currentRoute = routerInstance.currentRoute.value
   const path = currentRoute.path
   const subMode = path.split('/')[2]
 
-  // 解析 functionMode
+  // Parse functionMode
   let functionMode: 'basic' | 'pro' | 'image' = 'basic'
   if (path.startsWith('/basic')) functionMode = 'basic'
   else if (path.startsWith('/pro')) functionMode = 'pro'
   else if (path.startsWith('/image')) functionMode = 'image'
-  else if (path === '/' || path === '') functionMode = 'basic'  // 根路径默认
+  else if (path === '/' || path === '') functionMode = 'basic'  // Root path defaults
 
-  // 解析子模式（带白名单验证）
+  // Parse the sub-mode (with whitelist validation)
   const parseSubMode = (
     mode: 'basic' | 'pro' | 'image',
     subModeParam: string | undefined
   ): { subMode: string; isValid: boolean; canonicalSubMode: string } => {
     const validSubModes: Record<string, string[]> = {
       basic: ['system', 'user'],
-      pro: ['multi', 'variable'],  // ✅ pro 模式支持 multi 和 variable
+      pro: ['multi', 'variable'],  // ✅ pro mode supports multi and variable
       image: ['text2image', 'image2image'],
     }
 
     const allowed = validSubModes[mode] || []
     const isValid = subModeParam !== undefined && allowed.includes(subModeParam)
 
-    // ✅ 移除错误的兼容性映射，直接使用原始 subMode
+    // ✅ Removed the wrong compatibility mapping; use the original subMode directly
     let canonicalSubMode = subModeParam || ''
 
-    // 默认值（仅在 subModeParam 为空或非法时使用）
+    // Default value (only used when subModeParam is empty or invalid)
     if (!canonicalSubMode || !isValid) {
       if (mode === 'image') canonicalSubMode = 'text2image'
       else if (mode === 'pro') canonicalSubMode = 'variable'
@@ -467,35 +467,35 @@ const parseRouteInfo = () => {
   }
 }
 
-// Route-computed（纯解析，无副作用）
+// Route-computed (pure parsing, no side effects)
 const routeFunctionMode = computed<FunctionMode>(() => parseRouteInfo().functionMode)
 const routeBasicSubMode = computed<BasicSubMode>(() => parseRouteInfo().basicSubMode)
 const routeProSubMode = computed<ProSubMode>(() => parseRouteInfo().proSubMode)
 const routeImageSubMode = computed<ImageSubMode>(() => parseRouteInfo().imageSubMode)
 
-// ========== GlobalSettings 初始化 Gate（避免 restore 前渲染/纠错） ==========
-// 目的：确保 PreferenceService 注入后先 restoreGlobalSettings，再允许 UI 渲染/执行部分 watch
+// ========== GlobalSettings initialization gate (avoids rendering/correcting before restore) ==========
+// Purpose: after PreferenceService is injected, restoreGlobalSettings first, then allow the UI to render / some watches to run
 let _routeInitInFlight: Promise<void> | null = null
-const routeInitialized = ref(false)  // 🔧 标记路由初始化完成，防止过早渲染
+const routeInitialized = ref(false)  // 🔧 Marks route initialization as done, preventing premature rendering
 
-// 🔧 路由纠错 watch：不再负责重定向（仅用于解析/同步路由信息）
-// - 非根路径的“纠错/兼容重定向”由路由守卫（beforeRouteSwitch）处理
-// - 根路径（/）的初始工作区跳转由 RootBootstrapRoute 处理
+// 🔧 Route correction watch: no longer responsible for redirecting (only used to parse/sync route info)
+// - "Correction / compatibility redirects" for non-root paths are handled by the route guard (beforeRouteSwitch)
+// - The initial workspace jump from the root path (/) is handled by RootBootstrapRoute
 watch(
   () => routerInstance.currentRoute.value.path,
   (currentPath) => {
-    // 根路径（/）由 RootBootstrapRoute 负责等待 globalSettings 初始化后跳转，不在此处纠错
+    // The root path (/) is handled by RootBootstrapRoute, which waits for globalSettings initialization before jumping; no correction here
     if (currentPath === '/' || currentPath === '') return
 
-    // ✅ 路由初始化完成前不进行纠错，避免干扰初始化过程
+    // ✅ No correction before route initialization completes, to avoid interfering with initialization
     if (!routeInitialized.value) return
 
     parseRouteInfo()
   },
-  { immediate: true }  // 立即检查一次
+  { immediate: true }  // Check once immediately
 )
 
-// ========== 路由 ⇢ GlobalSettings（仅记录，不反向驱动路由） ==========
+// ========== Route ⇢ GlobalSettings (record only; does not drive the route in reverse) ==========
 watch(
   () => routerInstance.currentRoute.value.path,
   () => {
@@ -508,7 +508,7 @@ watch(
       globalSettings.updateFunctionMode(routeInfo.functionMode)
     }
 
-    // 子模式隔离：只更新“当前功能模式”对应的 subMode
+    // Sub-mode isolation: only update the subMode corresponding to the "current function mode"
     if (routeInfo.functionMode === 'basic' && routeInfo.basicSubMode !== globalSettings.state.basicSubMode) {
       globalSettings.updateBasicSubMode(routeInfo.basicSubMode)
     }
@@ -521,10 +521,10 @@ watch(
   }
 )
 
-// 4. 初始化 SessionManager（必须在 services watch 之前）
+// 4. Initialize SessionManager (must come before the services watch)
 const sessionManager = useSessionManager();
 
-// 🔧 Step B: 注入 route-computed 读取器（替代旧 state，避免双真源）
+// 🔧 Step B: inject route-computed readers (replacing the old state, avoiding dual sources)
 sessionManager.injectSubModeReaders({
   getFunctionMode: () => routeFunctionMode.value,
   getBasicSubMode: () => routeBasicSubMode.value,
@@ -539,16 +539,16 @@ watch(
             if (newServices) {
                 setI18nServices(newServices);
                 setPiniaServices(newServices);
-                // Phase 1：恢复全局配置 Store（global-settings/v1），并从旧 UI_SETTINGS_KEYS 迁移（若为空）
-              // 根路径（/）的初始工作区跳转由 RootBootstrapRoute 处理：
-              // - 等待 globalSettings 恢复完成
-              // - 仅当仍停留在 / 时才 redirect，避免覆盖显式导航（E2E/用户点击）
+                // Phase 1: restore the global settings store (global-settings/v1) and migrate from the old UI_SETTINGS_KEYS (if empty)
+              // The initial workspace jump from the root path (/) is handled by RootBootstrapRoute:
+              // - Wait for the globalSettings restore to complete
+              // - Only redirect if still on /, to avoid overriding explicit navigation (E2E/user clicks)
               if (!_routeInitInFlight) {
                 _routeInitInFlight = (async () => {
                   const globalSettings = useGlobalSettings()
                   await globalSettings.restoreGlobalSettings()
 
-                  // 标记路由初始化完成（允许 UI 渲染）
+                  // Mark route initialization as done (allow the UI to render)
                   routeInitialized.value = true
                 })()
               }
@@ -556,24 +556,24 @@ watch(
                 await initializeI18nWithStorage();
             }
         },
-    // 🔧 必须 immediate：部分运行环境下 services 可能在 watch 注册前就已就绪，
-    // 若不触发则 Pinia/Preferences 永远不注入，表现为“刷新后一切都找不到/不持久化”。
+    // 🔧 Must be immediate: in some runtime environments, services may already be ready before the watch is registered,
+    // and if it doesn't fire, Pinia/Preferences are never injected, appearing as "everything is lost after refresh / nothing persists".
     { immediate: true },
 );
 
-// 6. 向子组件提供服务
+// 6. Provide services to child components
 provide("services", services);
 
-// ✅ 应用初始化后从 session store 恢复状态到 UI
-// 用于避免“默认值写回”覆盖持久化内容（刷新后选择丢失）
+// ✅ After app initialization, restore state from the session store to the UI
+// Used to avoid "default values being written back" overwriting persisted content (selections lost after refresh)
 const hasRestoredInitialState = ref(false);
 
-// ✅ 外部数据加载中标志（防止模式切换的自动 restore 覆盖外部数据）
-// 适用场景：历史记录恢复、收藏加载、模板导入等任何外部数据加载导致模式切换的情况
+// ✅ Flag for external data loading (prevents the automatic restore on mode switch from overwriting external data)
+// Applies to any case where external data loading causes a mode switch: history restore, favorites loading, template import, etc.
 const isLoadingExternalData = ref(false);
 
-// 5. 控制主UI渲染的标志
-// 🔧 必须等待路由初始化完成，避免短暂显示根路径的空白页
+// 5. Flag controlling the main UI rendering
+// 🔧 Must wait for route initialization to finish, to avoid briefly showing a blank page at the root path
 const isReady = computed(
     () =>
         !!services.value &&
@@ -582,26 +582,26 @@ const isReady = computed(
         hasRestoredInitialState.value,
 );
 
-// 创建 ContextEditor 使用的 services 引用
+// Create the services reference used by ContextEditor
 const servicesForContextEditor = computed(() => services?.value || null);
 
-// 6. 创建所有必要的引用
+// 6. Create all necessary references
 const promptService = shallowRef<IPromptService | null>(null);
 const showDataManager = ref(false);
 
 type ContextWorkspaceExpose = {
-    // Vue ComponentPublicInstance 会自动 unwrap expose 里的 Ref，因此这里使用已解包的类型
+    // Vue ComponentPublicInstance automatically unwraps the Refs in expose, so the unwrapped type is used here
     testAreaPanelRef?: TestAreaPanelInstance | null;
     restoreFromHistory?: (payload: unknown) => void;
     openIterateDialog?: (input?: string) => void;
     applyLocalPatch?: (operation: PatchOperation) => void;
     reEvaluateActive?: () => Promise<void>;
-    restoreConversationOptimizationFromSession?: () => void; // 🔧 Codex 修复：session 恢复方法
+    restoreConversationOptimizationFromSession?: () => void; // 🔧 Codex fix: session restore method
 };
 
 const systemWorkspaceRef = ref<ContextWorkspaceExpose | null>(null);
 type ContextUserWorkspaceExpose = ContextWorkspaceExpose & {
-    // 提供最小可用 API，避免父组件依赖子组件内部实现细节
+    // Provide a minimal usable API so the parent does not depend on the child's internal implementation details
     contextUserOptimization?: import("../../composables/prompt/useContextUserOptimization").UseContextUserOptimization;
     setPrompt?: (prompt: string) => void;
     getPrompt?: () => string;
@@ -618,7 +618,7 @@ const basicModeWorkspaceRef = ref<{
     openIterateDialog?: (input?: string) => void;
 } | null>(null);
 
-// 🔧 Step E: 使用 route-computed 代替旧 state
+// 🔧 Step E: use route-computed instead of the old state
 type WorkspaceRouteName = string | symbol | null | undefined;
 const setWorkspaceRef = (instance: unknown, routeName: WorkspaceRouteName) => {
     const resolvedInstance = instance ?? null;
@@ -646,39 +646,39 @@ const selectedOptimizationMode = computed<OptimizationMode>(() => {
     return 'system';
 });
 
-// 🔧 Step D: advancedModeEnabled 改为只读（从 route-computed 读取，不再支持写入）
+// 🔧 Step D: advancedModeEnabled is now read-only (read from route-computed; writes are no longer supported)
 const advancedModeEnabled = computed(() => routeFunctionMode.value === "pro");
 
-// 🔧 Step D: 已删除死代码 - handleModeSelect/handleBasicSubModeChange/handleProSubModeChange/handleImageSubModeChange
-// 这些函数已被 AppCoreNav 的 router.push 导航替代（2024-01-06）
+// 🔧 Step D: dead code removed - handleModeSelect/handleBasicSubModeChange/handleProSubModeChange/handleImageSubModeChange
+// These functions have been replaced by router.push navigation in AppCoreNav (2024-01-06)
 
-// 测试内容状态
+// Test content state
 const testContent = ref("");
 const isCompareMode = ref(true);
 
-// Naive UI 主题配置
+// Naive UI theme config
 const { naiveTheme, themeOverrides, initTheme } = useNaiveTheme();
 
-// 初始化主题系统
+// Initialize the theme system
 if (typeof window !== "undefined") {
     initTheme();
 }
 
-// 变量管理状态
+// Variable management state
 const showVariableManager = ref(false);
 const focusVariableName = ref<string | undefined>(undefined);
 
-// 工具管理状态
+// Tool management state
 const showToolManager = ref(false);
 
-// 上下文模式
+// Context mode
 const contextMode = ref<ContextMode>("system");
 
-// 上下文编辑器状态
+// Context editor state
 const showContextEditor = ref(false);
 const contextEditorDefaultTab = ref<"messages" | "variables" | "tools">("messages");
 
-// 使用 composable 管理编辑器 UI 状态
+// Use a composable to manage the editor UI state
 const {
     onlyShowTab: contextEditorOnlyShowTab,
     title: contextEditorTitle,
@@ -708,38 +708,38 @@ const contextEditorState = ref<ContextEditorState>({
     mode: 'edit',
 });
 
-// 提示词预览面板状态
+// Prompt preview panel state
 const showPreviewPanel = ref(false);
 
-// 变量管理器实例
+// Variable manager instance
 const variableManager = useVariableManager(services);
 
-// 临时变量管理器：
-// - Pro/Image：按子模式 session store 持久化（刷新不丢；子模式之间隔离）
-// - Basic：维持旧行为，仅内存态
+// Temporary variable manager:
+// - Pro/Image: persisted per sub-mode session store (survives refresh; isolated between sub-modes)
+// - Basic: keeps the old behavior, in-memory only
 const tempVarsManager = useTemporaryVariables();
 
-// 🆕 AI 智能变量提取
+// 🆕 AI smart variable extraction
 const variableExtraction = useVariableExtraction(
     services,
     (variableName: string, variableValue: string) => {
-        // 创建变量时的回调：保存到临时变量（Pro/Image 会持久化到各自 session；Basic 仅内存态）
+        // Callback when variables are created: save to temporary variables (persisted in each session for Pro/Image; in-memory only for Basic)
         tempVarsManager.setVariable(variableName, variableValue);
     },
     (replacedPrompt: string) => {
-        // 替换提示词回调：更新 ContextUser 工作区的提示词内容
+        // Callback to replace the prompt: update the prompt content of the ContextUser workspace
         userWorkspaceRef.value?.setPrompt?.(replacedPrompt);
     }
 );
 
-// 使用聚合变量管理器
+// Use the aggregated variable manager
 const aggregatedVariables = useAggregatedVariables(variableManager);
 const promptPreviewContent = ref("");
 const promptPreviewVariables = computed(() => {
     return aggregatedVariables.allVariables.value;
 });
 
-// 渲染阶段（用于预览）
+// Render stage (for preview)
 const renderPhase = ref<"optimize" | "test">("optimize");
 
 const promptPreview = usePromptPreview(
@@ -748,7 +748,7 @@ const promptPreview = usePromptPreview(
     contextMode,
 );
 
-// 变量管理处理函数
+// Variable management handlers
 const handleOpenVariableManager = (variableName?: string) => {
     if (variableName) {
         focusVariableName.value = variableName;
@@ -756,7 +756,7 @@ const handleOpenVariableManager = (variableName?: string) => {
     showVariableManager.value = true;
 };
 
-// 🆕 AI 变量提取处理函数
+// 🆕 AI variable extraction handler
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const handleExtractVariables = async (
     promptContent: string,
@@ -773,18 +773,18 @@ const handleExtractVariables = async (
     );
 };
 
-// 工具管理器处理函数
+// Tool manager handlers
 const handleToolManagerConfirm = (tools?: ToolDefinition[]) => {
     optimizationContextTools.value = tools ?? [];
     showToolManager.value = false;
 };
 
-// 6. 在顶层调用所有 Composables
+// 6. Call all composables at the top level
 const modelSelectRefs = useModelSelectRefs();
 const modelManager = useModelManager(services, modelSelectRefs);
 
-// ========== Session Store（单一真源：可持久化字段） ==========
-// 注意：这里需要在 optimizer 创建之前初始化，以便把基础模式字段直绑到 session store
+// ========== Session Store (single source of truth: persistable fields) ==========
+// Note: this must be initialized before the optimizer is created, so the Basic mode fields can be bound directly to the session store
 const basicSystemSession = useBasicSystemSession();
 const basicUserSession = useBasicUserSession();
 const proMultiMessageSession = useProMultiMessageSession();
@@ -792,13 +792,13 @@ const proVariableSession = useProVariableSession();
 const imageText2ImageSession = useImageText2ImageSession();
 const imageImage2ImageSession = useImageImage2ImageSession();
 
-// 🔧 Step E: 使用 route-computed 代替旧 state
+// 🔧 Step E: use route-computed instead of the old state
 const activeBasicSession = computed(() =>
     routeBasicSubMode.value === "system" ? basicSystemSession : basicUserSession,
 );
 
-// ========== Text Model Selection（单一真源：Session Store） ==========
-// 目标：移除旧的“模型选择全局键”遗留概念，避免双真源与反向同步 watch
+// ========== Text Model Selection (single source of truth: Session Store) ==========
+// Goal: remove the legacy "global model selection key" concept, avoiding dual sources and reverse-sync watches
 const selectedOptimizeModelKey = computed<string>({
     get: () => {
         if (routeFunctionMode.value === "basic") {
@@ -874,7 +874,7 @@ const selectedTestModelKey = computed<string>({
     },
 });
 
-// 更新 functionModelManager 的“全局优化模型 key”引用（singleton 内部会替换 ref）
+// Update the "global optimize model key" reference of functionModelManager (the singleton replaces the ref internally)
 useFunctionModelManager(services, selectedOptimizeModelKey);
 
 const patchActiveBasicOptimizedResult = (
@@ -921,7 +921,7 @@ const basicSessionVersionId = computed<string>({
     set: (value) => patchActiveBasicOptimizedResult({ versionId: value || "" }),
 });
 
-// 提示词优化器
+// Prompt optimizer
 const optimizer = usePromptOptimizer(
     services,
     selectedOptimizationMode,
@@ -937,7 +937,7 @@ const optimizer = usePromptOptimizer(
     },
 );
 
-// 上下文管理
+// Context management
 const contextManagement = useContextManagement({
     services,
     advancedModeEnabled,
@@ -948,7 +948,7 @@ const contextManagement = useContextManagement({
     optimizer,
 });
 
-// 从 contextManagement 提取其他状态和方法
+// Extract other state and methods from contextManagement
 const optimizationContext = contextManagement.optimizationContext;
 const optimizationContextTools = contextManagement.optimizationContextTools;
 const initializeContextPersistence = contextManagement.initializeContextPersistence;
@@ -1013,7 +1013,7 @@ const handleContextEditorSaveSafe = (context?: {
 
         // Best-effort persist the pro-multi session after an explicit save.
         void proMultiMessageSession.saveSession()
-        toast.success('上下文已更新')
+        toast.success('Context updated')
         return
     }
 
@@ -1021,12 +1021,12 @@ const handleContextEditorSaveSafe = (context?: {
 };
 const handleContextModeChange = contextManagement.handleContextModeChange;
 
-// 提供依赖给子组件
+// Provide dependencies to child components
 provide("variableManager", variableManager);
 provide("optimizationContext", optimizationContext);
 provide("optimizationContextTools", optimizationContextTools);
 
-// 基础模式提示词测试
+// Basic mode prompt testing
 const promptTester = usePromptTester(
     services,
     selectedTestModelKey,
@@ -1034,9 +1034,9 @@ const promptTester = usePromptTester(
     variableManager
 );
 
-// ========== Session Store 状态同步 ==========
+// ========== Session Store state sync ==========
 
-// 🔧 Step E: 使用 route-computed 代替旧 state
+// 🔧 Step E: use route-computed instead of the old state
 const getCurrentSession = () => {
     if (routeFunctionMode.value === 'basic') {
         return routeBasicSubMode.value === 'system' ? basicSystemSession : basicUserSession;
@@ -1057,32 +1057,32 @@ const getCurrentImageSession = () =>
         : imageImage2ImageSession;
 
 /**
- * 🔧 方案 A 修复：恢复 Basic 模式的 session 状态（移除冗余赋值）
+ * 🔧 Plan A fix: restore the session state of Basic mode (removing redundant assignments)
  *
- * 设计原则：
- * - Basic 模式的核心状态（prompt/optimizedPrompt/reasoning/chainId/versionId）
- *   已通过 computed 绑定到 session store（单一真源），无需手动赋值
- * - 只恢复未绑定的 UI 状态（testContent/modelManager/isCompareMode/testResults）
+ * Design principles:
+ * - The core state of Basic mode (prompt/optimizedPrompt/reasoning/chainId/versionId)
+ *   is already bound to the session store via computed (single source of truth), so no manual assignment is needed
+ * - Only restore the unbound UI state (testContent/modelManager/isCompareMode/testResults)
  *
- * 根因分析：
- * - 旧逻辑手动赋值 optimizer.prompt 等字段，破坏了"单一真源"架构
- * - 导致模式切换时，旧模式的 UI 状态可能通过 watch 污染新模式的 session store
+ * Root cause analysis:
+ * - The old logic manually assigned fields such as optimizer.prompt, breaking the "single source of truth" architecture
+ * - When switching modes, the old mode's UI state could pollute the new mode's session store through watches
  */
 const restoreBasicOrProVariableSession = () => {
     if (routeFunctionMode.value !== 'basic') return;
     const session = getCurrentBasicSession();
 
-    // ✅ 核心状态（prompt/optimizedPrompt/reasoning/chainId/versionId）
-    // 已通过 basicSessionPrompt 等 computed 绑定，自动从 session store 读取，无需手动赋值
+    // ✅ Core state (prompt/optimizedPrompt/reasoning/chainId/versionId)
+    // is already bound via computed such as basicSessionPrompt and read automatically from the session store, so no manual assignment is needed
 
-    // ✅ 恢复未绑定的 UI 状态
+    // ✅ Restore unbound UI state
     testContent.value = session.testContent || '';
 
-    // 恢复对比模式
+    // Restore the compare mode
     isCompareMode.value = session.isCompareMode;
 
-    // 🔧 恢复测试结果（仅 Basic 模式使用 promptTester）
-    // 只恢复稳定字段，不恢复 isTesting* 临时状态
+    // 🔧 Restore test results (only Basic mode uses promptTester)
+    // Only restore stable fields; do not restore the transient isTesting* state
     if (session.testResults) {
         promptTester.testResults.originalResult =
             session.testResults.originalResult || '';
@@ -1092,11 +1092,11 @@ const restoreBasicOrProVariableSession = () => {
             session.testResults.optimizedResult || '';
         promptTester.testResults.optimizedReasoning =
             session.testResults.optimizedReasoning || '';
-        // 重置测试中状态
+        // Reset the testing state
         promptTester.testResults.isTestingOriginal = false;
         promptTester.testResults.isTestingOptimized = false;
     } else {
-        // 如果 session 中没有测试结果，清空当前测试结果
+        // If the session has no test results, clear the current test results
         promptTester.testResults.originalResult = '';
         promptTester.testResults.originalReasoning = '';
         promptTester.testResults.optimizedResult = '';
@@ -1107,81 +1107,81 @@ const restoreBasicOrProVariableSession = () => {
 };
 
 /**
- * 🔧 方案 A 修复：Pro-user（变量模式）会话恢复（移除冗余赋值）
+ * 🔧 Plan A fix: Pro-user (variable mode) session restore (removing redundant assignments)
  *
- * 设计原则：
- * - Pro-user 使用 ContextUserWorkspace 内部的 useContextUserOptimization 状态树
- * - 核心状态（prompt/optimizedPrompt/reasoning/chainId/versionId）
- *   已通过 computed 绑定到 proVariableSession（单一真源），无需手动赋值
- * - 只恢复未绑定的 UI 状态（testContent/isCompareMode）和过程态重置
+ * Design principles:
+ * - Pro-user uses the useContextUserOptimization state tree inside ContextUserWorkspace
+ * - The core state (prompt/optimizedPrompt/reasoning/chainId/versionId)
+ *   is already bound to proVariableSession via computed (single source of truth), so no manual assignment is needed
+ * - Only restore the unbound UI state (testContent/isCompareMode) and reset the in-progress state
  *
- * 根因分析：
- * - 旧逻辑手动赋值 contextUserOptimization.prompt 等字段，破坏了"单一真源"架构
- * - 导致模式切换时，旧模式的 UI 状态可能通过 watch 污染新模式的 session store
+ * Root cause analysis:
+ * - The old logic manually assigned fields such as contextUserOptimization.prompt, breaking the "single source of truth" architecture
+ * - When switching modes, the old mode's UI state could pollute the new mode's session store through watches
  */
 const restoreProVariableSessionToUserWorkspace = async () => {
-    // ✅ 核心状态（prompt/optimizedPrompt/reasoning/chainId/versionId）
-    // 已通过 sessionPrompt 等 computed 绑定到 proVariableSession，无需手动赋值
+    // ✅ Core state (prompt/optimizedPrompt/reasoning/chainId/versionId)
+    // is already bound to proVariableSession via computed such as sessionPrompt, so no manual assignment is needed
 
-    // ✅ 恢复未绑定的 UI 状态
+    // ✅ Restore unbound UI state
     testContent.value = proVariableSession.testContent || '';
     isCompareMode.value = proVariableSession.isCompareMode;
 
-    // 等待 DOM 更新，确保 ContextUserWorkspace 已挂载并建立 ref
+    // Wait for the DOM update to make sure ContextUserWorkspace is mounted and its ref is established
     await nextTick();
 
     let contextUserOptimization = userWorkspaceRef.value?.contextUserOptimization;
     if (!contextUserOptimization) {
-        // 防御性重试：部分切换路径下首次 nextTick 可能仍未建立 ref
+        // Defensive retry: on some switching paths the ref may still not be established after the first nextTick
         await nextTick();
         contextUserOptimization = userWorkspaceRef.value?.contextUserOptimization;
         if (!contextUserOptimization) return;
     }
 
-    // ✅ 只恢复非绑定字段
-    // currentVersions 需要从历史记录重新拉取
+    // ✅ Only restore the unbound fields
+    // currentVersions needs to be re-fetched from the history records
     contextUserOptimization.currentVersions = [];
 
-    // 重置过程态（避免恢复后停留在 loading）
+    // Reset the in-progress state (avoids staying in loading after restore)
     contextUserOptimization.isOptimizing = false;
     contextUserOptimization.isIterating = false;
 
-    // 尝试从历史记录恢复版本列表
+    // Try to restore the version list from the history records
     const historyManager = services.value?.historyManager;
     const chainId = proVariableSession.chainId || '';
     if (historyManager && chainId) {
         try {
             const chain = await historyManager.getChain(chainId);
             contextUserOptimization.currentVersions = chain.versions;
-            // currentVersionId 已通过 binding 绑定，无需手动赋值
+            // currentVersionId is already bound via binding, so no manual assignment is needed
         } catch (error) {
-            console.warn('[PromptOptimizerApp] Pro-user 恢复链失败，使用 session 快照继续:', error);
+            console.warn('[PromptOptimizerApp] Pro-user chain restore failed, continuing with the session snapshot:', error);
         }
     }
 };
 
 /**
- * 🔧 方案 A 修复：恢复 Pro-system 模式的 session 状态（移除冗余赋值）
+ * 🔧 Plan A fix: restore the session state of Pro-system mode (removing redundant assignments)
  *
- * 设计原则：
- * - Pro-system 模式使用 useConversationOptimization 的状态树（不是 optimizer）
- * - 核心状态（optimizedPrompt/reasoning/chainId/versionId/selectedMessageId）
- *   已通过 computed 绑定到 proMultiMessageSession（单一真源），无需手动赋值
- * - 只恢复未绑定的 UI 状态（modelManager/isCompareMode/optimizationContext）
+ * Design principles:
+ * - Pro-system mode uses the useConversationOptimization state tree (not the optimizer)
+ * - The core state (optimizedPrompt/reasoning/chainId/versionId/selectedMessageId)
+ *   is already bound to proMultiMessageSession via computed (single source of truth), so no manual assignment is needed
+ * - Only restore the unbound UI state (modelManager/isCompareMode/optimizationContext)
  *
- * 根因分析：
- * - 旧逻辑错误地赋值给 optimizer，但 Pro-system 实际使用 conversationOptimization
- * - 这导致 optimizer 的 watch 触发，可能污染其他模式的 session store
+ * Root cause analysis:
+ * - The old logic wrongly assigned to the optimizer, but Pro-system actually uses conversationOptimization
+ * - This triggered the optimizer's watches and could pollute the session stores of other modes
  */
 const restoreProMultiMessageSession = async () => {
     const session = proMultiMessageSession;
     const savedState = session.$state;
 
-    // ✅ 核心状态（optimizedPrompt/reasoning/chainId/versionId/selectedMessageId）
-    // 已通过 useConversationOptimization 的 computed 绑定到 session.state，无需手动赋值
+    // ✅ Core state (optimizedPrompt/reasoning/chainId/versionId/selectedMessageId)
+    // is already bound to session.state via useConversationOptimization's computed, so no manual assignment is needed
 
-    // ✅ 恢复未绑定的 UI 状态
-    // 恢复对比模式
+    // ✅ Restore unbound UI state
+    // Restore the compare mode
     isCompareMode.value = savedState.isCompareMode;
 
     // Pro Multi messages are session-owned. Ensure a default example exists when empty.
@@ -1217,114 +1217,114 @@ const restoreProMultiMessageSession = async () => {
         session.selectMessage('');
     }
 
-    // 🔧 Codex 修复：等待 DOM 更新，确保子组件 ref 已建立
+    // 🔧 Codex fix: wait for the DOM update to make sure the child component ref is established
     await nextTick();
 
-    // 🔧 Codex 修复：显式恢复 conversationOptimization 的状态（selectedMessageId 和 messageChainMap）
-    // 确保在 session restore 完成后再调用，避免时序问题
-    // 通过子组件 ref 调用（子组件已在 defineExpose 中暴露此方法）
+    // 🔧 Codex fix: explicitly restore the conversationOptimization state (selectedMessageId and messageChainMap)
+    // Call it after the session restore has finished, to avoid timing issues
+    // Call it via the child component ref (the child component already exposes this method in defineExpose)
     systemWorkspaceRef.value?.restoreConversationOptimizationFromSession?.();
 };
 
 /**
- * 🔧 方案 A 修复：恢复 Image 模式的 session 状态（移除所有冗余赋值）
+ * 🔧 Plan A fix: restore the session state of Image mode (removing all redundant assignments)
  *
- * 设计原则：
- * - Image 模式使用独立的 Session Store（完全不涉及 optimizer）
- * - 所有状态（originalPrompt/optimizedPrompt/reasoning/chainId/versionId/isCompareMode等）
- *   已通过 computed 绑定到 imageText2ImageSession/imageImage2ImageSession（单一真源）
- * - ImageWorkspace 是完全独立的组件，状态由自身管理
+ * Design principles:
+ * - Image mode uses an independent Session Store (the optimizer is not involved at all)
+ * - All state (originalPrompt/optimizedPrompt/reasoning/chainId/versionId/isCompareMode, etc.)
+ *   is already bound to imageText2ImageSession/imageImage2ImageSession via computed (single source of truth)
+ * - ImageWorkspace is a fully independent component whose state is managed by itself
  *
- * 根因分析：
- * - 旧逻辑错误地赋值给 optimizer，但 Image 模式根本不使用 optimizer
- * - 这导致 optimizer 的 watch 触发，污染 Basic 模式的 session store（因为切换后 getCurrentSession 返回新模式）
- * - 即使恢复 isCompareMode，也已通过 ImageWorkspace 的 computed 自动同步，无需手动赋值
+ * Root cause analysis:
+ * - The old logic wrongly assigned to the optimizer, but Image mode does not use the optimizer at all
+ * - This triggered the optimizer's watches and polluted the Basic mode session store (because getCurrentSession returns the new mode after switching)
+ * - Even restoring isCompareMode is already synced automatically through ImageWorkspace's computed, so no manual assignment is needed
  *
- * 结论：
- * - Image 模式的所有状态由 ImageWorkspace 独立管理，此函数无需做任何操作
+ * Conclusion:
+ * - All Image mode state is managed independently by ImageWorkspace, so this function does not need to do anything
  */
 const restoreImageSession = () => {
-    // ✅ Image 模式的所有状态已通过 ImageWorkspace 的 computed 绑定到 session store
-    // 无需任何手动恢复操作，状态会自动从 session store 读取
+    // ✅ All Image mode state is already bound to the session store via ImageWorkspace's computed
+    // No manual restore is needed; the state is read automatically from the session store
 };
 
 /**
- * 从 session store 恢复状态到 UI（内部实现）
- * 🔧 Codex 修复：按 mode/subMode 分支调用对应的恢复函数，避免调用不存在的方法
+ * Restore state from the session store to the UI (internal implementation)
+ * 🔧 Codex fix: call the matching restore function per mode/subMode, to avoid calling non-existent methods
  *
- * 注意：这是内部实现，不包含互斥控制逻辑
- * 互斥控制由 useSessionRestoreCoordinator 处理
+ * Note: this is the internal implementation and does not include mutual-exclusion control logic
+ * Mutual-exclusion control is handled by useSessionRestoreCoordinator
  */
-// 🔧 Step E: 使用 route-computed 代替旧 state
+// 🔧 Step E: use route-computed instead of the old state
 const restoreSessionToUIInternal = async () => {
     if (routeFunctionMode.value === 'basic') {
-        // Basic 模式：使用通用恢复逻辑
+        // Basic mode: use the generic restore logic
         restoreBasicOrProVariableSession();
     } else if (routeFunctionMode.value === 'pro' && routeProSubMode.value === 'variable') {
-        // Pro-variable（变量模式）：恢复到 ContextUserWorkspace
+        // Pro-variable (variable mode): restore to ContextUserWorkspace
         await restoreProVariableSessionToUserWorkspace();
     } else if (routeFunctionMode.value === 'pro' && routeProSubMode.value === 'multi') {
-        // Pro-multi（多消息模式）：使用专用恢复逻辑（异步，等待 DOM 更新）
+        // Pro-multi (multi-message mode): use the dedicated restore logic (async, waits for the DOM update)
         await restoreProMultiMessageSession();
     } else if (routeFunctionMode.value === 'image') {
-        // Image 模式：使用专用恢复逻辑
+        // Image mode: use the dedicated restore logic
         restoreImageSession();
     }
 };
 
-// 🔧 架构优化：使用 session 恢复协调器
-// 负责处理互斥锁、pending 重试、卸载检查等协调逻辑
+// 🔧 Architecture optimization: use the session restore coordinator
+// Responsible for coordination logic such as mutex locks, pending retries, and unmount checks
 const restoreCoordinator = useSessionRestoreCoordinator(restoreSessionToUIInternal);
 
-// 对外暴露的恢复函数（带协调逻辑）
+// Restore function exposed externally (with coordination logic)
 const restoreSessionToUI = restoreCoordinator.executeRestore;
 
-// 🔧 Codex 修复：watch 只负责模式切换后的恢复（不负责首次恢复）
-// 首次恢复由 onMounted watchEffect 负责，避免双入口冲突
-// 🔧 Step E: 使用 route-computed 代替旧 state
+// 🔧 Codex fix: the watch is only responsible for restoring after a mode switch (not the first restore)
+// The first restore is handled by the onMounted watchEffect, to avoid conflicts between two entry points
+// 🔧 Step E: use route-computed instead of the old state
 watch(
     [isReady, () => routeFunctionMode.value, () => routeBasicSubMode.value, () => routeProSubMode.value],
     async ([ready]) => {
-        // 🔧 只在已完成首次恢复后才响应模式切换
+        // 🔧 Only respond to mode switches after the first restore has completed
         if (!ready || !hasRestoredInitialState.value) return;
 
-        // 🔧 外部数据加载中不响应模式切换（防止 session restore 覆盖外部数据）
+        // 🔧 Do not respond to mode switches while external data is loading (prevents the session restore from overwriting external data)
         if (isLoadingExternalData.value) return;
 
         try {
             await restoreSessionToUI();
         } catch (error) {
-            // 🔧 错误处理：避免未处理的 Promise rejection 传播到 Vue
-            console.error('[PromptOptimizerApp] 模式切换后恢复会话失败:', error);
+            // 🔧 Error handling: avoid unhandled Promise rejections propagating into Vue
+            console.error('[PromptOptimizerApp] Failed to restore the session after a mode switch:', error);
         }
     },
-    { immediate: false }  // 🔧 改为 false，不在 watch 创建时立即执行
+    { immediate: false }  // 🔧 Changed to false: do not execute immediately when the watch is created
 );
 
-// 同步 prompt 变化到 session store
-// 🔧 方案 A 修复：严格限制在 Basic 模式，避免跨模式污染
-// 根本原因：optimizer.prompt 已通过 computed 绑定到 session store（单一真源）
-// - Basic 模式：optimizer.prompt ↔ basicSessionPrompt ↔ session.prompt
-// - Pro/Image 模式：不使用 optimizer.prompt，但 watch 仍会触发并错误写入
+// Sync prompt changes to the session store
+// 🔧 Plan A fix: strictly limited to Basic mode to avoid cross-mode pollution
+// Root cause: optimizer.prompt is already bound to the session store via computed (single source of truth)
+// - Basic mode: optimizer.prompt ↔ basicSessionPrompt ↔ session.prompt
+// - Pro/Image mode: optimizer.prompt is not used, but the watch still fires and writes incorrectly
 watch(
     () => optimizer.prompt,
     (newPrompt) => {
         if (sessionManager.isSwitching) return;
 
-        // ⚠️ 严格限制在 Basic 模式
-        // - Pro 模式：没有 prompt 字段
-        // - Image 模式：使用独立的 ImageWorkspace 状态，不涉及 optimizer
+        // ⚠️ Strictly limited to Basic mode
+        // - Pro mode: has no prompt field
+        // - Image mode: uses independent ImageWorkspace state and does not involve the optimizer
         if (routeFunctionMode.value !== 'basic') {
             return;
         }
 
-        // ✅ 只有 Basic 模式才同步到 session
+        // ✅ Only Basic mode syncs to the session
         getCurrentBasicSession().updatePrompt(newPrompt || '');
     }
 );
 
-// 同步优化结果到 session store（包含 optimizedPrompt, reasoning, chainId, versionId）
-// ⚠️ Codex 要求：移除 truthy 检查，支持清空状态同步
+// Sync optimization results to the session store (including optimizedPrompt, reasoning, chainId, versionId)
+// ⚠️ Codex requirement: remove the truthy check to support syncing cleared state
 watch(
     [
         () => optimizer.optimizedPrompt,
@@ -1333,18 +1333,18 @@ watch(
         () => optimizer.currentVersionId,
     ],
     ([newOptimizedPrompt, newReasoning, newChainId, newVersionId]) => {
-        // 🔧 Basic/Image 模式的可持久化字段已直接绑定到对应 session store，
-        // 避免重复同步（尤其是 streaming token 会造成双写）。
+        // 🔧 The persistable fields of Basic/Image mode are bound directly to the corresponding session store,
+        // avoiding duplicate sync (especially streaming tokens, which would cause double writes).
         if (routeFunctionMode.value === 'basic') return;
         if (routeFunctionMode.value === 'image') return;
 
-        // Pro-user 模式的优化结果由 ContextUserWorkspace 内部管理，避免用 optimizer 覆盖 session
+        // The Pro-user optimization results are managed inside ContextUserWorkspace; avoid overwriting the session with the optimizer
         if (routeFunctionMode.value === 'pro' && routeProSubMode.value === 'variable') {
             return;
         }
 
-        // 🔧 Pro-system 模式的优化结果由 useConversationOptimization 直写 session store，
-        // 避免用不相关的 optimizer 状态覆盖（刷新后易写入空值）。
+        // 🔧 The Pro-system optimization results are written directly to the session store by useConversationOptimization,
+        // avoiding overwriting with unrelated optimizer state (which easily writes empty values after a refresh).
         if (routeFunctionMode.value === 'pro' && routeProSubMode.value === 'multi') {
             return;
         }
@@ -1361,20 +1361,20 @@ watch(
     }
 );
 
-// 同步测试结果到 session store
-// 🔧 Codex 修复：Image 模式没有 updateTestResults 方法，需要分支处理
-// 🔧 使用 deep: true 捕获深层变化（如 originalResult += token）
-// 🔧 过滤掉 isTesting* 临时状态，只持久化稳定字段
-// 🔧 修复：移除提前的 same value 检查，让 session store 自己处理（避免初始化时的空对象被跳过）
+// Sync test results to the session store
+// 🔧 Codex fix: Image mode has no updateTestResults method, so branch handling is needed
+// 🔧 Use deep: true to capture deep changes (such as originalResult += token)
+// 🔧 Filter out the transient isTesting* state and persist only stable fields
+// 🔧 Fix: removed the early same-value check and let the session store handle it itself (avoiding skipping empty objects at initialization)
 watch(
     () => promptTester.testResults,
     (newTestResults) => {
         if (sessionManager.isSwitching) return;
 
-        // 仅 Basic 模式使用 promptTester（其他模式有各自的测试器/工作区）
+        // Only Basic mode uses promptTester (other modes have their own testers/workspaces)
         if (routeFunctionMode.value !== 'basic') return;
 
-        // 只保存稳定字段，不保存 isTesting* 临时状态
+        // Only save stable fields, not the transient isTesting* state
         const stableResults = newTestResults
             ? {
                   originalResult: newTestResults.originalResult || '',
@@ -1383,31 +1383,31 @@ watch(
                   optimizedReasoning: newTestResults.optimizedReasoning || '',
               }
             : null;
-        // 🔧 直接调用，让 session store 的 updateTestResults 方法自己处理 same value 检查
+        // 🔧 Call directly and let the session store's updateTestResults method handle the same-value check itself
         getCurrentBasicSession().updateTestResults(stableResults);
     },
-    { deep: true }  // 🔧 启用深层监听，捕获 streaming 写入等深层变化
+    { deep: true }  // 🔧 Enable deep watching to capture deep changes such as streaming writes
 );
 
 /*
-// 同步优化模型选择到 session store（已废弃：模型选择以 Session Store 为唯一真源）
-// 🔧 Codex 修复：Image 模式使用 updateTextModel，Basic 模式使用 updateOptimizeModel
-// 🔧 清理：Pro 模式的模型选择已由各 workspace/controller 直接管理，不在此处写入
+// Sync the optimize model selection to the session store (deprecated: the Session Store is the single source of truth for model selection)
+// 🔧 Codex fix: Image mode uses updateTextModel, Basic mode uses updateOptimizeModel
+// 🔧 Cleanup: the model selection of Pro mode is already managed directly by each workspace/controller and is not written here
 watch(
     () => modelManager.selectedOptimizeModel,
     (newModel) => {
         if (sessionManager.isSwitching) return;
 
-        // 🔧 Pro 模式的模型选择已由 workspace/controller 持久化到 session store
-        // 避免在此处写入导致双写或污染
+        // 🔧 The model selection of Pro mode is already persisted to the session store by the workspace/controller
+        // Avoid writing here, which would cause double writes or pollution
         if (routeFunctionMode.value === 'pro') return;
 
         const session = getCurrentSession();
         if (!session) return;
 
-        // Image 模式使用 updateTextModel
+        // Image mode uses updateTextModel
         if (routeFunctionMode.value === 'image') {
-            // 避免模型选择初始化/短暂空值时覆盖 image session（导致下拉变成"未选择"）
+            // Avoid the model selection overwriting the image session during initialization / a brief empty value (which would make the dropdown show "Not selected")
             if (!modelManager.isModelSelectionReady || !newModel) {
                 return;
             }
@@ -1415,7 +1415,7 @@ watch(
                 (session as { updateTextModel: (model: string) => void }).updateTextModel(newModel || '');
             }
         } else {
-            // Basic 模式使用 updateOptimizeModel
+            // Basic mode uses updateOptimizeModel
             if (typeof (session as { updateOptimizeModel?: unknown }).updateOptimizeModel === 'function') {
                 (session as { updateOptimizeModel: (model: string) => void }).updateOptimizeModel(newModel || '');
             }
@@ -1423,16 +1423,16 @@ watch(
     }
 );
 
-// 同步测试模型选择到 session store
-// 🔧 Codex 修复：Image 模式没有对应的 testModel 字段，跳过同步
-// 🔧 清理：Pro 模式的测试模型选择已由各 workspace/controller 直接管理
+// Sync the test model selection to the session store
+// 🔧 Codex fix: Image mode has no corresponding testModel field, so skip the sync
+// 🔧 Cleanup: the test model selection of Pro mode is already managed directly by each workspace/controller
 watch(
     () => modelManager.selectedTestModel,
     (newModel) => {
         if (sessionManager.isSwitching) return;
 
-        // 🔧 Pro 模式的测试模型选择已由 workspace/controller 持久化到 session store
-        // Image 模式不使用 testModel 字段
+        // 🔧 The test model selection of Pro mode is already persisted to the session store by the workspace/controller
+        // Image mode does not use the testModel field
         if (routeFunctionMode.value === 'image') return;
         if (routeFunctionMode.value === 'pro') return;
 
@@ -1444,9 +1444,9 @@ watch(
 );
 
 */
-// 当前选中的模板（根据 system/user 模式映射到 optimizer 对应字段）
-// 注意：必须在任何 watch/计算属性引用之前声明，避免 TDZ。
-// （选择已下沉到各 workspace；此处不再维护 currentSelectedTemplate）
+// Currently selected template (mapped to the corresponding optimizer field based on system/user mode)
+// Note: this must be declared before any watch/computed references it, to avoid TDZ.
+// (Selection has moved down into each workspace; currentSelectedTemplate is no longer maintained here)
 const currentSelectedTemplate = computed<Template | null>({
     get: () =>
         selectedOptimizationMode.value === "system"
@@ -1461,17 +1461,17 @@ const currentSelectedTemplate = computed<Template | null>({
     },
 });
 
-// 同步模板选择到 session store
-// 🔧 方案 A 修复：Image 模式不使用 optimizer 的模板，需要排除
-// 🔧 清理：Pro 模式的模板选择已由各 workspace/controller 直接管理
+// Sync the template selection to the session store
+// 🔧 Plan A fix: Image mode does not use the optimizer's templates and must be excluded
+// 🔧 Cleanup: the template selection of Pro mode is already managed directly by each workspace/controller
 watch(
     currentSelectedTemplate,
     (newTemplate) => {
         if (sessionManager.isSwitching) return;
         if (!hasRestoredInitialState.value) return;
 
-        // ⚠️ Image 模式使用独立的 session 模板管理
-        // 🔧 Pro 模式的模板选择已由 workspace/controller 持久化到 session store
+        // ⚠️ Image mode uses independent session template management
+        // 🔧 The template selection of Pro mode is already persisted to the session store by the workspace/controller
         if (routeFunctionMode.value === 'image') return;
         if (routeFunctionMode.value === 'pro') return;
 
@@ -1479,19 +1479,19 @@ watch(
     }
 );
 
-// 同步迭代模板选择到 session store
-// 🔧 清理：仅 Basic 模式使用 optimizer.selectedIterateTemplate
-// 🔧 Pro 模式的迭代模板选择已由 workspace/controller 直接管理
+// Sync the iterate template selection to the session store
+// 🔧 Cleanup: only Basic mode uses optimizer.selectedIterateTemplate
+// 🔧 The iterate template selection of Pro mode is already managed directly by the workspace/controller
 watch(
     () => optimizer.selectedIterateTemplate,
     (newTemplate) => {
         if (sessionManager.isSwitching) return;
         if (!hasRestoredInitialState.value) return;
 
-        // ⚠️ 仅 Basic 模式使用此迭代模板
-        // - Pro-system：没有 updateIterateTemplate 方法
-        // - Pro-user：已由 workspace/controller 持久化
-        // - Image：使用独立的模板管理
+        // ⚠️ Only Basic mode uses this iterate template
+        // - Pro-system: has no updateIterateTemplate method
+        // - Pro-user: already persisted by the workspace/controller
+        // - Image: uses independent template management
         if (routeFunctionMode.value === 'image') return;
         if (routeFunctionMode.value === 'pro') return;
 
@@ -1499,16 +1499,16 @@ watch(
     }
 );
 
-// 同步测试内容到 session store（用于刷新/切换后保留测试输入）
-// 🔧 清理：Pro 模式的测试内容已由 workspace 内部管理
+// Sync the test content to the session store (to keep the test input after a refresh/switch)
+// 🔧 Cleanup: the test content of Pro mode is already managed inside the workspace
 watch(
     testContent,
     (newContent) => {
         if (sessionManager.isSwitching) return;
         if (!hasRestoredInitialState.value) return;
 
-        // 🔧 仅 Basic 模式使用此 testContent
-        // Image 模式没有 testContent；Pro 模式已由 workspace 内部管理
+        // 🔧 Only Basic mode uses this testContent
+        // Image mode has no testContent; Pro mode is already managed inside the workspace
         if (routeFunctionMode.value === 'image') return;
         if (routeFunctionMode.value === 'pro') return;
 
@@ -1517,12 +1517,12 @@ watch(
     { flush: 'sync' }
 );
 
-// 同步对比模式到 session store
-// 🔧 清理：Pro 模式的对比模式已由 workspace/controller 直接管理
+// Sync the compare mode to the session store
+// 🔧 Cleanup: the compare mode of Pro mode is already managed directly by the workspace/controller
 watch(
     isCompareMode,
     (newMode) => {
-        // 🔧 Pro 模式的对比模式已由 workspace/controller 持久化到 session store
+        // 🔧 The compare mode of Pro mode is already persisted to the session store by the workspace/controller
         if (routeFunctionMode.value === 'pro') return;
 
         if (routeFunctionMode.value === 'basic') {
@@ -1535,11 +1535,11 @@ watch(
     }
 );
 
-// ========== Pro 多消息模式特有状态同步 ==========
-// 🔧 已清理：optimizationContext 现在由 ProWorkspaceContainer 直接管理
-// 避免在 App 层写入导致双写或污染（刷新后易写入空值）
+// ========== Pro multi-message mode-specific state sync ==========
+// 🔧 Cleaned up: optimizationContext is now managed directly by ProWorkspaceContainer
+// Avoid writing at the App layer, which would cause double writes or pollution (easily writing empty values after a refresh)
 
-// 同步 contextManagement 中的 contextMode 到 App 层（不驱动路由）
+// Sync the contextMode in contextManagement to the App layer (does not drive the route)
 watch(
     contextManagement.contextMode,
     async (newMode) => {
@@ -1548,8 +1548,8 @@ watch(
     { immediate: true },
 );
 
-// Pro 模式下：以路由为真源，同步 services/contextManagement 的 contextMode
-// 目的：避免“持久化/默认 contextMode”反向覆盖显式路由（E2E 会直接 goto /#/pro/variable）
+// In Pro mode: take the route as the source of truth and sync the contextMode of services/contextManagement
+// Purpose: avoid the "persisted/default contextMode" overriding the explicit route in reverse (E2E goes directly to /#/pro/variable)
 watch(
     [services, () => routeFunctionMode.value, () => routeProSubMode.value],
     async ([newServices, functionMode, proSubMode]) => {
@@ -1571,7 +1571,7 @@ const optimizerCurrentVersions = computed<PromptRecordChain["versions"]>({
     },
 });
 
-// 提示词历史
+// Prompt history
 const promptHistory = usePromptHistory(
     services,
     basicSessionPrompt,
@@ -1613,10 +1613,10 @@ const optimizerPrompt = computed<string>({
     },
 });
 
-// App 级别历史记录恢复
+// App-level history restore
 const { handleHistoryReuse } = useAppHistoryRestore({
     services: servicesForHistoryRestore,
-    navigateToSubModeKey: navigateToSubModeKeyCompat,  // 🔧 Step D: 替代旧的 setFunctionMode/set*SubMode
+    navigateToSubModeKey: navigateToSubModeKeyCompat,  // 🔧 Step D: replaces the old setFunctionMode/set*SubMode
     handleContextModeChange,
     handleSelectHistory: promptHistory.handleSelectHistory,
     proMultiMessageSession,
@@ -1626,7 +1626,7 @@ const { handleHistoryReuse } = useAppHistoryRestore({
     isLoadingExternalData,
 });
 
-// App 级别收藏管理
+// App-level favorites management
 const {
     showFavoriteManager,
     showSaveFavoriteDialog,
@@ -1636,7 +1636,7 @@ const {
     handleFavoriteOptimizePrompt,
     handleUseFavorite,
 } = useAppFavorite({
-    navigateToSubModeKey: navigateToSubModeKeyCompat,  // 🔧 Step D: 替代旧的 setFunctionMode/set*SubMode
+    navigateToSubModeKey: navigateToSubModeKeyCompat,  // 🔧 Step D: replaces the old setFunctionMode/set*SubMode
     handleContextModeChange,
     optimizerPrompt,
     t,
@@ -1663,10 +1663,10 @@ void registerOptionalIntegrations({
 });
 provide("handleSaveFavorite", handleSaveFavorite);
 
-// 模板管理器
+// Template manager
 const templateManagerState = useTemplateManager(services);
 
-// TemplateManager 选择回调：写入 Session Store（单一真源），避免写入旧 TEMPLATE_SELECTION_KEYS
+// TemplateManager selection callback: writes to the Session Store (single source of truth), avoiding writes to the old TEMPLATE_SELECTION_KEYS
 const handleTemplateSelected = (
     template: Template | null,
     type: Template["metadata"]["templateType"],
@@ -1759,7 +1759,7 @@ const refreshTextModels = async () => {
             if (!selectedOptimizeModelKey.value) {
                 selectedOptimizeModelKey.value = fallbackValue;
             }
-            // Image 模式不使用 testModel；setter 会忽略
+            // Image mode does not use testModel; the setter ignores it
             if (!selectedTestModelKey.value) {
                 selectedTestModelKey.value = fallbackValue;
             }
@@ -1782,19 +1782,19 @@ watch(
     { immediate: true },
 );
 
-// 7. 监听服务初始化
+// 7. Watch service initialization
 watch(services, async (newServices) => {
     if (!newServices) return;
 
     promptService.value = newServices.promptService;
     await initializeContextPersistence();
 
-    // 等待基于 globalSettings 的初始路由初始化完成（避免根路径时读取到错误的 routeFunctionMode）
+    // Wait for the initial route initialization based on globalSettings to finish (avoids reading a wrong routeFunctionMode at the root path)
     if (_routeInitInFlight) {
         await _routeInitInFlight;
     }
 
-    // 🔧 修复：使用 setup 顶层保存的 composable 引用，避免在 watch 回调中重复调用（导致 inject() 错误）
+    // 🔧 Fix: use the composable reference saved at the top level of setup, to avoid repeated calls inside watch callbacks (which cause inject() errors)
     if (routeFunctionMode.value === "basic") {
         await basicSubModeApi.ensureInitialized();
     } else if (routeFunctionMode.value === "pro") {
@@ -1815,7 +1815,7 @@ watch(services, async (newServices) => {
     );
 });
 
-// 8. 处理数据导入成功后的刷新
+// 8. Handle the refresh after a successful data import
 const handleDataImported = () => {
     useToast().success(t("dataManager.import.successWithRefresh"));
     setTimeout(() => {
@@ -1823,14 +1823,14 @@ const handleDataImported = () => {
     }, 1500);
 };
 
-// 监听变量管理器关闭
+// Watch the variable manager closing
 watch(showVariableManager, (newValue) => {
     if (!newValue) {
         focusVariableName.value = undefined;
     }
 });
 
-// 监听高级模式和优化模式变化
+// Watch advanced mode and optimization mode changes
 watch(
     [advancedModeEnabled, selectedOptimizationMode],
     ([newAdvancedMode, newOptimizationMode]) => {
@@ -1851,7 +1851,7 @@ watch(
     { immediate: false },
 );
 
-// 打开GitHub仓库
+// Open the GitHub repository
 const openGithubRepo = async () => {
     const url = "https://github.com/linshenkx/prompt-optimizer";
 
@@ -1876,7 +1876,7 @@ const normalizeTemplateTypeForManager = (
             : "userOptimize";
     }
 
-    // 兼容旧值：contextSystemOptimize -> conversationMessageOptimize（上下文系统/消息优化）
+    // Compatible with legacy values: contextSystemOptimize -> conversationMessageOptimize (context system/message optimization)
     if (templateType === "contextSystemOptimize") {
         return "conversationMessageOptimize";
     }
@@ -1901,26 +1901,26 @@ const normalizeTemplateTypeForManager = (
 
     if (isTemplateManagerTemplateType(templateType)) return templateType;
 
-    // TemplateManager 明确不支持的类型（如 evaluation）不能静默回退。
-    // 直接抛错，避免打开错误的模板集合掩盖问题。
+    // Types explicitly unsupported by TemplateManager (such as evaluation) must not silently fall back.
+    // Throw directly, to avoid opening the wrong template set and masking the problem.
     throw new Error(
         `[PromptOptimizerApp] Unsupported template type for TemplateManager: ${templateType}`,
     );
 };
 
-// 打开模板管理器
+// Open the template manager
 const openTemplateManager = (templateType?: TemplateType) => {
     templateManagerState.currentType = normalizeTemplateTypeForManager(templateType);
     templateManagerState.showTemplates = true;
 };
 
-// 🔧 Step D: 已删除死代码 - handleBasicSubModeChange/handleProSubModeChange/handleImageSubModeChange
-// 这些函数已被 AppCoreNav 的 router.push 导航替代（2024-01-06）
+// 🔧 Step D: dead code removed - handleBasicSubModeChange/handleProSubModeChange/handleImageSubModeChange
+// These functions have been replaced by router.push navigation in AppCoreNav (2024-01-06)
 
-// 向子组件提供统一的 openTemplateManager 接口
+// Provide a unified openTemplateManager interface to child components
 provide("openTemplateManager", openTemplateManager);
 
-// 模板管理器关闭回调
+// Template manager close callback
 const handleTemplateManagerClosed = () => {
     try {
         templateManagerState.handleTemplateManagerClose();
@@ -1933,7 +1933,7 @@ const handleTemplateManagerClosed = () => {
     }
 };
 
-// 提供 openModelManager 接口
+// Provide the openModelManager interface
 const openModelManager = (tab: "text" | "image" | "function" = "text") => {
     modelManager.showConfig = true;
     setTimeout(() => {
@@ -1946,7 +1946,7 @@ const openModelManager = (tab: "text" | "image" | "function" = "text") => {
 };
 provide("openModelManager", openModelManager);
 
-// 提供 openContextEditor 接口（供 Pro Multi 等工作区直接调用）
+// Provide the openContextEditor interface (for workspaces such as Pro Multi to call directly)
 type ContextEditorOpenArg = ConversationMessage[] | "messages" | "variables" | "tools";
 const openContextEditor = (
     messagesOrTab?: ContextEditorOpenArg,
@@ -1985,7 +1985,7 @@ const openContextEditor = (
 };
 provide("openContextEditor", openContextEditor);
 
-// 模型管理器关闭回调
+// Model manager close callback
 const handleModelManagerClosed = async () => {
     try {
         modelManager.handleModelManagerClose();
@@ -2002,51 +2002,51 @@ const handleModelManagerClosed = async () => {
 
 // ========== Session Management ==========
 /**
- * 🔧 开发规范（防止回归）：
+ * 🔧 Development rules (to prevent regressions):
  *
- * 任何新增触发 switchMode / switchSubMode / restoreSessionToUI 的 watch 或入口
- * 都**必须**添加以下检查，防止 session restore 覆盖外部数据：
+ * Any newly added watch or entry that triggers switchMode / switchSubMode / restoreSessionToUI
+ * **must** add the following check, to prevent the session restore from overwriting external data:
  *
  *   if (isLoadingExternalData.value) return;
  *
- * 适用场景：历史记录恢复、收藏加载、模板导入、配置恢复等任何外部数据加载
+ * Applies to any external data loading: history restore, favorites loading, template import, config restore, etc.
  *
- * 当前已保护的 5 个入口：
- *   1. watch(functionMode, ...)              - 功能模式切换
- *   2. watch(basicSubMode, ...)              - Basic 子模式切换
- *   3. watch(proSubMode, ...)                - Pro 子模式切换
- *   4. watch(imageSubMode, ...)              - Image 子模式切换
- *   5. watch([isReady, ...modes], ...)       - 综合模式监听
+ * The 5 entries currently protected:
+ *   1. watch(functionMode, ...)              - function mode switch
+ *   2. watch(basicSubMode, ...)              - Basic sub-mode switch
+ *   3. watch(proSubMode, ...)                - Pro sub-mode switch
+ *   4. watch(imageSubMode, ...)              - Image sub-mode switch
+ *   5. watch([isReady, ...modes], ...)       - combined mode watch
  */
 
-// ========== 🔧 Step C: 路由驱动的模式切换（替代旧 state-watch） ==========
+// ========== 🔧 Step C: route-driven mode switching (replaces the old state-watch) ==========
 /**
- * 从路由路径解析 SubModeKey（使用与 route-computed 相同的严格解析逻辑）
+ * Parse a SubModeKey from the route path (using the same strict parsing logic as route-computed)
  *
- * @param path - 路由路径，如 '/basic/system', '/pro/variable', '/image/text2image'
- * @returns SubModeKey，如 'basic-system', 'pro-variable', 'image-text2image'
- * @returns null - 如果路径非法
+ * @param path - Route path, such as '/basic/system', '/pro/variable', '/image/text2image'
+ * @returns SubModeKey, such as 'basic-system', 'pro-variable', 'image-text2image'
+ * @returns null - if the path is invalid
  */
 const parseSubModeKey = (path: string): SubModeKey | null => {
   if (!path) return null;
 
-  // 移除查询参数和哈希
+  // Remove the query parameters and hash
   const cleanPath = path.split('?')[0].split('#')[0];
 
-  // 匹配模式：/mode/subMode
+  // Match the pattern: /mode/subMode
   const match = cleanPath.match(/^\/([a-z]+)\/([a-z0-9]+)$/);
   if (!match) return null;
 
   const [, mode, subMode] = match;
 
-  // 严格验证 mode 和 subMode 的合法性
+  // Strictly validate the legality of mode and subMode
   const validModes: Record<string, string[]> = {
     basic: ['system', 'user'],
     pro: ['multi', 'variable'],
     image: ['text2image', 'image2image'],
   };
 
-  // 🔧 Pro 模式兼容性映射（与 routeProSubMode computed 保持一致）
+  // 🔧 Pro mode compatibility mapping (kept consistent with the routeProSubMode computed)
   let normalizedSubMode = subMode;
   if (mode === 'pro') {
     if (subMode === 'system') normalizedSubMode = 'multi';
@@ -2062,74 +2062,74 @@ const parseSubModeKey = (path: string): SubModeKey | null => {
 };
 
 /**
- * 🔧 Step C - 新增：路由变化监听（替代旧 state-watch，避免双触发）
+ * 🔧 Step C - new: route change watch (replaces the old state-watch, avoiding double triggering)
  *
- * 主链路：路由变化 → sessionManager.switchMode/switchSubMode → restoreSessionToUI
+ * Main flow: route change → sessionManager.switchMode/switchSubMode → restoreSessionToUI
  *
- * 设计原则：
- * - 路由变化是唯一触发模式切换事务的入口
- * - 使用 route-computed 解析 fromKey/toKey（与 Step A 保持一致）
- * - 保留 isLoadingExternalData 和 hasRestoredInitialState 短路逻辑
- * - 与旧 state-watch 并存但让旧的短路，便于验证和回滚
+ * Design principles:
+ * - A route change is the only entry that triggers a mode-switch transaction
+ * - Use route-computed to parse fromKey/toKey (consistent with Step A)
+ * - Keep the short-circuit logic of isLoadingExternalData and hasRestoredInitialState
+ * - Coexists with the old state-watch but makes the old one short-circuit, for easy verification and rollback
  */
 watch(
   () => routerInstance.currentRoute.value.fullPath,
   async (toPath, fromPath) => {
-    // 🔧 首次恢复完成前不响应路由变化
+    // 🔧 Do not respond to route changes before the first restore completes
     if (!hasRestoredInitialState.value) return;
 
-    // 🔧 外部数据加载中不响应路由变化（防止 session restore 覆盖外部数据）
+    // 🔧 Do not respond to route changes while external data is loading (prevents the session restore from overwriting external data)
     if (isLoadingExternalData.value) return;
 
-    // 解析 fromKey 和 toKey（使用与 route-computed 相同的严格解析逻辑）
+    // Parse fromKey and toKey (using the same strict parsing logic as route-computed)
     const fromKey = parseSubModeKey(fromPath);
     const toKey = parseSubModeKey(toPath);
 
-    // 非法路径：不触发切换（由 route-computed 的 redirect 处理）
+    // Invalid path: do not trigger a switch (handled by the redirect of route-computed)
     if (!fromKey || !toKey) return;
 
-    // 路由未变化：不触发切换
+    // Route unchanged: do not trigger a switch
     if (fromKey === toKey) return;
 
-    // 🔧 判断是跨 mode 切换还是同 mode 子模式切换
+    // 🔧 Determine whether this is a cross-mode switch or a same-mode sub-mode switch
     const fromMode = fromKey.split('-')[0];
     const toMode = toKey.split('-')[0];
 
     try {
       if (fromMode !== toMode) {
-        // 跨 mode 切换
+        // Cross-mode switch
         await sessionManager.switchMode(fromKey, toKey);
       } else {
-        // 同 mode 子模式切换
+        // Same-mode sub-mode switch
         await sessionManager.switchSubMode(fromKey, toKey);
       }
 
-      // ⚠️ 切换后恢复状态到 UI
+      // ⚠️ Restore the state to the UI after switching
       await restoreSessionToUI();
     } catch (error) {
-      console.error(`[PromptOptimizerApp] 路由切换失败: ${fromKey} → ${toKey}`, error);
+      console.error(`[PromptOptimizerApp] Route switch failed: ${fromKey} → ${toKey}`, error);
     }
   }
 );
 
-// ========== 🔧 Step D: 路由导航 helper（替代 setFunctionMode/set*SubMode） ==========
+// ========== 🔧 Step D: route navigation helper (replaces setFunctionMode/set*SubMode) ==========
 /**
- * 通过 SubModeKey 进行路由导航（替代旧的 setFunctionMode/set*SubMode 写入口）
+ * Navigate by route using a SubModeKey (replaces the old setFunctionMode/set*SubMode write entries)
  *
- * @param toKey - 目标子模式键，如 'basic-system', 'pro-variable', 'image-text2image'
- * @param opts - 导航选项
- * @param opts.replace - 是否使用 router.replace 而非 router.push（默认 false）
+ * @param toKey - Target sub-mode key, such as 'basic-system', 'pro-variable', 'image-text2image'
+ * @param opts - Navigation options
+ * @param opts.replace - Whether to use router.replace instead of router.push (default false)
  *
- * 使用场景：
- * - 历史记录恢复：navigateToSubModeKey(chain.functionMode + '-' + chain.subMode)
- * - 收藏使用：navigateToSubModeKey(favorite.functionMode + '-' + favorite.subMode)
- * - 任何需要切换模式/子模式的场景
+ * Use cases:
+ * - History restore: navigateToSubModeKey(chain.functionMode + '-' + chain.subMode)
+ * - Using a favorite: navigateToSubModeKey(favorite.functionMode + '-' + favorite.subMode)
+ * - Any scenario that needs to switch the mode/sub-mode
  */
 function navigateToSubModeKey(
   toKey: SubModeKey,
   opts?: { replace?: boolean }
 ) {
-  // SubModeKey 格式：'basic-system' | 'pro-variable' | 'image-text2image'
+  // SubModeKey format: 'basic-system' | 'pro-variable' | 'image-text2image'
   const [mode, subMode] = toKey.split('-') as [
     FunctionMode,
     BasicSubMode | ProSubMode | ImageSubMode
@@ -2144,37 +2144,37 @@ function navigateToSubModeKey(
   }
 }
 
-// 🔧 Step C 阶段2：已删除四个旧 state-watch，route-watch 成为唯一触发源
-// - watch(functionMode, ...) ❌ 已删除（2024-01-06）
-// - watch(basicSubMode, ...) ❌ 已删除（2024-01-06）
-// - watch(proSubMode, ...) ❌ 已删除（2024-01-06）
-// - watch(imageSubMode, ...) ❌ 已删除（2024-01-06）
+// 🔧 Step C phase 2: the four old state-watches were deleted, and route-watch is now the only trigger source
+// - watch(functionMode, ...) ❌ deleted (2024-01-06)
+// - watch(basicSubMode, ...) ❌ deleted (2024-01-06)
+// - watch(proSubMode, ...) ❌ deleted (2024-01-06)
+// - watch(imageSubMode, ...) ❌ deleted (2024-01-06)
 //
-// 主链路：route.fullPath 变化 → sessionManager.switchMode/switchSubMode → restoreSessionToUI
-// 保留 watch([isReady, ...modes], ...) 用于首次恢复（第1121-1131行）
+// Main flow: route.fullPath change → sessionManager.switchMode/switchSubMode → restoreSessionToUI
+// Keep watch([isReady, ...modes], ...) for the first restore (lines 1121-1131)
 
-// 应用启动时恢复当前会话（在services ready后自动触发）
-// 注意：恢复逻辑已集成到services ready的watch中
+// Restore the current session when the app starts (triggered automatically after services are ready)
+// Note: the restore logic is integrated into the services-ready watch
 
 
-// 定时自动保存（每30秒）
+// Periodic auto-save (every 30 seconds)
 let autoSaveIntervalId: number | null = null
-// Services 初始化超时定时器
+// Services initialization timeout timer
 let initTimeoutId: number | null = null
 
-// ⚠️ 具名函数：pagehide 事件处理器（Codex 建议）
+// ⚠️ Named function: pagehide event handler (Codex suggestion)
 const handlePagehide = () => {
-  // 注意：这里不能用 await，因为浏览器不会等异步完成
+  // Note: await cannot be used here because the browser does not wait for async operations to finish
   sessionManager.saveAllSessions().catch(err => {
-    console.error('[PromptOptimizerApp] pagehide 异步保存失败:', err)
+    console.error('[PromptOptimizerApp] pagehide async save failed:', err)
   })
 }
 
-// ⚠️ 具名函数：visibilitychange 事件处理器（Codex 建议）
+// ⚠️ Named function: visibilitychange event handler (Codex suggestion)
 const handleVisibilityChange = () => {
   if (document.visibilityState === 'hidden') {
     sessionManager.saveAllSessions().catch(err => {
-      console.error('[PromptOptimizerApp] visibilitychange 保存失败:', err)
+      console.error('[PromptOptimizerApp] visibilitychange save failed:', err)
     })
   }
 }
@@ -2190,40 +2190,40 @@ onMounted(() => {
     void promptRefreshForNewDeploy(error);
   });
 
-  // ⚠️ 使用 watchEffect + 独立超时定时器（Codex 建议）
-  const TIMEOUT = 10000 // 10秒超时
+  // ⚠️ Use watchEffect + an independent timeout timer (Codex suggestion)
+  const TIMEOUT = 10000 // 10-second timeout
 
-  // ⚠️ 避免 watchEffect 回调内 stopWatch() 的 TDZ 风险
+  // ⚠️ Avoid the TDZ risk of calling stopWatch() inside the watchEffect callback
   let stopWatch: (() => void) | null = null
 
-  // 设置超时定时器
+  // Set the timeout timer
   initTimeoutId = window.setTimeout(() => {
-    console.error('[PromptOptimizerApp] Services 初始化超时')
+    console.error('[PromptOptimizerApp] Services initialization timed out')
     stopWatch?.()
   }, TIMEOUT)
 
   stopWatch = watchEffect(async () => {
-    // 等待 services 和初始化完成
+    // Wait for services and initialization to complete
     if (!services.value || isInitializing.value) {
       return
     }
 
-    // ⚠️ 防御性检查：确保 Pinia services 已注入（防止时序竞态）
-    // 理论上 watch(services) 会先执行 setPiniaServices()，但这里添加二次确认
+    // ⚠️ Defensive check: make sure the Pinia services are injected (guards against timing races)
+    // In theory watch(services) runs setPiniaServices() first, but a second confirmation is added here
     const $services = getPiniaServices()
     if (!$services) {
-      console.warn('[PromptOptimizerApp] Pinia services 尚未注入，但 services.value 已存在')
-      console.warn('[PromptOptimizerApp] 这可能是时序问题，继续等待下一轮')
-      // 不调用 stopWatch()，继续等待下一轮
+      console.warn('[PromptOptimizerApp] Pinia services are not injected yet, but services.value already exists')
+      console.warn('[PromptOptimizerApp] This may be a timing issue; continue waiting for the next round')
+      // Do not call stopWatch(); continue waiting for the next round
       return
     }
     if (!$services.preferenceService) {
-      // PreferenceService 还未就绪：继续等待，避免 restoreAllSessions() 直接返回导致默认值写回覆盖持久化内容
+      // PreferenceService is not ready yet: keep waiting, to avoid restoreAllSessions() returning directly and the default values being written back over persisted content
       return
     }
 
-    // Services 和 Pinia 均已就绪，清除超时定时器并停止监听
-    console.log('[PromptOptimizerApp] Services 和 Pinia 均已就绪，开始恢复会话')
+    // Services and Pinia are both ready; clear the timeout timer and stop watching
+    console.log('[PromptOptimizerApp] Services and Pinia are both ready, starting the session restore')
     if (initTimeoutId !== null) {
       window.clearTimeout(initTimeoutId)
       initTimeoutId = null
@@ -2231,37 +2231,37 @@ onMounted(() => {
     stopWatch?.()
 
     try {
-      // hydrate all：避免未恢复的子模式在 saveAllSessions 时用默认空值覆盖持久化内容
+      // hydrate all: avoids unrestored sub-modes overwriting persisted content with default empty values during saveAllSessions
       await sessionManager.restoreAllSessions()
 
-      // 恢复到 UI
+      // Restore to the UI
       await restoreSessionToUI()
 
-      // 🔧 Codex 修复：标记首次恢复已完成，允许 watch 响应后续模式切换
+      // 🔧 Codex fix: mark the first restore as done, allowing the watch to respond to subsequent mode switches
       hasRestoredInitialState.value = true
 
-      // 启动自动保存定时器
+      // Start the auto-save timer
       autoSaveIntervalId = window.setInterval(async () => {
-        // ⚠️ Codex 要求：切换期间禁用自动保存，避免竞态条件
-        // ⚠️ 注意：SessionManager.saveSubModeSession 内部已有全局锁（saveInFlight），无需额外锁
+        // ⚠️ Codex requirement: disable auto-save during a switch to avoid race conditions
+        // ⚠️ Note: SessionManager.saveSubModeSession already has a global lock (saveInFlight) internally, so no extra lock is needed
         if (sessionManager.isSwitching) {
           return
         }
 
         const currentKey = sessionManager.getActiveSubModeKey()
         await sessionManager.saveSubModeSession(currentKey)
-      }, 30000) // 每30秒
+      }, 30000) // Every 30 seconds
 
-      // ⚠️ Codex 建议：使用 pagehide 代替 beforeunload（更可靠）
-      // pagehide 在页面即将卸载时触发，比 beforeunload 更可靠
+      // ⚠️ Codex suggestion: use pagehide instead of beforeunload (more reliable)
+      // pagehide fires when the page is about to unload, and is more reliable than beforeunload
       if (typeof window !== 'undefined') {
         window.addEventListener('pagehide', handlePagehide)
 
-        // ⚠️ 额外的保险：visibilitychange hidden 时也触发一次保存
+        // ⚠️ Extra safeguard: also trigger a save when visibilitychange becomes hidden
         document.addEventListener('visibilitychange', handleVisibilityChange)
       }
     } catch (error) {
-      console.error('[PromptOptimizerApp] 初始化过程中发生错误:', error)
+      console.error('[PromptOptimizerApp] An error occurred during initialization:', error)
     } finally {
       // Ensure the app can render even if session restore fails.
       hasRestoredInitialState.value = true
@@ -2269,22 +2269,22 @@ onMounted(() => {
   })
 })
 
-// 应用卸载前清理并保存所有会话
+// Clean up and save all sessions before the app unmounts
 onBeforeUnmount(async () => {
-  // 🔧 Codex 修复：设置卸载标志，阻止后续 microtask 执行恢复
+  // 🔧 Codex fix: set the unmount flag to prevent subsequent microtasks from running a restore
   restoreCoordinator.markUnmounted();
 
-  // 清除定时器
+  // Clear the timers
   if (autoSaveIntervalId !== null) {
     window.clearInterval(autoSaveIntervalId)
   }
 
-  // ⚠️ 清除初始化超时定时器（Codex 建议：避免悬挂定时器）
+  // ⚠️ Clear the initialization timeout timer (Codex suggestion: avoid dangling timers)
   if (initTimeoutId !== null) {
     window.clearTimeout(initTimeoutId)
   }
 
-  // ⚠️ Codex 建议：移除事件监听器，避免内存泄漏
+  // ⚠️ Codex suggestion: remove the event listeners to avoid memory leaks
   if (typeof window !== 'undefined') {
     window.removeEventListener('pagehide', handlePagehide)
     document.removeEventListener('visibilitychange', handleVisibilityChange)

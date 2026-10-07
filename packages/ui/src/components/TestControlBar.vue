@@ -1,6 +1,6 @@
 <template>
   <div class="tcb-root">
-    <!-- 左侧：标签 + 模型下拉 + 可选 tags（tags 断点隐藏，且不允许挤压右侧控件） -->
+    <!-- Left: label + model dropdown + optional tags (tags are hidden at breakpoints and must not squeeze the right-hand controls) -->
     <NSpace class="tcb-left" align="center" :size="12" :wrap="false">
       <NText :depth="2" strong class="tcb-label">
         {{ modelLabel }}：
@@ -21,7 +21,7 @@
       </NTag>
     </NSpace>
 
-    <!-- 右侧：强约束控件（必须始终可用、不可被遮挡） -->
+    <!-- Right: strongly constrained controls (must always be usable and not be covered) -->
     <NSpace class="tcb-right" align="center" justify="end" :size="12" :wrap="false">
       <NSpace v-if="showCompareToggle" align="center" :size="8" :wrap="false">
         <NSwitch
@@ -60,20 +60,20 @@ import { NSpace, NText, NButton, NSwitch, NTag, NEllipsis } from 'naive-ui'
 const { t } = useI18n()
 
 interface Props {
-  // 模型选择相关
+  // Model selection-related
   modelLabel: string
   modelName?: string
 
-  // 对比模式控制
+  // Compare mode control
   showCompareToggle?: boolean
   isCompareMode?: boolean
 
-  // 主要操作按钮
+  // Primary action button
   primaryActionText: string
   primaryActionDisabled?: boolean
   primaryActionLoading?: boolean
 
-  // 布局配置
+  // Layout config
   buttonSize?: 'small' | 'medium' | 'large'
 
   /** E2E: stable selector for compare toggle */
@@ -144,14 +144,14 @@ const handlePrimaryAction = () => {
   white-space: nowrap;
 }
 
-/* 断点隐藏：空间不足时优先隐藏 tags，保证右侧控件可用 */
+/* Breakpoint hiding: when space is insufficient, hide tags first to keep the right-hand controls usable */
 @media (max-width: 900px) {
   .tcb-tags {
     display: none;
   }
 }
 
-/* 极窄屏：右侧控件换到下一行，避免任何遮挡 */
+/* Very narrow screens: move the right-hand controls to the next row to avoid any overlap */
 @media (max-width: 640px) {
   .tcb-root {
     grid-template-columns: 1fr;

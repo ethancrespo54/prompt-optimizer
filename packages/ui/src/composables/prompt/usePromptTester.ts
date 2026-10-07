@@ -9,19 +9,19 @@ import type { ConversationMessage } from '../../types/variable'
 import type { VariableManagerHooks } from './useVariableManager'
 
 /**
- * 基础模式提示词测试 Composable
+ * Basic mode prompt test composable
  *
- * 专门处理基础模式的提示词测试，支持：
- * - System prompt 测试
- * - User prompt 测试
- * - 变量注入
- * - 对比模式（原始 vs 优化）
+ * Specifically handles prompt testing in basic mode, supporting:
+ * - System prompt testing
+ * - User prompt testing
+ * - Variable injection
+ * - Compare mode (original vs optimized)
  *
- * @param services 服务实例引用
- * @param selectedTestModel 测试模型选择
- * @param optimizationMode 当前优化模式
- * @param variableManager 变量管理器
- * @returns 基础测试接口
+ * @param services Service instance reference
+ * @param selectedTestModel Test model selection
+ * @param optimizationMode Current optimization mode
+ * @param variableManager Variable manager
+ * @returns Basic test interface
  */
 type OptimizationModeSource = Ref<OptimizationMode> | ComputedRef<OptimizationMode>
 
@@ -34,16 +34,16 @@ export function usePromptTester(
   const toast = useToast()
   const { t } = useI18n()
 
-  // 创建一个 reactive 状态对象
+  // Create a reactive state object
   const state = reactive({
-    // States - 测试结果状态
+    // States - test result state
     testResults: {
-      // 原始提示词结果
+      // Original prompt result
       originalResult: '',
       originalReasoning: '',
       isTestingOriginal: false,
 
-      // 优化提示词结果
+      // Optimized prompt result
       optimizedResult: '',
       optimizedReasoning: '',
       isTestingOptimized: false,
@@ -51,12 +51,12 @@ export function usePromptTester(
 
     // Methods
     /**
-     * 执行基础模式测试（支持对比模式）
-     * @param prompt 原始提示词
-     * @param optimizedPrompt 优化后的提示词
-     * @param testContent 测试内容
-     * @param isCompareMode 是否对比模式
-     * @param testVariables 测试变量
+     * Run a basic mode test (supports compare mode)
+     * @param prompt Original prompt
+     * @param optimizedPrompt Optimized prompt
+     * @param testContent Test content
+     * @param isCompareMode Whether in compare mode
+     * @param testVariables Test variables
      */
     executeTest: async (
       prompt: string,
@@ -76,7 +76,7 @@ export function usePromptTester(
       }
 
       if (isCompareMode) {
-        // 对比模式：并发测试原始和优化提示词
+        // Compare mode: test the original and optimized prompts concurrently
         await Promise.all([
           state.testPromptWithType(
             'original',
@@ -94,7 +94,7 @@ export function usePromptTester(
           )
         ])
       } else {
-        // 单一模式：只测试优化后的提示词
+        // Single mode: only test the optimized prompt
         await state.testPromptWithType(
           'optimized',
           prompt,
@@ -106,7 +106,7 @@ export function usePromptTester(
     },
 
     /**
-     * 测试特定类型的提示词（基础模式）
+     * Test a specific kind of prompt (basic mode)
      */
     testPromptWithType: async (
       type: 'original' | 'optimized',
@@ -118,7 +118,7 @@ export function usePromptTester(
       const isOriginal = type === 'original'
       const selectedPrompt = isOriginal ? prompt : optimizedPrompt
 
-      // 检查提示词
+      // Check the prompt
       if (!selectedPrompt) {
         toast.error(
           isOriginal ? t('test.error.noOriginalPrompt') : t('test.error.noOptimizedPrompt')
@@ -126,7 +126,7 @@ export function usePromptTester(
         return
       }
 
-      // 设置测试状态
+      // Set the test state
       if (isOriginal) {
         state.testResults.isTestingOriginal = true
         state.testResults.originalResult = ''
@@ -164,21 +164,21 @@ export function usePromptTester(
           },
         }
 
-        // 构造系统消息和用户消息
+        // Construct the system message and the user message
         let systemPrompt = ''
         let userPrompt = ''
 
         if (optimizationMode.value === 'user') {
-          // 用户提示词模式：提示词作为用户输入
+          // User prompt mode: the prompt is used as the user input
           systemPrompt = ''
           userPrompt = selectedPrompt
         } else {
-          // 系统提示词模式：提示词作为系统消息
+          // System prompt mode: the prompt is used as the system message
           systemPrompt = selectedPrompt
-          userPrompt = testContent || '请按照你的角色设定，展示你的能力并与我互动。'
+          userPrompt = testContent || 'Please follow your role definition, show your abilities, and interact with me.'
         }
 
-        // 变量：合并全局变量 + 测试变量
+        // Variables: merge global variables + test variables
         const baseVars = variableManager?.variableManager.value?.resolveAllVariables() || {}
         const variables = {
           ...baseVars,
@@ -187,19 +187,19 @@ export function usePromptTester(
           userQuestion: userPrompt,
         }
 
-        // 构造简单的消息列表
+        // Construct a simple message list
         const messages: ConversationMessage[] = [
           ...(systemPrompt ? [{ role: 'system' as const, content: systemPrompt }] : []),
           { role: 'user' as const, content: userPrompt },
         ]
 
-        // 使用自定义会话测试
+        // Use the custom conversation test
         await services.value!.promptService.testCustomConversationStream(
           {
             modelKey: selectedTestModel.value,
             messages,
             variables,
-            tools: [], // 基础模式不支持工具调用
+            tools: [], // Basic mode does not support tool calls
           },
           streamHandler
         )
@@ -209,7 +209,7 @@ export function usePromptTester(
         const testTypeKey = type === 'original' ? 'originalTestFailed' : 'optimizedTestFailed'
         toast.error(`${t(`test.error.${testTypeKey}`)}: ${errorMessage}`)
       } finally {
-        // 重置测试状态
+        // Reset the test state
         if (isOriginal) {
           state.testResults.isTestingOriginal = false
         } else {

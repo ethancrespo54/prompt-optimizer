@@ -1,12 +1,12 @@
 /**
- * 评估服务 Composable
+ * Evaluation service composable
  *
- * 提供 LLM 智能评估功能的响应式接口
- * - 原始提示词评估
- * - 优化后提示词评估
- * - 对比评估
+ * Provides a reactive interface for LLM smart evaluation
+ * - Original prompt evaluation
+ * - Optimized prompt evaluation
+ * - Compare evaluation
  *
- * 支持分类型独立评估状态，每种评估类型有独立的结果缓存
+ * Supports independent evaluation state per type; each evaluation type has its own result cache
  */
 
 import { reactive, ref, computed, type Ref, type ComputedRef } from 'vue'
@@ -29,128 +29,128 @@ import type {
   ProEvaluationContext,
 } from '@prompt-optimizer/core'
 
-/** 评分等级类型 */
+/** Score grade type */
 export type ScoreLevel = 'excellent' | 'good' | 'acceptable' | 'poor' | 'very-poor'
 
 /**
- * 单个评估类型的状态
+ * State of a single evaluation type
  */
 export interface SingleEvaluationState {
-  /** 是否正在评估 */
+  /** Whether an evaluation is in progress */
   isEvaluating: boolean
-  /** 评估结果 */
+  /** Evaluation result */
   result: EvaluationResponse | null
-  /** 流式输出内容 */
+  /** Streaming output content */
   streamContent: string
-  /** 错误信息 */
+  /** Error message */
   error: string | null
 }
 
 /**
- * 分类型评估状态
+ * Evaluation state by type
  */
 export interface TypedEvaluationState {
-  /** 原始提示词评估状态 */
+  /** Original prompt evaluation state */
   original: SingleEvaluationState
-  /** 优化后评估状态 */
+  /** Optimized evaluation state */
   optimized: SingleEvaluationState
-  /** 对比评估状态 */
+  /** Compare evaluation state */
   compare: SingleEvaluationState
-  /** 仅提示词评估状态（无需测试结果） */
+  /** Prompt-only evaluation state (no test results needed) */
   'prompt-only': SingleEvaluationState
-  /** 带迭代需求的提示词评估状态 */
+  /** Prompt evaluation state with an iteration requirement */
   'prompt-iterate': SingleEvaluationState
-  /** 当前查看详情的类型 */
+  /** The type whose details are currently being viewed */
   activeDetailType: EvaluationType | null
 }
 
 /**
- * 评估 Composable 选项
+ * Evaluation composable options
  */
 export interface UseEvaluationOptions {
-  /** 评估模型 Key（如果未设置则使用默认） */
+  /** Evaluation model key (the default is used if not set) */
   evaluationModelKey?: Ref<string> | ComputedRef<string>
-  /** 语言设置 */
+  /** Language setting */
   language?: Ref<string> | ComputedRef<string>
-  /** 功能模式（必填） */
+  /** Function mode (required) */
   functionMode: Ref<string> | ComputedRef<string>
-  /** 子模式（必填） */
+  /** Sub-mode (required) */
   subMode: Ref<string> | ComputedRef<string>
 }
 
 /**
- * 评估 Composable 返回类型
+ * Evaluation composable return type
  */
 export interface UseEvaluationReturn {
-  /** 分类型评估状态 */
+  /** Evaluation state by type */
   state: TypedEvaluationState
-  /** 详情面板是否可见 */
+  /** Whether the details panel is visible */
   isPanelVisible: Ref<boolean>
 
-  // ===== 原始评估相关 =====
-  /** 原始评估分数 */
+  // ===== Original evaluation-related =====
+  /** Original evaluation score */
   originalScore: ComputedRef<number | null>
-  /** 原始评估等级 */
+  /** Original evaluation grade */
   originalLevel: ComputedRef<ScoreLevel | null>
-  /** 是否正在评估原始 */
+  /** Whether the original is being evaluated */
   isEvaluatingOriginal: ComputedRef<boolean>
-  /** 是否有原始评估结果 */
+  /** Whether there is an original evaluation result */
   hasOriginalResult: ComputedRef<boolean>
 
-  // ===== 优化评估相关 =====
-  /** 优化评估分数 */
+  // ===== Optimized evaluation-related =====
+  /** Optimized evaluation score */
   optimizedScore: ComputedRef<number | null>
-  /** 优化评估等级 */
+  /** Optimized evaluation grade */
   optimizedLevel: ComputedRef<ScoreLevel | null>
-  /** 是否正在评估优化 */
+  /** Whether the optimized is being evaluated */
   isEvaluatingOptimized: ComputedRef<boolean>
-  /** 是否有优化评估结果 */
+  /** Whether there is an optimized evaluation result */
   hasOptimizedResult: ComputedRef<boolean>
 
-  // ===== 对比评估相关 =====
-  /** 对比评估分数 */
+  // ===== Compare evaluation-related =====
+  /** Compare evaluation score */
   compareScore: ComputedRef<number | null>
-  /** 对比评估等级 */
+  /** Compare evaluation grade */
   compareLevel: ComputedRef<ScoreLevel | null>
-  /** 是否正在对比评估 */
+  /** Whether a compare evaluation is in progress */
   isEvaluatingCompare: ComputedRef<boolean>
-  /** 是否有对比评估结果 */
+  /** Whether there is a compare evaluation result */
   hasCompareResult: ComputedRef<boolean>
 
-  // ===== 仅提示词评估相关 =====
-  /** 仅提示词评估分数 */
+  // ===== Prompt-only evaluation-related =====
+  /** Prompt-only evaluation score */
   promptOnlyScore: ComputedRef<number | null>
-  /** 仅提示词评估等级 */
+  /** Prompt-only evaluation grade */
   promptOnlyLevel: ComputedRef<ScoreLevel | null>
-  /** 是否正在仅提示词评估 */
+  /** Whether a prompt-only evaluation is in progress */
   isEvaluatingPromptOnly: ComputedRef<boolean>
-  /** 是否有仅提示词评估结果 */
+  /** Whether there is a prompt-only evaluation result */
   hasPromptOnlyResult: ComputedRef<boolean>
 
-  // ===== 迭代提示词评估相关 =====
-  /** 迭代提示词评估分数 */
+  // ===== Iterate prompt evaluation-related =====
+  /** Iterate prompt evaluation score */
   promptIterateScore: ComputedRef<number | null>
-  /** 迭代提示词评估等级 */
+  /** Iterate prompt evaluation grade */
   promptIterateLevel: ComputedRef<ScoreLevel | null>
-  /** 是否正在迭代提示词评估 */
+  /** Whether an iterate prompt evaluation is in progress */
   isEvaluatingPromptIterate: ComputedRef<boolean>
-  /** 是否有迭代提示词评估结果 */
+  /** Whether there is an iterate prompt evaluation result */
   hasPromptIterateResult: ComputedRef<boolean>
 
-  // ===== 通用计算属性 =====
-  /** 是否有任何评估正在进行 */
+  // ===== Common computed properties =====
+  /** Whether any evaluation is in progress */
   isAnyEvaluating: ComputedRef<boolean>
-  /** 当前详情的评估结果 */
+  /** Evaluation result of the current details */
   activeResult: ComputedRef<EvaluationResponse | null>
-  /** 当前详情的流式内容 */
+  /** Streaming content of the current details */
   activeStreamContent: ComputedRef<string>
-  /** 当前详情的错误 */
+  /** Error of the current details */
   activeError: ComputedRef<string | null>
-  /** 当前详情的评分等级 */
+  /** Score grade of the current details */
   activeScoreLevel: ComputedRef<ScoreLevel | null>
 
-  // ===== 评估方法 =====
-  /** 评估原始提示词 */
+  // ===== Evaluation methods =====
+  /** Evaluate the original prompt */
   evaluateOriginal: (params: {
     originalPrompt: string
     testContent?: string
@@ -158,7 +158,7 @@ export interface UseEvaluationReturn {
     proContext?: ProEvaluationContext
     userFeedback?: string
   }) => Promise<void>
-  /** 评估优化后提示词 */
+  /** Evaluate the optimized prompt */
   evaluateOptimized: (params: {
     originalPrompt: string
     optimizedPrompt: string
@@ -167,7 +167,7 @@ export interface UseEvaluationReturn {
     proContext?: ProEvaluationContext
     userFeedback?: string
   }) => Promise<void>
-  /** 对比评估 */
+  /** Compare evaluation */
   evaluateCompare: (params: {
     originalPrompt: string
     optimizedPrompt: string
@@ -177,14 +177,14 @@ export interface UseEvaluationReturn {
     proContext?: ProEvaluationContext
     userFeedback?: string
   }) => Promise<void>
-  /** 仅提示词评估（无需测试结果） */
+  /** Prompt-only evaluation (no test results needed) */
   evaluatePromptOnly: (params: {
     originalPrompt: string
     optimizedPrompt: string
     proContext?: ProEvaluationContext
     userFeedback?: string
   }) => Promise<void>
-  /** 带迭代需求的提示词评估 */
+  /** Prompt evaluation with an iteration requirement */
   evaluatePromptIterate: (params: {
     originalPrompt: string
     optimizedPrompt: string
@@ -193,23 +193,23 @@ export interface UseEvaluationReturn {
     userFeedback?: string
   }) => Promise<void>
 
-  // ===== 状态管理方法 =====
-  /** 清除指定类型的评估结果 */
+  // ===== State management methods =====
+  /** Clear the evaluation result of the specified type */
   clearResult: (type: EvaluationType) => void
-  /** 清除所有评估结果 */
+  /** Clear all evaluation results */
   clearAllResults: () => void
-  /** 显示指定类型的详情面板 */
+  /** Show the details panel of the specified type */
   showDetail: (type: EvaluationType) => void
-  /** 关闭详情面板 */
+  /** Close the details panel */
   closePanel: () => void
 
-  // ===== 工具方法 =====
-  /** 根据分数获取等级 */
+  // ===== Utility methods =====
+  /** Get the grade from a score */
   getScoreLevel: (score: number | null) => ScoreLevel | null
 }
 
 /**
- * 创建单个评估状态的初始值
+ * Create the initial value of a single evaluation state
  */
 function createInitialSingleState(): SingleEvaluationState {
   return {
@@ -221,7 +221,7 @@ function createInitialSingleState(): SingleEvaluationState {
 }
 
 /**
- * 根据分数计算等级
+ * Compute the grade from a score
  */
 function calculateScoreLevel(score: number | null): ScoreLevel | null {
   if (score === null || score === undefined) return null
@@ -233,30 +233,30 @@ function calculateScoreLevel(score: number | null): ScoreLevel | null {
 }
 
 /**
- * 评估 Composable
+ * Evaluation composable
  *
- * @param services 服务实例引用
- * @param options 选项配置
- * @returns 评估接口
+ * @param services Service instance reference
+ * @param options Options config
+ * @returns Evaluation interface
  */
 export function useEvaluation(
   services: Ref<AppServices | null>,
   options: UseEvaluationOptions
 ): UseEvaluationReturn {
   const toast = useToast()
-  // NOTE: 由于本项目对 vue-i18n 的类型增强与使用方式较复杂，这里显式标注 locale 以满足 tsc
+  // NOTE: because this project's vue-i18n type augmentation and usage are complex, locale is annotated explicitly here to satisfy tsc
   const { t, locale } = useI18n() as unknown as {
     t: (key: string, ...args: unknown[]) => string
     locale: Ref<string>
   }
 
-  // 获取功能模型管理器
+  // Get the function model manager
   const functionModelManager = useFunctionModelManager(services)
 
-  // 详情面板可见性
+  // Details panel visibility
   const isPanelVisible = ref(false)
 
-  // 分类型评估状态
+  // Evaluation state by type
   const state = reactive<TypedEvaluationState>({
     original: createInitialSingleState(),
     optimized: createInitialSingleState(),
@@ -266,37 +266,37 @@ export function useEvaluation(
     activeDetailType: null,
   })
 
-  // ===== 原始评估计算属性 =====
+  // ===== Original evaluation computed properties =====
   const originalScore = computed(() => state.original.result?.score?.overall ?? null)
   const originalLevel = computed(() => calculateScoreLevel(originalScore.value))
   const isEvaluatingOriginal = computed(() => state.original.isEvaluating)
   const hasOriginalResult = computed(() => state.original.result !== null)
 
-  // ===== 优化评估计算属性 =====
+  // ===== Optimized evaluation computed properties =====
   const optimizedScore = computed(() => state.optimized.result?.score?.overall ?? null)
   const optimizedLevel = computed(() => calculateScoreLevel(optimizedScore.value))
   const isEvaluatingOptimized = computed(() => state.optimized.isEvaluating)
   const hasOptimizedResult = computed(() => state.optimized.result !== null)
 
-  // ===== 对比评估计算属性 =====
+  // ===== Compare evaluation computed properties =====
   const compareScore = computed(() => state.compare.result?.score?.overall ?? null)
   const compareLevel = computed(() => calculateScoreLevel(compareScore.value))
   const isEvaluatingCompare = computed(() => state.compare.isEvaluating)
   const hasCompareResult = computed(() => state.compare.result !== null)
 
-  // ===== 仅提示词评估计算属性 =====
+  // ===== Prompt-only evaluation computed properties =====
   const promptOnlyScore = computed(() => state['prompt-only'].result?.score?.overall ?? null)
   const promptOnlyLevel = computed(() => calculateScoreLevel(promptOnlyScore.value))
   const isEvaluatingPromptOnly = computed(() => state['prompt-only'].isEvaluating)
   const hasPromptOnlyResult = computed(() => state['prompt-only'].result !== null)
 
-  // ===== 迭代提示词评估计算属性 =====
+  // ===== Iterate prompt evaluation computed properties =====
   const promptIterateScore = computed(() => state['prompt-iterate'].result?.score?.overall ?? null)
   const promptIterateLevel = computed(() => calculateScoreLevel(promptIterateScore.value))
   const isEvaluatingPromptIterate = computed(() => state['prompt-iterate'].isEvaluating)
   const hasPromptIterateResult = computed(() => state['prompt-iterate'].result !== null)
 
-  // ===== 通用计算属性 =====
+  // ===== Common computed properties =====
   const isAnyEvaluating = computed(() =>
     state.original.isEvaluating ||
     state.optimized.isEvaluating ||
@@ -327,37 +327,37 @@ export function useEvaluation(
   })
 
   /**
-   * 获取评估模型 Key
-   * 规则：
-   * - 只要用户在「功能模型」里配置过评估模型（持久化有值），就始终使用该值
-   * - 否则使用调用方传入的 evaluationModelKey（通常为全局优化模型）
-   * - 若调用方未传入，则使用功能模型管理器的有效评估模型（从偏好设置读取）
+   * Get the evaluation model key
+   * Rules:
+   * - As long as the user has configured an evaluation model in "Function models" (a persisted value exists), that value is always used
+   * - Otherwise use the evaluationModelKey passed in by the caller (usually the global optimize model)
+   * - If the caller did not pass one, use the effective evaluation model of the function model manager (read from the preferences)
    */
   const getModelKey = async (): Promise<string> => {
-    // 1) 持久化评估模型配置：一旦配置过就优先生效
+    // 1) Persisted evaluation model config: takes priority once configured
     await functionModelManager.initialize()
     if (functionModelManager.evaluationModel.value) {
       return functionModelManager.evaluationModel.value
     }
 
-    // 2) 默认：调用方提供的 key（通常是全局优化模型）
+    // 2) Default: the key provided by the caller (usually the global optimize model)
     const passedModelKey = options.evaluationModelKey?.value || ''
     if (passedModelKey) {
       return passedModelKey
     }
 
-    // 3) 兜底：使用功能模型管理器的有效评估模型（从偏好设置读取的全局优化模型）
+    // 3) Fallback: use the effective evaluation model of the function model manager (the global optimize model read from the preferences)
     return functionModelManager.effectiveEvaluationModel.value || ''
   }
 
   /**
-   * 获取语言设置
+   * Get the language setting
    */
   const getLanguage = (): string => {
     if (options.language?.value) {
       return options.language.value
     }
-    // 从 i18n locale 获取语言，映射到模板支持的语言
+    // Get the language from the i18n locale and map it to the languages supported by the templates
     const currentLocale = locale.value
     if (currentLocale.startsWith('en')) {
       return 'en'
@@ -366,7 +366,7 @@ export function useEvaluation(
   }
 
   /**
-   * 获取评估模式配置
+   * Get the evaluation mode config
    */
   const getModeConfig = (): EvaluationModeConfig => {
     return {
@@ -376,7 +376,7 @@ export function useEvaluation(
   }
 
   /**
-   * 执行评估的通用方法
+   * General method for running an evaluation
    */
   const executeEvaluation = async (
     type: EvaluationType,
@@ -391,13 +391,13 @@ export function useEvaluation(
 
     const targetState = state[type]
 
-    // 重置目标状态
+    // Reset the target state
     targetState.isEvaluating = true
     targetState.result = null
     targetState.streamContent = ''
     targetState.error = null
 
-    // 设置当前详情类型并打开面板
+    // Set the current details type and open the panel
     if (openPanel) {
       state.activeDetailType = type
       isPanelVisible.value = true
@@ -406,18 +406,18 @@ export function useEvaluation(
     try {
       await evaluationService.evaluateStream(request, {
         onToken: (token: string) => {
-          // 守卫：如果评估已被清理/取消，忽略后续 token
+          // Guard: if the evaluation has been cleaned up/cancelled, ignore subsequent tokens
           if (!targetState.isEvaluating) return
           targetState.streamContent += token
         },
         onComplete: (result: EvaluationResponse) => {
-          // 守卫：如果评估已被清理/取消，忽略结果
+          // Guard: if the evaluation has been cleaned up/cancelled, ignore the result
           if (!targetState.isEvaluating) return
           targetState.result = result
           targetState.isEvaluating = false
         },
         onError: (error: Error) => {
-          // 守卫：如果评估已被清理/取消，忽略错误
+          // Guard: if the evaluation has been cleaned up/cancelled, ignore the error
           if (!targetState.isEvaluating) return
           targetState.error = getI18nErrorMessage(error)
           targetState.isEvaluating = false
@@ -432,7 +432,7 @@ export function useEvaluation(
   }
 
   /**
-   * 评估原始提示词
+   * Evaluate the original prompt
    */
   const evaluateOriginal = async (params: {
     originalPrompt: string
@@ -456,7 +456,7 @@ export function useEvaluation(
   }
 
   /**
-   * 评估优化后提示词
+   * Evaluate the optimized prompt
    */
   const evaluateOptimized = async (params: {
     originalPrompt: string
@@ -477,13 +477,13 @@ export function useEvaluation(
       mode: getModeConfig(),
       proContext: params.proContext,
       userFeedback: params.userFeedback,
-      // 注：optimized 评估暂不支持诊断模式，诊断功能仅在 prompt-only/prompt-iterate 中启用
+      // Note: optimized evaluation does not support diagnostic mode yet; the diagnostic feature is only enabled in prompt-only/prompt-iterate
     }
     await executeEvaluation('optimized', request, false)
   }
 
   /**
-   * 对比评估
+   * Compare evaluation
    */
   const evaluateCompare = async (params: {
     originalPrompt: string
@@ -511,7 +511,7 @@ export function useEvaluation(
   }
 
   /**
-   * 仅提示词评估（无需测试结果）
+   * Prompt-only evaluation (no test results needed)
    */
   const evaluatePromptOnly = async (params: {
     originalPrompt: string
@@ -523,7 +523,7 @@ export function useEvaluation(
       type: 'prompt-only',
       originalPrompt: params.originalPrompt,
       optimizedPrompt: params.optimizedPrompt,
-      testContent: '', // prompt-only 模式不需要测试内容
+      testContent: '', // prompt-only mode needs no test content
       evaluationModelKey: await getModelKey(),
       variables: { language: getLanguage() },
       mode: getModeConfig(),
@@ -534,7 +534,7 @@ export function useEvaluation(
   }
 
   /**
-   * 带迭代需求的提示词评估
+   * Prompt evaluation with an iteration requirement
    */
   const evaluatePromptIterate = async (params: {
     originalPrompt: string
@@ -548,7 +548,7 @@ export function useEvaluation(
       originalPrompt: params.originalPrompt,
       optimizedPrompt: params.optimizedPrompt,
       iterateRequirement: params.iterateRequirement,
-      testContent: '', // prompt-iterate 模式不需要测试内容
+      testContent: '', // prompt-iterate mode needs no test content
       evaluationModelKey: await getModelKey(),
       variables: { language: getLanguage() },
       mode: getModeConfig(),
@@ -559,8 +559,8 @@ export function useEvaluation(
   }
 
   /**
-   * 清除指定类型的评估结果
-   * 同时重置评估状态，防止进行中的流式评估继续写回
+   * Clear the evaluation result of the specified type
+   * Also resets the evaluation state, to prevent an in-progress streaming evaluation from writing back
    */
   const clearResult = (type: EvaluationType): void => {
     const targetState = state[type]
@@ -569,7 +569,7 @@ export function useEvaluation(
     targetState.streamContent = ''
     targetState.error = null
 
-    // 如果当前详情是被清除的类型，关闭面板
+    // If the current details are of the cleared type, close the panel
     if (state.activeDetailType === type) {
       state.activeDetailType = null
       isPanelVisible.value = false
@@ -577,7 +577,7 @@ export function useEvaluation(
   }
 
   /**
-   * 清除所有评估结果
+   * Clear all evaluation results
    */
   const clearAllResults = (): void => {
     clearResult('original')
@@ -588,7 +588,7 @@ export function useEvaluation(
   }
 
   /**
-   * 显示指定类型的详情面板
+   * Show the details panel of the specified type
    */
   const showDetail = (type: EvaluationType): void => {
     state.activeDetailType = type
@@ -596,14 +596,14 @@ export function useEvaluation(
   }
 
   /**
-   * 关闭详情面板
+   * Close the details panel
    */
   const closePanel = (): void => {
     isPanelVisible.value = false
   }
 
   /**
-   * 根据分数获取等级
+   * Get the grade from a score
    */
   const getScoreLevel = (score: number | null): ScoreLevel | null => {
     return calculateScoreLevel(score)
@@ -613,44 +613,44 @@ export function useEvaluation(
     state,
     isPanelVisible,
 
-    // 原始评估
+    // Original evaluation
     originalScore,
     originalLevel,
     isEvaluatingOriginal,
     hasOriginalResult,
 
-    // 优化评估
+    // Optimized evaluation
     optimizedScore,
     optimizedLevel,
     isEvaluatingOptimized,
     hasOptimizedResult,
 
-    // 对比评估
+    // Compare evaluation
     compareScore,
     compareLevel,
     isEvaluatingCompare,
     hasCompareResult,
 
-    // 仅提示词评估
+    // Prompt-only evaluation
     promptOnlyScore,
     promptOnlyLevel,
     isEvaluatingPromptOnly,
     hasPromptOnlyResult,
 
-    // 迭代提示词评估
+    // Iterate prompt evaluation
     promptIterateScore,
     promptIterateLevel,
     isEvaluatingPromptIterate,
     hasPromptIterateResult,
 
-    // 通用
+    // Common
     isAnyEvaluating,
     activeResult,
     activeStreamContent,
     activeError,
     activeScoreLevel,
 
-    // 方法
+    // Methods
     evaluateOriginal,
     evaluateOptimized,
     evaluateCompare,

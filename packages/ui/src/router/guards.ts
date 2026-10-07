@@ -2,9 +2,9 @@ import type { NavigationGuard } from 'vue-router'
 import type { SubModeKey } from '../stores/session/useSessionManager'
 
 /**
- * 从路由路径解析子模式 key
- * @param path 路由路径，例如 '/basic/system' 或 '/pro/multi'
- * @returns SubModeKey 或 null（如果路径格式无效）
+ * Parse the sub-mode key from the route path
+ * @param path Route path, e.g. '/basic/system' or '/pro/multi'
+ * @returns SubModeKey or null (if the path format is invalid)
  */
 export const parseSubModeKey = (path: string): SubModeKey | null => {
   const validSubModes = {
@@ -32,15 +32,15 @@ export const parseSubModeKey = (path: string): SubModeKey | null => {
 }
 
 /**
- * 路由切换守卫
+ * Route switch guard
  *
- * 功能：
- * 1. 验证 subMode 是否合法
- * 2. 重定向非法路由到默认 subMode
- * 3. 兼容旧 pro 路由（/pro/system|/pro/user）
+ * Features:
+ * 1. Validate that subMode is legal
+ * 2. Redirect illegal routes to the default subMode
+ * 3. Compatible with the old pro routes (/pro/system|/pro/user)
  */
 export const beforeRouteSwitch: NavigationGuard = (to, _from, next) => {
-  // ✅ 兼容旧 pro 路由（/pro/system|/pro/user -> /pro/multi|/pro/variable）
+  // ✅ Compatible with the old pro routes (/pro/system|/pro/user -> /pro/multi|/pro/variable)
   if (to.path === '/pro/system') {
     next('/pro/multi')
     return
@@ -66,7 +66,7 @@ export const beforeRouteSwitch: NavigationGuard = (to, _from, next) => {
         defaultSubMode = 'system'
       }
 
-      console.warn(`[Router] 非法 subMode: ${to.path}, 重定向到 /${mode}/${defaultSubMode}`)
+      console.warn(`[Router] Illegal subMode: ${to.path}, redirecting to /${mode}/${defaultSubMode}`)
       next(`/${mode}/${defaultSubMode}`)
       return
     }

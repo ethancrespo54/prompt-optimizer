@@ -68,7 +68,7 @@
     </NCollapseItem>
   </NCollapse>
 
-  <!-- 自定义参数输入对话框 -->
+  <!-- Custom parameter input dialog -->
   <NModal
     v-model:show="showCustomModal"
     preset="dialog"
@@ -194,14 +194,14 @@ const handleAddOption = (value: string | number) => {
   if (!value) return
 
   if (value === '__custom__') {
-    // 打开自定义参数输入对话框
+    // Open the custom parameter input dialog
     showCustomModal.value = true
     return
   }
 
   const definition = props.parameterDefinitions.find((def) => def.name === value)
   if (!definition) {
-    message.error(withFallback('modelManager.advancedParameters.validation.unknownParam', '参数定义不存在'))
+    message.error(withFallback('modelManager.advancedParameters.validation.unknownParam', 'Parameter definition does not exist'))
     return
   }
 
@@ -216,20 +216,20 @@ const handleAddOption = (value: string | number) => {
 const handleConfirmCustom = () => {
   const trimmedKey = customForm.key.trim()
   if (!trimmedKey) {
-    message.error(withFallback('modelManager.advancedParameters.validation.customKeyRequired', '参数名称不能为空'))
+    message.error(withFallback('modelManager.advancedParameters.validation.customKeyRequired', 'Parameter name cannot be empty'))
     return false
   }
   if (!isSafeCustomKey(trimmedKey)) {
-    message.error(withFallback('modelManager.advancedParameters.validation.dangerousParam', '存在危险的参数名称'))
+    message.error(withFallback('modelManager.advancedParameters.validation.dangerousParam', 'Dangerous parameter name detected'))
     return false
   }
   if (Object.prototype.hasOwnProperty.call(props.paramOverrides, trimmedKey)) {
-    message.error(withFallback('modelManager.advancedParameters.validation.duplicateParam', '参数已存在'))
+    message.error(withFallback('modelManager.advancedParameters.validation.duplicateParam', 'Parameter already exists'))
     return false
   }
   const trimmedValue = customForm.value.trim()
   if (!trimmedValue) {
-    message.error(withFallback('modelManager.advancedParameters.validation.customValueRequired', '参数值不能为空'))
+    message.error(withFallback('modelManager.advancedParameters.validation.customValueRequired', 'Parameter value cannot be empty'))
     return false
   }
 
@@ -239,7 +239,7 @@ const handleConfirmCustom = () => {
   }
   emitParamOverrides(next)
 
-  // 重置表单并关闭对话框
+  // Reset the form and close the dialog
   customForm.key = ''
   customForm.value = ''
   showCustomModal.value = false

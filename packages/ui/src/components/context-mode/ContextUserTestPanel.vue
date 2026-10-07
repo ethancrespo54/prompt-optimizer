@@ -8,7 +8,7 @@
         />
 
         <template v-if="mode === 'full'">
-            <!-- 控制工具栏 -->
+            <!-- Control toolbar -->
             <NCard :style="{ flexShrink: 0 }" size="small">
                 <TestControlBar
                     :model-label="t('test.model')"
@@ -34,7 +34,7 @@
                 </TestControlBar>
             </NCard>
 
-            <!-- 测试结果区域（不支持工具调用，仅显示文本结果）-->
+            <!-- Test result area (tool calls not supported; only text results are shown) -->
             <TestResultSection
                 :is-compare-mode="isCompareMode"
                 :vertical-layout="adaptiveResultVerticalLayout"
@@ -64,24 +64,24 @@
                 @show-optimized-detail="emit('show-optimized-detail')"
                 @apply-improvement="emit('apply-improvement', $event)"
             >
-                <!-- 对比模式：原始结果 -->
+                <!-- Compare mode: original result -->
                 <template #original-result>
                     <slot name="original-result"></slot>
                 </template>
 
-                <!-- 对比模式：优化结果 -->
+                <!-- Compare mode: optimized result -->
                 <template #optimized-result>
                     <slot name="optimized-result"></slot>
                 </template>
 
-                <!-- 单一结果模式 -->
+                <!-- Single result mode -->
                 <template #single-result>
                     <slot name="single-result"></slot>
                 </template>
             </TestResultSection>
         </template>
 
-        <!-- 变量值预览对话框 -->
+        <!-- Variable value preview dialog -->
         <VariableValuePreviewDialog
             v-model:show="showPreviewDialog"
             :result="generationResult"
@@ -113,13 +113,13 @@ import type { AppServices } from '../../types/services';
 
 const { t } = useI18n();
 
-// 性能监控
+// Performance monitoring
 const { recordUpdate, getPerformanceReport } = usePerformanceMonitor("ContextUserTestPanel");
 
-// 防抖节流
+// Debounce/throttle
 const { debounce, throttle } = useDebounceThrottle();
 
-// 响应式配置
+// Responsive config
 const {
     shouldUseVerticalLayout,
     buttonSize,
@@ -127,57 +127,57 @@ const {
 
 interface Props {
     /**
-     * 渲染模式：
-     * - full: 变量表单 + 测试控制栏 + 结果区（历史行为）
-     * - variables-only: 仅变量表单（供 Workspace 自行渲染多列 variants 测试区）
+     * Render mode:
+     * - full: variable form + test control bar + result area (historical behavior)
+     * - variables-only: variable form only (for the Workspace to render the multi-column variants test area itself)
      */
     mode?: "full" | "variables-only";
 
-    // 原始提示词（fallback，当optimizedPrompt为空时使用）
+    // Original prompt (fallback, used when optimizedPrompt is empty)
     prompt?: string;
-    // 优化后的提示词（优先使用）
+    // Optimized prompt (preferred)
     optimizedPrompt?: string;
 
-    // 测试状态
+    // Test state
     isTestRunning?: boolean;
     isCompareMode?: boolean;
     enableCompareMode?: boolean;
 
-    // 模型信息（用于显示标签）
+    // Model info (used for the display label)
     modelName?: string;
-    // 🆕 评估模型（用于变量提取和变量值生成）
+    // 🆕 Evaluation model (used for variable extraction and variable value generation)
     evaluationModelKey?: string;
 
-    // 变量管理（三层）
+    // Variable management (three layers)
     globalVariables?: Record<string, string>;
     predefinedVariables?: Record<string, string>;
     temporaryVariables?: Record<string, string>;
 
-    // 🆕 应用服务
+    // 🆕 App services
     services?: AppServices | null;
 
-    // 布局配置
+    // Layout config
     buttonSize?: "small" | "medium" | "large";
     resultVerticalLayout?: boolean;
 
-    // 结果显示配置
+    // Result display config
     singleResultTitle?: string;
 
-    // 🆕 评估功能配置
+    // 🆕 Evaluation feature config
     showEvaluation?: boolean;
-    // 是否有测试结果（用于显示评估按钮）
+    // Whether there are test results (used to show the evaluate button)
     hasOriginalResult?: boolean;
     hasOptimizedResult?: boolean;
-    // 评估状态
+    // Evaluation state
     isEvaluatingOriginal?: boolean;
     isEvaluatingOptimized?: boolean;
-    // 评估分数
+    // Evaluation score
     originalScore?: number | null;
     optimizedScore?: number | null;
-    // 是否有评估结果
+    // Whether there are evaluation results
     hasOriginalEvaluation?: boolean;
     hasOptimizedEvaluation?: boolean;
-    // 评估结果和等级（用于悬浮预览）
+    // Evaluation results and grades (used for the hover preview)
     originalEvaluationResult?: EvaluationResponse | null;
     optimizedEvaluationResult?: EvaluationResponse | null;
     originalScoreLevel?: ScoreLevel | null;
@@ -199,7 +199,7 @@ const props = withDefaults(defineProps<Props>(), {
     predefinedVariables: () => ({}),
     temporaryVariables: () => ({}),
     services: null,
-    // 评估默认值
+    // Evaluation defaults
     showEvaluation: false,
     hasOriginalResult: false,
     hasOptimizedResult: false,
@@ -224,7 +224,7 @@ const emit = defineEmits<{
     "save-to-global": [name: string, value: string];
     "temporary-variable-remove": [name: string];
     "temporary-variables-clear": [];
-    // 🆕 评估相关事件
+    // 🆕 Evaluation-related events
     "evaluate-original": [];
     "evaluate-optimized": [];
     "evaluate-with-feedback": [payload: { type: EvaluationType; feedback: string }];
@@ -233,14 +233,14 @@ const emit = defineEmits<{
     "apply-improvement": [payload: { improvement: string; type: EvaluationType }];
 }>();
 
-// 处理对比模式切换
+// Handle the compare mode toggle
 const handleCompareToggle = () => {
     emit("update:isCompareMode", !props.isCompareMode);
     emit("compare-toggle");
     recordUpdate();
 };
 
-// 响应式布局配置
+// Responsive layout config
 const adaptiveButtonSize = computed(() => {
     return buttonSize.value;
 });
@@ -249,7 +249,7 @@ const adaptiveResultVerticalLayout = computed(() => {
     return shouldUseVerticalLayout.value || props.resultVerticalLayout;
 });
 
-// 主要操作按钮文本
+// Primary action button text
 const primaryActionText = computed(() => {
     if (props.isTestRunning) {
         return t("test.testing");
@@ -259,14 +259,14 @@ const primaryActionText = computed(() => {
         : t("test.startTest");
 });
 
-// 主要操作按钮禁用状态
+// Primary action button disabled state
 const primaryActionDisabled = computed(() => {
     return props.isTestRunning;
 });
 
 const handleTest = throttle(
     () => {
-        // 获取并传递测试变量
+        // Get and pass the test variables
         const testVars = getVariableValues();
         emit("test", testVars);
         recordUpdate();
@@ -275,7 +275,7 @@ const handleTest = throttle(
     "handleTest",
 );
 
-// ========== 变量管理 ==========
+// ========== Variable management ==========
 
 const variableManager = useTestVariableManager({
     globalVariables: toRef(props, 'globalVariables'),
@@ -308,7 +308,7 @@ const {
     setVariableValues,
 } = variableManager;
 
-// ========== 变量值生成 ==========
+// ========== Variable value generation ==========
 
 const {
     isGenerating,
@@ -328,13 +328,13 @@ const {
     evaluationModelKey: computed(() => props.evaluationModelKey || ''),
 })
 
-// 开发环境下的性能调试
+// Performance debugging in the development environment
 if (import.meta.env.DEV) {
     const logPerformance = debounce(
         () => {
             const report = getPerformanceReport();
             if (report.grade.grade === "F") {
-                console.warn("ContextUserTestPanel 性能较差:", report);
+                console.warn("ContextUserTestPanel performance is poor:", report);
             }
         },
         5000,
@@ -346,23 +346,23 @@ if (import.meta.env.DEV) {
     onUnmounted(() => clearInterval(timer));
 }
 
-// 暴露方法供父组件调用（兼容 TestAreaPanelInstance 接口）
+// Expose methods for the parent component to call (compatible with the TestAreaPanelInstance interface)
 defineExpose({
-    // ContextUser 不支持工具调用，提供空实现
+    // ContextUser does not support tool calls; provide an empty implementation
     clearToolCalls: () => {},
     handleToolCall: () => {},
     getToolCalls: () => ({ original: [], optimized: [] }),
 
-    // 变量管理
+    // Variable management
     getVariableValues,
     setVariableValues,
 
-    // 预览功能占位符（兼容接口）
+    // Preview feature placeholder (compatibility interface)
     showPreview: () => {},
     hidePreview: () => {},
 });
 </script>
 
 <style scoped>
-/* ContextUser 不需要工具调用相关样式 */
+/* ContextUser does not need tool-call-related styles */
 </style>

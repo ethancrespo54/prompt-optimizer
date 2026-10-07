@@ -1,24 +1,24 @@
 /**
- * Pro 模式上下文 - 使用 provide/inject 模式共享 proContext
+ * Pro mode context - shares proContext using the provide/inject pattern
  *
- * 解决 Pro 模式下 proContext 在多层组件间传递的问题
- * 用于评估时提供多消息上下文理解（特别是 Pro-System 场景）
+ * Solves the problem of proContext being passed across multiple component layers in Pro mode
+ * Used to provide multi-message context understanding during evaluation (especially the Pro-System scenario)
  */
 
 import { provide, inject, type InjectionKey, type Ref, type ComputedRef } from 'vue'
 import type { ProEvaluationContext } from '@prompt-optimizer/core'
 
 /**
- * ProContext 的 InjectionKey，保证类型安全
+ * InjectionKey of ProContext, ensuring type safety
  */
 export const ProContextKey: InjectionKey<Ref<ProEvaluationContext | undefined> | ComputedRef<ProEvaluationContext | undefined>> = Symbol('proContext')
 
 /**
- * 提供 Pro 模式上下文
+ * Provide the Pro mode context
  *
- * 在 Pro 模式的 Workspace 组件（如 ContextSystemWorkspace, ContextUserWorkspace）中调用
+ * Call it in Pro mode Workspace components (such as ContextSystemWorkspace, ContextUserWorkspace)
  *
- * @param proContext - Pro 模式上下文的响应式引用
+ * @param proContext - Reactive reference of the Pro mode context
  *
  * @example
  * ```typescript
@@ -34,17 +34,17 @@ export function provideProContext(proContext: Ref<ProEvaluationContext | undefin
 }
 
 /**
- * 注入 Pro 模式上下文（可选）
+ * Inject the Pro mode context (optional)
  *
- * 如果未提供 proContext，返回 undefined 而不是抛出错误
- * 适用于在 Basic 模式和 Pro 模式下都可能使用的组件
+ * If proContext is not provided, returns undefined instead of throwing an error
+ * Suited to components that may be used in both Basic mode and Pro mode
  *
- * @returns Pro 模式上下文的响应式引用，如果不在 Pro 模式下则为 undefined
+ * @returns Reactive reference of the Pro mode context, or undefined when not in Pro mode
  *
  * @example
  * ```typescript
  * const proContext = useProContextOptional()
- * // 在评估时使用
+ * // Use during evaluation
  * evaluation.evaluatePromptOnly({
  *   originalPrompt,
  *   optimizedPrompt,

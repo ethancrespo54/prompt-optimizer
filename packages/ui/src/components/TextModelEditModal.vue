@@ -261,7 +261,7 @@ const isSaving = manager.isSaving
 
 const isEditing = computed(() => !!manager.editingModelId.value)
 
-// 获取当前选择的 Provider 的 API Key URL
+// Get the API key URL of the currently selected Provider
 const currentProviderApiKeyUrl = computed(() => {
   return manager.selectedProvider.value?.apiKeyUrl || null
 })
@@ -294,9 +294,9 @@ const handleTestFormConnection = async () => {
 const handleUpdateShow = async (value: boolean) => {
   emit('update:show', value)
 
-  // 只有在明确关闭时才重置表单状态
+  // Only reset the form state when explicitly closed
   if (!value) {
-    // 等待父组件处理状态变化后再重置表单
+    // Wait for the parent component to handle the state change before resetting the form
     await nextTick()
     manager.resetFormState()
   }
@@ -308,7 +308,7 @@ const handleSubmit = async () => {
     emit('saved', id || undefined)
     handleUpdateShow(false)
   } catch (error) {
-    console.error('保存模型失败:', error)
+    console.error('Failed to save model:', error)
 
     const rawError = error instanceof Error ? error.message : String(error)
     const fallback = isEditing.value
@@ -341,14 +341,14 @@ const handleCancel = () => {
   handleUpdateShow(false)
 }
 
-// 处理模型变更：无论新建还是编辑模式，切换模型都应用新模型的默认参数
+// Handle model changes: whether creating or editing, switching the model applies the new model's default parameters
 const handleModelChange = (modelId: string) => {
   onModelChange(modelId)
 }
 
 const onProviderChange = (providerId: string) => {
-  // 切换提供商时总是自动选择第一个模型
-  // 因为原来的模型ID在新提供商下可能不存在
+  // When switching providers, always auto-select the first model
+  // Because the original model ID may not exist under the new provider
   manager.selectProvider(providerId, {
     autoSelectFirstModel: true,
     resetOverrides: true,

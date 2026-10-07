@@ -1,7 +1,7 @@
 /**
- * 变量提取服务 Composable
+ * Variable extraction service composable
  *
- * 提供 AI 智能变量提取功能的响应式接口
+ * Provides a reactive interface for the AI smart variable extraction feature
  */
 
 import { ref, type Ref } from 'vue'
@@ -16,32 +16,32 @@ import type {
 } from '@prompt-optimizer/core'
 
 /**
- * 变量提取 Composable 返回类型
+ * Return type of the variable extraction composable
  */
 export interface UseVariableExtractionReturn {
-  /** 是否正在提取 */
+  /** Whether extraction is in progress */
   isExtracting: Ref<boolean>
-  /** 提取结果 */
+  /** Extraction result */
   extractionResult: Ref<VariableExtractionResponse | null>
-  /** 是否显示结果对话框 */
+  /** Whether to show the result dialog */
   showResultDialog: Ref<boolean>
-  /** 提取变量方法 */
+  /** Extract variables method */
   extractVariables: (
     promptContent: string,
     extractionModelKey: string,
     existingVariableNames?: string[]
   ) => Promise<void>
-  /** 批量创建变量方法 */
+  /** Batch create variables method */
   confirmBatchCreate: (selectedVariables: ExtractedVariable[]) => void
 }
 
 /**
- * 使用变量提取功能
+ * Use the variable extraction feature
  *
- * @param services - 应用服务
- * @param onVariableCreated - 变量创建回调
- * @param onPromptReplaced - 提示词替换回调（返回替换后的提示词）
- * @returns 变量提取相关状态和方法
+ * @param services - App services
+ * @param onVariableCreated - Variable creation callback
+ * @param onPromptReplaced - Prompt replacement callback (returns the replaced prompt)
+ * @returns State and methods related to variable extraction
  */
 export function useVariableExtraction(
   services: Ref<AppServices | null>,
@@ -51,15 +51,15 @@ export function useVariableExtraction(
   const toast = useToast()
   const { t } = useI18n()
 
-  // 状态
+  // State
   const isExtracting = ref(false)
   const extractionResult = ref<VariableExtractionResponse | null>(null)
   const showResultDialog = ref(false)
-  // 保存原始提示词内容用于替换
+  // Save the original prompt content for replacement
   const originalPrompt = ref('')
 
   /**
-   * 提取变量
+   * Extract variables
    */
   const extractVariables = async (
     promptContent: string,
@@ -71,14 +71,14 @@ export function useVariableExtraction(
       return
     }
 
-    // 🔧 检查变量提取服务是否存在
+    // 🔧 Check whether the variable extraction service exists
     if (!services.value.variableExtractionService) {
       toast.error(t('evaluation.variableExtraction.serviceNotReady'))
       return
     }
 
     isExtracting.value = true
-    // 保存原始提示词用于后续替换
+    // Save the original prompt for later replacement
     originalPrompt.value = promptContent
 
     try {
@@ -105,7 +105,7 @@ export function useVariableExtraction(
   }
 
   /**
-   * 将提示词中的变量值替换为 {{变量名}} 格式
+   * Replace the variable values in the prompt with the {{variableName}} format
    */
   const replaceVariablesInPrompt = (
     prompt: string,
@@ -113,19 +113,19 @@ export function useVariableExtraction(
   ): string => {
     let result = prompt
 
-    // 按出现位置从后往前排序，避免替换时位置错乱
+    // Sort by occurrence position from back to front, to avoid position misalignment during replacement
     const sortedVariables = [...variables].sort((a, b) => {
       const indexA = findOccurrenceIndex(prompt, a.position.originalText, a.position.occurrence)
       const indexB = findOccurrenceIndex(prompt, b.position.originalText, b.position.occurrence)
       return indexB - indexA
     })
 
-    // 从后往前替换
+    // Replace from back to front
     for (const variable of sortedVariables) {
       const { originalText, occurrence } = variable.position
       const placeholder = `{{${variable.name}}}`
 
-      // 查找第 N 次出现的位置
+      // Find the position of the Nth occurrence
       const index = findOccurrenceIndex(result, originalText, occurrence)
       if (index !== -1) {
         result =
@@ -139,7 +139,7 @@ export function useVariableExtraction(
   }
 
   /**
-   * 查找文本第 N 次出现的索引位置
+   * Find the index position of the Nth occurrence of the text
    */
   const findOccurrenceIndex = (
     text: string,
@@ -161,10 +161,10 @@ export function useVariableExtraction(
   }
 
   /**
-   * 批量创建变量
+   * Batch create variables
    */
   const confirmBatchCreate = (selectedVariables: ExtractedVariable[]): void => {
-    // 🔧 校验变量名合法性，过滤掉不合法的变量
+    // 🔧 Validate the variable names and filter out invalid variables
     const validVariables: ExtractedVariable[] = []
     const invalidVariables: string[] = []
 
@@ -176,7 +176,7 @@ export function useVariableExtraction(
       }
     }
 
-    // 如果有不合法的变量名，提示用户
+    // If there are invalid variable names, notify the user
     if (invalidVariables.length > 0) {
       toast.warning(
         t('evaluation.variableExtraction.invalidVariableNames', {
@@ -186,7 +186,7 @@ export function useVariableExtraction(
       )
     }
 
-    // 如果没有合法的变量，直接返回
+    // If there are no valid variables, return directly
     if (validVariables.length === 0) {
       showResultDialog.value = false
       return
@@ -194,7 +194,7 @@ export function useVariableExtraction(
 
     let successCount = 0
 
-    // 创建变量（只创建合法的变量）
+    // Create variables (only valid variables are created)
     for (const variable of validVariables) {
       try {
         if (onVariableCreated) {
@@ -206,7 +206,7 @@ export function useVariableExtraction(
       }
     }
 
-    // 替换提示词中的变量值为 {{变量名}}（只替换合法的变量）
+    // Replace the variable values in the prompt with {{variableName}} (only valid variables are replaced)
     if (successCount > 0 && onPromptReplaced && originalPrompt.value) {
       const replacedPrompt = replaceVariablesInPrompt(originalPrompt.value, validVariables)
       onPromptReplaced(replacedPrompt)

@@ -20,7 +20,7 @@
         :show-feedback="true"
         class="advanced-form"
       >
-        <!-- 已定义的参数（schema中存在） -->
+        <!-- Defined parameters (present in the schema) -->
         <NFormItem
           v-for="entry in definedEntries"
           :key="`defined-${entry.key}`"
@@ -102,7 +102,7 @@
           </template>
         </NFormItem>
 
-        <!-- 自定义参数（schema中不存在） -->
+        <!-- Custom parameters (not present in the schema) -->
         <NFormItem
           v-for="entry in customEntries"
           :key="`custom-${entry.key}`"
@@ -146,7 +146,7 @@
         :show-feedback="true"
         class="advanced-form"
       >
-        <!-- 已定义的参数 -->
+        <!-- Defined parameters -->
         <NFormItem
           v-for="entry in definedEntries"
           :key="`defined-${entry.key}`"
@@ -224,7 +224,7 @@
           </template>
         </NFormItem>
 
-        <!-- 自定义参数（schema中不存在） -->
+        <!-- Custom parameters (not present in the schema) -->
         <NFormItem
           v-for="entry in customEntries"
           :key="`custom-${entry.key}`"
@@ -295,7 +295,7 @@ const schemaMap = computed(() => {
   return map
 })
 
-// 区分已定义参数和自定义参数
+// Distinguish defined parameters from custom parameters
 const definedEntries = computed(() => {
   const entries: Array<{
     key: string
@@ -326,7 +326,7 @@ const customEntries = computed(() => {
   const entries: Array<{ key: string }> = []
 
   for (const key of Object.keys(props.paramOverrides)) {
-    // 不在 schema 中的就是自定义参数
+    // Anything not in the schema is a custom parameter
     if (!schemaMap.value.has(key)) {
       entries.push({ key })
     }
@@ -338,12 +338,12 @@ const customEntries = computed(() => {
 const handleAddDefinition = (name: string) => {
   const definition = schemaMap.value.get(name)
   if (!definition) {
-    message.error(withFallback('modelManager.advancedParameters.validation.unknownParam', '参数定义不存在'))
+    message.error(withFallback('modelManager.advancedParameters.validation.unknownParam', 'Parameter definition does not exist'))
     return
   }
 
   if (Object.prototype.hasOwnProperty.call(props.paramOverrides, name)) {
-    message.warning(withFallback('modelManager.advancedParameters.validation.duplicateParam', '参数已存在'))
+    message.warning(withFallback('modelManager.advancedParameters.validation.duplicateParam', 'Parameter already exists'))
     return
   }
 

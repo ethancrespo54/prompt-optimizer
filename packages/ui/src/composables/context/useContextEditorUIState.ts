@@ -2,17 +2,17 @@ import { ref, computed, watch, type Ref } from 'vue'
 import type { ComposerTranslation } from 'vue-i18n'
 
 /**
- * ContextEditor UI 状态管理 Composable
- * 统一管理编辑器的显示模式、标题和状态
+ * ContextEditor UI state management composable
+ * Manages the editor's display mode, title, and state in one place
  */
 export function useContextEditorUIState(
   showContextEditor: Ref<boolean>,
   t: ComposerTranslation
 ) {
-  // 仅显示指定标签页模式（隐藏其他标签页和标签栏）
+  // Show-only-the-specified-tab mode (hides the other tabs and the tab bar)
   const onlyShowTab = ref<'messages' | 'variables' | 'tools' | undefined>(undefined)
 
-  // 根据 onlyShowTab 动态计算编辑器标题
+  // Dynamically compute the editor title based on onlyShowTab
   const title = computed(() => {
     if (!onlyShowTab.value) {
       return t('contextEditor.title')
@@ -28,25 +28,25 @@ export function useContextEditorUIState(
     return titleMap[tab] || t('contextEditor.title')
   })
 
-  // 监听编辑器显示状态，关闭时重置 onlyShowTab
+  // Watch the editor's display state and reset onlyShowTab when it closes
   watch(showContextEditor, (visible) => {
     if (!visible) {
       onlyShowTab.value = undefined
     }
   })
 
-  // 取消处理函数：关闭编辑器并重置状态
+  // Cancel handler: close the editor and reset the state
   const handleCancel = () => {
     showContextEditor.value = false
     onlyShowTab.value = undefined
   }
 
-  // 打开指定标签页模式
+  // Open the specified-tab mode
   const openWithTab = (tab: 'messages' | 'variables' | 'tools') => {
     onlyShowTab.value = tab
   }
 
-  // 重置为普通模式（显示所有标签页）
+  // Reset to normal mode (show all tabs)
   const resetToNormalMode = () => {
     onlyShowTab.value = undefined
   }

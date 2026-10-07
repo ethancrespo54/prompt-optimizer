@@ -1,7 +1,7 @@
 import { ref, nextTick, type Ref } from 'vue'
 
 
-// 模型选择器组件实例类型定义
+// Type definition of the model selector component instance
 interface ModelSelectInstance {
   refresh?: () => Promise<void>
 }
@@ -15,8 +15,8 @@ export interface ModelSelectRefsHooks {
 }
 
 /**
- * 模型选择器引用管理Hook
- * 专门用于管理模型选择器组件的引用和批量刷新操作
+ * Model selector ref management hook
+ * Dedicated to managing the refs of model selector components and batch refresh operations
  * @returns ModelSelectRefsHooks
  */
 export function useModelSelectRefs(): ModelSelectRefsHooks {

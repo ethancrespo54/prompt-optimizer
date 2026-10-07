@@ -9,7 +9,7 @@
         :style="modalStyle"
         @after-leave="handleClose"
     >
-        <!-- 工具栏 -->
+        <!-- Toolbar -->
         <NSpace justify="space-between">
             <NButton
                 type="primary"
@@ -50,9 +50,9 @@
         </NSpace>
         <NDivider />
 
-        <!-- 变量列表 - 分组显示 -->
+        <!-- Variable list - grouped display -->
         <NSpace vertical :size="16">
-            <!-- 预定义变量组（默认折叠：一般只需要编辑自定义变量） -->
+            <!-- Predefined variable group (collapsed by default: generally only custom variables need editing) -->
             <NCard
                 v-if="predefinedVariables.length > 0"
                 size="small"
@@ -117,7 +117,7 @@
                 />
             </NCard>
 
-            <!-- 自定义变量组 -->
+            <!-- Custom variable group -->
             <NCard size="small">
                 <template #header>
                     <NSpace align="center">
@@ -128,7 +128,7 @@
                     </NSpace>
                 </template>
 
-                <!-- 自定义变量表格或空状态 -->
+                <!-- Custom variable table or empty state -->
                 <div v-if="customVariables.length === 0">
                     <NEmpty :description="t('variables.addFirstVariable')">
                         <template #icon>
@@ -166,7 +166,7 @@
                     :loading="props.loading || loading"
                 />
 
-                <!-- 快速添加表单 -->
+                <!-- Quick add form -->
                 <template #footer>
                     <NDivider />
                     <div>
@@ -250,7 +250,7 @@
             </NSpace>
         </template>
 
-        <!-- 添加/编辑变量子弹窗 -->
+        <!-- Add/edit variable sub-dialog -->
         <VariableEditor
             v-model:show="showEditor"
             :variable="editingVariable"
@@ -259,13 +259,13 @@
             @cancel="onEditorCancel"
         />
 
-        <!-- 导入弹窗 -->
+        <!-- Import dialog -->
         <VariableImporter
             v-model:show="showImporter"
             @import="onVariablesImport"
         />
 
-        <!-- 导出弹窗 -->
+        <!-- Export dialog -->
         <NModal
             v-model:show="showExportModal"
             preset="card"
@@ -276,7 +276,7 @@
             :mask-closable="!loading"
         >
             <NSpace vertical>
-                <!-- 导出格式选择 -->
+                <!-- Export format selection -->
                 <div>
                     <NText strong style="display: block; margin-bottom: 12px">
                         {{ t("variables.management.exportFormat") }}
@@ -289,7 +289,7 @@
                     </NRadioGroup>
                 </div>
 
-                <!-- 导出统计信息 -->
+                <!-- Export statistics -->
                 <NCard size="small" embedded>
                     <NSpace justify="space-between" align="center">
                         <NText depth="2">{{
@@ -302,7 +302,7 @@
                     </NSpace>
                 </NCard>
 
-                <!-- 预览区域 -->
+                <!-- Preview area -->
                 <div>
                     <NText strong style="display: block; margin-bottom: 12px">
                         {{ t("variables.management.exportPreview") }}
@@ -383,14 +383,14 @@ interface VariableRow {
     source: VariableSource;
 }
 
-// 响应式配置
+// Responsive config
 const {
     modalWidth,
     buttonSize: responsiveButtonSize,
     shouldUseCompactMode,
 } = useResponsive();
 
-// 使用标准化的 Props 接口，但保持向后兼容
+// Use the standardized Props interface, but stay backward compatible
 interface Props extends Partial<VariableManagerModalProps> {
     visible: boolean;
     variableManager: VariableManagerHooks | null;
@@ -407,7 +407,7 @@ const props = withDefaults(defineProps<Props>(), {
     width: "90vw",
 });
 
-// 使用标准化的 Events 接口
+// Use the standardized Events interface
 const emit = defineEmits<{
     (event: "update:visible", visible: boolean): void;
     (event: "update:variables", variables: Record<string, string>): void;
@@ -426,13 +426,13 @@ const emit = defineEmits<{
     (event: "error", error: Error): void;
 }>();
 
-// 双向绑定本地可见状态
+// Two-way binding of the local visible state
 const localVisible = computed({
     get: () => props.visible,
     set: (value: boolean) => emit("update:visible", value),
 });
 
-// 状态管理
+// State management
 const loading = ref(false);
 const showEditor = ref(false);
 const showImporter = ref(false);
@@ -440,10 +440,10 @@ const showExportModal = ref(false);
 const editingVariable = ref<VariableRow | null>(null);
 const exportFormat = ref<"csv" | "txt">("csv");
 
-// 默认折叠预定义变量列表（很少需要查看/编辑）
+// Collapse the predefined variable list by default (rarely needs viewing/editing)
 const isPredefinedExpanded = ref(false);
 
-// 内联编辑状态
+// Inline editing state
 const editingRowKey = ref<string | null>(null);
 const editingValue = ref("");
 const quickAddForm = ref({
@@ -451,7 +451,7 @@ const quickAddForm = ref({
     value: "",
 });
 
-// 计算属性
+// Computed properties
 const modalStyle = computed(() => ({
     width: modalWidth.value,
     maxWidth: shouldUseCompactMode.value ? "95vw" : "1200px",
@@ -476,7 +476,7 @@ const allVariables = computed<VariableRow[]>(() => {
     const manager = props.variableManager?.variableManager.value;
     if (!manager) return [];
 
-    // 获取所有变量并构建Variable对象
+    // Get all variables and build Variable objects
     try {
         const variables = manager.resolveAllVariables();
         return Object.entries(variables).map(([name, value]) => ({
@@ -497,7 +497,7 @@ const existingVariableNames = computed(() => {
     return allVariables.value.map((v) => v.name);
 });
 
-// 分组变量
+// Group variables
 const predefinedVariables = computed(() => {
     return allVariables.value.filter((v) => v.source === "predefined");
 });
@@ -506,7 +506,7 @@ const customVariables = computed(() => {
     return allVariables.value.filter((v) => v.source === "custom");
 });
 
-// 预定义变量表格列配置（只读）
+// Predefined variable table column config (read-only)
 const predefinedTableColumns = computed<DataTableColumns<VariableRow>>(() => [
     {
         title: t("variables.management.variableName"),
@@ -582,7 +582,7 @@ const predefinedTableColumns = computed<DataTableColumns<VariableRow>>(() => [
     },
 ]);
 
-// 自定义变量表格列配置（支持内联编辑）
+// Custom variable table column config (supports inline editing)
 const customTableColumns = computed<DataTableColumns<VariableRow>>(() => [
     {
         title: t("variables.management.variableName"),
@@ -603,7 +603,7 @@ const customTableColumns = computed<DataTableColumns<VariableRow>>(() => [
             tooltip: true,
         },
         render: (row: VariableRow) => {
-            // 如果当前行正在编辑
+            // If the current row is being edited
             if (editingRowKey.value === row.name) {
                 return h(NInput, {
                     value: editingValue.value,
@@ -621,7 +621,7 @@ const customTableColumns = computed<DataTableColumns<VariableRow>>(() => [
                 });
             }
 
-            // 正常显示状态，点击可编辑
+            // Normal display state; click to edit
             return h(
                 "span",
                 {
@@ -740,7 +740,7 @@ const customTableColumns = computed<DataTableColumns<VariableRow>>(() => [
     },
 ]);
 
-// 工具函数
+// Utility functions
 const truncateValue = (value: string, maxLength: number = 60): string => {
     if (value.length <= maxLength) return value;
     return value.substring(0, maxLength) + "...";
@@ -750,7 +750,7 @@ const formatVariableName = (name: string): string => {
     return `{{${name}}}`;
 };
 
-// 复制变量名功能
+// Copy variable name feature
 const copyVariableName = async (name: string) => {
     try {
         const formattedName = formatVariableName(name);
@@ -776,7 +776,7 @@ const editVariable = (variable: VariableRow) => {
     showEditor.value = true;
 };
 
-// 内联编辑处理函数
+// Inline editing handler functions
 const startInlineEdit = (rowKey: string, currentValue: string) => {
     editingRowKey.value = rowKey;
     editingValue.value = currentValue;
@@ -798,11 +798,11 @@ const saveInlineEdit = async (rowKey: string) => {
         loading.value = true;
         props.variableManager.addVariable(rowKey, trimmedValue);
 
-        // 清空编辑状态
+        // Clear the editing state
         editingRowKey.value = null;
         editingValue.value = "";
 
-        // 触发变更事件
+        // Trigger the change event
         handleVariableChange(rowKey, trimmedValue, "update");
     } catch (error: unknown) {
         console.error(
@@ -820,7 +820,7 @@ const cancelInlineEdit = () => {
     editingValue.value = "";
 };
 
-// 快速添加功能
+// Quick add feature
 const quickAddVariable = async () => {
     if (!props.variableManager?.variableManager.value) return;
     if (!quickAddForm.value.name.trim() || !quickAddForm.value.value.trim())
@@ -833,11 +833,11 @@ const quickAddVariable = async () => {
 
         props.variableManager.addVariable(name, value);
 
-        // 清空表单
+        // Clear the form
         quickAddForm.value.name = "";
         quickAddForm.value.value = "";
 
-        // 触发变更事件
+        // Trigger the change event
         handleVariableChange(name, value, "add");
     } catch (error: unknown) {
         console.error(
@@ -850,23 +850,23 @@ const quickAddVariable = async () => {
     }
 };
 
-// 验证快速添加表单
+// Validate the quick add form
 const canQuickAdd = computed(() => {
     const name = quickAddForm.value.name.trim();
     const value = quickAddForm.value.value.trim();
 
     if (!name || !value) return false;
 
-    // 验证变量名格式
+    // Validate the variable name format
     if (!/^[a-zA-Z][a-zA-Z0-9_]*$/.test(name)) return false;
 
-    // 检查是否与预定义变量重名（标准化）
+    // Check whether it duplicates a predefined variable name (normalized)
     if (
         props.variableManager?.variableManager.value?.isPredefinedVariable(name)
     )
         return false;
 
-    // 检查是否与现有变量重名
+    // Check whether it duplicates an existing variable name
     if (existingVariableNames.value.includes(name)) return false;
 
     return true;
@@ -881,7 +881,7 @@ const deleteVariable = async (name: string) => {
             loading.value = true;
             props.variableManager.deleteVariable(name);
 
-            // 发送删除事件
+            // Send the delete event
             handleVariableChange(name, "", "delete");
         } catch (error: unknown) {
             console.error(
@@ -908,7 +908,7 @@ const onVariableSave = async (variable: { name: string; value: string }) => {
         showEditor.value = false;
         editingVariable.value = null;
 
-        // 发送标准化变更事件
+        // Send the standardized change event
         handleVariableChange(
             variable.name,
             variable.value,
@@ -941,7 +941,7 @@ const onVariablesImport = (variables: Record<string, string>) => {
         });
         showImporter.value = false;
 
-        // 发送标准化事件
+        // Send the standardized event
         emit("import", {
             version: "1.0",
             exportedAt: new Date().toISOString(),
@@ -963,7 +963,7 @@ const onVariablesImport = (variables: Record<string, string>) => {
     }
 };
 
-// 新增的标准化事件处理函数
+// Newly added standardized event handler function
 const handleClose = () => {
     emit("close");
     emit("cancel");
@@ -985,7 +985,7 @@ const handleCancel = () => {
     localVisible.value = false;
 };
 
-// 变量变更事件增强
+// Enhanced variable change event
 const handleVariableChange = (
     name: string,
     value: string,
@@ -993,7 +993,7 @@ const handleVariableChange = (
 ) => {
     emit("variableChange", name, value, action);
 
-    // 同时发送 update:variables 事件
+    // Also send the update:variables event
     if (props.variableManager) {
         const allVars =
             props.variableManager.variableManager.value?.resolveAllVariables() ||
@@ -1002,12 +1002,12 @@ const handleVariableChange = (
     }
 };
 
-// 监听visible变化，处理焦点变量
+// Watch visible changes and handle the focused variable
 watch(
     () => props.visible,
     (visible) => {
         if (visible && props.focusVariable) {
-            // 如果有指定要聚焦的变量，自动打开编辑器
+            // If a variable to focus is specified, open the editor automatically
             const targetVariable = allVariables.value.find(
                 (v) => v.name === props.focusVariable,
             );
@@ -1015,7 +1015,7 @@ watch(
                 editingVariable.value = targetVariable;
                 showEditor.value = true;
             } else {
-                // 如果变量不存在，创建新变量
+                // If the variable does not exist, create a new variable
                 editingVariable.value = {
                     name: props.focusVariable,
                     value: "",
@@ -1025,18 +1025,18 @@ watch(
             }
         }
 
-        // 发送ready事件
+        // Send the ready event
         if (visible) {
             emit("ready");
         }
     },
 );
 
-// 导出预览功能
+// Export preview feature
 const getExportPreview = (): string => {
     if (!props.variableManager?.variableManager.value) return "";
 
-    // 使用已有的 customVariables 计算属性，转换为对象格式
+    // Use the existing customVariables computed property and convert it to an object format
     const customVarsObject = customVariables.value.reduce(
         (acc, variable) => {
             acc[variable.name] = variable.value;
@@ -1068,7 +1068,7 @@ const getExportPreview = (): string => {
     }
 };
 
-// 执行导出功能
+// Perform the export
 const executeExport = () => {
     if (!props.variableManager?.variableManager.value) return;
 
@@ -1097,10 +1097,10 @@ const executeExport = () => {
             }
         }
 
-        // 发送导出事件
+        // Send the export event
         emit("export");
 
-        // 执行实际导出
+        // Perform the actual export
         const blob = new Blob([content], { type: mimeType });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
@@ -1109,7 +1109,7 @@ const executeExport = () => {
         a.click();
         URL.revokeObjectURL(url);
 
-        // 关闭弹窗
+        // Close the dialog
         showExportModal.value = false;
     } catch (error: unknown) {
         console.error(
@@ -1122,7 +1122,7 @@ const executeExport = () => {
     }
 };
 
-// 删除重复的onVariableSave函数，避免冲突
+// Deleted the duplicate onVariableSave function to avoid conflicts
 </script>
 
 <style scoped>

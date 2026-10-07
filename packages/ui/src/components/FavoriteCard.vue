@@ -8,14 +8,14 @@
     :style="{ minHeight: `${cardHeight}px`, maxHeight: `${cardHeight}px` }"
     @click="$emit('select', favorite)"
   >
-    <!-- 卡片头部：确保内容不溢出 -->
+    <!-- Card header: make sure the content does not overflow -->
     <template #header>
       <NSpace align="center" justify="space-between" :wrap="false" :size="8" style="overflow: hidden;">
         <NEllipsis style="flex: 1; min-width: 0; font-weight: 600; font-size: 14px;">
           {{ favorite.title }}
         </NEllipsis>
         <NSpace :size="4" style="flex-shrink: 1; min-width: 0;" :wrap="false">
-          <!-- 功能模式标签 -->
+          <!-- Function mode tag -->
           <NTag
             :type="getFunctionModeTagType(favorite.functionMode)"
             size="small"
@@ -25,7 +25,7 @@
             {{ t(`favorites.manager.card.functionMode.${favorite.functionMode}`) }}
           </NTag>
 
-          <!-- 子模式标签 (优化模式或图像模式) -->
+          <!-- Sub-mode tag (optimization mode or image mode) -->
           <NTag
             v-if="favorite.optimizationMode || favorite.imageSubMode"
             :type="getSubModeTagType(favorite)"
@@ -36,7 +36,7 @@
             {{ getSubModeLabel(favorite) }}
           </NTag>
 
-          <!-- 分类标签：可收缩 -->
+          <!-- Category tag: shrinkable -->
           <NTooltip
             v-if="category"
             trigger="hover"
@@ -65,7 +65,7 @@
       </NSpace>
     </template>
 
-    <!-- 封面图区域：有封面图时显示缩略图 -->
+    <!-- Cover image area: show a thumbnail when there is a cover image -->
     <div v-if="coverImageSrc" style="margin: -16px -16px 0 -16px;">
       <NImage
         :src="coverImageSrc"
@@ -76,9 +76,9 @@
       />
     </div>
 
-    <!-- 卡片内容：精确控制区域大小，防止溢出 -->
+    <!-- Card content: precisely control the area size to prevent overflow -->
     <NSpace vertical :size="6" style="flex: 1; min-height: 0; overflow: hidden;">
-      <!-- 内容区域：固定2行 -->
+      <!-- Content area: fixed at 2 lines -->
       <NTooltip
         trigger="hover"
         :show-arrow="false"
@@ -113,7 +113,7 @@
         <NText class="tooltip-text">{{ favorite.content }}</NText>
       </NTooltip>
 
-      <!-- 描述区域：固定1行 -->
+      <!-- Description area: fixed at 1 line -->
       <NTooltip
         v-if="favorite.description"
         trigger="hover"
@@ -150,7 +150,7 @@
       </NTooltip>
       <div v-else style="height: 20px; overflow: hidden;"></div>
 
-      <!-- 标签区域：固定高度，最多显示2个标签 -->
+      <!-- Tags area: fixed height, show at most 2 tags -->
       <div style="height: 22px; overflow: hidden;">
         <NSpace v-if="favorite.tags.length > 0" :size="4" :wrap="false">
           <NTag
@@ -174,10 +174,10 @@
       </div>
     </NSpace>
 
-    <!-- 卡片底部：使用 NSpace 布局 -->
+    <!-- Card footer: laid out with NSpace -->
     <template #footer>
       <NSpace justify="space-between" align="center" :wrap="false">
-        <!-- 左侧信息 -->
+        <!-- Left info -->
         <NSpace :size="12" align="center" :wrap="false">
           <NText depth="3" style="font-size: 12px; white-space: nowrap;">
             {{ formatDate(favorite.updatedAt) }}
@@ -201,7 +201,7 @@
           </NTooltip>
         </NSpace>
 
-        <!-- 右侧操作按钮 -->
+        <!-- Right action buttons -->
         <NSpace :size="4" class="card-actions">
           <NTooltip
             trigger="hover"
@@ -347,7 +347,7 @@ const {
 } = useTooltipTheme({
   maxWidth: `calc(100vw - ${TOTAL_MARGIN * 2}px)`,
   maxHeight: `calc(100vh - ${TOTAL_MARGIN * 2}px)`
-}); // 统一 tooltip 背景并限制整体尺寸
+}); // Unify the tooltip background and constrain the overall size
 
 const contentTooltipPlacement = ref<TooltipPlacement>('bottom-start');
 const contentTooltipWidth = ref<number>(CONTENT_TOOLTIP_WIDTH);
@@ -358,7 +358,7 @@ const descriptionTooltipMaxHeight = ref<number>(0);
 const contentTriggerRef = ref<HTMLElement | null>(null);
 const descriptionTriggerRef = ref<HTMLElement | null>(null);
 
-// 封面图解析逻辑
+// Cover image resolution logic
 const coverImageSrc = ref<string | null>(null);
 
 const getReadStorageCandidates = () => {
@@ -383,7 +383,7 @@ const resolveCoverImage = async () => {
 
   const storageCandidates = getReadStorageCandidates()
   if (storageCandidates.length === 0) {
-    // 无存储服务时直接用 URL
+    // Without a storage service, use the URL directly
     coverImageSrc.value = media.coverUrl || null
     return
   }
@@ -402,11 +402,11 @@ const resolveCoverImage = async () => {
     }
   }
 
-  // 回退到 URL
+  // Fall back to the URL
   coverImageSrc.value = media.coverUrl || null
 }
 
-// 监听收藏变化解析封面图
+// Watch favorite changes to resolve the cover image
 watch(
   () => props.favorite,
   () => {
@@ -415,7 +415,7 @@ watch(
   { immediate: true },
 )
 
-// 监听服务可用性变化
+// Watch changes in service availability
 watch(
   () => [services?.value?.favoriteImageStorageService, services?.value?.imageStorageService],
   () => {
@@ -423,7 +423,7 @@ watch(
   },
 )
 
-// 缓存 rect 结果，避免频繁计算
+// Cache the rect result to avoid frequent computation
 const cachedContentRect = ref<DOMRect | null>(null);
 const cachedDescriptionRect = ref<DOMRect | null>(null);
 
@@ -454,9 +454,9 @@ const calculateTooltipLayout = (rect: DOMRect, desiredWidth: number, minWidth: n
   const safeAreaHeight = Math.max(viewportHeight - TOTAL_MARGIN * 2, MIN_TOOLTIP_HEIGHT);
   const targetWidth = Math.min(desiredWidth, safeAreaWidth);
 
-  // 修复空间计算：正确计算左右可用空间
-  // spaceRight: 元素右边缘到视口右边缘的距离
-  // spaceLeft: 元素左边缘到视口左边缘的距离
+  // Fix the space calculation: correctly compute the available space on the left and right
+  // spaceRight: distance from the element's right edge to the viewport's right edge
+  // spaceLeft: distance from the element's left edge to the viewport's left edge
   const spaceRight = Math.max(0, viewportWidth - rect.right - TOTAL_MARGIN);
   const spaceLeft = Math.max(0, rect.left - TOTAL_MARGIN);
   const spaceDown = Math.max(0, viewportHeight - rect.bottom - TOTAL_MARGIN);
@@ -557,7 +557,7 @@ const handleContentTooltipEnter = () => {
   const target = contentTriggerRef.value;
   if (!target) return;
 
-  // 使用缓存的 rect，避免重复计算
+  // Use the cached rect to avoid repeated computation
   if (!cachedContentRect.value) {
     cachedContentRect.value = target.getBoundingClientRect();
   }
@@ -568,7 +568,7 @@ const handleDescriptionTooltipEnter = () => {
   const target = descriptionTriggerRef.value;
   if (!target) return;
 
-  // 使用缓存的 rect，避免重复计算
+  // Use the cached rect to avoid repeated computation
   if (!cachedDescriptionRect.value) {
     cachedDescriptionRect.value = target.getBoundingClientRect();
   }
@@ -576,7 +576,7 @@ const handleDescriptionTooltipEnter = () => {
 };
 
 const handleResize = () => {
-  // resize 时清除缓存并重新计算
+  // Clear the cache and recompute on resize
   cachedContentRect.value = null;
   cachedDescriptionRect.value = null;
 
@@ -590,7 +590,7 @@ const handleResize = () => {
   }
 };
 
-// 节流处理 resize 事件，避免频繁计算
+// Throttle the resize event to avoid frequent computation
 const debouncedResize = useDebounceFn(handleResize, 150);
 
 onMounted(() => {
@@ -606,7 +606,7 @@ onBeforeUnmount(() => {
   }
 });
 
-// 功能模式标签类型映射
+// Function mode tag type mapping
 const getFunctionModeTagType = (mode: string): 'default' | 'info' | 'success' => {
   const typeMap: Record<string, 'default' | 'info' | 'success'> = {
     basic: 'default',
@@ -616,7 +616,7 @@ const getFunctionModeTagType = (mode: string): 'default' | 'info' | 'success' =>
   return typeMap[mode] || 'default';
 };
 
-// 子模式标签类型映射
+// Sub-mode tag type mapping
 const getSubModeTagType = (favorite: FavoritePrompt): 'warning' | 'error' | 'success' | 'info' | 'default' => {
   if (favorite.optimizationMode) {
     return favorite.optimizationMode === 'system' ? 'warning' : 'error';
@@ -627,18 +627,18 @@ const getSubModeTagType = (favorite: FavoritePrompt): 'warning' | 'error' | 'suc
   return 'default';
 };
 
-// 获取子模式标签文本
+// Get the sub-mode tag text
 const getSubModeLabel = (favorite: FavoritePrompt): string => {
   if (favorite.optimizationMode) {
-    // 根据功能模式动态返回标签文本
+    // Dynamically return the tag text depending on the function mode
     const isContextMode = favorite.functionMode === 'context';
     if (isContextMode) {
-      // 上下文模式：使用新的翻译键
+      // Context mode: use the new translation keys
       return favorite.optimizationMode === 'system'
         ? t('contextMode.optimizationMode.message')
         : t('contextMode.optimizationMode.variable');
     } else {
-      // 基础模式：使用原有的翻译键
+      // Basic mode: use the original translation keys
       return t(`favorites.manager.card.optimizationMode.${favorite.optimizationMode}`);
     }
   }
@@ -672,7 +672,7 @@ const formatDate = (timestamp: number) => {
 </script>
 
 <style scoped>
-/* 卡片基础样式 */
+/* Card base styles */
 .n-card {
   transition: all 0.2s ease;
   cursor: pointer;
@@ -681,7 +681,7 @@ const formatDate = (timestamp: number) => {
   flex-direction: column;
 }
 
-/* 确保卡片内容区域正确撑满 */
+/* Make sure the card content area fills properly */
 .n-card :deep(.n-card__content) {
   flex: 1;
   min-height: 0;
@@ -700,7 +700,7 @@ const formatDate = (timestamp: number) => {
   box-shadow: 0 0 0 2px rgba(var(--primary-color), 0.2);
 }
 
-/* 操作按钮悬停显示 */
+/* Show action buttons on hover */
 .card-actions {
   opacity: 0;
   transition: opacity 0.2s ease;
@@ -710,7 +710,7 @@ const formatDate = (timestamp: number) => {
   opacity: 1;
 }
 
-/* 移动端始终显示按钮 */
+/* Always show buttons on mobile */
 @media (max-width: 768px) {
   .card-actions {
     opacity: 1;

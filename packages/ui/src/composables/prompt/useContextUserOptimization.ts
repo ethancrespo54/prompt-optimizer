@@ -22,10 +22,10 @@ export interface ContextUserOptimizationBindings {
 }
 
 /**
- * ContextUser 模式提示词优化器接口
+ * ContextUser mode prompt optimizer interface
  */
 export interface UseContextUserOptimization {
-  // 状态
+  // State
   prompt: string
   optimizedPrompt: string
   optimizedReasoning: string
@@ -37,30 +37,30 @@ export interface UseContextUserOptimization {
   currentVersions: PromptChain['versions']
   currentVersionId: string
 
-  // 方法
+  // Methods
   optimize: () => Promise<void>
   iterate: (payload: { originalPrompt: string, optimizedPrompt: string, iterateInput: string }) => Promise<void>
   switchVersion: (version: PromptChain['versions'][number]) => Promise<void>
-  switchToV0: (version: PromptChain['versions'][number]) => Promise<void>  // 🆕 V0 切换
+  switchToV0: (version: PromptChain['versions'][number]) => Promise<void>  // 🆕 V0 switching
   loadFromHistory: (payload: { rootPrompt?: string, chain: PromptChain, record: PromptRecord }) => void
   saveLocalEdit: (payload: { optimizedPrompt: string; note?: string; source?: 'patch' | 'manual' }) => Promise<void>
-  handleAnalyze: () => void  // 🆕 分析功能
+  handleAnalyze: () => void  // 🆕 Analyze feature
 }
 
 /**
- * ContextUser 模式提示词优化器 Composable
+ * ContextUser mode prompt optimizer composable
  *
- * 专门用于 ContextUserWorkspace 的优化逻辑，特点：
- * - 只处理单条用户消息优化
- * - 独立的状态管理
- * - 支持版本历史和迭代
- * - 与 ContextSystem 的 useConversationOptimization 对称
+ * Dedicated to the optimization logic of ContextUserWorkspace, with these characteristics:
+ * - Only handles optimization of a single user message
+ * - Independent state management
+ * - Supports version history and iteration
+ * - Symmetric with useConversationOptimization of ContextSystem
  *
- * @param services 服务实例引用
- * @param selectedOptimizeModel 优化模型选择
- * @param selectedTemplate 优化模板（用户模式）
- * @param selectedIterateTemplate 迭代模板
- * @returns ContextUser 优化器接口
+ * @param services Service instance reference
+ * @param selectedOptimizeModel Optimize model selection
+ * @param selectedTemplate Optimization template (user mode)
+ * @param selectedIterateTemplate Iterate template
+ * @returns ContextUser optimizer interface
  *
  * @example
  * ```ts
@@ -71,7 +71,7 @@ export interface UseContextUserOptimization {
  *   computed(() => props.selectedIterateTemplate)
  * )
  *
- * // 执行优化
+ * // Run the optimization
  * await contextUserOptimization.optimize()
  * ```
  */
@@ -85,7 +85,7 @@ export function useContextUserOptimization(
   const toast = useToast()
   const { t } = useI18n()
 
-  // 服务引用
+  // Service reference
   const historyManager = computed(() => services.value?.historyManager)
   const promptService = computed(() => services.value?.promptService)
 
@@ -95,9 +95,9 @@ export function useContextUserOptimization(
   const boundCurrentChainId = bindings?.currentChainId ?? ref('')
   const boundCurrentVersionId = bindings?.currentVersionId ?? ref('')
 
-  // 使用 reactive 创建响应式状态对象
+  // Use reactive to create the reactive state object
   const state = reactive({
-    // 状态
+    // State
     prompt: boundPrompt,
     optimizedPrompt: boundOptimizedPrompt,
     optimizedReasoning: boundOptimizedReasoning,
@@ -109,7 +109,7 @@ export function useContextUserOptimization(
     currentVersions: [] as PromptChain['versions'],
     currentVersionId: boundCurrentVersionId,
 
-    // 方法
+    // Methods
     optimize: async () => {
       if (!state.prompt.trim() || state.isOptimizing) return
 
@@ -123,24 +123,24 @@ export function useContextUserOptimization(
         return
       }
 
-      // 在开始优化前立即清空状态
+      // Clear the state immediately before starting the optimization
       state.isOptimizing = true
       state.optimizedPrompt = ''
       state.optimizedReasoning = ''
 
-      // 等待一个微任务确保状态更新完成
+      // Wait for a microtask to make sure the state update is complete
       await nextTick()
 
       try {
-        // 构建优化请求
+        // Build the optimization request
         const request: OptimizationRequest = {
-          optimizationMode: 'user',  // ContextUser 固定为 user 模式
+          optimizationMode: 'user',  // ContextUser is fixed to user mode
           targetPrompt: state.prompt,
           templateId: selectedTemplate.value.id,
           modelKey: selectedOptimizeModel.value
         }
 
-        // 使用流式优化 API
+        // Use the streaming optimization API
         await promptService.value!.optimizePromptStream(
           request,
           {
@@ -154,18 +154,18 @@ export function useContextUserOptimization(
               if (!selectedTemplate.value) return
 
               try {
-                // 创建历史记录
+                // Create the history record
                 const recordData = {
                   id: uuidv4(),
                   originalPrompt: state.prompt,
                   optimizedPrompt: state.optimizedPrompt,
-                  type: 'contextUserOptimize' as const,  // ContextUser 专用类型
+                  type: 'contextUserOptimize' as const,  // Type dedicated to ContextUser
                   modelKey: selectedOptimizeModel.value,
                   templateId: selectedTemplate.value.id,
                   timestamp: Date.now(),
                   metadata: {
                     optimizationMode: 'user' as const,
-                    functionMode: 'pro' as const  // ContextUser 属于 pro 模式
+                    functionMode: 'pro' as const  // ContextUser belongs to pro mode
                   }
                 }
 
@@ -177,8 +177,8 @@ export function useContextUserOptimization(
 
                 toast.success(t('toast.success.optimizeSuccess'))
               } catch (error: unknown) {
-                console.error('创建历史记录失败:', error)
-                toast.error('创建历史记录失败: ' + getI18nErrorMessage(error, t('toast.error.optimizeFailed')))
+                console.error('Failed to create the history record:', error)
+                toast.error('Failed to create the history record: ' + getI18nErrorMessage(error, t('toast.error.optimizeFailed')))
               } finally {
                 state.isOptimizing = false
               }
@@ -198,7 +198,7 @@ export function useContextUserOptimization(
       }
     },
 
-    // 迭代优化
+    // Iterative optimization
     iterate: async (
       {
         originalPrompt,
@@ -210,8 +210,8 @@ export function useContextUserOptimization(
         iterateInput: string,
       },
     ) => {
-      // 🔧 修复：迭代模板实际上不需要 originalPrompt，只需要 lastOptimizedPrompt 和 iterateInput
-      // 移除 !originalPrompt 检查，允许用户直接在工作区编辑后迭代
+      // 🔧 Fix: the iterate template does not actually need originalPrompt, only lastOptimizedPrompt and iterateInput
+      // Removed the !originalPrompt check, allowing users to iterate after editing directly in the workspace
       if (!lastOptimizedPrompt || state.isIterating) return
       if (!iterateInput) return
 
@@ -220,12 +220,12 @@ export function useContextUserOptimization(
         return
       }
 
-      // 在开始迭代前立即清空状态
+      // Clear the state immediately before starting the iteration
       state.isIterating = true
       state.optimizedPrompt = ''
       state.optimizedReasoning = ''
 
-      // 等待一个微任务确保状态更新完成
+      // Wait for a microtask to make sure the state update is complete
       await nextTick()
 
       try {
@@ -248,7 +248,7 @@ export function useContextUserOptimization(
               }
 
               try {
-                // 保存迭代历史
+                // Save the iteration history
                 const iterationData = {
                   chainId: state.currentChainId,
                   originalPrompt: originalPrompt,
@@ -265,14 +265,14 @@ export function useContextUserOptimization(
 
                 toast.success(t('toast.success.iterateComplete'))
               } catch (error: unknown) {
-                console.error('[History] 迭代记录失败:', error)
+                console.error('[History] Failed to record the iteration:', error)
                 toast.warning(t('toast.warning.historyFailed'))
               } finally {
                 state.isIterating = false
               }
             },
             onError: (error: Error) => {
-              console.error('[Iterate] 迭代失败:', error)
+              console.error('[Iterate] Iteration failed:', error)
               toast.error(t('toast.error.iterateFailed'))
               state.isIterating = false
             }
@@ -280,70 +280,70 @@ export function useContextUserOptimization(
           selectedIterateTemplate.value.id,
         )
       } catch (error: unknown) {
-        console.error('[Iterate] 迭代失败:', error)
+        console.error('[Iterate] Iteration failed:', error)
         toast.error(t('toast.error.iterateFailed'))
         state.isIterating = false
       }
     },
 
     /**
-     * 切换到指定优化版本
+     * Switch to the specified optimization version
      *
-     * 📌 设计说明：
-     * - state.prompt 使用 fallback (version.originalPrompt || state.prompt)
-     * - 目的：兼容早期版本的历史记录，这些记录可能只保存了优化结果而缺失 originalPrompt
-     * - 效果：切换时保持当前输入不变，避免意外清空用户内容
+     * 📌 Design notes:
+     * - state.prompt uses a fallback (version.originalPrompt || state.prompt)
+     * - Purpose: compatible with early history records that may only have saved the optimization result and lack originalPrompt
+     * - Effect: keep the current input unchanged when switching, avoiding accidentally clearing the user's content
      */
     switchVersion: async (version: PromptChain['versions'][number]) => {
-      // 强制更新内容，确保UI同步
+      // Force a content update to make sure the UI is in sync
       state.optimizedPrompt = version.optimizedPrompt
-      // 🔧 兼容旧版本链：早期记录可能缺失 originalPrompt，使用 fallback 避免清空当前输入
+      // 🔧 Compatible with old version chains: early records may lack originalPrompt, so use the fallback to avoid clearing the current input
       state.prompt = version.originalPrompt || state.prompt
       state.currentVersionId = version.id
 
-      // 等待一个微任务确保状态更新完成
+      // Wait for a microtask to make sure the state update is complete
       await nextTick()
     },
 
     /**
-     * 切换到 V0 版本（未优化的原始提示词）
+     * Switch to the V0 version (the unoptimized original prompt)
      *
-     * 📌 设计说明：
-     * - 与 switchVersion 不同，此方法要求 originalPrompt 必填（前置检查）
-     * - 语义：V0 表示"查看未优化的原始版本"，必须有原始输入才能回退
-     * - 因此可以安全地直接赋值，无需 fallback 保护
+     * 📌 Design notes:
+     * - Unlike switchVersion, this method requires originalPrompt to be present (precondition check)
+     * - Semantics: V0 means "view the unoptimized original version", so an original input is required to roll back
+     * - So it can safely assign directly without fallback protection
      */
     switchToV0: async (version: PromptChain['versions'][number]) => {
-      // ✅ V0 切换要求必须有原始输入，否则无法回退到"未优化"状态
+      // ✅ Switching to V0 requires an original input, otherwise it cannot roll back to the "unoptimized" state
       if (!version || !version.originalPrompt) {
         toast.error(t('toast.error.invalidVersion'))
         return
       }
-      // V0 状态：优化结果显示原始输入（表示"未优化"）
+      // V0 state: the optimization result shows the original input (meaning "unoptimized")
       state.optimizedPrompt = version.originalPrompt
       state.prompt = version.originalPrompt
       state.currentVersionId = version.id
 
-      // 等待一个微任务确保状态更新完成
+      // Wait for a microtask to make sure the state update is complete
       await nextTick()
     },
 
     /**
-     * 从历史记录恢复完整状态
+     * Restore the full state from the history record
      *
-     * 📌 调用时机：
-     * - 用户在历史面板点击 Context User 模式的历史记录时触发
-     * - 由父组件 (App.vue) 调用，在 handleSelectHistory 更新全局状态后执行
+     * 📌 When it is called:
+     * - Triggered when the user clicks a Context User mode history record in the history panel
+     * - Called by the parent component (App.vue), after handleSelectHistory updates the global state
      *
-     * 📌 状态分离设计：
-     * - handleSelectHistory 更新的是全局 optimizer 状态（App.vue 级别）
-     * - loadFromHistory 更新的是 ContextUserWorkspace 内部的独立状态
-     * - 两者操作不同的状态树，无竞态风险
+     * 📌 State separation design:
+     * - handleSelectHistory updates the global optimizer state (App.vue level)
+     * - loadFromHistory updates the independent state inside ContextUserWorkspace
+     * - The two operate on different state trees, so there is no race risk
      *
-     * @param payload - 包含历史记录数据的负载对象
-     * @param payload.rootPrompt - 根提示词（优先使用）
-     * @param payload.chain - 提示链数据（包含所有版本）
-     * @param payload.record - 当前选中的提示记录
+     * @param payload - Payload object containing the history record data
+     * @param payload.rootPrompt - Root prompt (preferred)
+     * @param payload.chain - Prompt chain data (including all versions)
+     * @param payload.record - The currently selected prompt record
      */
     loadFromHistory: ({ rootPrompt, chain, record }: { rootPrompt?: string; chain: PromptChain; record: PromptRecord }) => {
       state.prompt = rootPrompt || record.originalPrompt || ''
@@ -355,8 +355,8 @@ export function useContextUserOptimization(
     },
 
     /**
-     * 保存本地修改为一个新版本（不触发 LLM）
-     * - 用于"直接修复"与手动编辑后的显式保存
+     * Save local changes as a new version (does not trigger the LLM)
+     * - Used for "direct fix" and explicit saving after manual edits
      */
     saveLocalEdit: async ({ optimizedPrompt, note, source }: { optimizedPrompt: string; note?: string; source?: 'patch' | 'manual' }) => {
       try {
@@ -371,7 +371,7 @@ export function useContextUserOptimization(
           selectedTemplate.value?.id ||
           'local-edit'
 
-        // 若当前没有链（极少数场景），创建新链以便后续版本管理
+        // If there is currently no chain (rare), create a new chain for later version management
         if (!state.currentChainId) {
           const recordData = {
             id: uuidv4(),
@@ -413,34 +413,34 @@ export function useContextUserOptimization(
         state.currentVersions = updatedChain.versions
         state.currentVersionId = updatedChain.currentRecord.id
       } catch (error: unknown) {
-        console.error('[useContextUserOptimization] 保存本地修改失败:', error)
+        console.error('[useContextUserOptimization] Failed to save local changes:', error)
         toast.warning(t('toast.warning.saveHistoryFailed'))
       }
     },
 
     /**
-     * 分析功能：清空版本链，创建 V0（原始版本）
-     * - 不写入历史记录
-     * - 只创建内存中的虚拟 V0 版本
+     * Analyze feature: clear the version chain and create V0 (the original version)
+     * - Does not write history records
+     * - Only creates a virtual V0 version in memory
      */
     handleAnalyze: () => {
       if (!state.prompt.trim()) return
 
-      // 生成虚拟的 V0 版本记录（不写入历史）
+      // Generate a virtual V0 version record (not written to history)
       const virtualV0Id = uuidv4()
       const virtualV0: PromptChain['versions'][number] = {
         id: virtualV0Id,
-        chainId: '', // 虚拟链，不关联真实历史
+        chainId: '', // Virtual chain, not associated with real history
         version: 0,
         originalPrompt: state.prompt,
-        optimizedPrompt: state.prompt, // V0 的优化内容就是原始内容
+        optimizedPrompt: state.prompt, // The optimized content of V0 is the original content
         type: 'userOptimize',
         timestamp: Date.now(),
         modelKey: '',
         templateId: '',
       }
 
-      // 清空旧链条，设置新的 V0
+      // Clear the old chain and set the new V0
       state.currentChainId = ''
       state.currentVersions = [virtualV0]
       state.currentVersionId = virtualV0Id
@@ -448,17 +448,17 @@ export function useContextUserOptimization(
     }
   })
 
-  // 同步 selectedTemplate 和 selectedIterateTemplate
-  // 这样外部可以通过 props 控制，内部也能访问
+  // Sync selectedTemplate and selectedIterateTemplate
+  // So that it can be controlled externally through props and also accessed internally
   const syncTemplates = () => {
     state.selectedTemplate = selectedTemplate.value
     state.selectedIterateTemplate = selectedIterateTemplate.value
   }
 
-  // 初始同步
+  // Initial sync
   syncTemplates()
 
-  // 监听变化并同步（使用 Vue 的响应式系统自动处理）
+  // Watch changes and sync (handled automatically by Vue's reactivity system)
   const unwatchTemplate = () => {
     state.selectedTemplate = selectedTemplate.value
   }
@@ -466,6 +466,6 @@ export function useContextUserOptimization(
     state.selectedIterateTemplate = selectedIterateTemplate.value
   }
 
-  // 返回 reactive 对象
+  // Return the reactive object
   return state
 }

@@ -26,7 +26,7 @@
       </NSpace>
     </template>
 
-    <!-- 类型切换：一行网格自动分两行，每行三列，按钮全宽（更易扩展） -->
+    <!-- Type switch: a one-row grid that wraps automatically into two rows with three columns each, full-width buttons (easier to extend) -->
     <NGrid :cols="3" :x-gap="8" :y-gap="8">
       <NGridItem>
         <NButton block :type="currentCategory==='system-optimize' ? 'primary' : 'default'" @click="currentCategory='system-optimize'">
@@ -64,19 +64,19 @@
         </NButton>
       </NGridItem>
 
-      <!-- 图像 · 文生图 -->
+      <!-- Image · Text-to-image -->
       <NGridItem>
         <NButton block :type="currentCategory==='image-text2image-optimize' ? 'primary' : 'default'" @click="currentCategory='image-text2image-optimize'">
           {{ `🖼️ ${t('templateManager.imageText2ImageTemplates')}` }}
         </NButton>
       </NGridItem>
-      <!-- 图像 · 图生图 -->
+      <!-- Image · Image-to-image -->
       <NGridItem>
         <NButton block :type="currentCategory==='image-image2image-optimize' ? 'primary' : 'default'" @click="currentCategory='image-image2image-optimize'">
           {{ `📷 ${t('templateManager.imageImage2ImageTemplates')}` }}
         </NButton>
       </NGridItem>
-      <!-- 图像 · 迭代 -->
+      <!-- Image · Iteration -->
       <NGridItem>
         <NButton block :type="currentCategory==='image-iterate' ? 'primary' : 'default'" @click="currentCategory='image-iterate'">
           {{ `🌀 ${t('templateManager.imageIterateTemplates')}` }}
@@ -84,7 +84,7 @@
       </NGridItem>
     </NGrid>
 
-    <!-- 模板列表 -->
+    <!-- Template list -->
     <NSpace vertical :size="16" style="margin-top: 16px;">
       <NSpace justify="space-between" align="center">
         <NSpace align="center">
@@ -139,7 +139,7 @@
             
             <template #header-extra>
               <NSpace @click.stop>
-                <!-- 查看按钮 -->
+                <!-- View button -->
                 <NButton
                   v-if="template.isBuiltin"
                   size="small"
@@ -155,7 +155,7 @@
                   {{ t('template.view') }}
                 </NButton>
                 
-                <!-- 编辑按钮 -->
+                <!-- Edit button -->
                 <NButton
                   v-if="!template.isBuiltin"
                   size="small"
@@ -170,7 +170,7 @@
                   {{ t('common.edit') }}
                 </NButton>
                 
-                <!-- 复制按钮 -->
+                <!-- Copy button -->
                 <NButton
                   v-if="template.isBuiltin"
                   size="small"
@@ -185,7 +185,7 @@
                   {{ t('templateManager.copyTemplate') }}
                 </NButton>
                 
-                <!-- 迁移按钮 -->
+                <!-- Migrate button -->
                 <NButton
                   v-if="!template.isBuiltin && isStringTemplate(template)"
                   size="small"
@@ -201,7 +201,7 @@
                   {{ t('templateManager.migrate') }}
                 </NButton>
                 
-                <!-- 删除按钮 -->
+                <!-- Delete button -->
                 <NButton
                   v-if="!template.isBuiltin"
                   size="small"
@@ -219,7 +219,7 @@
               </NSpace>
             </template>
             
-            <!-- 模板标签 -->
+            <!-- Template tags -->
             <NSpace>
               <NTag
                 :type="template.isBuiltin ? 'primary' : 'default'"
@@ -245,7 +245,7 @@
               </NTag>
             </NSpace>
             
-            <!-- 左侧颜色条 -->
+            <!-- Left color bar -->
             <div 
               class="absolute top-0 left-0 w-1 h-full rounded-l-lg"
               :class="template.metadata.templateType === 'optimize' ? 'bg-blue-500' : 'bg-purple-500'"
@@ -255,7 +255,7 @@
       </NScrollbar>
     </NSpace>
 
-    <!-- 查看/编辑模态框 -->
+    <!-- View/edit modal -->
     <NModal
       :show="!!(showAddForm || editingTemplate || viewingTemplate)"
       preset="card"
@@ -268,7 +268,7 @@
     >
       <template #header-extra>
         <NSpace>
-          <!-- 在查看或编辑时显示模板类型 -->
+          <!-- Show the template type when viewing or editing -->
           <NTag
             v-if="viewingTemplate || editingTemplate"
             :type="(viewingTemplate || editingTemplate) && TemplateProcessor.isSimpleTemplate((viewingTemplate || editingTemplate)!) ? 'info' : 'warning'"
@@ -659,14 +659,14 @@ interface Services {
   templateLanguageService: TemplateLanguageService;
 }
 
-// 通过依赖注入获取服务
+// Get services via dependency injection
 const services = inject<{ value: Services | null }>('services')
 if (!services?.value) {
   throw new Error('TemplateManager Error: The required "services" were not provided by a parent component. Make sure this component is a child of a component that uses "provide(\'services\', ...)"')
 }
 
 const getTemplateManager = computed(() => services.value!.templateManager)
-// const getTemplateLanguageService = computed(() => services.value!.templateLanguageService)  // 保留用于未来扩展
+// const getTemplateLanguageService = computed(() => services.value!.templateLanguageService)  // Kept for future extension
 
 const props = defineProps<{
   templateType:
@@ -688,7 +688,7 @@ const props = defineProps<{
 const emit = defineEmits(['close', 'select', 'update:show'])
 const toast = useToast()
 
-// Session Stores（单一真源：持久化选择存储在各子模式 session store 中）
+// Session Stores (single source of truth: persisted selections are stored in each sub-mode session store)
 const basicSystemSession = useBasicSystemSession()
 const basicUserSession = useBasicUserSession()
 const proMultiMessageSession = useProMultiMessageSession()
@@ -742,7 +742,7 @@ const fullscreenEditor = ref<{
   content: ''
 })
 
-// 根据props确定初始分类
+// Determine the initial category based on props
 function getCategoryFromProps() {
   switch (props.templateType) {
     case 'optimize':
@@ -770,7 +770,7 @@ function getCategoryFromProps() {
   }
 }
 
-// 获取当前模板类型 - 根据当前分类而不是props
+// Get the current template type - based on the current category rather than props
 function getCurrentTemplateType(): 'optimize' | 'userOptimize' | 'iterate' | 'text2imageOptimize' | 'image2imageOptimize' | 'imageIterate' | 'conversationMessageOptimize' | 'contextUserOptimize' | 'contextIterate' {
   switch (currentCategory.value) {
     case 'system-optimize':
@@ -797,7 +797,7 @@ function getCurrentTemplateType(): 'optimize' | 'userOptimize' | 'iterate' | 'te
   }
 }
 
-// 获取当前选中的模板ID
+// Get the currently selected template ID
 function getSelectedTemplateIdForCategory(category: string): string | undefined {
   switch (category) {
     case 'system-optimize':
@@ -833,7 +833,7 @@ function getSelectedTemplateId(): string | undefined {
   return getSelectedTemplateIdForCategory(currentCategory.value)
 }
 
-// 获取当前分类标签
+// Get the current category label
 function getCurrentCategoryLabel() {
   switch (currentCategory.value) {
     case 'system-optimize':
@@ -861,12 +861,12 @@ function getCurrentCategoryLabel() {
   }
 }
 
-// 检查是否为字符串模板
+// Check whether it is a string template
 const isStringTemplate = (template: Template) => {
   return typeof template.content === 'string'
 }
 
-// 处理预览数据
+// Process preview data
 const processedPreview = computed(() => {
   if (!form.value.isAdvanced || !form.value.messages.length) return []
 
@@ -893,26 +893,26 @@ const processedPreview = computed(() => {
   }
 })
 
-// 加载提示词列表
+// Load the prompt list
 const loadTemplates = async () => {
   try {
-    // 统一使用异步方法
+    // Use the async method uniformly
     const allTemplates = await getTemplateManager.value.listTemplates()
     templates.value = allTemplates
-    console.log('加载到的提示词:', templates.value)
+    console.log('Loaded prompts:', templates.value)
   } catch (error) {
-    console.error('加载提示词失败:', error)
-    toast.error('加载提示词失败')
+    console.error('Failed to load prompts:', error)
+    toast.error('Failed to load prompts')
   }
 }
 
-// 格式化日期
+// Format the date
 const formatDate = (timestamp: number) => {
   if (!timestamp) return t('template.unknownTime')
   return new Date(timestamp).toLocaleString()
 }
 
-// 编辑提示词
+// Edit a prompt
 const editTemplate = (template: Template) => {
   editingTemplate.value = template
   const isAdvanced = Array.isArray(template.content)
@@ -925,13 +925,13 @@ const editTemplate = (template: Template) => {
     messages: isAdvanced ? [...template.content] as MessageTemplate[] : []
   }
 
-  // 等待DOM更新后初始化textarea高度
+  // Wait for the DOM to update before initializing the textarea height
   nextTick(() => {
     initializeAllTextareas()
   })
 }
 
-// 查看提示词
+// View a prompt
 const viewTemplate = (template: Template) => {
   viewingTemplate.value = template
   const isAdvanced = Array.isArray(template.content)
@@ -944,13 +944,13 @@ const viewTemplate = (template: Template) => {
     messages: isAdvanced ? [...template.content] as MessageTemplate[] : []
   }
 
-  // 等待DOM更新后初始化textarea高度
+  // Wait for the DOM to update before initializing the textarea height
   nextTick(() => {
     initializeAllTextareas()
   })
 }
 
-// 取消编辑
+// Cancel editing
 const cancelEdit = () => {
   showAddForm.value = false
   editingTemplate.value = null
@@ -965,13 +965,13 @@ const cancelEdit = () => {
   }
 }
 
-// 生成唯一的模板ID
+// Generate a unique template ID
 const generateUniqueTemplateId = (baseName = 'template') => {
   const timestamp = Date.now()
   const random = Math.random().toString(36).slice(2, 8)
   let candidateId = `${baseName}-${timestamp}-${random}`
   
-  // 确保ID不与现有模板冲突
+  // Make sure the ID does not conflict with existing templates
   const existingIds = templates.value.map(t => t.id)
   let counter = 1
   while (existingIds.includes(candidateId)) {
@@ -982,7 +982,7 @@ const generateUniqueTemplateId = (baseName = 'template') => {
   return candidateId
 }
 
-// 添加消息
+// Add a message
 const addMessage = () => {
   form.value.messages.push({
     role: 'user',
@@ -990,12 +990,12 @@ const addMessage = () => {
   })
 }
 
-// 移除消息
+// Remove a message
 const removeMessage = (index: number) => {
   form.value.messages.splice(index, 1)
 }
 
-// 移动消息
+// Move a message
 const moveMessage = (index: number, direction: number) => {
   const newIndex = index + direction
   if (newIndex >= 0 && newIndex < form.value.messages.length) {
@@ -1007,7 +1007,7 @@ const moveMessage = (index: number, direction: number) => {
   }
 }
 
-// 初始化textarea高度 - 只在打开时调用一次
+// Initialize the textarea height - only called once on open
 type AdjustableTextarea = HTMLTextAreaElement & { _initialized?: boolean }
 
 const initializeTextareaHeight = (textarea: HTMLTextAreaElement | null) => {
@@ -1019,8 +1019,8 @@ const initializeTextareaHeight = (textarea: HTMLTextAreaElement | null) => {
     const minHeight = 80
     const maxHeight = 280
     
-    // 设置为auto以获取内容实际高度
-    // const originalHeight = textarea.style.height  // 保留用于可能的需要
+    // Set to auto to get the actual content height
+    // const originalHeight = textarea.style.height  // Kept for possible need
     element.style.height = 'auto'
     const scrollHeight = element.scrollHeight
     
@@ -1040,7 +1040,7 @@ const initializeTextareaHeight = (textarea: HTMLTextAreaElement | null) => {
   }
 }
 
-// 显示迁移对话框
+// Show the migration dialog
 const showMigrationDialog = (template: Template) => {
   if (!isStringTemplate(template) || typeof template.content !== 'string') return
 
@@ -1063,7 +1063,7 @@ const showMigrationDialog = (template: Template) => {
   }
 }
 
-// 应用迁移
+// Apply the migration
 const applyMigration = async () => {
   try {
     const template = migrationDialog.value.template
@@ -1078,7 +1078,7 @@ const applyMigration = async () => {
       }
     }
 
-    // ElectronProxy会自动处理序列化，这里不需要手动处理
+    // ElectronProxy handles serialization automatically, so no manual handling is needed here
     await getTemplateManager.value.saveTemplate(updatedTemplate)
     await loadTemplates()
 
@@ -1090,7 +1090,7 @@ const applyMigration = async () => {
   }
 }
 
-// 打开全屏编辑器
+// Open the fullscreen editor
 const openFullscreenEditor = (type: 'simple' | 'advanced', messageIndex = -1) => {
   fullscreenEditor.value = {
     show: true,
@@ -1100,7 +1100,7 @@ const openFullscreenEditor = (type: 'simple' | 'advanced', messageIndex = -1) =>
   }
 }
 
-// 关闭全屏编辑器
+// Close the fullscreen editor
 const closeFullscreenEditor = () => {
   fullscreenEditor.value = {
     show: false,
@@ -1110,7 +1110,7 @@ const closeFullscreenEditor = () => {
   }
 }
 
-// 保存全屏编辑器内容
+// Save the fullscreen editor content
 const saveFullscreenEditor = () => {
   if (fullscreenEditor.value.type === 'simple') {
     form.value.content = fullscreenEditor.value.content
@@ -1120,10 +1120,10 @@ const saveFullscreenEditor = () => {
   closeFullscreenEditor()
 }
 
-// 提交表单
+// Submit the form
 const handleSubmit = async () => {
   try {
-    // 验证表单
+    // Validate the form
     if (form.value.isAdvanced) {
       if (!form.value.messages.length) {
         toast.error(t('templateManager.noMessagesError'))
@@ -1157,19 +1157,19 @@ const handleSubmit = async () => {
       metadata
     }
 
-    // IPC层会自动处理序列化，这里不需要手动处理
+    // The IPC layer handles serialization automatically, so no manual handling is needed here
     await getTemplateManager.value.saveTemplate(templateData)
     await loadTemplates()
 
     toast.success(editingTemplate.value ? t('template.success.updated') : t('template.success.added'))
     cancelEdit()
   } catch (error) {
-    console.error('保存提示词失败:', error)
+    console.error('Failed to save prompt:', error)
     toast.error(t('template.error.saveFailed'))
   }
 }
 
-// 确认删除
+// Confirm deletion
 const confirmDelete = async (templateId: string) => {
   if (confirm(t('template.deleteConfirm'))) {
     try {
@@ -1178,13 +1178,13 @@ const confirmDelete = async (templateId: string) => {
 
       toast.success(t('template.success.deleted'))
     } catch (error) {
-      console.error('删除提示词失败:', error)
+      console.error('Failed to delete prompt:', error)
       toast.error(t('template.error.deleteFailed'))
     }
   }
 }
 
-// 导出提示词（保留用于未来功能）
+// Export prompts (kept for future features)
 // const exportTemplate = async (templateId: string) => {
 //   try {
 //     const templateJson = await getTemplateManager.value.exportTemplate(templateId);
@@ -1199,27 +1199,27 @@ const confirmDelete = async (templateId: string) => {
 //     URL.revokeObjectURL(url);
 //     toast.success(t('template.success.exported'));
 //   } catch (error) {
-//     console.error('导出提示词失败:', error);
+//     console.error('Failed to export prompts:', error);
 //     toast.error(t('template.error.exportFailed'));
 //   }
 // }
 
-// 导入提示词功能（暂时移除，保留用于未来功能）
+// Import prompts feature (temporarily removed, kept for future features)
 // const fileInput = ref<HTMLInputElement | null>(null)
 // const handleFileImport = (event: Event) => {
 //   const target = event.target as HTMLInputElement
 //   const file = target.files?.[0]
 //   if (!file) return
-//   // ... 函数实现暂时移除
+//   // ... function implementation temporarily removed
 // }
 
-// 复制内置提示词
+// Copy a built-in prompt
 const copyTemplate = (template: Template) => {
   showAddForm.value = true
   const isAdvanced = Array.isArray(template.content)
 
   form.value = {
-    name: `${template.name} - 副本`,
+    name: `${template.name} - Copy`,
     content: isAdvanced ? '' : template.content as string,
     description: template.metadata.description || '',
     isAdvanced,
@@ -1227,31 +1227,31 @@ const copyTemplate = (template: Template) => {
   }
 }
 
-// 选择提示词
+// Select a prompt
 const selectTemplate = (template: Template) => {
   emit('select', template, getCurrentTemplateType(), currentCategory.value);
 }
 
-// 按分类过滤提示词
+// Filter prompts by category
 const filteredTemplates = computed(() => {
   return templates.value.filter(t => {
     const templateType = t.metadata.templateType
 
     switch (currentCategory.value) {
       case 'system-optimize':
-        // 系统提示词优化模板：optimize类型
+        // System prompt optimization templates: optimize type
         return templateType === 'optimize'
 
       case 'user-optimize':
-        // 用户提示词优化模板：userOptimize类型
+        // User prompt optimization templates: userOptimize type
         return templateType === 'userOptimize'
 
       case 'basic-system-iterate':
       case 'basic-user-iterate':
-        // 迭代优化模板：iterate类型（Basic 模式下按子模式隔离选中态）
+        // Iterative optimization templates: iterate type (selection state is isolated per sub-mode in Basic mode)
         return templateType === 'iterate'
 
-      // 图像类模板
+      // Image templates
       case 'image-text2image-optimize':
         return templateType === 'text2imageOptimize'
       case 'image-image2image-optimize':
@@ -1260,15 +1260,15 @@ const filteredTemplates = computed(() => {
         return templateType === 'imageIterate'
 
       case 'context-system-optimize':
-        // 上下文-系统优化模板
+        // Context - system optimization templates
         return templateType === 'conversationMessageOptimize'
 
       case 'context-user-optimize':
-        // 上下文-用户优化模板
+        // Context - user optimization templates
         return templateType === 'contextUserOptimize'
 
       case 'context-iterate':
-        // 上下文-迭代优化模板
+        // Context - iterative optimization templates
         return templateType === 'contextIterate'
 
       default:
@@ -1279,13 +1279,13 @@ const filteredTemplates = computed(() => {
 
 const syntaxGuideMarkdown = computed(() => syntaxGuideContent['en-US'])
 
-// 监听 props.templateType 变化，更新当前分类
+// Watch props.templateType changes and update the current category
 watch(() => props.templateType, () => {
   currentCategory.value = getCategoryFromProps()
 }, { immediate: true })
 
-// 处理“同一种 templateType 反复打开”场景：templateType 可能不变，但 show 会变化
-// 这里在打开时重新对齐当前分类，避免因路由/子模式变化导致展示与选择不一致
+// Handle the case where the same templateType is opened repeatedly: templateType may not change, but show does
+// Re-align the current category on open here, to avoid mismatched display and selection caused by route/sub-mode changes
 watch(
   () => props.show,
   (isShown) => {
@@ -1294,7 +1294,7 @@ watch(
   }
 )
 
-// 生命周期钩子
+// Lifecycle hooks
 onMounted(async () => {
   console.log('[TemplateManager.vue] Component is mounted.');
   console.log('[TemplateManager.vue] Injected services:', services);
@@ -1306,28 +1306,28 @@ onMounted(async () => {
   await loadTemplates();
 })
 
-// 监听表单消息数量变化，只在新增消息时初始化新textarea
+// Watch changes in the form message count and only initialize new textareas when messages are added
 watch(() => form.value.messages.length, () => {
-  // 只在消息数量变化时初始化新的textarea
+  // Only initialize new textareas when the message count changes
   initializeAllTextareas()
 })
 
-// 监听模态框状态变化，确保打开时初始化textarea高度
+// Watch modal state changes and make sure the textarea height is initialized on open
 watch([() => showAddForm.value, () => editingTemplate.value, () => viewingTemplate.value], (newValues) => {
-  // 只在打开模态框时初始化
+  // Only initialize when the modal opens
   if (newValues.some(val => val)) {
     initializeAllTextareas()
   }
 })
 
-// 统一初始化所有textarea高度 - 只在打开时调用一次
+// Initialize the heights of all textareas uniformly - only called once on open
 const initializeAllTextareas = () => {
-  // 延迟执行，确保DOM已更新
+  // Delay execution to make sure the DOM has been updated
   nextTick(() => {
     const textareas = document.querySelectorAll<HTMLTextAreaElement>('textarea.message-content-textarea')
     
     textareas.forEach(textarea => {
-      // 确保textarea可见且未初始化过
+      // Make sure the textarea is visible and has not been initialized before
       if (textarea.offsetHeight > 0 || textarea.offsetWidth > 0) {
         initializeTextareaHeight(textarea)
       }
@@ -1335,7 +1335,7 @@ const initializeAllTextareas = () => {
   })
 }
 
-// 获取编辑模态框标题
+// Get the edit modal title
 const getEditModalTitle = () => {
   if (viewingTemplate.value) {
     return t('template.view')
@@ -1346,7 +1346,7 @@ const getEditModalTitle = () => {
   }
 }
 
-// 关闭模板管理器
+// Close the template manager
 const close = () => {
   emit('update:show', false)
   emit('close')
@@ -1354,7 +1354,7 @@ const close = () => {
 </script>
 
 <style scoped>
-/* 添加过渡动画 */
+/* Add transition animations */
 .modal-enter-active,
 .modal-leave-active {
   transition: all 0.3s ease;
@@ -1366,7 +1366,7 @@ const close = () => {
   transform: scale(0.95);
 }
 
-/* 保持原有的滚动条样式 */
+/* Keep the original scrollbar styles */
 .scroll-container {
   max-height: 60vh;
   scrollbar-width: thin;
@@ -1389,7 +1389,7 @@ const close = () => {
 .scroll-container::-webkit-scrollbar-thumb:hover {
   background-color: rgba(139, 92, 246, 0.5);
 }
-/* 添加标签淡入淡出效果 */
+/* Add a fade in/out effect for tags */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.3s ease;

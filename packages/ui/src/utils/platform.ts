@@ -1,26 +1,26 @@
 /**
- * 平台检测工具
- * 用于识别操作系统并提供平台相关的配置
+ * Platform detection utility
+ * Used to identify the operating system and provide platform-related config
  */
 
 export interface Platform {
-  /** 是否为 macOS */
+  /** Whether macOS */
   isMac: boolean
-  /** 是否为 Windows */
+  /** Whether Windows */
   isWindows: boolean
-  /** 是否为 Linux */
+  /** Whether Linux */
   isLinux: boolean
-  /** 获取撤销操作快捷键 */
+  /** Get the undo shortcut */
   getUndoKey: () => string
-  /** 获取重做操作快捷键 */
+  /** Get the redo shortcut */
   getRedoKey: () => string
-  /** 获取命令键（Mac: Cmd, 其他: Ctrl） */
+  /** Get the command key (Mac: Cmd, other: Ctrl) */
   getCommandKey: () => string
 }
 
 /**
- * 检测当前平台
- * @returns 平台信息对象
+ * Detect the current platform
+ * @returns Platform info object
  */
 export function getPlatform(): Platform {
   const platform = navigator.platform.toUpperCase()
@@ -39,6 +39,6 @@ export function getPlatform(): Platform {
 }
 
 /**
- * 全局平台实例（单例）
+ * Global platform instance (singleton)
  */
 export const platform = getPlatform()

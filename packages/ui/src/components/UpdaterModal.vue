@@ -257,7 +257,7 @@ defineEmits<{
   'update:modelValue': [value: boolean]
 }>()
 
-// 使用 useUpdater 管理所有更新逻辑
+// Use useUpdater to manage all update logic
 const {
   state,
   checkUpdate,
@@ -282,7 +282,7 @@ const downloadMessageTitle = computed(() => {
   return t('updater.info')
 })
 
-// 事件处理器
+// Event handlers
 const handleCheckUpdate = async () => {
   await checkUpdate()
 }
@@ -348,7 +348,7 @@ const handleUnignorePrereleaseUpdate = async () => {
 
 
 
-// 格式化字节数
+// Format bytes
 const formatBytes = (bytes: number) => {
   if (bytes === 0) return '0 B'
   const k = 1024

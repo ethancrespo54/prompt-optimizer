@@ -1,24 +1,24 @@
 import { ref, type Ref } from 'vue'
 
 /**
- * 文本选择检测 Composable
+ * Text selection detection composable
  *
- * 功能：
- * 1. 检测文本框中的选中文本
- * 2. 验证选中文本的合法性
- * 3. 防止跨越变量边界选择
+ * Features:
+ * 1. Detects the selected text in a text box
+ * 2. Validates the legality of the selected text
+ * 3. Prevents selections that cross variable boundaries
  */
 
 export interface TextSelection {
-  /** 选中的文本内容 */
+  /** Selected text content */
   text: string
-  /** 选中起始位置 */
+  /** Selection start position */
   start: number
-  /** 选中结束位置 */
+  /** Selection end position */
   end: number
-  /** 是否有效选择 */
+  /** Whether the selection is valid */
   isValid: boolean
-  /** 无效原因 */
+  /** Reason it is invalid */
   invalidReason?: string
 }
 
@@ -31,7 +31,7 @@ export function useTextSelection(inputRef: Ref<HTMLInputElement | HTMLTextAreaEl
   })
 
   /**
-   * 获取当前选中的文本
+   * Get the currently selected text
    */
   const getSelection = (): TextSelection => {
     const input = inputRef.value
@@ -41,7 +41,7 @@ export function useTextSelection(inputRef: Ref<HTMLInputElement | HTMLTextAreaEl
         start: 0,
         end: 0,
         isValid: false,
-        invalidReason: '输入框未就绪'
+        invalidReason: 'Input not ready'
       }
     }
 
@@ -49,7 +49,7 @@ export function useTextSelection(inputRef: Ref<HTMLInputElement | HTMLTextAreaEl
     const end = input.selectionEnd || 0
     const text = input.value.substring(start, end)
 
-    // 验证选择
+    // Validate the selection
     const validation = validateSelection(input.value, start, end, text)
 
     selection.value = {
@@ -64,7 +64,7 @@ export function useTextSelection(inputRef: Ref<HTMLInputElement | HTMLTextAreaEl
   }
 
   /**
-   * 验证选中文本的合法性
+   * Validate the legality of the selected text
    */
   const validateSelection = (
     fullText: string,
@@ -72,36 +72,36 @@ export function useTextSelection(inputRef: Ref<HTMLInputElement | HTMLTextAreaEl
     end: number,
     selectedText: string
   ): { isValid: boolean; reason?: string } => {
-    // 检查是否有选中文本
+    // Check whether there is selected text
     if (start === end || !selectedText.trim()) {
-      return { isValid: false, reason: '未选中任何文本' }
+      return { isValid: false, reason: 'No text selected' }
     }
 
-    // 检查是否跨越变量边界
+    // Check whether it crosses a variable boundary
     const beforeSelection = fullText.substring(0, start)
     const afterSelection = fullText.substring(end)
 
-    // 检查选中文本前是否有未闭合的 {{
+    // Check whether there is an unclosed {{ before the selected text
     const openBracesBeforeCount = (beforeSelection.match(/\{\{/g) || []).length
     const closeBracesBeforeCount = (beforeSelection.match(/\}\}/g) || []).length
     if (openBracesBeforeCount > closeBracesBeforeCount) {
-      return { isValid: false, reason: '不能跨越变量边界' }
+      return { isValid: false, reason: 'Cannot cross a variable boundary' }
     }
 
-    // 检查选中文本后是否有未闭合的 }}
+    // Check whether there is an unclosed }} after the selected text
     const openBracesAfterCount = (afterSelection.match(/\{\{/g) || []).length
     const closeBracesAfterCount = (afterSelection.match(/\}\}/g) || []).length
     if (closeBracesAfterCount > openBracesAfterCount) {
-      return { isValid: false, reason: '不能跨越变量边界' }
+      return { isValid: false, reason: 'Cannot cross a variable boundary' }
     }
 
-    // 检查选中文本内部是否包含完整的变量占位符
+    // Check whether the selected text contains a complete variable placeholder
     const openBracesInSelection = (selectedText.match(/\{\{/g) || []).length
     const closeBracesInSelection = (selectedText.match(/\}\}/g) || []).length
     if (openBracesInSelection > 0 || closeBracesInSelection > 0) {
-      // 如果选中文本包含 {{ 或 }},检查是否是完整的变量
+      // If the selected text contains {{ or }}, check whether it is a complete variable
       if (openBracesInSelection !== closeBracesInSelection) {
-        return { isValid: false, reason: '不能跨越变量边界' }
+        return { isValid: false, reason: 'Cannot cross a variable boundary' }
       }
     }
 
@@ -109,7 +109,7 @@ export function useTextSelection(inputRef: Ref<HTMLInputElement | HTMLTextAreaEl
   }
 
   /**
-   * 计算选中文本在完整文本中的出现次数
+   * Count the occurrences of the selected text in the full text
    */
   const countOccurrences = (fullText: string, searchText: string): number => {
     if (!searchText) return 0
@@ -117,7 +117,7 @@ export function useTextSelection(inputRef: Ref<HTMLInputElement | HTMLTextAreaEl
     const trimmedSearch = searchText.trim()
     if (!trimmedSearch) return 0
 
-    // 使用正则表达式计算出现次数,但要排除已经在变量中的文本
+    // Use a regular expression to count the occurrences, but exclude text already inside variables
     let count = 0
     let position = 0
 
@@ -125,12 +125,12 @@ export function useTextSelection(inputRef: Ref<HTMLInputElement | HTMLTextAreaEl
       const index = fullText.indexOf(trimmedSearch, position)
       if (index === -1) break
 
-      // 检查该位置是否在变量占位符内部
+      // Check whether the position is inside a variable placeholder
       const beforeText = fullText.substring(0, index)
       const openBraces = (beforeText.match(/\{\{/g) || []).length
       const closeBraces = (beforeText.match(/\}\}/g) || []).length
 
-      // 如果不在变量内部,则计数
+      // If it is not inside a variable, count it
       if (openBraces === closeBraces) {
         count++
       }
@@ -142,7 +142,7 @@ export function useTextSelection(inputRef: Ref<HTMLInputElement | HTMLTextAreaEl
   }
 
   /**
-   * 替换文本中的所有匹配项
+   * Replace all matches in the text
    */
   const replaceAllOccurrences = (
     fullText: string,
@@ -161,12 +161,12 @@ export function useTextSelection(inputRef: Ref<HTMLInputElement | HTMLTextAreaEl
       const index = result.indexOf(trimmedSearch, position)
       if (index === -1) break
 
-      // 检查该位置是否在变量占位符内部
+      // Check whether the position is inside a variable placeholder
       const beforeText = result.substring(0, index)
       const openBraces = (beforeText.match(/\{\{/g) || []).length
       const closeBraces = (beforeText.match(/\}\}/g) || []).length
 
-      // 如果不在变量内部,则替换
+      // If it is not inside a variable, replace it
       if (openBraces === closeBraces) {
         result =
           result.substring(0, index) +

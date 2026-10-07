@@ -31,23 +31,23 @@ interface AdvancedContextPayload {
 }
 
 /**
- * 提示词优化器Hook
- * @param services 服务实例引用
- * @param optimizationMode 当前优化模式（从 basicSubMode/proSubMode 计算得出的 computed）
- * @param selectedOptimizeModel 优化模型选择
- * @param selectedTestModel 测试模型选择
- * @param contextMode 上下文模式（用于变量替换策略，兼容性保留）
- * @returns 提示词优化器接口
- * @deprecated optimizationMode 参数建议传入 computed 值（从 basicSubMode/proSubMode 动态计算）
+ * Prompt optimizer hook
+ * @param services Service instance reference
+ * @param optimizationMode Current optimization mode (a computed derived from basicSubMode/proSubMode)
+ * @param selectedOptimizeModel Optimize model selection
+ * @param selectedTestModel Test model selection
+ * @param contextMode Context mode (used for the variable substitution strategy, kept for compatibility)
+ * @returns Prompt optimizer interface
+ * @deprecated The optimizationMode parameter should preferably be a computed value (computed dynamically from basicSubMode/proSubMode)
  */
 type OptimizationModeSource = Ref<OptimizationMode> | ComputedRef<OptimizationMode>
 
 export function usePromptOptimizer(
   services: Ref<AppServices | null>,
-  optimizationMode: OptimizationModeSource,    // 必需参数，接受 computed
-  selectedOptimizeModel?: Ref<string>,                 // 优化模型选择
-  selectedTestModel?: Ref<string>,                     // 测试模型选择
-  contextMode?: Ref<import('@prompt-optimizer/core').ContextMode>,  // 上下文模式
+  optimizationMode: OptimizationModeSource,    // Required parameter, accepts a computed
+  selectedOptimizeModel?: Ref<string>,                 // Optimize model selection
+  selectedTestModel?: Ref<string>,                     // Test model selection
+  contextMode?: Ref<import('@prompt-optimizer/core').ContextMode>,  // Context mode
   bindings?: {
     prompt?: Ref<string>
     optimizedPrompt?: Ref<string>
@@ -61,7 +61,7 @@ export function usePromptOptimizer(
   const toast = useToast()
   const { t } = useI18n()
   
-  // 服务引用
+  // Service reference
   const modelManager = computed(() => services.value?.modelManager)
   const templateManager = computed(() => services.value?.templateManager)
   const historyManager = computed(() => services.value?.historyManager)
@@ -74,22 +74,22 @@ export function usePromptOptimizer(
   const boundCurrentChainId = bindings?.currentChainId ?? ref('')
   const boundCurrentVersionId = bindings?.currentVersionId ?? ref('')
 
-  // 使用 reactive 创建一个响应式状态对象，而不是单独的 ref
+  // Use reactive to create a reactive state object, instead of separate refs
   const state = reactive({
-    // 状态
+    // State
     prompt: boundPrompt,
     optimizedPrompt: boundOptimizedPrompt,
-    optimizedReasoning: boundOptimizedReasoning, // 优化推理内容
+    optimizedReasoning: boundOptimizedReasoning, // Optimization reasoning content
     isOptimizing: false,
     isIterating: false,
-    selectedOptimizeTemplate: null as Template | null,  // 系统提示词优化模板
-    selectedUserOptimizeTemplate: null as Template | null,  // 用户提示词优化模板
+    selectedOptimizeTemplate: null as Template | null,  // System prompt optimization template
+    selectedUserOptimizeTemplate: null as Template | null,  // User prompt optimization template
     selectedIterateTemplate: null as Template | null,
     currentChainId: boundCurrentChainId,
     currentVersions: [] as PromptChain['versions'],
     currentVersionId: boundCurrentVersionId,
   
-  // 方法 (将在下面定义并绑定到 state)
+  // Methods (defined below and bound to state)
   handleOptimizePrompt: async () => {},
   handleOptimizePromptWithContext: async (_advancedContext: AdvancedContextPayload) => {},
   handleIteratePrompt: async (payload: { originalPrompt: string, optimizedPrompt: string, iterateInput: string }) => {},
@@ -98,13 +98,13 @@ export function usePromptOptimizer(
   handleAnalyze: () => {}
 })
   
-  // 注意：存储键现在由 useTemplateManager 统一管理
+  // Note: storage keys are now managed uniformly by useTemplateManager
   
-  // 优化提示词
+  // Optimize the prompt
   state.handleOptimizePrompt = async () => {
     if (!state.prompt.trim() || state.isOptimizing) return
 
-    // 根据优化模式选择对应的模板
+    // Choose the corresponding template based on the optimization mode
     const currentTemplate = optimizationMode.value === 'system' 
       ? state.selectedOptimizeTemplate 
       : state.selectedUserOptimizeTemplate
@@ -119,25 +119,25 @@ export function usePromptOptimizer(
       return
     }
 
-    // 在开始优化前立即清空状态，确保没有竞态条件
+    // Clear the state immediately before starting the optimization, to ensure no race condition
     state.isOptimizing = true
-    state.optimizedPrompt = ''  // 强制同步清空
-    state.optimizedReasoning = '' // 强制同步清空
+    state.optimizedPrompt = ''  // Force a synchronous clear
+    state.optimizedReasoning = '' // Force a synchronous clear
     
-    // 等待一个微任务确保状态更新完成
+    // Wait for a microtask to make sure the state update is complete
     await nextTick()
 
     try {
-      // 构建优化请求
+      // Build the optimization request
       const request: OptimizationRequest = {
         optimizationMode: optimizationMode.value,
         targetPrompt: state.prompt,
         templateId: currentTemplate.id,
         modelKey: optimizeModel.value,
-        contextMode: contextMode?.value  // 传递上下文模式
+        contextMode: contextMode?.value  // Pass the context mode
       }
 
-      // 使用重构后的优化API
+      // Use the refactored optimization API
       await promptService.value!.optimizePromptStream(
         request,
         {
@@ -151,15 +151,15 @@ export function usePromptOptimizer(
             if (!currentTemplate) return
 
             try {
-              // Create new record chain with enhanced metadata，ElectronProxy会自动处理序列化
-              // 依据 functionMode 与当前模板类型决定历史记录类型
+              // Create new record chain with enhanced metadata; ElectronProxy handles serialization automatically
+              // Decide the history record type based on functionMode and the current template type
               const isPro = (functionMode.value as FunctionMode) === 'pro'
               const baseType = (optimizationMode.value === 'system' ? 'optimize' : 'userOptimize') as PromptRecordType
               const recordType = (() => {
                 if (isPro) {
                   return (optimizationMode.value === 'system' ? 'conversationMessageOptimize' : 'contextUserOptimize') as PromptRecordType
                 }
-                // 兼容：若选择的是 context 模板（即使当前模式非 pro），也记录为 context*
+                // Compatibility: if a context template is selected (even if the current mode is not pro), also record it as context*
                 const tplType = currentTemplate.metadata?.templateType
                 if (tplType === 'conversationMessageOptimize' || tplType === 'contextUserOptimize') return tplType as PromptRecordType
                 return baseType
@@ -187,8 +187,8 @@ export function usePromptOptimizer(
 
               toast.success(t('toast.success.optimizeSuccess'))
             } catch (error: unknown) {
-              console.error('创建历史记录失败:', error)
-              toast.error('创建历史记录失败: ' + getI18nErrorMessage(error, t('toast.error.optimizeFailed')))
+              console.error('Failed to create the history record:', error)
+              toast.error('Failed to create the history record: ' + getI18nErrorMessage(error, t('toast.error.optimizeFailed')))
             } finally {
               state.isOptimizing = false
             }
@@ -208,19 +208,19 @@ export function usePromptOptimizer(
     }
   }
   
-  // 带上下文的优化提示词
+  // Optimize the prompt with context
   state.handleOptimizePromptWithContext = async (advancedContext: AdvancedContextPayload) => {
-    // 对于系统模式，检查消息而不是prompt
+    // For system mode, check the messages rather than the prompt
     const hasMessages = advancedContext.messages && Object.keys(advancedContext.messages).length > 0
     const hasPrompt = state.prompt.trim()
 
-    // 至少需要有消息或prompt其中之一
+    // At least one of messages or prompt is required
     if ((!hasMessages && !hasPrompt) || state.isOptimizing) {
       console.log('[usePromptOptimizer] Skipping optimization:', { hasMessages, hasPrompt, isOptimizing: state.isOptimizing })
       return
     }
 
-    // 根据优化模式选择对应的模板
+    // Choose the corresponding template based on the optimization mode
     const currentTemplate = optimizationMode.value === 'system' 
       ? state.selectedOptimizeTemplate 
       : state.selectedUserOptimizeTemplate
@@ -235,17 +235,17 @@ export function usePromptOptimizer(
       return
     }
 
-    // 在开始优化前立即清空状态，确保没有竞态条件
+    // Clear the state immediately before starting the optimization, to ensure no race condition
     state.isOptimizing = true
-    state.optimizedPrompt = ''  // 强制同步清空
-    state.optimizedReasoning = '' // 强制同步清空
+    state.optimizedPrompt = ''  // Force a synchronous clear
+    state.optimizedReasoning = '' // Force a synchronous clear
     
-    // 等待一个微任务确保状态更新完成
+    // Wait for a microtask to make sure the state update is complete
     await nextTick()
 
     try {
-      // 构建带有高级上下文的优化请求
-      // 在系统模式下，如果没有单独的prompt，使用消息内容作为描述
+      // Build the optimization request with the advanced context
+      // In system mode, if there is no separate prompt, use the message content as the description
       const targetPrompt = state.prompt.trim() ||
         (advancedContext.messages && Object.keys(advancedContext.messages).length > 0
           ? t('toast.info.multiTurnOptimizationPrompt', { count: Object.keys(advancedContext.messages).length })
@@ -256,18 +256,18 @@ export function usePromptOptimizer(
         targetPrompt,
         templateId: currentTemplate.id,
         modelKey: optimizeModel.value,
-        contextMode: contextMode?.value,  // 传递上下文模式
-        // 关键：添加高级上下文
+        contextMode: contextMode?.value,  // Pass the context mode
+        // Key: add the advanced context
         advancedContext: {
           variables: advancedContext.variables,
           messages: advancedContext.messages,
-          tools: advancedContext.tools  // 🆕 添加工具传递
+          tools: advancedContext.tools  // 🆕 Add tool passing
         }
       }
 
       console.log('[usePromptOptimizer] Starting optimization with advanced context:', request.advancedContext)
 
-      // 使用重构后的优化API
+      // Use the refactored optimization API
       await promptService.value!.optimizePromptStream(
         request,
         {
@@ -280,7 +280,7 @@ export function usePromptOptimizer(
           onComplete: async () => {
             if (!currentTemplate) return
 
-            // 创建历史记录 - 包含上下文信息
+            // Create the history record - including the context info
             try {
               const isPro = (functionMode.value as FunctionMode) === 'pro'
               const baseType = (optimizationMode.value === 'system' ? 'optimize' : 'userOptimize') as PromptRecordType
@@ -293,13 +293,13 @@ export function usePromptOptimizer(
 
               const recordData = {
                 id: uuidv4(),
-                originalPrompt: targetPrompt,  // 使用 targetPrompt 而不是 state.prompt
+                originalPrompt: targetPrompt,  // Use targetPrompt instead of state.prompt
                 optimizedPrompt: state.optimizedPrompt,
                 type: recordType,
                 modelKey: optimizeModel.value,
                 templateId: currentTemplate.id,
                 timestamp: Date.now(),
-                // 添加上下文信息到历史记录
+                // Add the context info to the history record
                 metadata: {
                   optimizationMode: optimizationMode.value,
                   functionMode: functionMode.value,
@@ -311,7 +311,7 @@ export function usePromptOptimizer(
                     role: msg.role,
                     content: msg.content,
                     originalContent: msg.originalContent,
-                    // 运行时属性：消息被优化后动态添加的元数据
+                    // Runtime property: metadata added dynamically after the message is optimized
                     chainId: (msg as unknown as Record<string, unknown>).chainId as string | undefined,
                     appliedVersion: (msg as unknown as Record<string, unknown>).appliedVersion as number | undefined
                   }))
@@ -326,8 +326,8 @@ export function usePromptOptimizer(
 
               toast.success(t('toast.success.optimizeSuccess'))
             } catch (error: unknown) {
-              console.error('创建历史记录失败:', error)
-              toast.error('创建历史记录失败: ' + getI18nErrorMessage(error, t('toast.error.optimizeFailed')))
+              console.error('Failed to create the history record:', error)
+              toast.error('Failed to create the history record: ' + getI18nErrorMessage(error, t('toast.error.optimizeFailed')))
             } finally {
               state.isOptimizing = false
             }
@@ -347,10 +347,10 @@ export function usePromptOptimizer(
     }
   }
   
-  // 迭代优化
+  // Iterative optimization
   state.handleIteratePrompt = async ({ originalPrompt, optimizedPrompt: lastOptimizedPrompt, iterateInput }: { originalPrompt: string, optimizedPrompt: string, iterateInput: string }) => {
-    // 🔧 修复：迭代模板实际上不需要 originalPrompt，只需要 lastOptimizedPrompt 和 iterateInput
-    // 移除 !originalPrompt 检查，允许用户直接在工作区编辑后迭代
+    // 🔧 Fix: the iterate template does not actually need originalPrompt, only lastOptimizedPrompt and iterateInput
+    // Removed the !originalPrompt check, allowing users to iterate after editing directly in the workspace
     if (!lastOptimizedPrompt || state.isIterating) return
     if (!iterateInput) return
     if (!state.selectedIterateTemplate) {
@@ -358,12 +358,12 @@ export function usePromptOptimizer(
       return
     }
 
-    // 在开始迭代前立即清空状态，确保没有竞态条件
+    // Clear the state immediately before starting the iteration, to ensure no race condition
     state.isIterating = true
-    state.optimizedPrompt = ''  // 强制同步清空
-    state.optimizedReasoning = '' // 强制同步清空
+    state.optimizedPrompt = ''  // Force a synchronous clear
+    state.optimizedReasoning = '' // Force a synchronous clear
     
-    // 等待一个微任务确保状态更新完成
+    // Wait for a microtask to make sure the state update is complete
     await nextTick()
     
     try {
@@ -386,7 +386,7 @@ export function usePromptOptimizer(
             }
 
             try {
-              // 使用正确的addIteration方法来保存迭代历史，ElectronProxy会自动处理序列化
+              // Use the correct addIteration method to save the iteration history; ElectronProxy handles serialization automatically
               const iterationData = {
                 chainId: state.currentChainId,
                 originalPrompt: originalPrompt,
@@ -403,14 +403,14 @@ export function usePromptOptimizer(
 
               toast.success(t('toast.success.iterateComplete'))
             } catch (error: unknown) {
-              console.error('[History] 迭代记录失败:', error)
+              console.error('[History] Failed to record the iteration:', error)
               toast.warning(t('toast.warning.historyFailed'))
             } finally {
               state.isIterating = false
             }
           },
           onError: (error: Error) => {
-            console.error('[Iterate] 迭代失败:', error)
+            console.error('[Iterate] Iteration failed:', error)
             toast.error(t('toast.error.iterateFailed'))
             state.isIterating = false
           }
@@ -418,15 +418,15 @@ export function usePromptOptimizer(
         state.selectedIterateTemplate.id
       )
     } catch (error: unknown) {
-      console.error('[Iterate] 迭代失败:', error)
+      console.error('[Iterate] Iteration failed:', error)
       toast.error(t('toast.error.iterateFailed'))
       state.isIterating = false
     }
   }
 
   /**
-   * 保存本地修改为一个新版本（不触发 LLM）
-   * - 用于“直接修复”与手动编辑后的显式保存
+   * Save local changes as a new version (does not trigger the LLM)
+   * - Used for "direct fix" and explicit saving after manual edits
    */
   state.saveLocalEdit = async ({ optimizedPrompt, note, source }: { optimizedPrompt: string; note?: string; source?: 'patch' | 'manual' }) => {
     try {
@@ -441,7 +441,7 @@ export function usePromptOptimizer(
         (optimizationMode.value === 'system' ? state.selectedOptimizeTemplate?.id : state.selectedUserOptimizeTemplate?.id) ||
         'local-edit'
 
-      // 若当前没有链（极少数场景），创建新链以便后续版本管理
+      // If there is currently no chain (rare), create a new chain for later version management
       if (!state.currentChainId) {
         const baseType = (optimizationMode.value === 'system' ? 'optimize' : 'userOptimize') as PromptRecordType
         const recordData = {
@@ -484,52 +484,52 @@ export function usePromptOptimizer(
       state.currentVersions = updatedChain.versions
       state.currentVersionId = updatedChain.currentRecord.id
     } catch (error: unknown) {
-      console.error('[usePromptOptimizer] 保存本地修改失败:', error)
+      console.error('[usePromptOptimizer] Failed to save local changes:', error)
       toast.warning(t('toast.warning.saveHistoryFailed'))
     }
   }
   
-  // 切换版本 - 增强版本，确保强制更新
+  // Switch version - enhanced version, ensuring a forced update
   state.handleSwitchVersion = async (version: PromptChain['versions'][number]) => {
-    // 强制更新内容，确保UI同步
+    // Force a content update to make sure the UI is in sync
     state.optimizedPrompt = version.optimizedPrompt;
     state.currentVersionId = version.id;
 
-    // 等待一个微任务确保状态更新完成
+    // Wait for a microtask to make sure the state update is complete
     await nextTick()
   }
 
   /**
-   * 分析功能：清空版本链，创建 V0（原始版本）
-   * - 不写入历史记录
-   * - 只创建内存中的虚拟 V0 版本
+   * Analyze feature: clear the version chain and create V0 (the original version)
+   * - Does not write history records
+   * - Only creates a virtual V0 version in memory
    */
   state.handleAnalyze = () => {
     if (!state.prompt.trim()) return
 
-    // 生成虚拟的 V0 版本记录（不写入历史）
+    // Generate a virtual V0 version record (not written to history)
     const virtualV0Id = uuidv4()
     const virtualV0: PromptChain['versions'][number] = {
       id: virtualV0Id,
-      chainId: '', // 虚拟链，不关联真实历史
+      chainId: '', // Virtual chain, not associated with real history
       version: 0,
       originalPrompt: state.prompt,
-      optimizedPrompt: state.prompt, // V0 的优化内容就是原始内容
+      optimizedPrompt: state.prompt, // The optimized content of V0 is the original content
       type: 'optimize',
       timestamp: Date.now(),
       modelKey: '',
       templateId: '',
     }
 
-    // 清空旧链条，设置新的 V0
+    // Clear the old chain and set the new V0
     state.currentChainId = ''
     state.currentVersions = [virtualV0]
     state.currentVersionId = virtualV0Id
     state.optimizedPrompt = state.prompt
   }
 
-  // 注意：模板初始化、选择保存和变化监听现在都由 useTemplateManager 负责
+  // Note: template initialization, selection saving, and change watching are now all handled by useTemplateManager
 
-  // 返回 reactive 对象，而不是包含多个 ref 的对象
+  // Return the reactive object instead of an object containing multiple refs
   return state
 } 

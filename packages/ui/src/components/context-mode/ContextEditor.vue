@@ -17,7 +17,7 @@
         @after-enter="handleModalOpen"
         @after-leave="handleModalClose"
     >
-        <!-- 顶部工具栏 -->
+        <!-- Top toolbar -->
         <template #header-extra>
             <NSpace
                 v-if="!onlyShowTab"
@@ -25,7 +25,7 @@
                 role="toolbar"
                 :aria-label="aria.getLabel('statisticsToolbar')"
             >
-                <!-- 统计信息 -->
+                <!-- Statistics -->
                 <NTag
                     :size="tagSize"
                     type="info"
@@ -67,7 +67,7 @@
             </NSpace>
         </template>
 
-        <!-- 空状态 -->
+        <!-- Empty state -->
         <NEmpty
             v-if="localState.messages.length === 0"
             :description="t('contextEditor.noMessages')"
@@ -101,7 +101,7 @@
             </template>
         </NEmpty>
 
-        <!-- 消息列表 -->
+        <!-- Message list -->
         <NScrollbar v-else :style="scrollbarStyle">
             <NSpace vertical :size="12" style="padding-right: 12px;">
                 <NCard
@@ -224,7 +224,7 @@
                     </NText>
                 </NCard>
 
-                <!-- 添加消息按钮 -->
+                <!-- Add message button -->
                 <NButton
                     @click="addMessage"
                     :size="buttonSize"
@@ -242,11 +242,11 @@
             </NSpace>
         </NScrollbar>
 
-        <!-- 底部操作栏 -->
+        <!-- Bottom action bar -->
         <template #action>
             <NSpace justify="space-between">
                 <NSpace>
-                    <!-- 导入导出按钮 -->
+                    <!-- Import/export buttons -->
                     <NButton
                         @click="handleImport"
                         :size="buttonSize"
@@ -324,7 +324,7 @@
         </template>
     </NModal>
 
-    <!-- 导入对话框 -->
+    <!-- Import dialog -->
     <ImportExportDialog
         v-model:visible="showImportDialog"
         mode="import"
@@ -333,7 +333,7 @@
         @export-error="handleExportError"
     />
 
-    <!-- 导出对话框 -->
+    <!-- Export dialog -->
     <ImportExportDialog
         v-model:visible="showExportDialog"
         mode="export"
@@ -343,7 +343,7 @@
         @export-error="handleExportError"
     />
 
-    <!-- 变量编辑对话框 -->
+    <!-- Variable edit dialog -->
     <NModal
         v-model:show="variableEditState.show"
         preset="card"
@@ -356,7 +356,7 @@
         :mask-closable="false"
     >
         <NSpace vertical>
-            <!-- 变量名 -->
+            <!-- Variable name -->
             <div>
                 <label class="block text-sm font-medium mb-2">{{
                     t("contextEditor.variableName")
@@ -381,7 +381,7 @@
                 </NText>
             </div>
 
-            <!-- 变量类型 -->
+            <!-- Variable type -->
             <div>
                 <label class="block text-sm font-medium mb-2">{{
                     t("contextEditor.variableType")
@@ -408,7 +408,7 @@
                 </NRadioGroup>
             </div>
 
-            <!-- 变量值 -->
+            <!-- Variable value -->
             <div>
                 <label class="block text-sm font-medium mb-2">{{
                     t("contextEditor.variableValue")
@@ -448,7 +448,7 @@
         </template>
     </NModal>
 
-    <!-- 实时区域用于屏幕阅读器 -->
+    <!-- Live region for screen readers -->
     <div
         role="status"
         aria-live="polite"
@@ -459,7 +459,7 @@
         {{ liveRegionMessage }}
     </div>
 
-    <!-- 断言性实时区域 -->
+    <!-- Assertive live region -->
     <div
         role="alert"
         aria-live="assertive"
@@ -522,13 +522,13 @@ import {
 const { t } = useI18n();
 const toast = useToast();
 
-// 性能监控
+// Performance monitoring
 const { recordUpdate } = usePerformanceMonitor("ContextEditor");
 
-// 防抖节流
+// Debounce/throttle
 const { debounce, throttle, batchExecute } = useDebounceThrottle();
 
-// 可访问性支持
+// Accessibility support
 const {
     aria,
     announce,
@@ -538,7 +538,7 @@ const {
     announcements,
 } = useAccessibility("ContextEditor");
 
-// Props 和 Events（必须在最前面定义，因为后面的代码会用到）
+// Props and Events (must be defined first because later code uses them)
 const props = withDefaults(
     defineProps<ContextEditorProps>(),
     {
@@ -576,37 +576,37 @@ const emit = defineEmits({
         typeof name === "string" && (defaultValue === undefined || typeof defaultValue === "string"),
 });
 
-// 临时变量管理
+// Temporary variable management
 const tempVars = useTemporaryVariables();
 
-// 全局变量管理
-// 从 props 接收 variableManager 实例，确保与全局变量管理器数据同步
+// Global variable management
+// Receive the variableManager instance from props to keep data in sync with the global variable manager
 if (!props.variableManager) {
     throw new Error('[ContextEditor] Missing required prop: variableManager. ContextEditor must receive a variableManager instance from parent component.');
 }
 
 const variableManager = props.variableManager;
 
-// 聚合变量（包含预定义、全局、临时三层）
+// Aggregated variables (including the three layers: predefined, global, temporary)
 const aggregatedVars = useAggregatedVariables(variableManager);
 
-// 响应式配置
+// Responsive config
 const {
     modalWidth,
     buttonSize: responsiveButtonSize,
     isMobile,
 } = useResponsive();
 
-// 状态管理 - 使用性能优化
+// State management - use performance optimizations
 const loading = ref(false);
 const activeTab = ref("messages");
 const localVisible = ref(props.visible);
 
-// 导入导出对话框状态
+// Import/export dialog state
 const showImportDialog = ref(false);
 const showExportDialog = ref(false);
 
-// 变量值输入框引用（用于自动聚焦）
+// Variable value input ref (used for auto-focus)
 type FocusableInput = { focus: () => void };
 const variableValueInputRef = ref<FocusableInput | null>(null);
 
@@ -614,8 +614,8 @@ const isPredefinedVariable = (name: string): name is PredefinedVariable => {
     return (PREDEFINED_VARIABLES as readonly string[]).includes(name);
 };
 
-// 使用shallowRef优化深度对象
-// 注意：variables 已迁移到 useTemporaryVariables() 和 useVariableManager() 管理
+// Use shallowRef to optimize deep objects
+// Note: variables have been migrated to the management of useTemporaryVariables() and useVariableManager()
 const localState = shallowRef<ContextEditorState>({
     messages: [],
     tools: [],
@@ -624,16 +624,16 @@ const localState = shallowRef<ContextEditorState>({
     mode: "edit",
 });
 
-// 预览模式控制 - 使用Map优化
+// Preview mode control - use a Map to optimize
 const previewMode = shallowRef<Map<number, boolean>>(new Map());
 
-// 批量状态更新
+// Batch state updates
 const batchStateUpdate = batchExecute((updates: Array<() => void>) => {
     updates.forEach((update) => update());
     recordUpdate();
-}, 16); // 使用16ms批处理，匹配60fps
+}, 16); // Use 16ms batching to match 60fps
 
-// 计算属性
+// Computed properties
 const buttonSize = computed(() => {
     return responsiveButtonSize.value;
 });
@@ -647,29 +647,29 @@ const tagSize = computed(() => {
     return sizeMap[responsiveButtonSize.value] || "small";
 });
 
-// 标签页显示控制逻辑 - 配置驱动
+// Tab display control logic - config-driven
 type TabName = 'messages' | 'variables' | 'tools';
 
-// 标签页默认可见性配置（ContextEditor 仅用于 Context System 模式）
-// 变量管理已移除，使用独立的 VariableManagerModal
-// 工具管理已移除，使用独立的 ToolManagerModal
+// Default tab visibility config (ContextEditor is only used in Context System mode)
+// Variable management was removed; the standalone VariableManagerModal is used
+// Tool management was removed; the standalone ToolManagerModal is used
 const TAB_VISIBILITY_CONFIG: Record<TabName, () => boolean> = {
     messages: () => true,
-    variables: () => false, // 已移除变量标签页
-    tools: () => false, // 已移除工具标签页，使用独立的 ToolManagerModal
+    variables: () => false, // Variables tab removed
+    tools: () => false, // Tools tab removed; the standalone ToolManagerModal is used
 };
 
-// 通用标签页可见性计算函数
+// Generic tab visibility computation function
 const createTabVisibility = (tabName: TabName) => computed(() => {
-    // 如果指定了 onlyShowTab，只有当值匹配时才显示
+    // If onlyShowTab is specified, only show when the value matches
     if (props.onlyShowTab) {
         return props.onlyShowTab === tabName;
     }
-    // 否则使用配置的默认可见性规则
+    // Otherwise use the configured default visibility rules
     return TAB_VISIBILITY_CONFIG[tabName]();
 });
 
-// 各标签页可见性
+// Visibility of each tab
 const showMessagesTab = createTabVisibility('messages');
 const showVariablesTab = createTabVisibility('variables');
 const showToolsTab = createTabVisibility('tools');
@@ -736,7 +736,7 @@ const roleOptions = computed(() => [
     { label: t("conversation.roles.tool"), value: "tool" },
 ]);
 
-// 工具函数（统一使用注入函数）
+// Utility functions (use the injected functions uniformly)
 const getMessageVariables = (content: string) => {
     const detected = props.scanVariables(content || "") || [];
     const missing = detected.filter(
@@ -764,7 +764,7 @@ const getPlaceholderText = (role: string) => {
     }
 };
 
-// 可访问性事件处理（不启用键盘焦点陷阱，避免拦截箭头键）
+// Accessibility event handling (keyboard focus trap not enabled, to avoid intercepting arrow keys)
 const handleModalOpen = () => {
     nextTick(() => {
         announce(aria.getLiveRegionText("modalOpened"), "assertive");
@@ -775,7 +775,7 @@ const handleModalClose = () => {
     announce(aria.getLiveRegionText("modalClosed"), "polite");
 };
 
-// 消息处理方法
+// Message handling methods
 const addMessage = () => {
     const newMessage: ConversationMessage = {
         role: "user",
@@ -814,7 +814,7 @@ const handleMessageUpdate = debounce(
     "messageUpdate",
 );
 
-// 变量提取处理
+// Variable extraction handling
 const handleVariableExtracted = (data: {
     variableName: string;
     variableValue: string;
@@ -843,9 +843,9 @@ const togglePreview = throttle(
     "togglePreview",
 );
 
-// 工具管理方法 - 实际实现在后面
+// Tool management methods - the actual implementation is further below
 
-// 事件处理方法
+// Event handling methods
 const handleVisibilityChange = (visible: boolean) => {
     localVisible.value = visible;
     emit("update:visible", visible);
@@ -853,8 +853,8 @@ const handleVisibilityChange = (visible: boolean) => {
 
 const handleStateChange = () => {
     emit("update:state", { ...localState.value });
-    // 传递临时变量的快照，供父组件使用
-    // 注意：全局变量由 useVariableManager 管理，不包含在此事件中
+    // Pass a snapshot of the temporary variables for the parent component to use
+    // Note: global variables are managed by useVariableManager and are not included in this event
     emit("contextChange", [...localState.value.messages], tempVars.listVariables());
 };
 
@@ -869,7 +869,7 @@ const handleExport = () => {
 const handleSave = () => {
     const context = {
         messages: [...localState.value.messages],
-        variables: {}, // 不再保存临时变量到上下文
+        variables: {}, // Temporary variables are no longer saved into the context
         tools: [...localState.value.tools],
     };
     emit("save", context);
@@ -880,7 +880,7 @@ const handleCancel = () => {
     handleVisibilityChange(false);
 };
 
-// 变量管理相关状态
+// Variable management-related state
 const variableEditState = ref<{
     show: boolean;
     isEditing: boolean;
@@ -903,18 +903,18 @@ const variableEditState = ref<{
 const saveVariable = () => {
     const { isEditing, editingName, name, value, type, originalType } = variableEditState.value;
 
-    // 验证变量名
+    // Validate the variable name
     if (!name.trim()) {
         return;
     }
 
-    // 检查是否是预定义变量名
+    // Check whether it is a predefined variable name
     if (isPredefinedVariable(name)) {
         announce(t("contextEditor.predefinedVariableError"), "assertive");
         return;
     }
 
-    // 如果是编辑模式且变量名发生变化，需要删除旧变量
+    // In edit mode, if the variable name changed, the old variable must be deleted
     if (isEditing && editingName !== name && originalType) {
         if (originalType === "temporary") {
             tempVars.deleteVariable(editingName);
@@ -923,11 +923,11 @@ const saveVariable = () => {
         }
     }
 
-    // 根据类型保存变量
+    // Save the variable by type
     if (type === "temporary") {
         tempVars.setVariable(name, value);
     } else if (type === "global") {
-        // 保存全局变量 - 检查是否已初始化
+        // Save a global variable - check whether it has been initialized
         if (!variableManager.isReady.value) {
             announce(t("contextEditor.variableManagerNotReady"), "assertive");
             return;
@@ -946,13 +946,13 @@ const saveVariable = () => {
         }
     }
 
-    // 关闭编辑器
+    // Close the editor
     variableEditState.value.show = false;
 
-    // 触发状态更新
+    // Trigger a state update
     handleStateChange();
 
-    // 通知用户
+    // Notify the user
     const action = isEditing ? t("common.edit") : t("common.add");
     const typeLabel = type === "temporary" ? t("contextEditor.variableSourceLabels.temporary") : t("contextEditor.variableSourceLabels.global");
     announce(t("contextEditor.variableSaved", { action, name, type: typeLabel }), "polite");
@@ -962,10 +962,10 @@ const cancelVariableEdit = () => {
     variableEditState.value.show = false;
 };
 
-// 变量快捷操作（修改行为：直接在上下文中创建临时变量）
+// Variable quick action (changed behavior: create a temporary variable directly in the context)
 const handleCreateVariableAndOpenManager = (name: string) => {
     if (!name) return;
-    // 直接在上下文中创建临时变量，标记为来自缺失变量
+    // Create a temporary variable directly in the context, marked as coming from a missing variable
     variableEditState.value = {
         show: true,
         isEditing: false,
@@ -975,13 +975,13 @@ const handleCreateVariableAndOpenManager = (name: string) => {
         value: "",
         type: "temporary",
     };
-    // 等待弹窗打开后自动聚焦到变量值输入框
+    // After the dialog opens, auto-focus the variable value input
     nextTick(() => {
         variableValueInputRef.value?.focus();
     });
 };
 
-// 消息聚焦（滚动并高亮）
+// Message focus (scroll and highlight)
 const focusedIndex = ref<number | null>(null);
 const messageRefs = new Map<number, HTMLElement>();
 
@@ -1009,7 +1009,7 @@ const setMessageRef = (
 const messageCardRef = (index: number): VNodeRef => {
     return (refEl) => setMessageRef(index, refEl);
 };
-// 生命周期
+// Lifecycle
 watch(
     () => props.visible,
     (newVisible) => {
@@ -1065,20 +1065,20 @@ watch(
     },
 );
 
-// 导入导出事件处理
+// Import/export event handling
 interface ImportSuccessData {
     messages: ConversationMessage[];
     tools?: ToolDefinition[];
 }
 
 const handleImportSuccess = (data: ImportSuccessData) => {
-    // 将导入的数据同步到本地状态
+    // Sync the imported data to the local state
     localState.value.messages = data.messages;
     localState.value.tools = data.tools || [];
 
     handleStateChange();
 
-    // 切换到消息编辑标签页
+    // Switch to the message editing tab
     activeTab.value = "messages";
     announce(t("contextEditor.importSuccess"), "polite");
 };
@@ -1095,7 +1095,7 @@ const handleExportError = (message?: string) => {
 </script>
 
 <style scoped>
-/* 可访问性：屏幕阅读器专用 */
+/* Accessibility: screen-reader-only */
 .sr-only {
     position: absolute;
     width: 1px;
@@ -1108,7 +1108,7 @@ const handleExportError = (message?: string) => {
     border: 0;
 }
 
-/* 聚焦卡片高亮 */
+/* Highlight the focused card */
 .focused-card {
     box-shadow: 0 0 0 2px var(--n-color-target, #18a058) inset;
     transition: box-shadow 0.2s ease;

@@ -1,9 +1,9 @@
 /**
- * 标准化Prompt数据格式
- * 基于OpenAI API格式，扩展支持工具调用等高级功能
+ * Standardized Prompt data format
+ * Based on the OpenAI API format, extended to support advanced features such as tool calls
  */
 
-// 工具调用相关类型
+// Tool call-related types
 export interface ToolCall {
   id: string
   type: 'function'
@@ -24,19 +24,19 @@ export interface ToolDefinition {
   function: FunctionDefinition
 }
 
-// 消息类型定义
+// Message type definitions
 export interface StandardMessage {
   role: 'system' | 'user' | 'assistant' | 'tool'
   content: string
-  name?: string              // 工具调用时的函数名或工具名
-  tool_calls?: ToolCall[]    // assistant消息中的工具调用
-  tool_call_id?: string      // tool消息中关联的工具调用ID
+  name?: string              // Function name or tool name for tool calls
+  tool_calls?: ToolCall[]    // Tool calls in an assistant message
+  tool_call_id?: string      // ID of the associated tool call in a tool message
 }
 
-// 标准化Prompt数据结构
+// Standardized Prompt data structure
 export interface StandardPromptData {
   messages: StandardMessage[]
-  tools?: ToolDefinition[]   // 可用工具定义
+  tools?: ToolDefinition[]   // Available tool definitions
   model?: string
   temperature?: number
   max_tokens?: number
@@ -45,7 +45,7 @@ export interface StandardPromptData {
   presence_penalty?: number
   stop?: string | string[]
   stream?: boolean
-  // 扩展元数据
+  // Extended metadata
   metadata?: {
     source?: 'langfuse' | 'openai' | 'conversation' | 'manual'
     template_info?: {
@@ -59,7 +59,7 @@ export interface StandardPromptData {
   }
 }
 
-// LangFuse数据格式（简化版）
+// LangFuse data format (simplified)
 export interface LangFuseTrace {
   id: string
   timestamp: string
@@ -83,7 +83,7 @@ export interface LangFuseTrace {
   }
 }
 
-// OpenAI请求格式
+// OpenAI request format
 export interface OpenAIRequest {
   messages: StandardMessage[]
   model: string
@@ -97,7 +97,7 @@ export interface OpenAIRequest {
   stream?: boolean
 }
 
-// 转换结果类型
+// Conversion result type
 export interface ConversionResult<T> {
   success: boolean
   data?: T
@@ -105,7 +105,7 @@ export interface ConversionResult<T> {
   warnings?: string[]
 }
 
-// 变量提取结果
+// Variable extraction result
 export interface VariableExtractionResult {
   updatedContent: string
   extractedVariable: {
@@ -115,7 +115,7 @@ export interface VariableExtractionResult {
   }
 }
 
-// 智能变量建议
+// Smart variable suggestions
 export interface VariableSuggestion {
   name: string
   confidence: number

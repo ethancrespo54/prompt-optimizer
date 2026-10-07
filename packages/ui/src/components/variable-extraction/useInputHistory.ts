@@ -1,27 +1,27 @@
 import { ref, type Ref } from 'vue'
 
 /**
- * 输入历史记录管理 Composable
+ * Input history management composable
  *
- * 功能：
- * 1. 记录输入框的编辑历史
- * 2. 支持撤销 (Ctrl+Z) 和重做 (Ctrl+Shift+Z)
- * 3. 智能合并连续编辑操作
+ * Features:
+ * 1. Records the editing history of the input box
+ * 2. Supports undo (Ctrl+Z) and redo (Ctrl+Shift+Z)
+ * 3. Smartly merges consecutive edit operations
  */
 
 export interface HistoryRecord {
-  /** 文本内容 */
+  /** Text content */
   content: string
-  /** 光标位置 */
+  /** Cursor position */
   cursorPosition: number
-  /** 记录时间戳 */
+  /** Record timestamp */
   timestamp: number
 }
 
 export interface UseInputHistoryOptions {
-  /** 最大历史记录数 */
+  /** Maximum number of history records */
   maxHistory?: number
-  /** 合并编辑的时间阈值 (毫秒) */
+  /** Time threshold for merging edits (milliseconds) */
   mergeThreshold?: number
 }
 
@@ -31,17 +31,17 @@ export function useInputHistory(
 ) {
   const { maxHistory = 50, mergeThreshold = 1000 } = options
 
-  // 历史记录栈
+  // History stack
   const history = ref<HistoryRecord[]>([])
-  // 当前历史位置索引
+  // Current history position index
   const currentIndex = ref(-1)
-  // 最后一次编辑的时间戳
+  // Timestamp of the last edit
   const lastEditTimestamp = ref(0)
-  // 是否正在执行撤销/重做操作
+  // Whether an undo/redo operation is in progress
   const isUndoRedoing = ref(false)
 
   /**
-   * 添加历史记录
+   * Add a history record
    */
   const addHistory = (content: string, cursorPosition: number, forceNew = false) => {
     if (isUndoRedoing.value) return
@@ -54,24 +54,24 @@ export function useInputHistory(
       now - lastEditTimestamp.value < mergeThreshold
 
     if (shouldMerge) {
-      // 智能合并: 更新当前记录
+      // Smart merge: update the current record
       history.value[currentIndex.value] = {
         content,
         cursorPosition,
         timestamp: now
       }
     } else {
-      // 创建新记录: 移除当前位置之后的所有记录
+      // Create a new record: remove all records after the current position
       history.value = history.value.slice(0, currentIndex.value + 1)
 
-      // 添加新记录
+      // Add the new record
       history.value.push({
         content,
         cursorPosition,
         timestamp: now
       })
 
-      // 限制历史记录数量
+      // Limit the number of history records
       if (history.value.length > maxHistory) {
         history.value.shift()
       } else {
@@ -83,7 +83,7 @@ export function useInputHistory(
   }
 
   /**
-   * 撤销操作
+   * Undo operation
    */
   const undo = (): boolean => {
     if (currentIndex.value <= 0) {
@@ -98,7 +98,7 @@ export function useInputHistory(
       inputRef.value.value = record.content
       inputRef.value.setSelectionRange(record.cursorPosition, record.cursorPosition)
 
-      // 触发 input 事件,确保 v-model 同步
+      // Trigger the input event to make sure v-model stays in sync
       const event = new Event('input', { bubbles: true })
       inputRef.value.dispatchEvent(event)
     }
@@ -108,7 +108,7 @@ export function useInputHistory(
   }
 
   /**
-   * 重做操作
+   * Redo operation
    */
   const redo = (): boolean => {
     if (currentIndex.value >= history.value.length - 1) {
@@ -123,7 +123,7 @@ export function useInputHistory(
       inputRef.value.value = record.content
       inputRef.value.setSelectionRange(record.cursorPosition, record.cursorPosition)
 
-      // 触发 input 事件,确保 v-model 同步
+      // Trigger the input event to make sure v-model stays in sync
       const event = new Event('input', { bubbles: true })
       inputRef.value.dispatchEvent(event)
     }
@@ -133,7 +133,7 @@ export function useInputHistory(
   }
 
   /**
-   * 清空历史记录
+   * Clear the history
    */
   const clearHistory = () => {
     history.value = []
@@ -142,19 +142,19 @@ export function useInputHistory(
   }
 
   /**
-   * 记录变量提取操作 (强制创建新记录)
+   * Record a variable extraction operation (forces a new record)
    */
   const recordVariableExtraction = (content: string, cursorPosition: number) => {
     addHistory(content, cursorPosition, true)
   }
 
   /**
-   * 获取是否可以撤销
+   * Whether undo is possible
    */
   const canUndo = () => currentIndex.value > 0
 
   /**
-   * 获取是否可以重做
+   * Whether redo is possible
    */
   const canRedo = () => currentIndex.value < history.value.length - 1
 

@@ -3,29 +3,29 @@ import type { ConversationMessage, PromptRecord } from '@prompt-optimizer/core'
 import type { UseConversationOptimization } from './useConversationOptimization'
 
 /**
- * 提示词显示适配器选项
+ * Prompt display adapter options
  */
 export interface PromptDisplayAdapterOptions {
-  // 启用消息优化模式
+  // Enable message optimization mode
   enableMessageOptimization: Ref<boolean>
 
-  // 上下文消息列表
+  // Context message list
   optimizationContext: Ref<ConversationMessage[]>
 
-  // 全局优化链（用于历史记录查看）
+  // Global optimization chain (used for viewing history records)
   globalVersions: Ref<PromptRecord[]>
   globalCurrentVersionId: Ref<string | undefined>
   globalIsOptimizing: Ref<boolean>
 }
 
 /**
- * 提示词显示适配器返回值
+ * Prompt display adapter return value
  */
 export interface UsePromptDisplayAdapter {
-  // 模式标识
+  // Mode flag
   isInMessageOptimizationMode: ComputedRef<boolean>
 
-  // 显示数据（自动根据模式切换数据源）
+  // Display data (the data source switches automatically by mode)
   displayedOriginalPrompt: ComputedRef<string>
   displayedOptimizedPrompt: ComputedRef<string>
   displayedVersions: ComputedRef<PromptRecord[]>
@@ -34,20 +34,20 @@ export interface UsePromptDisplayAdapter {
 }
 
 /**
- * 提示词显示适配器 Composable
+ * Prompt display adapter composable
  *
- * 功能：
- * - 根据"消息优化模式 vs 历史记录查看模式"自动切换数据源
- * - 为 PromptPanel 提供统一的数据接口
- * - 解决消息级优化和全局优化的数据隔离问题
+ * Features:
+ * - Automatically switches the data source between "message optimization mode" and "history viewing mode"
+ * - Provides a unified data interface for PromptPanel
+ * - Solves the data isolation problem between message-level optimization and global optimization
  *
- * 使用场景：
- * - ContextSystemWorkspace: 需要在消息优化和历史记录查看之间切换
- * - 其他需要类似适配逻辑的组件
+ * Use cases:
+ * - ContextSystemWorkspace: needs to switch between message optimization and viewing history records
+ * - Other components that need similar adapter logic
  *
- * @param conversationOptimization - 会话优化 composable 实例
- * @param options - 适配器配置选项
- * @returns 显示层数据和模式标识
+ * @param conversationOptimization - Conversation optimization composable instance
+ * @param options - Adapter config options
+ * @returns Display layer data and the mode flag
  *
  * @example
  * ```ts
@@ -70,17 +70,17 @@ export function usePromptDisplayAdapter(
   const selectedMessageId = conversationOptimization.selectedMessageId
 
   /**
-   * 消息优化模式判定
-   * 只有在启用消息优化 且 有选中消息时，才进入消息优化模式
+   * Message optimization mode determination
+   * Only enters message optimization mode when message optimization is enabled and a message is selected
    */
   const isInMessageOptimizationMode = computed(() => {
     return options.enableMessageOptimization.value && !!selectedMessageId.value
   })
 
   /**
-   * 显示的原始提示词
-   * - 消息优化模式: 当前选中消息的原始内容
-   * - 历史记录模式: 空字符串（不显示）
+   * Displayed original prompt
+   * - Message optimization mode: the original content of the currently selected message
+   * - History viewing mode: empty string (not displayed)
    */
   const displayedOriginalPrompt = computed(() => {
     if (!isInMessageOptimizationMode.value) return ''
@@ -92,9 +92,9 @@ export function usePromptDisplayAdapter(
   })
 
   /**
-   * 显示的优化结果
-   * - 消息优化模式: 消息级优化结果
-   * - 历史记录模式: 空字符串（不显示）
+   * Displayed optimization result
+   * - Message optimization mode: message-level optimization result
+   * - History viewing mode: empty string (not displayed)
    */
   const displayedOptimizedPrompt = computed(() => {
     return isInMessageOptimizationMode.value
@@ -103,9 +103,9 @@ export function usePromptDisplayAdapter(
   })
 
   /**
-   * 显示的版本列表
-   * - 消息优化模式: 消息级优化版本链
-   * - 历史记录模式: 全局优化版本链
+   * Displayed version list
+   * - Message optimization mode: message-level optimization version chain
+   * - History viewing mode: global optimization version chain
    */
   const displayedVersions = computed(() => {
     if (isInMessageOptimizationMode.value) {
@@ -115,9 +115,9 @@ export function usePromptDisplayAdapter(
   })
 
   /**
-   * 显示的当前版本 ID
-   * - 消息优化模式: 消息级当前版本 ID
-   * - 历史记录模式: 全局当前版本 ID
+   * Displayed current version ID
+   * - Message optimization mode: message-level current version ID
+   * - History viewing mode: global current version ID
    */
   const displayedCurrentVersionId = computed(() => {
     if (isInMessageOptimizationMode.value) {
@@ -127,9 +127,9 @@ export function usePromptDisplayAdapter(
   })
 
   /**
-   * 显示的优化中状态
-   * - 消息优化模式: 消息级优化状态
-   * - 历史记录模式: 全局优化状态
+   * Displayed optimizing state
+   * - Message optimization mode: message-level optimization state
+   * - History viewing mode: global optimization state
    */
   const displayedIsOptimizing = computed(() => {
     return isInMessageOptimizationMode.value

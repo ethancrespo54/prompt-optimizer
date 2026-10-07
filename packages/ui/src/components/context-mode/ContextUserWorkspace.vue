@@ -1,15 +1,15 @@
 <template>
     <!--
-        上下文模式 - 用户提示词工作区
+        Context mode - user prompt workspace
 
-        职责:
-        - 左侧: 用户提示词输入 + 优化结果显示
-        - 右侧: 测试区域 (变量输入 + 测试执行)
+        Responsibilities:
+        - Left: user prompt input + optimization result display
+        - Right: test area (variable input + test execution)
 
-        与系统模式的区别:
-        - 不包含会话管理器 (ConversationManager)
-        - 仅优化单条用户消息,无需管理多轮对话上下文
-        - 包含工具管理按钮 (系统模式不包含)
+        Differences from system mode:
+        - No conversation manager (ConversationManager)
+        - Only optimizes a single user message, with no need to manage multi-turn conversation context
+        - Includes a tool management button (system mode does not)
     -->
     <div class="context-user-workspace" data-testid="workspace" data-mode="pro-variable">
         <div
@@ -17,16 +17,16 @@
             class="context-user-split"
             :style="{ gridTemplateColumns: `${mainSplitLeftPct}% 12px 1fr` }"
         >
-            <!-- 左侧：优化区域 -->
+            <!-- Left: optimization area -->
             <div class="split-pane" style="min-width: 0; height: 100%; overflow: hidden;">
                 <NFlex
                     vertical
                     :size="12"
                     :style="{ overflow: 'auto', height: '100%', minHeight: 0 }"
                 >
-            <!-- 提示词输入面板 (可折叠) -->
+            <!-- Prompt input panel (collapsible) -->
             <NCard style="flex-shrink: 0;">
-                <!-- 折叠态：只显示标题栏 -->
+                <!-- Collapsed state: only show the title bar -->
                 <NFlex
                     v-if="isInputPanelCollapsed"
                     justify="space-between"
@@ -62,7 +62,7 @@
                     </NButton>
                 </NFlex>
 
-                <!-- 展开态：完整输入面板 -->
+                <!-- Expanded state: full input panel -->
                 <InputPanelUI
                     v-else
                     test-id-prefix="pro-variable"
@@ -92,7 +92,7 @@
                     @variable-extracted="handleVariableExtracted"
                     @add-missing-variable="handleAddMissingVariable"
                 >
-                    <!-- 模型选择插槽 -->
+                    <!-- Model selection slot -->
                     <template #model-select>
                         <SelectWithConfig
                             v-model="selectedOptimizeModelKeyModel"
@@ -104,7 +104,7 @@
                         />
                     </template>
 
-                    <!-- 模板选择插槽 -->
+                    <!-- Template selection slot -->
                     <template #template-select>
                         <SelectWithConfig
                             v-model="selectedTemplateIdModel"
@@ -116,7 +116,7 @@
                         />
                     </template>
 
-                    <!-- 标题栏折叠按钮 -->
+                    <!-- Title bar collapse button -->
                     <template #header-extra>
                         <NButton
                             type="tertiary"
@@ -139,18 +139,18 @@
             </NCard>
 
             <!--
-                用户模式特性说明:
-                此处不显示会话管理器 (ConversationManager)
+                User mode notes:
+                The conversation manager (ConversationManager) is not shown here
 
-                原因:
-                - 用户模式专注于优化单条用户提示词
-                - 不涉及多轮对话的上下文管理
-                - 系统模式才需要管理 system/user/assistant/tool 多条消息
+                Reasons:
+                - User mode focuses on optimizing a single user prompt
+                - It does not involve multi-turn conversation context management
+                - Only system mode needs to manage multiple system/user/assistant/tool messages
 
-                如需管理复杂对话上下文,请使用系统模式
+                To manage complex conversation context, use system mode
             -->
 
-            <!-- 优化结果面板 -->
+            <!-- Optimization result panel -->
             <NCard
                 style="flex: 1; min-height: 200px; overflow: hidden"
                 content-style="height: 100%; max-height: 100%; overflow: hidden;"
@@ -197,10 +197,10 @@
                 @keydown="onSplitKeydown"
             />
 
-            <!-- 右侧：测试区域（变量共享 + 多列 variants） -->
+            <!-- Right: test area (shared variables + multi-column variants) -->
             <div ref="testPaneRef" class="split-pane" style="min-width: 0; height: 100%; overflow: hidden;">
                 <NFlex vertical :style="{ height: '100%', gap: '12px' }">
-                    <!-- 变量表单（共享所有列） -->
+                    <!-- Variable form (shared by all columns) -->
                     <ContextUserTestPanel
                         ref="testAreaPanelRef"
                         mode="variables-only"
@@ -217,7 +217,7 @@
                         @temporary-variables-clear="handleClearTemporaryVariables"
                     />
 
-                    <!-- 顶部：列数与全局操作 -->
+                    <!-- Top: column count and global actions -->
                     <NCard size="small" :style="{ flexShrink: 0 }">
                         <div class="test-area-top">
                             <NFlex align="center" :size="8" :wrap="false" style="min-width: 0;">
@@ -276,7 +276,7 @@
                         </div>
                     </NCard>
 
-                    <!-- 配置区：与结果列对齐 -->
+                    <!-- Config area: aligned with the result columns -->
                     <NCard size="small" :style="{ flexShrink: 0 }">
                         <div class="variant-deck" :style="{ gridTemplateColumns: testGridTemplateColumns }">
                             <div v-for="id in activeVariantIds" :key="id" class="variant-cell">
@@ -341,7 +341,7 @@
                         </div>
                     </NCard>
 
-                    <!-- 结果区：多列网格（无横向滚动） -->
+                    <!-- Result area: multi-column grid (no horizontal scrolling) -->
                     <div class="variant-results-wrap">
                         <div class="variant-results" :style="{ gridTemplateColumns: testGridTemplateColumns }">
                             <NCard
@@ -442,7 +442,7 @@
             @retry="evaluationHandler.handleReEvaluate"
         />
 
-        <!-- 子模式本地预览面板：不再依赖 PromptOptimizerApp 的全局预览状态 -->
+        <!-- Sub-mode local preview panel: no longer depends on the global preview state of PromptOptimizerApp -->
         <PromptPreviewPanel
             v-model:show="showPromptPreview"
             :previewContent="previewContent"
@@ -457,22 +457,22 @@
 
 <script setup lang="ts">
 /**
- * 上下文模式 - 用户提示词工作区组件
+ * Context mode - user prompt workspace component
  *
  * @description
- * 用于优化单条用户提示词的工作区界面,采用左右分栏布局:
- * - 左侧: 提示词输入 + 优化结果展示
- * - 右侧: 测试区域 (变量输入 + 测试执行)
+ * Workspace UI for optimizing a single user prompt, using a left-right split layout:
+ * - Left: prompt input + optimization result display
+ * - Right: test area (variable input + test execution)
  *
  * @features
- * - 🆕 完全独立的优化和测试逻辑（使用专属 composables）
- * - 支持提示词优化和迭代
- * - 支持版本管理和历史记录
- * - 支持变量系统 (全局变量 + 测试临时变量)
- * - 🆕 支持文本选择并提取为变量 (用户模式独有)
- * - 🆕 使用 composable 管理临时变量，无需 props 传递
- * - 支持工具调用配置
- * - 支持响应式布局
+ * - 🆕 Fully independent optimization and test logic (using dedicated composables)
+ * - Supports prompt optimization and iteration
+ * - Supports version management and history
+ * - Supports the variable system (global variables + temporary test variables)
+ * - 🆕 Supports selecting text and extracting it as a variable (exclusive to user mode)
+ * - 🆕 Uses a composable to manage temporary variables, with no need to pass props
+ * - Supports tool call configuration
+ * - Supports responsive layout
  *
  * @example
  * ```vue
@@ -532,37 +532,37 @@ import { useElementSize } from '@vueuse/core'
 import { buildPromptExecutionContext, hashString, hashVariables } from '../../utils/prompt-variables'
 
 // ========================
-// Props 定义
+// Props definition
 // ========================
 interface Props {
-    // --- ✅ 已移除：模型和模板配置（现在从 session store 直接读取）---
-    // ✅ 已移除：optimizationMode - 改为内部常量
+    // --- ✅ Removed: model and template config (now read directly from the session store) ---
+    // ✅ Removed: optimizationMode - changed to an internal constant
 
-    /** 测试模型名称（用于显示标签） */
+    /** Test model name (used for the display label) */
     testModelName?: string;
-    /** 🆕 评估模型（用于变量提取和变量值生成） */
+    /** 🆕 Evaluation model (used for variable extraction and variable value generation) */
     evaluationModelKey?: string;
 
-    // --- 测试数据 ---
-    /** 是否启用对比模式 */
+    // --- Test data ---
+    /** Whether compare mode is enabled */
     isCompareMode: boolean;
-    /** 是否正在执行测试（兼容性保留，实际由内部管理）*/
+    /** Whether a test is running (kept for compatibility; actually managed internally) */
     isTestRunning?: boolean;
-    /** 🆕 是否正在执行AI变量提取 */
+    /** 🆕 Whether AI variable extraction is running */
     isExtracting?: boolean;
 
-    // --- 变量数据 ---
-    /** 全局变量 (持久化存储) - 保留，用于变量检测 */
+    // --- Variable data ---
+    /** Global variables (persisted) - kept, used for variable detection */
     globalVariables: Record<string, string>;
-    /** 预定义变量 (系统内置) - 保留，用于变量检测 */
+    /** Predefined variables (built into the system) - kept, used for variable detection */
     predefinedVariables: Record<string, string>;
 
-    // --- 响应式布局配置 ---
-    /** 按钮尺寸 */
+    // --- Responsive layout config ---
+    /** Button size */
     buttonSize?: "small" | "medium" | "large";
-    /** 对话历史最大高度 */
+    /** Maximum height of the conversation history */
     conversationMaxHeight?: number;
-    /** 结果区域是否垂直布局 */
+    /** Whether the result area is laid out vertically */
     resultVerticalLayout?: boolean;
 }
 
@@ -585,41 +585,41 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 // ========================
-// Emits 定义
+// Emits definition
 // ========================
 const emit = defineEmits<{
-    // --- 数据更新事件 ---
+    // --- Data update events ---
     "update:selectedIterateTemplate": [value: Template | null];
     "update:isCompareMode": [value: boolean];
 
-    // --- 操作事件 ---
-    /** 切换对比模式 */
+    // --- Action events ---
+    /** Toggle compare mode */
     "compare-toggle": [];
-    /** 保存到收藏 */
+    /** Save to favorites */
     "save-favorite": [data: SaveFavoritePayload];
 
-    // --- 打开面板/管理器 ---
-    /** 打开变量管理器 */
+    // --- Open panels/managers ---
+    /** Open the variable manager */
     "open-variable-manager": [];
-    /** 打开模板管理器 */
+    /** Open the template manager */
     "open-template-manager": [type?: string];
-    /** 配置模型 */
+    /** Configure the model */
     "config-model": [];
 
-    // --- 预览相关 ---
-    /** 打开输入预览 */
+    // --- Preview-related ---
+    /** Open the input preview */
     "open-input-preview": [];
-    /** 打开提示词预览 */
+    /** Open the prompt preview */
     "open-prompt-preview": [];
 
-    // --- 变量管理 ---
-    /** 变量值变化 */
+    // --- Variable management ---
+    /** Variable value change */
     "variable-change": [name: string, value: string];
-    /** 保存测试变量到全局 */
+    /** Save test variables to global */
     "save-to-global": [name: string, value: string];
-    /** 🆕 AI变量提取事件 */
+    /** 🆕 AI variable extraction event */
     "extract-variables": [];
-    /** 🆕 变量提取事件 (用于处理文本选择提取的变量) */
+    /** 🆕 Variable extraction event (used to handle variables extracted from selected text) */
     "variable-extracted": [
         data: {
             variableName: string;
@@ -633,19 +633,19 @@ const { t } = useI18n();
 const toast = useToast();
 
 // ========================
-// 内部常量
+// Internal constants
 // ========================
-/** 优化模式：固定为 'user'（此组件专门用于用户提示词优化） */
+/** Optimization mode: fixed to 'user' (this component is dedicated to user prompt optimization) */
 const optimizationMode: OptimizationMode = 'user';
 
 // ========================
-// 注入服务和变量管理器
+// Inject services and the variable manager
 // ========================
 const injectedServices = inject<Ref<AppServices | null>>('services');
 const servicesRef = injectedServices ?? ref<AppServices | null>(null)
 const variableManager = inject<VariableManagerHooks | null>('variableManager', null);
 
-// 注入 App 层统一的 open* 接口（与 Basic/Image 工作区保持一致）
+// Inject the App layer's unified open* interfaces (consistent with the Basic/Image workspaces)
 const appOpenModelManager = inject<
     ((tab?: 'text' | 'image' | 'function') => void) | null
 >('openModelManager', null)
@@ -663,7 +663,7 @@ const handleOpenModelManager = () => {
 }
 
 const handleOpenTemplateManager = (typeOrPayload?: string | Record<string, unknown>) => {
-    // SelectWithConfig 的 @config 可能会传入 payload（非字符串），这里统一兜底处理。
+    // The @config of SelectWithConfig may pass a payload (not a string), so it is handled uniformly with a fallback here.
     const type = typeof typeOrPayload === 'string' ? typeOrPayload : undefined
     if (appOpenTemplateManager) {
         appOpenTemplateManager(type || 'optimize')
@@ -673,24 +673,24 @@ const handleOpenTemplateManager = (typeOrPayload?: string | Record<string, unkno
 }
 
 // ========================
-// 内部状态管理
+// Internal state management
 // ========================
 
-// 输入区折叠状态（初始展开）
+// Input area collapsed state (expanded initially)
 const isInputPanelCollapsed = ref(false);
 
 // ========================
-// 分析状态
+// Analysis state
 // ========================
-/** 是否正在执行分析 */
+/** Whether an analysis is running */
 const isAnalyzing = ref(false);
 
-/** 🆕 使用全局临时变量管理器 (从文本提取的变量,仅当前会话有效) */
+/** 🆕 Use the global temporary variable manager (variables extracted from text, valid only for the current session) */
 const tempVarsManager = useTemporaryVariables();
 const temporaryVariables = tempVarsManager.temporaryVariables;
 
 // ========================
-// 子模式本地提示词预览（不经过 PromptOptimizerApp）
+// Sub-mode local prompt preview (does not go through PromptOptimizerApp)
 // ========================
 const previewContextMode = computed<ContextMode>(() => 'user')
 
@@ -741,17 +741,17 @@ const handleOpenPromptPreview = () => {
     openPromptPreview(contextUserOptimization.optimizedPrompt || '', { renderPhase: 'optimize' })
 }
 
-// Pro-user（变量模式）以 session store 为唯一真源（可持久化字段）
+// Pro-user (variable mode) uses the session store as the single source of truth (persistable fields)
 const proVariableSession = useProVariableSession();
 
-// ==================== 主布局：可拖拽分栏（左侧 25%~50%） ====================
+// ==================== Main layout: draggable split pane (left 25%~50%) ====================
 
 const splitRootRef = ref<HTMLElement | null>(null)
 const testPaneRef = ref<HTMLElement | null>(null)
 
 const clampLeftPct = (pct: number) => Math.min(50, Math.max(25, pct))
 
-// 使用本地 draft，避免拖拽过程频繁写入持久化存储
+// Use a local draft to avoid frequent writes to persistent storage while dragging
 const mainSplitLeftPct = ref<number>(50)
 watch(
     () => proVariableSession.layout.mainSplitLeftPct,
@@ -822,7 +822,7 @@ onUnmounted(() => {
     endSplitDrag()
 })
 
-// ✨ 新增：直接使用 session store 管理模型和模板选择
+// ✨ New: use the session store directly to manage model and template selection
 const modelSelection = useWorkspaceModelSelection(servicesRef, proVariableSession)
 const templateSelection = useWorkspaceTemplateSelection(
     servicesRef,
@@ -881,7 +881,7 @@ const sessionVersionId = computed<string>({
     set: (value) => patchSessionOptimizedResult({ versionId: value || "" }),
 });
 
-// 🔧 为 SelectWithConfig 的 v-model 创建解包的 computed（避免 Vue prop 类型警告）
+// 🔧 Create unwrapped computed for the v-model of SelectWithConfig (avoids Vue prop type warnings)
 const selectedOptimizeModelKeyModel = computed({
     get: () => modelSelection.selectedOptimizeModelKey.value,
     set: (value) => { modelSelection.selectedOptimizeModelKey.value = value }
@@ -900,7 +900,7 @@ const selectedIterateTemplate = computed<Template | null>({
     }
 })
 
-// 🆕 初始化 ContextUser 专属优化器
+// 🆕 Initialize the ContextUser-specific optimizer
 const contextUserOptimization = useContextUserOptimization(
     servicesRef,
     modelSelection.selectedOptimizeModelKey,
@@ -915,7 +915,7 @@ const contextUserOptimization = useContextUserOptimization(
     },
 );
 
-// 提示词摘要（折叠态显示）
+// Prompt summary (shown in the collapsed state)
 const promptSummary = computed(() => {
     const prompt = contextUserOptimization.prompt;
     if (!prompt) return '';
@@ -924,7 +924,7 @@ const promptSummary = computed(() => {
         : prompt;
 });
 
-// ==================== 测试区：多列 variants（共享变量） ====================
+// ==================== Test area: multi-column variants (shared variables) ====================
 
 const getVariant = (id: TestVariantId): TestVariantConfig | undefined => {
     const list = proVariableSession.testVariants as unknown as TestVariantConfig[]
@@ -996,14 +996,14 @@ const variantModelKeyModels = {
     d: variantDModelKeyModel,
 } as const
 
-// pro-variable 变量优先级：global < temporary < predefined
+// pro-variable variable priority: global < temporary < predefined
 const mergedTestVariables = computed<Record<string, string>>(() => ({
     ...(globalVariables.value || {}),
     ...(temporaryVariables.value || {}),
     ...(predefinedVariables.value || {}),
 }))
 
-// 测试区宽度：用于禁用 4 列（避免横向滚动）
+// Test area width: used to disable 4 columns (avoids horizontal scrolling)
 const { width: testPaneWidth } = useElementSize(testPaneRef)
 const canUseFourColumns = computed(() => testPaneWidth.value >= 1000)
 
@@ -1049,7 +1049,7 @@ const resolveTestPrompt = (selection: TestPanelVersionValue): ResolvedTestPrompt
     return { text: latest.optimizedPrompt || '', resolvedVersion: latest.version }
 }
 
-// 版本选项：仅显示“原始(v0)”与“最新(latest)”，若存在中间版本，则额外显示 v1..v(n-1)。
+// Version options: only show "Original (v0)" and "Latest (latest)"; if intermediate versions exist, additionally show v1..v(n-1).
 const versionOptions = computed(() => {
     const versions = contextUserOptimization.currentVersions || []
 
@@ -1069,7 +1069,7 @@ const versionOptions = computed(() => {
     ]
 })
 
-// 确保测试列的模型选择始终有效（模型列表变化时自动 fallback）
+// Make sure the model selection of the test columns is always valid (automatic fallback when the model list changes)
 watch(
     () => modelSelection.textModelOptions.value,
     (opts) => {
@@ -1094,7 +1094,7 @@ watch(
 const resolvedOriginalTestPrompt = computed(() => resolveTestPrompt(variantAVersionModel.value))
 const resolvedOptimizedTestPrompt = computed(() => resolveTestPrompt(variantBVersionModel.value))
 
-// Pinia setup store 会自动解包 refs，这里是直接可变的响应式对象（非 Ref）
+// The Pinia setup store unwraps refs automatically, so this is a directly mutable reactive object (not a Ref)
 const variantResults = proVariableSession.testVariantResults
 const variantLastRunFingerprint = proVariableSession.testVariantLastRunFingerprint
 
@@ -1250,7 +1250,7 @@ const runVariant = async (
                     variantResults[id] = { ...prev, reasoning: (prev.reasoning || '') + token }
                 },
                 onComplete: () => {
-                    // 由 finally 统一收尾
+                    // Finalized uniformly by finally
                 },
                 onError: (error: Error) => {
                     throw error
@@ -1307,10 +1307,10 @@ const runAllVariants = async () => {
 }
 
 // ========================
-// Pro-user（变量模式）测试：改为多列 variants，结果与配置由 session store 持久化
+// Pro-user (variable mode) testing: changed to multi-column variants, with results and config persisted by the session store
 // ========================
 onMounted(() => {
-    // ✅ 刷新模型列表
+    // ✅ Refresh the model list
     modelSelection.refreshTextModels()
 });
 
@@ -1321,24 +1321,24 @@ const proContext = computed<ProUserEvaluationContext | undefined>(() => {
     const rawPrompt = resolvedOriginalTestPrompt.value.text;
     const resolvedPrompt = resolvedOptimizedTestPrompt.value.text;
 
-    // 扫描提示词中实际使用的变量名
-    // 同时扫描原始提示词和优化后的提示词，确保覆盖所有使用的变量
+    // Scan the variable names actually used in the prompts
+    // Scan both the original prompt and the optimized prompt, to cover all used variables
     const usedVarNames = new Set<string>();
 
-    // 使用 variableManager 扫描变量
+    // Use variableManager to scan the variables
     if (variableManager?.variableManager.value) {
         const vm = variableManager.variableManager.value;
-        // 扫描原始提示词中的变量
+        // Scan the variables in the original prompt
         if (rawPrompt) {
             vm.scanVariablesInContent(rawPrompt).forEach(name => usedVarNames.add(name));
         }
-        // 扫描优化后提示词中的变量
+        // Scan the variables in the optimized prompt
         if (resolvedPrompt) {
             vm.scanVariablesInContent(resolvedPrompt).forEach(name => usedVarNames.add(name));
         }
     } else {
-        // 回退方案：使用正则表达式扫描 {{varName}} 格式的变量
-        // 允许两侧空格，但变量名内部不允许空白（支持中文等 Unicode 变量名）
+        // Fallback: use a regular expression to scan variables in the {{varName}} format
+        // Spaces on both sides are allowed, but whitespace inside the variable name is not (Unicode variable names, such as Chinese ones, are supported)
         const varPattern = /\{\{\s*([^{}\s]+)\s*\}\}/gu;
         let match;
         if (rawPrompt) {
@@ -1348,7 +1348,7 @@ const proContext = computed<ProUserEvaluationContext | undefined>(() => {
           }
         }
         if (resolvedPrompt) {
-          varPattern.lastIndex = 0; // 重置正则表达式
+          varPattern.lastIndex = 0; // Reset the regular expression
           while ((match = varPattern.exec(resolvedPrompt)) !== null) {
             const name = match[1]?.trim();
             if (name) usedVarNames.add(name);
@@ -1356,24 +1356,24 @@ const proContext = computed<ProUserEvaluationContext | undefined>(() => {
         }
     }
 
-    // 只收集实际使用的变量
+    // Only collect the variables actually used
     const usedVariables: ProUserEvaluationContext['variables'] = [];
 
-    // 按优先级顺序添加变量（预定义 > 临时 > 全局）
+    // Add variables in priority order (predefined > temporary > global)
     usedVarNames.forEach(name => {
-        // 预定义变量优先级最高（保留名不可被覆盖）
+        // Predefined variables have the highest priority (reserved names cannot be overridden)
         if (predefinedVars[name] !== undefined) {
             usedVariables.push({ name, value: predefinedVars[name], source: 'predefined' });
         }
-        // 其次是临时变量
+        // Temporary variables next
         else if (tempVars[name] !== undefined) {
             usedVariables.push({ name, value: tempVars[name], source: 'temporary' });
         }
-        // 最后是全局变量
+        // Global variables last
         else if (globalVars[name] !== undefined) {
             usedVariables.push({ name, value: globalVars[name], source: 'global' });
         }
-        // 变量未定义时仍然记录，标记为临时变量但值为空
+        // When a variable is undefined, still record it, marked as a temporary variable with an empty value
         else {
             usedVariables.push({ name, value: '', source: 'temporary' });
         }
@@ -1386,16 +1386,16 @@ const proContext = computed<ProUserEvaluationContext | undefined>(() => {
     };
 });
 
-// 🆕 提供 Pro 模式上下文给子组件（如 PromptPanel），用于评估时传递变量解析上下文
+// 🆕 Provide the Pro mode context to child components (such as PromptPanel), used to pass the variable resolution context during evaluation
 provideProContext(proContext);
 
-// 🆕 测试结果数据
+// 🆕 Test result data
 const testResultsData = computed(() => ({
     originalResult: variantResults.a.result || undefined,
     optimizedResult: variantResults.b.result || undefined,
 }));
 
-// 🆕 计算当前迭代需求（用于 prompt-iterate 的 re-evaluate）
+// 🆕 Compute the current iteration requirement (used for the re-evaluate of prompt-iterate)
 const currentIterateRequirement = computed(() => {
     const versions = contextUserOptimization.currentVersions;
     const versionId = contextUserOptimization.currentVersionId;
@@ -1404,12 +1404,12 @@ const currentIterateRequirement = computed(() => {
     return currentVersion?.iterationNote || '';
 });
 
-// 🆕 初始化评估处理器（使用全局 evaluation 实例，避免双套状态）
+// 🆕 Initialize the evaluation handler (uses the global evaluation instance to avoid two sets of state)
 const evaluationHandler = useEvaluationHandler({
     services: servicesRef,
     originalPrompt: computed(() => resolvedOriginalTestPrompt.value.text),
     optimizedPrompt: computed(() => resolvedOptimizedTestPrompt.value.text),
-    testContent: computed(() => ''), // 变量模式不需要单独的测试内容，通过变量系统管理
+    testContent: computed(() => ''), // Variable mode needs no separate test content; it is managed through the variable system
     testResults: testResultsData,
     evaluationModelKey: effectiveEvaluationModelKey,
     functionMode: computed(() => 'pro'),
@@ -1436,7 +1436,7 @@ const optimizedEvaluationResult = computed(() => testAreaProps.value.optimizedEv
 const originalScoreLevel = computed(() => testAreaProps.value.originalScoreLevel)
 const optimizedScoreLevel = computed(() => testAreaProps.value.optimizedScoreLevel)
 
-// 对比评估状态
+// Compare evaluation state
 const isEvaluatingCompare = evaluationHandler.compareEvaluation.isEvaluatingCompare
 const compareScore = computed(() => evaluationHandler.compareEvaluation.compareScore.value ?? 0)
 const hasCompareEvaluation = evaluationHandler.compareEvaluation.hasCompareResult
@@ -1479,7 +1479,7 @@ const handleClearEvaluation = () => {
 }
 
 // ========================
-// 变量感知输入（InputPanel 变量提取/缺失变量）
+// Variable-aware input (InputPanel variable extraction / missing variables)
 // ========================
 const {
     variableInputData: inputPanelVariableData,
@@ -1509,57 +1509,57 @@ const handleSaveToGlobalFromTest = (name: string, value: string) => {
     emit('save-to-global', name, value)
 }
 
-/** 变量提示文本，包含双花括号示例，避免模板解析误判 */
+/** Variable hint text, including a double-curly-brace example to avoid template parsing misjudgment */
 const doubleBraceToken = "{{}}";
 const variableGuideInlineHint = computed(() =>
     t("variableGuide.inlineHint", { doubleBraces: doubleBraceToken }),
 );
 
 // ========================
-// 组件引用
+// Component references
 // ========================
-/** TestAreaPanel 组件引用,用于获取测试变量 */
+/** TestAreaPanel component reference, used to get the test variables */
 const testAreaPanelRef = ref<TestAreaPanelInstance | null>(null);
 
-/** PromptPanel 组件引用,用于打开迭代弹窗 */
+/** PromptPanel component reference, used to open the iterate dialog */
 const promptPanelRef = ref<InstanceType<typeof PromptPanelUI> | null>(null);
 
 // ========================
-// 事件处理
+// Event handling
 // ========================
 // handleVariableExtracted / handleAddMissingVariable are provided by useVariableAwareInputBridge
 
 /**
- * 🆕 处理AI变量提取事件
+ * 🆕 Handle the AI variable extraction event
  *
- * 当用户点击"AI提取变量"按钮时触发
+ * Triggered when the user clicks the "AI extract variables" button
  *
- * 工作流程:
- * 1. 验证提示词内容和模型选择
- * 2. 收集已存在的变量名（全局+临时）
- * 3. 触发父组件的extract-variables事件
- * 4. 父组件调用AI服务并显示结果对话框
+ * Workflow:
+ * 1. Validate the prompt content and the model selection
+ * 2. Collect the existing variable names (global + temporary)
+ * 3. Trigger the extract-variables event of the parent component
+ * 4. The parent component calls the AI service and shows the result dialog
  */
 const handleExtractVariables = () => {
-    // 触发父组件事件，由App层处理AI提取逻辑
+    // Trigger the parent component event; the App layer handles the AI extraction logic
     emit('extract-variables');
 };
 
 /**
- * 🆕 同步测试区域对临时变量的修改
+ * 🆕 Sync the test area's changes to the temporary variables
  *
- * 作用:
- * - 确保测试区域新增/编辑的变量能够参与左侧输入框的缺失变量检测
- * - 向父组件转发事件,保持既有对外接口不变
+ * Purpose:
+ * - Make sure variables added/edited in the test area take part in the missing-variable detection of the left input box
+ * - Forward the event to the parent component, keeping the existing external interface unchanged
  */
 const handleTestVariableChange = (name: string, value: string) => {
-    // 🆕 使用 composable 方法设置变量
+    // 🆕 Set the variable using the composable method
     tempVarsManager.setVariable(name, value);
     emit("variable-change", name, value);
 };
 
 /**
- * 🆕 测试区域移除临时变量时的处理
+ * 🆕 Handling when the test area removes a temporary variable
  */
 const handleTestVariableRemove = (name: string) => {
     tempVarsManager.deleteVariable(name);
@@ -1567,17 +1567,17 @@ const handleTestVariableRemove = (name: string) => {
 };
 
 /**
- * 🆕 清空测试区域临时变量时的处理
+ * 🆕 Handling when the test area clears the temporary variables
  */
 const handleClearTemporaryVariables = () => {
-    // 🆕 使用 composable 方法清空所有临时变量
+    // 🆕 Clear all temporary variables using the composable method
     const removedNames = Object.keys(temporaryVariables.value);
     tempVarsManager.clearAll();
     removedNames.forEach((name) => emit("variable-change", name, ""));
 };
 
 /**
- * 🆕 处理优化事件
+ * 🆕 Handle the optimize event
  */
 const handleOptimize = () => {
     if (isAnalyzing.value) return;
@@ -1585,10 +1585,10 @@ const handleOptimize = () => {
 };
 
 /**
- * 处理分析操作
- * - 清空版本链，创建 V0（与优化同级）
- * - 不写入历史（分析不产生新提示词）
- * - 触发 prompt-only 评估
+ * Handle the analyze action
+ * - Clear the version chain and create V0 (same level as optimization)
+ * - Do not write history (analysis does not produce a new prompt)
+ * - Trigger the prompt-only evaluation
  */
 const handleAnalyze = async () => {
     const prompt = contextUserOptimization.prompt;
@@ -1597,19 +1597,19 @@ const handleAnalyze = async () => {
 
     isAnalyzing.value = true;
 
-    // 1. 清空版本链，创建虚拟 V0
+    // 1. Clear the version chain and create a virtual V0
     contextUserOptimization.handleAnalyze();
 
-    // 2. 清理旧的提示词评估结果，避免跨提示词残留
+    // 2. Clear the old prompt evaluation results to avoid leftovers across prompts
     evaluationHandler.evaluation.clearResult('prompt-only');
     evaluationHandler.evaluation.clearResult('prompt-iterate');
 
-    // 3. 收起输入区域
+    // 3. Collapse the input area
     isInputPanelCollapsed.value = true;
 
     await nextTick();
 
-    // 4. 触发 prompt-only 评估
+    // 4. Trigger the prompt-only evaluation
     try {
         await evaluationHandler.handleEvaluate('prompt-only');
     } finally {
@@ -1618,7 +1618,7 @@ const handleAnalyze = async () => {
 };
 
 /**
- * 🆕 处理迭代优化事件
+ * 🆕 Handle the iterative optimization event
  */
 const handleIterate = (payload: IteratePayload) => {
     contextUserOptimization.iterate({
@@ -1629,14 +1629,14 @@ const handleIterate = (payload: IteratePayload) => {
 };
 
 /**
- * 🆕 处理版本切换事件
+ * 🆕 Handle the version switch event
  */
 const handleSwitchVersion = (version: PromptRecord) => {
     contextUserOptimization.switchVersion(version);
 };
 
 /**
- * 🆕 处理 V0 切换事件
+ * 🆕 Handle the V0 switch event
  */
 const handleSwitchToV0 = (version: PromptRecord) => {
     contextUserOptimization.switchToV0(version);
@@ -1678,10 +1678,10 @@ const restoreFromHistory = (payload: unknown) => {
     contextUserOptimization.loadFromHistory(payload);
 };
 
-// 🆕 处理应用改进建议事件（使用 evaluationHandler 提供的工厂方法）
+// 🆕 Handle the apply-improvement-suggestion event (using the factory method provided by evaluationHandler)
 const handleApplyImprovement = evaluationHandler.createApplyImprovementHandler(promptPanelRef);
 
-// 处理保存本地编辑
+// Handle saving local edits
 const handleSaveLocalEdit = async (payload: { note?: string }) => {
     await contextUserOptimization.saveLocalEdit({
         optimizedPrompt: contextUserOptimization.optimizedPrompt || '',
@@ -1690,13 +1690,13 @@ const handleSaveLocalEdit = async (payload: { note?: string }) => {
     });
 };
 
-// 暴露 TestAreaPanel 引用给父组件（用于工具调用等高级功能）
+// Expose the TestAreaPanel reference to the parent component (for advanced features such as tool calls)
 defineExpose({
     testAreaPanelRef,
     restoreFromHistory,
-    contextUserOptimization,  // 🆕 暴露优化器状态，供父组件访问（如AI变量提取）
-    temporaryVariables,        // 🆕 暴露临时变量，供父组件访问
-    // 🆕 提供最小可用的公开 API，避免父组件依赖内部实现细节（不再需要不安全的类型强转访问内部状态）
+    contextUserOptimization,  // 🆕 Expose the optimizer state for the parent component to access (such as AI variable extraction)
+    temporaryVariables,        // 🆕 Expose the temporary variables for the parent component to access
+    // 🆕 Provide a minimal usable public API so the parent does not depend on internal implementation details (no more unsafe type casting to access internal state)
     setPrompt: (prompt: string) => {
         contextUserOptimization.prompt = prompt;
     },
@@ -1793,7 +1793,7 @@ defineExpose({
 }
 
 .variant-cell__model {
-    /* 让模型选择不要无限拉伸：保持紧凑，避免把右侧按钮/布局挤散 */
+    /* Keep the model selection from stretching indefinitely: stay compact to avoid scattering the right-hand buttons/layout */
     flex: 0 1 220px;
     max-width: 220px;
     min-width: 0;

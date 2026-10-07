@@ -1,5 +1,5 @@
 <template>
-    <!-- 变量值输入表单（临时变量编辑区） -->
+    <!-- Variable value input form (temporary variable editing area) -->
     <NCard
         :title="t('test.variables.title')"
         size="small"
@@ -45,7 +45,7 @@
         </template>
 
         <NSpace vertical :size="12">
-            <!-- 变量输入项 -->
+            <!-- Variable input item -->
             <div
                 v-for="varName in displayVariables"
                 :key="varName"
@@ -103,7 +103,7 @@
                     @update:value="handleVariableValueChange(varName, $event)"
                 />
 
-                <!-- 单变量智能填充（允许覆盖已有值；仅 Pro/Image 的变量区启用） -->
+                <!-- Single-variable smart fill (allowed to overwrite existing values; only enabled in the variable area of Pro/Image) -->
                 <NButton
                     v-if="props.showGenerateValues && getVariableSource(varName) === 'test'"
                     size="small"
@@ -118,7 +118,7 @@
                     </NIcon>
                 </NButton>
 
-                <!-- 删除按钮 (仅临时变量显示) -->
+                <!-- Delete button (shown only for temporary variables) -->
                 <NButton
                     v-if="getVariableSource(varName) === 'test'"
                     size="small"
@@ -132,7 +132,7 @@
                         <Trash />
                     </NIcon>
                 </NButton>
-                <!-- 保存到全局按钮 (仅测试变量显示) -->
+                <!-- Save to global button (shown only for test variables) -->
                 <NButton
                     v-if="getVariableSource(varName) === 'test'"
                     size="small"
@@ -148,16 +148,16 @@
                 </NButton>
             </div>
 
-            <!-- 无变量提示 -->
+            <!-- No-variable hint -->
             <NEmpty
                 v-if="displayVariables.length === 0"
                 :description="t('test.variables.noVariables')"
                 size="small"
             />
 
-            <!-- 操作按钮 -->
+            <!-- Action buttons -->
             <NSpace :size="8" justify="end">
-                <!-- 添加变量按钮 -->
+                <!-- Add variable button -->
                 <NButton
                     size="small"
                     :disabled="props.disabled"
@@ -169,7 +169,7 @@
         </NSpace>
     </NCard>
 
-    <!-- 添加变量对话框 -->
+    <!-- Add variable dialog -->
     <NModal
         v-model:show="showAddVariableDialog"
         preset="dialog"

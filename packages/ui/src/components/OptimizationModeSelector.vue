@@ -1,4 +1,4 @@
-<!-- 优化模式选择器组件 - 使用 Naive UI RadioGroup -->
+<!-- Optimization mode selector component - uses Naive UI RadioGroup -->
 <template>
   <NRadioGroup data-testid="optimization-mode-selector"
     :value="modelValue"
@@ -6,7 +6,7 @@
     size="small"
     class="optimization-mode-selector"
   >
-    <!-- 基础模式：系统 | 用户 -->
+    <!-- Basic mode: system | user -->
     <template v-if="functionMode !== 'pro'">
       <NRadioButton
         v-if="!hideSystemOption"
@@ -24,7 +24,7 @@
         {{ userLabel }}
       </NRadioButton>
     </template>
-    <!-- Pro 模式：变量 | 多对话 -->
+    <!-- Pro mode: variable | multi-conversation -->
     <template v-else>
       <NRadioButton
         data-testid="sub-mode-variable"
@@ -58,9 +58,9 @@ type SubMode = BasicSubMode | ProSubMode
 
 interface Props {
   modelValue: SubMode
-  /** 是否隐藏系统提示词选项（用于临时禁用功能） */
+  /** Whether to hide the system prompt option (used to temporarily disable the feature) */
   hideSystemOption?: boolean
-  /** 当前功能模式，用于决定显示文案 */
+  /** Current function mode, used to decide the display text */
   functionMode?: FunctionMode
 }
 
@@ -75,7 +75,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 const emit = defineEmits<Emits>()
 
-// 根据功能模式动态获取按钮文本
+// Get the button text dynamically based on the function mode
 const systemLabel = computed(() => {
   return props.functionMode === 'pro'
     ? t('contextMode.optimizationMode.message')
@@ -101,7 +101,7 @@ const userHelp = computed(() => {
 })
 
 /**
- * 更新优化模式
+ * Update the optimization mode
  */
 const updateOptimizationMode = (mode: SubMode) => {
   emit('update:modelValue', mode)
@@ -110,7 +110,7 @@ const updateOptimizationMode = (mode: SubMode) => {
 </script>
 
 <style scoped>
-/* 响应式设计 - 移动端全宽显示 */
+/* Responsive design - full-width display on mobile */
 @media (max-width: 640px) {
   .optimization-mode-selector {
     width: 100%;

@@ -1,8 +1,8 @@
 /**
- * Electron API 类型定义
+ * Electron API type definitions
  *
- * 仅用于UI包，定义通过 contextBridge 暴露给渲染进程的 Electron API 类型
- * 保持与 desktop/preload.js 中的实际实现同步
+ * Used only by the UI package; defines the Electron API types exposed to the renderer process via contextBridge
+ * Kept in sync with the actual implementation in desktop/preload.js
  */
 
 import type {
@@ -14,7 +14,7 @@ import type {
   ContextMode
 } from '@prompt-optimizer/core'
 
-// 基础响应类型
+// Base response type
 interface ElectronErrorPayload {
   message: string
   code?: string
@@ -27,7 +27,7 @@ interface ElectronResponse<T = unknown> {
   error?: string | ElectronErrorPayload
 }
 
-// 应用相关API
+// App-related APIs
 interface AppAPI {
   getVersion(): Promise<string>
   /** Sync UI locale to Electron main process (for localized native menus, etc.) */
@@ -36,7 +36,7 @@ interface AppAPI {
   quit(): Promise<void>
 }
 
-// 更新器相关API - 简单直接的类型定义
+// Updater-related API - simple and direct type definitions
 interface UpdaterAPI {
   checkUpdate(): Promise<unknown>
   checkAllVersions(): Promise<{
@@ -79,13 +79,13 @@ interface UpdaterAPI {
   }>
 }
 
-// Shell相关API - 简化类型
+// Shell-related API - simplified types
 interface ShellAPI {
   openExternal(url: string): Promise<void>
   showItemInFolder(path: string): Promise<void>
 }
 
-// 事件监听API
+// Event listener API
 interface EventAPI {
   on<K extends keyof ElectronEventMap>(channel: K, listener: (...args: ElectronEventMap[K]) => void): void
   on(channel: string, listener: (...args: unknown[]) => void): void
@@ -123,7 +123,7 @@ interface LlmAPI {
   fetchModelList(provider: string, customConfig?: unknown): Promise<Array<{ value: string; label: string }>>
 }
 
-// 图像生成API
+// Image generation API
 interface ImageAPI {
   generate(request: unknown): Promise<unknown>
   generateText2Image(request: unknown): Promise<unknown>
@@ -137,7 +137,7 @@ interface ImageAPI {
   getDynamicModels(providerId: string, connectionConfig: unknown): Promise<unknown[]>
 }
 
-// 图像模型管理API
+// Image model management API
 interface ImageModelAPI {
   ensureInitialized(): Promise<void>
   isInitialized(): Promise<boolean>
@@ -153,7 +153,7 @@ interface ImageModelAPI {
   validateData(data: unknown): Promise<boolean>
 }
 
-// 上下文管理API
+// Context management API
 interface ContextAPI {
   list(): Promise<ContextListItem[]>
   getCurrentId(): Promise<string>
@@ -173,7 +173,7 @@ interface ContextAPI {
   validateData(data: unknown): Promise<boolean>
 }
 
-// 数据管理API
+// Data management API
 interface DataStorageInfo {
   userDataPath: string
   mainFilePath: string
@@ -193,7 +193,7 @@ interface DataAPI {
   openStorageDirectory(): Promise<boolean>
 }
 
-// 完整的ElectronAPI接口
+// Complete ElectronAPI interface
 interface ElectronAPI {
   app: AppAPI
   updater: UpdaterAPI
@@ -208,13 +208,13 @@ interface ElectronAPI {
   once: EventAPI['once']
 }
 
-// 全局Window类型扩展
+// Global Window type extension
 declare global {
   interface Window {
     electronAPI?: ElectronAPI
   }
 
-  // 扩展Error接口，支持自定义属性
+  // Extend the Error interface to support custom properties
   interface Error {
     detailedMessage?: string
     originalError?: unknown
@@ -223,7 +223,7 @@ declare global {
   }
 }
 
-// 下载进度类型
+// Download progress type
 interface DownloadProgress {
   percent: number
   bytesPerSecond: number
@@ -231,7 +231,7 @@ interface DownloadProgress {
   transferred: number
 }
 
-// 更新信息类型
+// Update info type
 interface UpdateInfo {
   version: string
   releaseDate?: string
@@ -239,7 +239,7 @@ interface UpdateInfo {
   releaseNotes?: string
 }
 
-// 版本检查结果类型
+// Version check result type
 interface VersionCheckResult {
   remoteVersion?: string
   remoteReleaseUrl?: string
@@ -247,7 +247,7 @@ interface VersionCheckResult {
   noVersionFound?: boolean
 }
 
-// 下载结果类型
+// Download result type
 interface DownloadResult {
   hasUpdate: boolean
   message: string
@@ -255,7 +255,7 @@ interface DownloadResult {
   reason?: 'ignored' | 'latest' | 'error'
 }
 
-// 导出类型（可选，用于其他文件引用）
+// Exported types (optional, for reference by other files)
 export type {
   ElectronResponse,
   AppAPI,

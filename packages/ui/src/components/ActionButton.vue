@@ -49,14 +49,14 @@ defineEmits<{
   (e: 'click'): void
 }>()
 
-// 动态计算按钮类型和尺寸，保持与主题的一致性
+// Dynamically compute the button type and size, keeping consistent with the theme
 const buttonType = computed(() => props.type)
 const buttonSize = computed(() => props.size)
 </script>
 
 <style scoped>
 .action-button {
-  /* 保持与原有主题系统的兼容性 */
+  /* Keep compatibility with the existing theme system */
   transition: all 0.2s ease;
 }
 

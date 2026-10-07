@@ -31,12 +31,12 @@ const props = defineProps({
         type: String,
         default: "",
     },
-    // 新增：流式模式标识，用于优化流式渲染性能
+    // New: streaming mode flag, used to optimize streaming rendering performance
     streaming: {
         type: Boolean,
         default: false,
     },
-    // 新增：禁用内部滚动，避免与外层滚动冲突
+    // New: disable internal scrolling to avoid conflicts with the outer scrolling
     disableInternalScroll: {
         type: Boolean,
         default: false,
@@ -46,7 +46,7 @@ const props = defineProps({
 const markdownContainer = ref(null);
 const renderError = ref(null);
 
-// 通用防抖函数
+// General debounce function
 const debounce = (fn, delay) => {
     let timer = null;
     return function (...args) {
@@ -55,14 +55,14 @@ const debounce = (fn, delay) => {
     };
 };
 
-// 统一错误处理
+// Unified error handling
 const handleError = (error, context = "") => {
     console.error(`Markdown ${context} error:`, error);
     renderError.value = error.message;
-    return ""; // 返回空字符串作为默认值
+    return ""; // Return an empty string as the default value
 };
 
-// 创建 markdown-it 实例并配置插件
+// Create the markdown-it instance and configure plugins
 const md = new MarkdownIt({
     html: true,
     breaks: false,
@@ -80,36 +80,36 @@ const md = new MarkdownIt({
     },
 });
 
-// 预处理Markdown内容，移除多余空行
+// Preprocess the Markdown content, removing extra blank lines
 const removeExtraEmptyLines = (content) => {
     if (!content) return "";
     return content.replace(/\n\s*\n\s*(\n\s*)+/g, "\n\n");
 };
 
-// 为代码块添加语言标签的高效实现
+// Efficient implementation for adding language labels to code blocks
 const addLanguageLabels = () => {
     if (!markdownContainer.value) return;
 
     try {
-        // 批量操作避免频繁重排
+        // Batch operations to avoid frequent reflows
         const preElements = markdownContainer.value.querySelectorAll("pre");
         if (!preElements.length) return;
 
         const processedPres = new Set();
 
         preElements.forEach((pre) => {
-            // 如果已经处理过，跳过
+            // If already processed, skip
             if (processedPres.has(pre)) return;
             processedPres.add(pre);
 
-            // 查找代码元素和语言类
+            // Find the code element and the language class
             const codeEl = pre.querySelector("code");
             if (!codeEl || !codeEl.className) return;
 
             const langMatch = codeEl.className.match(/language-(\w+)/);
             if (!langMatch || !langMatch[1]) return;
 
-            // 如果pre已经在pre-wrapper中，只更新标签内容
+            // If the pre is already inside a pre-wrapper, only update the label content
             if (pre.parentNode.classList.contains("pre-wrapper")) {
                 const existingLabel = pre.parentNode.querySelector(
                     ".code-language-label",
@@ -120,7 +120,7 @@ const addLanguageLabels = () => {
                 return;
             }
 
-            // 创建包装容器和标签
+            // Create the wrapper container and label
             const wrapper = document.createElement("div");
             wrapper.className = "pre-wrapper";
 
@@ -128,22 +128,22 @@ const addLanguageLabels = () => {
             label.className = "code-language-label";
             label.textContent = langMatch[1];
 
-            // 获取pre的父元素和位置
+            // Get the parent element and position of the pre
             const parent = pre.parentNode;
             const nextSibling = pre.nextSibling;
 
-            // 构建DOM结构
+            // Build the DOM structure
             wrapper.appendChild(label);
             wrapper.appendChild(pre.cloneNode(true));
 
-            // 替换原始pre
+            // Replace the original pre
             if (nextSibling) {
                 parent.insertBefore(wrapper, nextSibling);
             } else {
                 parent.appendChild(wrapper);
             }
 
-            // 移除原始pre（因为我们已经克隆并添加到wrapper）
+            // Remove the original pre (since we have cloned it and added it to the wrapper)
             parent.removeChild(pre);
         });
     } catch (error) {
@@ -151,12 +151,12 @@ const addLanguageLabels = () => {
     }
 };
 
-// 优化的HTML处理函数
+// Optimized HTML processing function
 const processHTML = (html) => {
     if (!html) return "";
 
     try {
-        // 先将代码块提取出来保存，避免处理
+        // Extract the code blocks and save them first to avoid processing them
         const codeBlocks = [];
         let processedHtml = html.replace(
             /<pre\b[^>]*>([\s\S]*?)<\/pre>/g,
@@ -167,11 +167,11 @@ const processHTML = (html) => {
             },
         );
 
-        // 处理非代码块部分的HTML
+        // Process the HTML of the non-code-block parts
         const parser = new DOMParser();
         const doc = parser.parseFromString(processedHtml, "text/html");
 
-        // 判断是否解析成功
+        // Determine whether parsing succeeded
         const parseError = doc.querySelector("parsererror");
         if (parseError) {
             throw new Error("HTML parsing error");
@@ -179,7 +179,7 @@ const processHTML = (html) => {
 
         const fragment = doc.body;
 
-        // 删除空节点处理函数 - 保持不变
+        // Function for removing empty nodes - unchanged
         const processNode = (node) => {
             const preserveElements = ["HR", "BR"];
             if (
@@ -220,13 +220,13 @@ const processHTML = (html) => {
             }
         };
 
-        // 处理整个文档
+        // Process the whole document
         processNode(fragment);
 
-        // 获取处理后的HTML
+        // Get the processed HTML
         processedHtml = fragment.innerHTML;
 
-        // 将代码块放回原处
+        // Put the code blocks back in place
         codeBlocks.forEach((block, i) => {
             processedHtml = processedHtml.replace(`CODE_BLOCK_${i}`, block);
         });
@@ -237,7 +237,7 @@ const processHTML = (html) => {
     }
 };
 
-// 渲染Markdown内容
+// Render the Markdown content
 const renderMarkdown = () => {
     renderError.value = null;
 
@@ -249,22 +249,22 @@ const renderMarkdown = () => {
     }
 
     try {
-        // 预处理内容
+        // Preprocess the content
         const processedContent = removeExtraEmptyLines(props.content);
 
-        // 使用markdown-it将Markdown转为HTML
+        // Use markdown-it to convert the Markdown to HTML
         const rawHtml = md.render(processedContent);
 
-        // 处理HTML
+        // Process the HTML
         const processedHtml = processHTML(rawHtml);
 
-        // 使用DOMPurify清理HTML
+        // Use DOMPurify to sanitize the HTML
         const cleanHtml = DOMPurify.sanitize(processedHtml);
 
         if (markdownContainer.value) {
             markdownContainer.value.innerHTML = cleanHtml;
 
-            // 使用requestAnimationFrame提高渲染性能
+            // Use requestAnimationFrame to improve rendering performance
             requestAnimationFrame(() => {
                 addLanguageLabels();
             });
@@ -277,70 +277,70 @@ const renderMarkdown = () => {
     }
 };
 
-// 使用防抖处理内容变化，但对流式场景优化
-const debouncedRenderMarkdown = debounce(renderMarkdown, 10); // 从50ms降低到10ms
-const streamingRenderMarkdown = debounce(renderMarkdown, 5); // 流式模式使用更短的延迟
+// Use debouncing to handle content changes, optimized for streaming scenarios
+const debouncedRenderMarkdown = debounce(renderMarkdown, 10); // Reduced from 50ms to 10ms
+const streamingRenderMarkdown = debounce(renderMarkdown, 5); // Streaming mode uses a shorter delay
 
-// 监听content变化时重新渲染
+// Re-render when content changes
 watch(
     () => props.content,
     (newContent) => {
         if (!newContent || newContent.trim() === "") {
-            // 对于空内容，立即渲染，不使用防抖
+            // For empty content, render immediately without debouncing
             renderMarkdown();
             return;
         }
 
-        // 根据是否在流式模式选择不同的渲染策略
+        // Choose a different rendering strategy depending on whether it is in streaming mode
         if (props.streaming) {
-            // 流式模式：使用更短的防抖延迟以获得更快的响应
+            // Streaming mode: use a shorter debounce delay for a faster response
             streamingRenderMarkdown();
         } else {
-            // 普通模式：使用标准防抖
+            // Normal mode: use the standard debounce
             debouncedRenderMarkdown();
         }
     },
     { immediate: true },
 );
 
-// 组件挂载时渲染
+// Render when the component mounts
 onMounted(renderMarkdown);
 </script>
 
 <style>
-/* 基本布局和非颜色样式 */
+/* Basic layout and non-color styles */
 .markdown-content {
     line-height: 1.5;
     word-wrap: break-word;
     overflow-wrap: break-word;
     hyphens: auto;
     /* Pure Naive UI theme - remove custom CSS variables */
-    padding: 0.75rem; /* 提供合适的内边距，与其他组件保持一致 */
+    padding: 0.75rem; /* Provide suitable padding, consistent with other components */
 }
 
-/* 当使用 NScrollbar 时，不需要自己的滚动条 */
+/* When NScrollbar is used, no scrollbar of its own is needed */
 .markdown-content--scrollable {
-    /* 隐藏滚动条但保持可滚动 */
+    /* Hide the scrollbar but keep it scrollable */
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE and Edge */
 }
 
-/* 隐藏 Webkit 滚动条 */
+/* Hide the Webkit scrollbar */
 .markdown-content::-webkit-scrollbar {
     display: none;
 }
 
-/* 移除第一个子元素的上边距，避免顶部空白 */
+/* Remove the top margin of the first child to avoid blank space at the top */
 .markdown-content > *:first-child {
     margin-top: 0 !important;
 }
 
-/* 移除最后一个子元素的下边距，保持底部对齐 */
+/* Remove the bottom margin of the last child to keep the bottom aligned */
 .markdown-content > *:last-child {
     margin-bottom: 0 !important;
 }
 
-/* 使用CSS变量，方便主题切换 */
+/* Use CSS variables to make theme switching easy */
 :root {
     --md-title-spacing: 1em 0;
     --md-spacing-sm: 0.3em 0;
@@ -348,7 +348,7 @@ onMounted(renderMarkdown);
     --md-spacing-lg: 0.8em 0;
 }
 
-/* 标题样式优化 - 使用主题颜色 */
+/* Heading style optimization - uses theme colors */
 .markdown-content h1 {
     line-height: 1.5;
     font-size: 1.6em;
@@ -383,7 +383,7 @@ onMounted(renderMarkdown);
     color: inherit;
 }
 
-/* 段落样式 */
+/* Paragraph styles */
 .markdown-content p {
     line-height: 1.6;
     margin: var(--md-spacing-sm);
@@ -391,7 +391,7 @@ onMounted(renderMarkdown);
     color: inherit;
 }
 
-/* 列表样式 */
+/* List styles */
 .markdown-content ul,
 .markdown-content ol {
     padding-left: 1.5em;
@@ -400,21 +400,21 @@ onMounted(renderMarkdown);
     color: inherit;
 }
 
-/* 设置列表项为紧凑布局 */
+/* Make list items compact */
 .markdown-content li {
     line-height: 1.5;
     margin: var(--md-spacing-sm);
     color: inherit;
 }
 
-/* 嵌套列表优化 */
+/* Nested list optimization */
 .markdown-content li > ul,
 .markdown-content li > ol {
     margin-top: 0;
     margin-bottom: 0;
 }
 
-/* 代码块样式 */
+/* Code block styles */
 .markdown-content pre {
     border-radius: 6px;
     padding: 0.5em;
@@ -423,12 +423,12 @@ onMounted(renderMarkdown);
     position: relative;
     background: rgba(0, 0, 0, 0.02);
     border: 1px solid rgba(0, 0, 0, 0.1);
-    /* 添加滚动条样式 */
+    /* Add scrollbar styles */
     scrollbar-width: thin; /* Firefox */
     -ms-overflow-style: none; /* IE and Edge */
 }
 
-/* Webkit滚动条样式 */
+/* Webkit scrollbar styles */
 .markdown-content pre::-webkit-scrollbar {
     height: 3px;
 }
@@ -447,7 +447,7 @@ onMounted(renderMarkdown);
     top: 0;
     right: 0;
     z-index: 10;
-    /* 其他样式保持不变 */
+    /* Other styles stay unchanged */
 }
 .code-language-label {
     position: absolute;
@@ -476,7 +476,7 @@ onMounted(renderMarkdown);
     border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-/* 引用样式 */
+/* Blockquote styles */
 .markdown-content blockquote {
     padding: 0.1em 0.5em;
     margin: var(--md-spacing-sm);
@@ -487,7 +487,7 @@ onMounted(renderMarkdown);
     color: inherit;
 }
 
-/* 表格样式 */
+/* Table styles */
 .markdown-content table {
     border-collapse: collapse;
     width: 100%;
@@ -510,7 +510,7 @@ onMounted(renderMarkdown);
     font-weight: 600;
 }
 
-/* 响应式表格 */
+/* Responsive tables */
 @media (max-width: 600px) {
     .markdown-content table {
         display: block;
@@ -518,13 +518,13 @@ onMounted(renderMarkdown);
     }
 }
 
-/* 图片样式 */
+/* Image styles */
 .markdown-content img {
     max-width: 100%;
-    height: auto; /* 确保保持纵横比 */
+    height: auto; /* Make sure the aspect ratio is kept */
     box-sizing: border-box;
     margin: var(--md-spacing-sm);
-    /* 增加图片加载中的显示效果 */
+    /* Add a display effect while the image is loading */
     opacity: 1;
     transition: opacity 0.3s ease;
 }
@@ -533,17 +533,17 @@ onMounted(renderMarkdown);
     opacity: 0.5;
 }
 
-/* 水平线样式 */
+/* Horizontal rule styles */
 .markdown-content hr {
     height: 0.25em;
     border: 1;
     margin: 1em 0;
 }
 
-/* 链接样式 */
+/* Link styles */
 .markdown-content a {
     text-decoration: none;
-    transition: color 0.2s ease; /* 平滑颜色变化 */
+    transition: color 0.2s ease; /* Smooth color change */
     color: #18a058;
 }
 

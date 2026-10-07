@@ -1,47 +1,47 @@
 /**
- * 通用选择器选项接口
- * 用于SelectWithConfig组件的强类型数据结构
+ * Generic selector option interface
+ * Strongly typed data structure used by the SelectWithConfig component
  */
 export interface SelectOption<T = unknown> {
-  /** 主要显示文本 */
+  /** Primary display text */
   primary: string
-  /** 次要显示文本（可选） */
+  /** Secondary display text (optional) */
   secondary: string
-  /** 选择器的值 */
+  /** Value of the selector */
   value: string
-  /** 原始数据对象 */
+  /** Raw data object */
   raw: T
-  /** 向后兼容的标签字段（可选） */
+  /** Backward-compatible label field (optional) */
   label?: string
 }
 
 /**
- * 模型配置选项
- * 专用于模型选择器的类型定义
+ * Model config option
+ * Type definitions dedicated to the model selector
  */
 export interface ModelSelectOption extends SelectOption<import('@prompt-optimizer/core').TextModelConfig> {
-  /** 模型名称 */
+  /** Model name */
   primary: string
-  /** 提供商名称 */
+  /** Provider name */
   secondary: string
-  /** 模型键值 */
+  /** Model key */
   value: string
-  /** 原始模型配置 */
+  /** Raw model config */
   raw: import('@prompt-optimizer/core').TextModelConfig
 }
 
 /**
- * 模板配置选项
- * 专用于模板选择器的类型定义
+ * Template config option
+ * Type definitions dedicated to the template selector
  */
 export interface TemplateSelectOption extends SelectOption<import('@prompt-optimizer/core').Template> {
-  /** 模板名称 */
+  /** Template name */
   primary: string
-  /** 模板描述 */
+  /** Template description */
   secondary: string
-  /** 模板ID */
+  /** Template ID */
   value: string
-  /** 原始模板配置 */
+  /** Raw template config */
   raw: import('@prompt-optimizer/core').Template
 }
 

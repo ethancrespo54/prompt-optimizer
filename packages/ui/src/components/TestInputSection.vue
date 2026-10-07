@@ -1,7 +1,7 @@
 <template>
   <div>
     <NSpace vertical :size="8">
-      <!-- 标题和控制区域 -->
+      <!-- Title and control area -->
       <NFlex justify="space-between" align="center" :wrap="false">
         <NText :depth="2" style="font-size: 14px; font-weight: 500;">
           {{ label }}
@@ -25,7 +25,7 @@
         </NButton>
       </NFlex>
 
-      <!-- 输入区域 -->
+      <!-- Input area -->
       <NInput
         :value="modelValue"
         @update:value="$emit('update:modelValue', $event)"
@@ -39,13 +39,13 @@
         :data-testid="props.testId"
       />
 
-      <!-- 帮助文本 -->
+      <!-- Help text -->
       <NText v-if="helpText" :depth="3" style="font-size: 12px;">
         {{ helpText }}
       </NText>
     </NSpace>
 
-    <!-- 全屏弹窗 -->
+    <!-- Fullscreen dialog -->
     <FullscreenDialog v-if="enableFullscreen" v-model="isFullscreen" :title="label">
       <NInput
         v-model:value="fullscreenValue"
@@ -101,7 +101,7 @@ const emit = defineEmits<{
   'update:modelValue': [value: string]
 }>()
 
-// autosize 配置
+// autosize config
 const autosizeConfig = computed(() => {
   const baseConfig = {
     minRows: props.mode === 'compact' ? Math.max(2, props.minRows - 1) : props.minRows,
@@ -111,7 +111,7 @@ const autosizeConfig = computed(() => {
   return baseConfig
 })
 
-// 全屏功能
+// Fullscreen feature
 const { isFullscreen, fullscreenValue, openFullscreen } = useFullscreen(
   computed(() => props.modelValue),
   (value) => emit('update:modelValue', value)

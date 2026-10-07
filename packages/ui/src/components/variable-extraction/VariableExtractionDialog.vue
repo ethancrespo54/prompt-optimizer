@@ -10,7 +10,7 @@
     :mask-closable="false"
   >
     <NSpace vertical :size="16" style="margin-top: 16px;">
-      <!-- 变量名输入 -->
+      <!-- Variable name input -->
       <NFormItem
         :label="t('variableExtraction.variableName')"
         :validation-status="validationStatus"
@@ -24,7 +24,7 @@
         />
       </NFormItem>
 
-      <!-- 变量值显示 (只读) -->
+      <!-- Variable value display (read-only) -->
       <NFormItem :label="t('variableExtraction.variableValue')">
         <NInput
           :value="variableValue"
@@ -33,7 +33,7 @@
         />
       </NFormItem>
 
-      <!-- 变量类型选择 -->
+      <!-- Variable type selection -->
       <NFormItem :label="t('variableExtraction.variableType')">
         <NRadioGroup v-model:value="variableType">
           <NSpace vertical>
@@ -53,7 +53,7 @@
         </NRadioGroup>
       </NFormItem>
 
-      <!-- 全部替换选项 (仅当检测到多个匹配时显示) -->
+      <!-- Replace-all option (only shown when multiple matches are detected) -->
       <NFormItem v-if="occurrenceCount > 1">
         <NCheckbox v-model:checked="replaceAll">
           {{ t('variableExtraction.replaceAll', { count: occurrenceCount }) }}
@@ -84,28 +84,28 @@ import { useToast } from '../../composables/ui/useToast'
 import { VARIABLE_VALIDATION, getVariableNameValidationError } from '../../types/variable'
 
 /**
- * 变量提取对话框组件
+ * Variable extraction dialog component
  *
- * 功能：
- * 1. 允许用户为选中的文本创建变量
- * 2. 支持全局变量和临时变量两种类型
- * 3. 验证变量名合法性
- * 4. 支持批量替换多个相同文本
+ * Features:
+ * 1. Lets the user create a variable for the selected text
+ * 2. Supports two types: global variables and temporary variables
+ * 3. Validates the legality of the variable name
+ * 4. Supports batch replacement of multiple identical texts
  */
 
-// Props 定义
+// Props definition
 interface Props {
-  /** 对话框显示状态 */
+  /** Dialog display state */
   show: boolean
-  /** 选中的文本值 */
+  /** Selected text value */
   selectedText: string
-  /** 已存在的全局变量名列表 */
+  /** List of existing global variable names */
   existingGlobalVariables?: string[]
-  /** 已存在的临时变量名列表 */
+  /** List of existing temporary variable names */
   existingTemporaryVariables?: string[]
-  /** 系统预定义变量名列表 */
+  /** List of system predefined variable names */
   predefinedVariables?: string[]
-  /** 当前文本中该值的出现次数 */
+  /** Number of occurrences of this value in the current text */
   occurrenceCount?: number
 }
 
@@ -116,18 +116,18 @@ const props = withDefaults(defineProps<Props>(), {
   occurrenceCount: 1
 })
 
-// Emits 定义
+// Emits definition
 interface Emits {
-  /** 更新对话框显示状态 */
+  /** Update the dialog display state */
   (e: 'update:show', value: boolean): void
-  /** 确认提取变量 */
+  /** Confirm variable extraction */
   (e: 'confirm', data: {
     variableName: string
     variableValue: string
     variableType: 'global' | 'temporary'
     replaceAll: boolean
   }): void
-  /** 取消操作 */
+  /** Cancel the operation */
   (e: 'cancel'): void
 }
 
@@ -136,7 +136,7 @@ const emit = defineEmits<Emits>()
 const { t } = useI18n()
 const message = useToast()
 
-// 内部状态
+// Internal state
 const isVisible = computed({
   get: () => props.show,
   set: (value) => emit('update:show', value)
@@ -145,28 +145,28 @@ const isVisible = computed({
 const variableName = ref('')
 const variableValue = ref('')
 const variableType = ref<'global' | 'temporary'>('temporary')
-const replaceAll = ref(true) // 默认选中"全部替换"
+const replaceAll = ref(true) // "Replace all" is selected by default
 
 const baseValidationError = computed(() => {
   if (!variableName.value) return null
   return getVariableNameValidationError(variableName.value)
 })
 
-// 变量名验证
+// Variable name validation
 const validationStatus = computed<'success' | 'warning' | 'error' | undefined>(() => {
   if (!variableName.value) return undefined
 
-  // 基础校验（统一规则）
+  // Basic checks (unified rules)
   if (baseValidationError.value) {
     return 'error'
   }
 
-  // 验证规则3: 不能与预定义变量重名
+  // Validation rule 3: must not duplicate a predefined variable name
   if (props.predefinedVariables.includes(variableName.value)) {
     return 'error'
   }
 
-  // 验证规则4: 不能与已有变量重名
+  // Validation rule 4: must not duplicate an existing variable name
   const allExistingVariables = [
     ...props.existingGlobalVariables,
     ...props.existingTemporaryVariables
@@ -211,14 +211,14 @@ const validationMessage = computed(() => {
   return ''
 })
 
-// 监听 props 变化,更新内部状态
+// Watch props changes and update the internal state
 watch(() => props.selectedText, (newValue) => {
   variableValue.value = newValue
 }, { immediate: true })
 
 watch(() => props.show, (newValue) => {
   if (newValue) {
-    // 对话框打开时重置状态
+    // Reset the state when the dialog opens
     variableName.value = ''
     variableValue.value = props.selectedText
     variableType.value = 'temporary'
@@ -226,15 +226,15 @@ watch(() => props.show, (newValue) => {
   }
 })
 
-// 处理变量名输入
+// Handle variable name input
 const handleVariableNameInput = () => {
-  // 自动去除空格
+  // Automatically strip spaces
   variableName.value = variableName.value.replace(/\s/g, '')
 }
 
-// 确认提取
+// Confirm extraction
 const handleConfirm = () => {
-  // 验证变量名
+  // Validate the variable name
   if (!variableName.value) {
     message.warning(t('variableExtraction.validation.required'))
     return false
@@ -245,7 +245,7 @@ const handleConfirm = () => {
     return false
   }
 
-  // 发射确认事件
+  // Emit the confirm event
   emit('confirm', {
     variableName: variableName.value,
     variableValue: variableValue.value,
@@ -253,12 +253,12 @@ const handleConfirm = () => {
     replaceAll: replaceAll.value
   })
 
-  // 关闭对话框
+  // Close the dialog
   isVisible.value = false
   return true
 }
 
-// 取消操作
+// Cancel the operation
 const handleCancel = () => {
   emit('cancel')
   isVisible.value = false
@@ -266,5 +266,5 @@ const handleCancel = () => {
 </script>
 
 <style scoped>
-/* 使用 Naive UI 的默认样式,无需自定义 CSS */
+/* Uses Naive UI's default styles; no custom CSS needed */
 </style>

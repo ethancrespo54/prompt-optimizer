@@ -1,11 +1,11 @@
 /**
- * App 级别历史记录恢复 Composable
+ * App-level history restore composable
  *
- * 负责从历史记录恢复时的智能模式切换和状态恢复逻辑。
- * 包括：
- * - 根据记录类型自动切换功能模式（basic/pro/image）
- * - 自动切换子模式（system/user）
- * - 恢复会话快照和消息级优化状态
+ * Responsible for the smart mode switching and state restore logic when restoring from history.
+ * Includes:
+ * - Automatically switching the function mode (basic/pro/image) based on the record type
+ * - Automatically switching the sub-mode (system/user)
+ * - Restoring session snapshots and message-level optimization state
  */
 
 import { nextTick, type Ref } from 'vue'
@@ -24,7 +24,7 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
     !!value && typeof value === 'object'
 
 /**
- * 历史记录上下文
+ * History record context
  */
 export interface HistoryContext {
     record: PromptRecord
@@ -34,33 +34,33 @@ export interface HistoryContext {
 }
 
 /**
- * 工作区组件引用类型
+ * Workspace component reference type
  */
 interface WorkspaceRef {
     restoreFromHistory?: (payload: unknown) => void
 }
 
 /**
- * useAppHistoryRestore 的配置选项
+ * Config options for useAppHistoryRestore
  */
 export interface AppHistoryRestoreOptions {
-    /** 服务实例 */
+    /** Service instance */
     services: Ref<{ historyManager: IHistoryManager } | null>
-    /** 🔧 Step D: 路由导航函数（替代 setFunctionMode/set*SubMode） */
+    /** 🔧 Step D: route navigation function (replaces setFunctionMode/set*SubMode) */
     navigateToSubModeKey: (toKey: string, opts?: { replace?: boolean }) => void
-    /** 处理上下文模式变更 */
+    /** Handle context mode changes */
     handleContextModeChange: (mode: ContextMode) => Promise<void>
-    /** 处理历史记录选择 */
+    /** Handle history record selection */
     handleSelectHistory: (context: HistoryContext) => Promise<void>
-    /** Pro-multi 会话（多消息会话：消息列表在此持久化，避免写入 optimizationContext） */
+    /** Pro-multi session (multi-message session: the message list is persisted here, avoiding writes to optimizationContext) */
     proMultiMessageSession: ProMultiMessageSessionApi
-    /** 系统工作区组件引用 */
+    /** System workspace component reference */
     systemWorkspaceRef: Ref<WorkspaceRef | null>
-    /** 用户工作区组件引用 */
+    /** User workspace component reference */
     userWorkspaceRef: Ref<WorkspaceRef | null>
-    /** i18n 翻译函数 */
+    /** i18n translation function */
     t: (key: string, params?: Record<string, unknown>) => string
-    /** 外部数据加载中标志（防止模式切换的自动 restore 覆盖外部数据） */
+    /** Flag for external data loading (prevents the automatic restore on mode switch from overwriting external data) */
     isLoadingExternalData: Ref<boolean>
 }
 
@@ -74,15 +74,15 @@ type ConversationSnapshotMessage = {
 }
 
 /**
- * useAppHistoryRestore 的返回值
+ * Return value of useAppHistoryRestore
  */
 export interface AppHistoryRestoreReturn {
-    /** 处理历史记录恢复（带错误处理） */
+    /** Handle history restore (with error handling) */
     handleHistoryReuse: (context: HistoryContext) => Promise<void>
 }
 
 /**
- * App 级别历史记录恢复 Composable
+ * App-level history restore composable
  */
 export function useAppHistoryRestore(options: AppHistoryRestoreOptions): AppHistoryRestoreReturn {
     const {
@@ -100,14 +100,14 @@ export function useAppHistoryRestore(options: AppHistoryRestoreOptions): AppHist
     const toast = useToast()
 
     /**
-     * 处理历史记录使用 - 智能模式切换（内部实现）
+     * Handle using a history record - smart mode switching (internal implementation)
      */
     const handleHistoryReuseImpl = async (context: HistoryContext) => {
         const { record, chain } = context
-        // rootRecord.type 可能包含旧版本类型名，显式转为 string 以兼容历史数据
+        // rootRecord.type may contain old-version type names; explicitly convert it to string for compatibility with historical data
         const rt = chain.rootRecord.type as unknown as string
 
-        // 🆕 扩展模式切换逻辑 - 支持图像模式
+        // 🆕 Extended mode switching logic - supports image mode
         if (
             rt === 'imageOptimize' ||
             rt === 'contextImageOptimize' ||
@@ -115,8 +115,8 @@ export function useAppHistoryRestore(options: AppHistoryRestoreOptions): AppHist
             rt === 'text2imageOptimize' ||
             rt === 'image2imageOptimize'
         ) {
-            // 图像模式：使用 navigateToSubModeKey 导航
-            // 根据记录类型设置正确的图像子模式
+            // Image mode: navigate using navigateToSubModeKey
+            // Set the correct image sub-mode based on the record type
             const meta = (isRecord(record.metadata) ? record.metadata : null) ??
                 (isRecord(chain.rootRecord.metadata) ? chain.rootRecord.metadata : null)
             const hasInputImage = isRecord(meta) && meta.hasInputImage === true
@@ -127,17 +127,17 @@ export function useAppHistoryRestore(options: AppHistoryRestoreOptions): AppHist
                       ? 'image2image'
                       : hasInputImage
                         ? 'image2image'
-                        : 'text2image' // 默认为文生图模式
+                        : 'text2image' // Defaults to text-to-image mode
 
-            // 🔧 Step D: 使用 navigateToSubModeKey 替代 setImageSubMode
+            // 🔧 Step D: use navigateToSubModeKey instead of setImageSubMode
             navigateToSubModeKey(`image-${imageMode}`)
             toast.info(t('toast.info.switchedToImageMode'))
 
-            // 🆕 图像模式专用数据回填逻辑
-            // 等待路由切换完成后再回填数据
+            // 🆕 Data backfill logic dedicated to image mode
+            // Wait for the route switch to complete before backfilling the data
             await nextTick()
 
-            // 🆕 图像模式专用数据回填逻辑
+            // 🆕 Data backfill logic dedicated to image mode
             const imageHistoryData = {
                 originalPrompt: record.originalPrompt || chain.rootRecord.originalPrompt,
                 optimizedPrompt: record.optimizedPrompt,
@@ -145,11 +145,11 @@ export function useAppHistoryRestore(options: AppHistoryRestoreOptions): AppHist
                 chainId: chain.chainId,
                 versions: chain.versions,
                 currentVersionId: record.id,
-                imageMode: imageMode, // 添加图像模式信息
-                templateId: record.templateId || chain.rootRecord.templateId, // 添加模板ID以便恢复模板选择
+                imageMode: imageMode, // Add the image mode info
+                templateId: record.templateId || chain.rootRecord.templateId, // Add the template ID so the template selection can be restored
             }
 
-            // 触发图像工作区数据恢复事件
+            // Trigger the image workspace data restore event
             if (typeof window !== 'undefined') {
                 window.dispatchEvent(
                     new CustomEvent('image-workspace-restore', {
@@ -159,50 +159,50 @@ export function useAppHistoryRestore(options: AppHistoryRestoreOptions): AppHist
             }
 
             toast.success(t('toast.success.imageHistoryRestored'))
-            return // 图像模式不需要调用原有的历史记录处理逻辑
+            return // Image mode does not need the original history handling logic
         } else {
-            // 根据链条的根记录类型自动切换功能模式（支持新旧类型名）
+            // Automatically switch the function mode based on the root record type of the chain (supports new and old type names)
             const isContext =
                 rt === 'conversationMessageOptimize' ||
-                rt === 'contextSystemOptimize' || // 旧类型名（向后兼容）
+                rt === 'contextSystemOptimize' || // Old type name (backward compatible)
                 rt === 'contextUserOptimize' ||
                 rt === 'contextIterate'
             const targetFunctionMode: 'basic' | 'pro' = isContext ? 'pro' : 'basic'
 
-            // 根据根记录类型确定应该切换到的优化模式
+            // Determine the optimization mode to switch to based on the root record type
             let targetMode: OptimizationMode
             if (rt === 'optimize' || rt === 'conversationMessageOptimize') {
                 targetMode = 'system'
             } else if (rt === 'userOptimize' || rt === 'contextUserOptimize') {
                 targetMode = 'user'
             } else {
-                // 兜底：从根记录的 metadata 中获取优化模式
+                // Fallback: get the optimization mode from the root record's metadata
                 targetMode = chain.rootRecord.metadata?.optimizationMode || 'system'
             }
 
-            // 🔧 Step D: 使用 navigateToSubModeKey 一次性导航到目标路由
-            // 不再分两步（先切 functionMode 再切 subMode）
+            // 🔧 Step D: use navigateToSubModeKey to navigate to the target route in one step
+            // No longer two steps (switch functionMode first, then subMode)
             const targetKey =
                 targetFunctionMode === 'pro'
                     ? `pro-${targetMode === 'system' ? 'multi' : 'variable'}`
                     : `basic-${targetMode}`
             navigateToSubModeKey(targetKey)
 
-            // 等待路由切换完成
+            // Wait for the route switch to complete
             await nextTick()
 
-            // 更新 toast 提示（如果需要）
+            // Update the toast message (if needed)
             toast.info(
                 t('toast.info.optimizationModeAutoSwitched', {
                     mode: targetMode === 'system' ? t('common.system') : t('common.user'),
                 }),
             )
 
-            // ❶ 调用原有的历史记录处理逻辑（更新全局 optimizer 状态）
+            // ❶ Call the original history handling logic (update the global optimizer state)
             await handleSelectHistory(context)
 
             /**
-             * ❷ Context User 专属：恢复组件内部状态
+             * ❷ Context User only: restore the component's internal state
              */
             if (
                 rt === 'contextUserOptimize' ||
@@ -216,11 +216,11 @@ export function useAppHistoryRestore(options: AppHistoryRestoreOptions): AppHist
                 })
             }
 
-            // 🆕 上下文-多消息模式专属：恢复消息级优化状态
+            // 🆕 Context multi-message mode only: restore the message-level optimization state
             if (rt === 'conversationMessageOptimize' || rt === 'contextSystemOptimize') {
-                await nextTick() // 等待基础状态恢复完成
+                await nextTick() // Wait for the basic state restore to finish
 
-                // 🆕 优先使用会话快照恢复完整会话（支持精确版本恢复）
+                // 🆕 Prefer using the session snapshot to restore the full session (supports precise version restore)
                 let conversationSnapshot:
                     | ConversationSnapshotMessage[]
                     | undefined
@@ -230,14 +230,14 @@ export function useAppHistoryRestore(options: AppHistoryRestoreOptions): AppHist
                     conversationSnapshot =
                         conversationSnapshotRaw as ConversationSnapshotMessage[]
                     console.log(
-                        '[App] 从历史记录恢复会话快照，消息数:',
+                        '[App] Restored the session snapshot from history, message count:',
                         conversationSnapshot.length,
                     )
 
-                    // 🆕 精确版本恢复：为每条消息加载其指定的版本
+                    // 🆕 Precise version restore: load the specified version for each message
                 const restoredMessages = await Promise.all(
                         conversationSnapshot.map(async (snapshotMsg) => {
-                            // 如果快照包含 chainId 和 appliedVersion，尝试精确恢复
+                            // If the snapshot contains chainId and appliedVersion, try a precise restore
                             if (
                                 snapshotMsg.chainId &&
                                 snapshotMsg.appliedVersion !== undefined &&
@@ -280,22 +280,22 @@ export function useAppHistoryRestore(options: AppHistoryRestoreOptions): AppHist
                                         }
                                     } else {
                                         console.warn(
-                                            `[App] 消息 ${snapshotMsg.id} 版本 v${snapshotMsg.appliedVersion} 不存在，使用快照内容`,
+                                            `[App] Message ${snapshotMsg.id} version v${snapshotMsg.appliedVersion} does not exist, using the snapshot content`,
                                         )
                                         console.warn(
-                                            `[App] 可用版本:`,
+                                            `[App] Available versions:`,
                                             msgChain.versions.map((v) => v.version),
                                         )
                                     }
                                 } catch (error) {
                                     console.warn(
-                                        `[App] 消息 ${snapshotMsg.id} 版本加载失败，使用快照内容:`,
+                                        `[App] Failed to load the version of message ${snapshotMsg.id}, using the snapshot content:`,
                                         error,
                                     )
                                 }
                             }
 
-                            // 回退策略：使用快照中保存的文本内容
+                            // Fallback strategy: use the text content saved in the snapshot
                             return {
                                 id: snapshotMsg.id,
                                 role: snapshotMsg.role,
@@ -337,17 +337,17 @@ export function useAppHistoryRestore(options: AppHistoryRestoreOptions): AppHist
                     if (targetMessage) {
                         toast.success(t('toast.success.conversationRestored'))
                     } else if (messageId) {
-                        console.warn('[App] 会话快照中未找到被优化的消息 ID:', messageId)
+                        console.warn('[App] The optimized message ID was not found in the session snapshot:', messageId)
                         toast.warning(t('toast.warning.messageNotFoundInSnapshot'))
                     }
                 } else if (messageId) {
                     if (targetMessage) {
                         console.log(
-                            '[App] 历史记录无会话快照，尝试在当前会话中查找消息（旧版本数据）',
+                            '[App] The history record has no session snapshot, trying to find the message in the current session (legacy data)',
                         )
                         toast.warning(t('toast.warning.restoredFromLegacyHistory'))
                     } else {
-                        console.warn('[App] 旧版本历史记录中未找到消息 ID:', messageId)
+                        console.warn('[App] The message ID was not found in the legacy history record:', messageId)
                         toast.warning(t('toast.warning.messageNotFoundInSnapshot'))
                     }
                 }
@@ -356,21 +356,21 @@ export function useAppHistoryRestore(options: AppHistoryRestoreOptions): AppHist
     }
 
     /**
-     * 历史记录恢复的错误处理包装器
+     * Error handling wrapper for history restore
      */
     const handleHistoryReuse = async (context: HistoryContext) => {
         try {
-            // 🔧 设置外部数据加载标志，防止模式切换的自动 restore 覆盖外部数据
+            // 🔧 Set the external data loading flag to prevent the automatic restore on mode switch from overwriting external data
             isLoadingExternalData.value = true
 
             await handleHistoryReuseImpl(context)
         } catch (error) {
-            // 捕获历史记录恢复过程中的所有错误
-            console.error('[App] 历史记录恢复失败:', error)
+            // Catch all errors during history restore
+            console.error('[App] History restore failed:', error)
             const errorMessage = error instanceof Error ? error.message : String(error)
             toast.error(t('toast.error.historyRestoreFailed', { error: errorMessage }))
         } finally {
-            // 🔧 恢复完成，重置标志，允许正常的模式切换 restore
+            // 🔧 Restore finished; reset the flag to allow normal mode-switch restores
             isLoadingExternalData.value = false
         }
     }

@@ -3,17 +3,17 @@ import { ref, nextTick, computed } from 'vue'
 import { useAccessibility } from './useAccessibility'
 
 export interface FocusManagerOptions {
-  /** 容器选择器或元素 */
+  /** Container selector or element */
   container?: HTMLElement | string
-  /** 是否循环焦点 */
+  /** Whether to cycle the focus */
   loop?: boolean
-  /** 是否包含隐藏元素 */
+  /** Whether to include hidden elements */
   includeHidden?: boolean
-  /** 自定义可焦点元素选择器 */
+  /** Custom focusable element selector */
   focusableSelector?: string
-  /** 焦点变化回调 */
+  /** Focus change callback */
   onFocusChange?: (element: HTMLElement, index: number) => void
-  /** 边界处理回调 */
+  /** Boundary handling callback */
   onBoundary?: (direction: 'start' | 'end') => void
 }
 
@@ -28,14 +28,14 @@ export interface FocusState {
 export function useFocusManager(options: FocusManagerOptions = {}) {
   const { announce } = useAccessibility('FocusManager')
   
-  // 状态管理
+  // State management
   const focusableElements = ref<HTMLElement[]>([])
   const currentFocusIndex = ref(-1)
   const isTrapped = ref(false)
   const containerRef = ref<HTMLElement | null>(null)
   const previousActiveElement = ref<Element | null>(null)
   
-  // 默认可焦点元素选择器
+  // Default focusable element selector
   const defaultFocusableSelector = [
     'button:not([disabled]):not([tabindex="-1"])',
     'input:not([disabled]):not([tabindex="-1"])',
@@ -49,7 +49,7 @@ export function useFocusManager(options: FocusManagerOptions = {}) {
     'details summary:not([tabindex="-1"])'
   ].join(', ')
   
-  // 计算属性
+  // Computed properties
   const focusState = computed<FocusState>(() => ({
     currentIndex: currentFocusIndex.value,
     totalElements: focusableElements.value.length,
@@ -63,7 +63,7 @@ export function useFocusManager(options: FocusManagerOptions = {}) {
     currentFocusIndex.value < focusableElements.value.length
   )
   
-  // 获取容器元素
+  // Get the container element
   const getContainer = (): HTMLElement => {
     if (containerRef.value) return containerRef.value
     
@@ -84,7 +84,7 @@ export function useFocusManager(options: FocusManagerOptions = {}) {
     return container
   }
   
-  // 查找可焦点元素
+  // Find focusable elements
   const findFocusableElements = (): HTMLElement[] => {
     const container = getContainer()
     const selector = options.focusableSelector || defaultFocusableSelector
@@ -93,11 +93,11 @@ export function useFocusManager(options: FocusManagerOptions = {}) {
       container.querySelectorAll(selector)
     ) as HTMLElement[]
     
-    // 过滤掉不可见元素（除非特别指定包含）
+    // Filter out invisible elements (unless explicitly included)
     return elements.filter(element => {
       if (options.includeHidden) return true
       
-      // 检查元素是否可见
+      // Check whether the element is visible
       const style = window.getComputedStyle(element)
       return style.display !== 'none' && 
              style.visibility !== 'hidden' && 
@@ -107,12 +107,12 @@ export function useFocusManager(options: FocusManagerOptions = {}) {
     })
   }
   
-  // 更新可焦点元素列表
+  // Update the focusable element list
   const updateFocusableElements = () => {
     const elements = findFocusableElements()
     focusableElements.value = elements
     
-    // 如果当前焦点索引无效，重置
+    // If the current focus index is invalid, reset it
     if (currentFocusIndex.value >= elements.length) {
       currentFocusIndex.value = elements.length > 0 ? 0 : -1
     }
@@ -120,7 +120,7 @@ export function useFocusManager(options: FocusManagerOptions = {}) {
     return elements
   }
   
-  // 设置焦点到指定元素
+  // Set the focus to the given element
   const focusElement = async (element: HTMLElement, announceChange = true) => {
     try {
       const index = focusableElements.value.indexOf(element)
@@ -143,7 +143,7 @@ export function useFocusManager(options: FocusManagerOptions = {}) {
                      element.getAttribute('title') || 
                      `${role} ${currentFocusIndex.value + 1}`
         
-        announce(`已聚焦到 ${label}`, 'polite')
+        announce(`Focused on ${label}`, 'polite')
       }
       
       options.onFocusChange?.(element, currentFocusIndex.value)
@@ -155,7 +155,7 @@ export function useFocusManager(options: FocusManagerOptions = {}) {
     }
   }
   
-  // 设置焦点到指定索引
+  // Set the focus to the given index
   const focusIndex = async (index: number, announceChange = true) => {
     const elements = focusableElements.value
     if (elements.length === 0 || index < 0 || index >= elements.length) {
@@ -165,7 +165,7 @@ export function useFocusManager(options: FocusManagerOptions = {}) {
     return await focusElement(elements[index], announceChange)
   }
   
-  // 移动焦点
+  // Move the focus
   const moveFocus = async (direction: 'next' | 'previous' | 'first' | 'last') => {
     const elements = updateFocusableElements()
     if (elements.length === 0) return false
@@ -209,11 +209,11 @@ export function useFocusManager(options: FocusManagerOptions = {}) {
     return await focusIndex(newIndex)
   }
   
-  // 启用焦点陷阱
+  // Enable the focus trap
   const trapFocus = async () => {
     if (isTrapped.value) return
     
-    // 保存当前活动元素
+    // Save the currently active element
     previousActiveElement.value = document.activeElement
     
     isTrapped.value = true
@@ -224,37 +224,37 @@ export function useFocusManager(options: FocusManagerOptions = {}) {
       return
     }
     
-    // 聚焦第一个元素
+    // Focus the first element
     await focusElement(elements[0])
     
-    // 添加键盘事件监听
+    // Add the keyboard event listener
     const container = getContainer()
     container.addEventListener('keydown', handleKeyDown)
     
-    announce('焦点已限制在当前区域内', 'assertive')
+    announce('Focus is now restricted to the current area', 'assertive')
   }
   
-  // 释放焦点陷阱
+  // Release the focus trap
   const releaseFocus = () => {
     if (!isTrapped.value) return
     
     isTrapped.value = false
     
-    // 移除键盘事件监听
+    // Remove the keyboard event listener
     const container = getContainer()
     container.removeEventListener('keydown', handleKeyDown)
     
-    // 恢复之前的焦点
+    // Restore the previous focus
     if (previousActiveElement.value && 
         typeof (previousActiveElement.value as HTMLElement).focus === 'function') {
       (previousActiveElement.value as HTMLElement).focus()
     }
     
     previousActiveElement.value = null
-    announce('焦点限制已解除', 'polite')
+    announce('Focus restriction released', 'polite')
   }
   
-  // 键盘事件处理
+  // Keyboard event handling
   const handleKeyDown = (event: KeyboardEvent) => {
     if (!isTrapped.value) return
     
@@ -299,16 +299,16 @@ export function useFocusManager(options: FocusManagerOptions = {}) {
     }
   }
   
-  // 查找最近的可焦点元素
+  // Find the nearest focusable element
   const findNearestFocusable = (targetElement: HTMLElement): HTMLElement | null => {
     const elements = updateFocusableElements()
     if (elements.length === 0) return null
     
-    // 如果目标元素就在列表中
+    // If the target element is in the list
     const exactIndex = elements.indexOf(targetElement)
     if (exactIndex !== -1) return targetElement
     
-    // 查找最近的元素
+    // Find the nearest element
     const container = getContainer()
     const walker = document.createTreeWalker(
       container,
@@ -326,12 +326,12 @@ export function useFocusManager(options: FocusManagerOptions = {}) {
     return walker.nextNode() as HTMLElement || walker.previousNode() as HTMLElement
   }
   
-  // 确保焦点在可见区域内
+  // Make sure the focus is within the visible area
   const ensureVisible = (element?: HTMLElement) => {
     const target = element || focusState.value.currentElement
     if (!target) return
     
-    // 滚动到元素可见区域
+    // Scroll to the visible area of the element
     target.scrollIntoView({
       behavior: 'smooth',
       block: 'nearest',
@@ -339,7 +339,7 @@ export function useFocusManager(options: FocusManagerOptions = {}) {
     })
   }
   
-  // 创建焦点指示器
+  // Create the focus indicator
   const createFocusIndicator = () => {
     let indicator = document.getElementById('focus-manager-indicator')
     if (!indicator) {
@@ -359,7 +359,7 @@ export function useFocusManager(options: FocusManagerOptions = {}) {
     return indicator
   }
   
-  // 更新焦点指示器位置
+  // Update the focus indicator position
   const updateFocusIndicator = () => {
     const element = focusState.value.currentElement
     if (!element) return
@@ -374,7 +374,7 @@ export function useFocusManager(options: FocusManagerOptions = {}) {
     indicator.style.display = 'block'
   }
   
-  // 隐藏焦点指示器
+  // Hide the focus indicator
   const hideFocusIndicator = () => {
     const indicator = document.getElementById('focus-manager-indicator')
     if (indicator) {
@@ -382,7 +382,7 @@ export function useFocusManager(options: FocusManagerOptions = {}) {
     }
   }
   
-  // 清理资源
+  // Clean up resources
   const destroy = () => {
     releaseFocus()
     hideFocusIndicator()
@@ -393,12 +393,12 @@ export function useFocusManager(options: FocusManagerOptions = {}) {
   }
   
   return {
-    // 状态
+    // State
     focusState,
     focusableElements: focusableElements,
     hasValidFocus,
     
-    // 方法
+    // Methods
     updateFocusableElements,
     focusElement,
     focusIndex,

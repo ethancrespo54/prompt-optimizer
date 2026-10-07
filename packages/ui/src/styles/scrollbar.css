@@ -1,4 +1,4 @@
-/* 自定义滚动条样式 */
+/* Custom scrollbar styles */
 .custom-select {
   -webkit-appearance: none !important;
   -moz-appearance: none !important;
@@ -10,7 +10,7 @@
   display: none;
 }
 
-/* 优化滚动条样式 */
+/* Optimized scrollbar styles */
 ::-webkit-scrollbar {
   width: 4px;
 }
@@ -28,7 +28,7 @@
   background: rgba(255, 255, 255, 0.3);
 }
 
-/* 隐藏水平滚动条 */
+/* Hide the horizontal scrollbar */
 ::-webkit-scrollbar-horizontal {
   display: none;
 } 

@@ -1,6 +1,6 @@
 /**
- * UI层变量管理器
- * 负责自定义变量的管理、存储和解析
+ * UI layer variable manager
+ * Responsible for managing, storing, and resolving custom variables
  */
 
 import type { IPreferenceService } from '@prompt-optimizer/core';
@@ -17,14 +17,14 @@ import {
   type PredefinedVariable
 } from '../types/variable';
 
-// 存储键
+// Storage keys
 const STORAGE_KEYS = {
   VARIABLES: 'variableManager.storage',
   ADVANCED_MODE: 'variableManager.advancedMode'
 } as const;
 
 /**
- * 变量扫描缓存条目
+ * Variable scan cache entry
  */
 interface ScanCacheEntry {
   content: string;
@@ -33,13 +33,13 @@ interface ScanCacheEntry {
 }
 
 /**
- * 🆕 工厂函数：创建并初始化 VariableManager（推荐使用）
- * @param preferenceService - 偏好设置服务
- * @returns 已初始化的 VariableManager 实例
+ * 🆕 Factory function: create and initialize a VariableManager (recommended)
+ * @param preferenceService - Preference service
+ * @returns An initialized VariableManager instance
  *
  * @example
  * const manager = await createVariableManager(preferenceService);
- * // 此时数据已加载完成，可以安全使用
+ * // The data has finished loading at this point, so it is safe to use
  * const vars = manager.listVariables();
  */
 export async function createVariableManager(
@@ -51,43 +51,43 @@ export async function createVariableManager(
 }
 
 /**
- * 变量管理器实现
+ * Variable manager implementation
  *
- * ⚠️ 注意：直接使用 new VariableManager() 创建实例时，需要手动调用 waitForInitialization()
- * 推荐使用 createVariableManager() 工厂函数，它会自动处理初始化。
+ * ⚠️ Note: when creating an instance directly with new VariableManager(), waitForInitialization() must be called manually
+ * The createVariableManager() factory function is recommended, as it handles initialization automatically.
  */
 export class VariableManager implements IVariableManager {
   private customVariables: Record<string, string> = {};
   private advancedModeEnabled: boolean = false;
   private lastConversationMessages: ConversationMessage[] = [];
 
-  // 🆕 初始化 Promise，用于等待异步加载完成
+  // 🆕 Initialization Promise, used to wait for the async load to complete
   private _initPromise: Promise<void>;
 
-  // 🆕 数据加载完成后的回调（可选）
+  // 🆕 Optional callback after the data finishes loading
   private _onDataLoaded?: () => void;
 
-  // 变量扫描缓存
+  // Variable scan cache
   private scanCache: Map<string, ScanCacheEntry> = new Map();
-  private readonly CACHE_EXPIRY_MS = 5 * 60 * 1000; // 5分钟缓存
-  private readonly MAX_CACHE_SIZE = 100; // 最大缓存条目数
+  private readonly CACHE_EXPIRY_MS = 5 * 60 * 1000; // 5-minute cache
+  private readonly MAX_CACHE_SIZE = 100; // Maximum number of cache entries
 
   constructor(private preferenceService: IPreferenceService) {
-    // 保存 Promise，让外部可以等待初始化完成
+    // Save the Promise so that external code can wait for initialization to complete
     this._initPromise = this.loadFromStorage();
   }
 
-  // 等待初始化完成
+  // Wait for initialization to complete
   async waitForInitialization(): Promise<void> {
     await this._initPromise;
   }
 
-  // 设置数据加载完成后的回调（可选，用于通知外部刷新）
+  // Set the callback after the data finishes loading (optional, used to notify outside code to refresh)
   setOnDataLoaded(callback: () => void): void {
     this._onDataLoaded = callback;
   }
 
-  // 变量CRUD操作
+  // Variable CRUD operations
   setVariable(name: string, value: string): void {
     if (!this.validateVariableName(name)) {
       const reason = getVariableNameValidationError(name)
@@ -161,13 +161,13 @@ export class VariableManager implements IVariableManager {
     return { ...this.customVariables };
   }
 
-  // 变量解析
+  // Variable resolution
   resolveAllVariables(context?: Record<string, unknown>): Record<string, string> {
-    // 获取预定义变量的值
+    // Get the value of a predefined variable
     const predefinedValues: Record<string, string> = {};
     
     if (context) {
-      // 从上下文中提取预定义变量
+      // Extract the predefined variables from the context
       for (const varName of PREDEFINED_VARIABLES) {
         if (Object.prototype.hasOwnProperty.call(context, varName)) {
           const value = context[varName];
@@ -177,17 +177,17 @@ export class VariableManager implements IVariableManager {
         }
       }
     } else {
-      // 没有上下文时，预定义变量为空
+      // Without a context, the predefined variables are empty
       for (const varName of PREDEFINED_VARIABLES) {
         predefinedValues[varName] = '';
       }
     }
 
-    // 合并预定义变量和自定义变量（自定义变量优先级更高，但不能覆盖预定义变量）
+    // Merge predefined and custom variables (custom variables have higher priority but cannot override predefined variables)
     return { ...predefinedValues, ...this.customVariables };
   }
 
-  // 验证方法
+  // Validation methods
   validateVariableName(name: string): boolean {
     return isValidVariableName(name)
   }
@@ -195,7 +195,7 @@ export class VariableManager implements IVariableManager {
   scanVariablesInContent(content: string): string[] {
     const variables: string[] = [];
     
-    // 防御性编程：确保content是字符串类型
+    // Defensive programming: make sure content is a string
     if (typeof content !== 'string') {
       console.warn('[VariableManager] scanVariablesInContent received non-string input:', typeof content, content);
       return variables;
@@ -222,7 +222,7 @@ export class VariableManager implements IVariableManager {
     return variables;
   }
 
-  // 变量来源检查
+  // Variable source check
   getVariableSource(name: string): VariableSource {
     return this.isPredefinedVariable(name) ? 'predefined' : 'custom';
   }
@@ -231,7 +231,7 @@ export class VariableManager implements IVariableManager {
     return PREDEFINED_VARIABLES.includes(name as PredefinedVariable);
   }
 
-  // 高级模式状态管理
+  // Advanced mode state management
   getAdvancedModeEnabled(): boolean {
     return this.advancedModeEnabled;
   }
@@ -241,7 +241,7 @@ export class VariableManager implements IVariableManager {
     this.saveToStorage();
   }
 
-  // 会话消息管理
+  // Conversation message management
   getLastConversationMessages(): ConversationMessage[] {
     return [...this.lastConversationMessages];
   }
@@ -251,7 +251,7 @@ export class VariableManager implements IVariableManager {
     this.saveToStorage();
   }
 
-  // 缺失变量检测
+  // Missing variable detection
   detectMissingVariables(
     content: string | ConversationMessage[], 
     availableVariables?: Record<string, string>
@@ -260,24 +260,24 @@ export class VariableManager implements IVariableManager {
     const usedVariables = new Set<string>();
 
     if (typeof content === 'string') {
-      // 单个字符串内容
+      // Single string content
       const foundVariables = this.scanVariablesInContent(content);
       foundVariables.forEach(varName => usedVariables.add(varName));
     } else {
-      // 消息数组
+      // Message array
       content.forEach(message => {
         const foundVariables = this.scanVariablesInContent(message.content);
         foundVariables.forEach(varName => usedVariables.add(varName));
       });
     }
 
-    // 返回缺失的变量
+    // Return the missing variables
     return Array.from(usedVariables).filter(varName => 
       variables[varName] === undefined || String(variables[varName]).trim() === ''
     );
   }
 
-  // 变量替换
+  // Variable substitution
   replaceVariables(content: string, variables?: Record<string, string>): string {
     const finalVariables = variables || this.resolveAllVariables();
     
@@ -290,12 +290,12 @@ export class VariableManager implements IVariableManager {
 
       const value = finalVariables[trimmedName];
       
-      // 如果变量不存在，保留原始占位符（不要静默失败）
+      // If the variable does not exist, keep the original placeholder (do not fail silently)
       return value !== undefined ? String(value) : match;
     });
   }
 
-  // 数据持久化
+  // Data persistence
   private async loadFromStorage(): Promise<void> {
     try {
       const storage = await this.preferenceService.get<VariableStorage>(
@@ -322,13 +322,13 @@ export class VariableManager implements IVariableManager {
       }
       this.customVariables = sanitized;
 
-      // 触发回调通知外部数据已加载
+      // Trigger the callback to notify outside code that the data has loaded
       if (this._onDataLoaded) {
         this._onDataLoaded();
       }
     } catch (error) {
       console.warn('[VariableManager] Failed to load from storage:', error);
-      // 继续使用默认值
+      // Continue using the default values
     }
   }
 
@@ -343,11 +343,11 @@ export class VariableManager implements IVariableManager {
       await this.preferenceService.set(STORAGE_KEYS.VARIABLES, storage);
     } catch (error) {
       console.error('[VariableManager] Failed to save to storage:', error);
-      // 不抛出错误，避免影响用户操作
+      // Do not throw, to avoid affecting user operations
     }
   }
 
-  // 调试和工具方法
+  // Debugging and utility methods
   exportVariables(): string {
     const exportData = {
       customVariables: this.customVariables,
@@ -363,7 +363,7 @@ export class VariableManager implements IVariableManager {
       const data = JSON.parse(jsonData);
       
       if (data.customVariables && typeof data.customVariables === 'object') {
-        // 验证每个变量名
+        // Validate each variable name
         for (const [name, value] of Object.entries(data.customVariables)) {
           if (typeof value === 'string' && this.validateVariableName(name)) {
             this.customVariables[name] = value;
@@ -387,7 +387,7 @@ export class VariableManager implements IVariableManager {
     }
   }
 
-  // 获取变量统计信息
+  // Get variable statistics
   getStatistics(): {
     customVariableCount: number;
     predefinedVariableCount: number;

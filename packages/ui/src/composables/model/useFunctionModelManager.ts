@@ -1,7 +1,7 @@
 /**
- * 功能模型管理器 Composable
+ * Function model manager composable
  *
- * 提供评估模型配置的响应式接口
+ * Provides a reactive interface for the evaluation model config
  */
 
 import { ref, computed, watch, type Ref, type ComputedRef } from 'vue'
@@ -12,56 +12,56 @@ import {
 import type { AppServices } from '../../types/services'
 
 /**
- * 功能模型管理器返回接口
+ * Function model manager return interface
  */
 export interface UseFunctionModelManagerReturn {
-  /** 评估模型 */
+  /** Evaluation model */
   evaluationModel: Ref<string>
-  /** 有效的评估模型（如果未设置则跟随当前全局优化模型） */
+  /** Effective evaluation model (follows the current global optimize model if not set) */
   effectiveEvaluationModel: ComputedRef<string>
-  /** 是否正在加载 */
+  /** Whether loading */
   isLoading: Ref<boolean>
-  /** 是否已初始化 */
+  /** Whether initialized */
   isInitialized: Ref<boolean>
 
-  /** 设置评估模型 */
+  /** Set the evaluation model */
   setEvaluationModel: (modelId: string) => Promise<void>
-  /** 获取有效评估模型（兼容旧 API） */
+  /** Get the effective evaluation model (compatible with the old API) */
   getEffectiveEvaluationModel: () => ComputedRef<string>
 
-  /** 初始化 */
+  /** Initialize */
   initialize: () => Promise<void>
-  /** 刷新配置 */
+  /** Refresh the config */
   refresh: () => Promise<void>
 }
 
-// 全局单例实例（评估模型配置是全局的，所有组件共享）
-// 注意：单例模式适用于当前架构（Web/Extension/Desktop 各自独立进程/页面）
-// 如果未来出现同一页面多宿主场景，需要改为 keyed 单例或依赖注入模式
+// Global singleton instance (the evaluation model config is global and shared by all components)
+// Note: the singleton pattern fits the current architecture (Web/Extension/Desktop each run in their own process/page)
+// If a multi-host scenario on the same page ever appears, switch to a keyed singleton or dependency injection
 let instance: UseFunctionModelManagerReturn | null = null
-// 保存可更新的 globalOptimizeModelKey 引用
+// Keep an updatable reference to globalOptimizeModelKey
 let globalOptimizeModelKeyRef: Ref<string> | ComputedRef<string> | null = null
 
 /**
- * 功能模型管理器 Composable
+ * Function model manager composable
  *
- * 使用全局单例模式，因为评估模型配置是全局设置，不需要按 services 区分。
+ * Uses the global singleton pattern, because the evaluation model config is a global setting and does not need to be distinguished by services.
  *
- * 架构约束：
- * - 当前 Web/Extension/Desktop 各自独立运行，不共享 JS 上下文
- * - 单例绑定首次传入的 services，后续调用复用同一实例
- * - 如需多宿主支持，可改用 resetFunctionModelManagerSingleton() 重置或改为 keyed 单例
+ * Architecture constraints:
+ * - Web/Extension/Desktop currently run independently and do not share a JS context
+ * - The singleton binds the services passed in first, and later calls reuse the same instance
+ * - For multi-host support, use resetFunctionModelManagerSingleton() to reset or switch to a keyed singleton
  */
 export function useFunctionModelManager(
   services: Ref<AppServices | null>,
   globalOptimizeModelKey?: Ref<string> | ComputedRef<string>
 ): UseFunctionModelManagerReturn {
-  // 如果传入了新的 globalOptimizeModelKey，更新引用
+  // If a new globalOptimizeModelKey is passed in, update the reference
   if (globalOptimizeModelKey) {
     globalOptimizeModelKeyRef = globalOptimizeModelKey
   }
 
-  // 如果已有实例，直接返回（评估模型配置是全局的）
+  // If an instance already exists, return it directly (the evaluation model config is global)
   if (instance) {
     return instance
   }
@@ -74,13 +74,13 @@ export function useFunctionModelManager(
   const globalOptimizeModelFallback = ref('')
   let initPromise: Promise<void> | null = null
 
-  // 创建固定的 computed（只创建一次）
-  // 使用全局的 globalOptimizeModelKeyRef，确保后续传入的参数能生效
+  // Create a fixed computed (created only once)
+  // Use the global globalOptimizeModelKeyRef to make sure parameters passed in later take effect
   const effectiveEvaluationModel = computed(() => {
-    // 优先级：
-    // 1) 用户配置的评估模型
-    // 2) 调用方传入的全局优化模型 key（运行时状态）
-    // 3) 从偏好设置读取的全局优化模型（持久化状态）
+    // Priority:
+    // 1) The evaluation model configured by the user
+    // 2) The global optimize model key passed in by the caller (runtime state)
+    // 3) The global optimize model read from the preferences (persisted state)
     return (
       evaluationModel.value ||
       globalOptimizeModelKeyRef?.value ||
@@ -88,7 +88,7 @@ export function useFunctionModelManager(
     )
   })
 
-  // 初始化
+  // Initialize
   const initialize = async (): Promise<void> => {
     if (initPromise) {
       return initPromise
@@ -99,7 +99,7 @@ export function useFunctionModelManager(
 
       isLoading.value = true
       try {
-        // 兜底：从当前可用模型中选一个
+        // Fallback: pick one from the currently available models
         if (services.value?.modelManager) {
           const allModels = await services.value.modelManager.getAllModels()
           const enabledModels = allModels.filter(m => m.enabled)
@@ -108,7 +108,7 @@ export function useFunctionModelManager(
           globalOptimizeModelFallback.value = ''
         }
 
-        // 读取评估模型
+        // Read the evaluation model
         const savedEvaluationModel = await getPreference(
           FUNCTION_MODEL_KEYS.EVALUATION_MODEL,
           ''
@@ -130,18 +130,18 @@ export function useFunctionModelManager(
     await initialize()
   }
 
-  // 设置评估模型
+  // Set the evaluation model
   const setEvaluationModel = async (modelId: string): Promise<void> => {
     evaluationModel.value = modelId
     await setPreference(FUNCTION_MODEL_KEYS.EVALUATION_MODEL, modelId)
   }
 
-  // 获取有效评估模型（返回同一个 computed 实例）
+  // Get the effective evaluation model (returns the same computed instance)
   const getEffectiveEvaluationModel = (): ComputedRef<string> => {
     return effectiveEvaluationModel
   }
 
-  // 监听服务变化，自动初始化
+  // Watch service changes and initialize automatically
   watch(
     services,
     async (newServices) => {
@@ -167,7 +167,7 @@ export function useFunctionModelManager(
 }
 
 /**
- * 重置单例（用于测试）
+ * Reset the singleton (for testing)
  */
 export function resetFunctionModelManagerSingleton(): void {
   instance = null

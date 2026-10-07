@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* 自定义滚动条样式 */
+/* Custom scrollbar styles */
 ::-webkit-scrollbar {
   width: 4px;
 }
@@ -20,12 +20,12 @@
   background: rgba(255, 255, 255, 0.3);
 }
 
-/* 隐藏水平滚动条 */
+/* Hide the horizontal scrollbar */
 ::-webkit-scrollbar-horizontal {
   display: none;
 }
 
-/* 自定义select样式 */
+/* Custom select styles */
 .custom-select {
   -webkit-appearance: none !important;
   -moz-appearance: none !important;

@@ -34,7 +34,7 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue'])
 
-// 双向绑定
+// Two-way binding
 const localVisible = computed({
   get: () => props.modelValue,
   set: (value: boolean) => emit('update:modelValue', value)

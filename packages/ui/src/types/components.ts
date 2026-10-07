@@ -1,6 +1,6 @@
 /**
- * Naive UI 组件统一类型定义
- * 为高级模块重构组件提供标准化的 Props 和 Events 接口
+ * Unified type definitions for Naive UI components
+ * Provides standardized Props and Events interfaces for the advanced module refactoring components
  */
 
 import type {
@@ -17,236 +17,236 @@ import type { AppServices } from '../types/services'
 import type { VariableManagerHooks } from '../composables/prompt/useVariableManager'
 
 /**
- * 基础组件 Props 接口
+ * Base component Props interface
  */
 export interface BaseComponentProps {
-  /** 组件是否禁用 */
+  /** Whether the component is disabled */
   disabled?: boolean
-  /** 组件大小 */
+  /** Component size */
   size?: 'small' | 'medium' | 'large'
-  /** 组件主题模式（继承自全局） */
+  /** Component theme mode (inherited from global) */
   theme?: 'light' | 'dark'
-  /** 是否显示加载状态 */
+  /** Whether to show the loading state */
   loading?: boolean
 }
 
 /**
- * 基础组件 Events 接口
+ * Base component Events interface
  */
 export interface BaseComponentEvents {
-  /** 通用错误事件 */
+  /** Generic error event */
   error: (error: Error) => void
-  /** 组件准备就绪事件 */
+  /** Component ready event */
   ready: () => void
 }
 
 /**
- * VariableManagerModal 组件类型
+ * VariableManagerModal component types
  */
 export interface VariableManagerModalProps extends BaseComponentProps {
-  /** 弹窗是否可见 */
+  /** Whether the dialog is visible */
   visible: boolean
-  /** 当前变量数据 */
+  /** Current variable data */
   variables?: Record<string, string>
-  /** 是否只读模式 */
+  /** Whether read-only mode */
   readonly?: boolean
-  /** 弹窗标题 */
+  /** Dialog title */
   title?: string
-  /** 弹窗宽度 */
+  /** Dialog width */
   width?: number | string
-  /** 是否显示导入导出按钮 */
+  /** Whether to show the import/export buttons */
   showImportExport?: boolean
 }
 
 export interface VariableManagerModalEvents extends BaseComponentEvents {
-  /** 弹窗可见性变更 */
+  /** Dialog visibility change */
   'update:visible': (visible: boolean) => void
-  /** 变量数据变更 */
+  /** Variable data change */
   'update:variables': (variables: Record<string, string>) => void
-  /** 变量变更事件 */
+  /** Variable change event */
   variableChange: (name: string, value: string, action: 'add' | 'update' | 'delete') => void
-  /** 变量导入事件 */
+  /** Variable import event */
   import: (data: VariableExportData, options?: VariableImportOptions) => void
-  /** 变量导出事件 */
+  /** Variable export event */
   export: () => void
-  /** 确认事件 */
+  /** Confirm event */
   confirm: (variables: Record<string, string>) => void
-  /** 取消事件 */
+  /** Cancel event */
   cancel: () => void
 }
 
 /**
- * ConversationManager 组件类型（上下文管理）
+ * ConversationManager component types (context management)
  */
 export interface ConversationManagerProps extends BaseComponentProps {
-  /** 消息列表 */
+  /** Message list */
   messages: ConversationMessage[]
-  /** 可用变量集合（用于统计/高亮） */
+  /** Available variable set (used for statistics/highlighting) */
   availableVariables: Record<string, string>
-  /** 🆕 临时变量值集合（用于 VariableAwareInput） */
+  /** 🆕 Temporary variable value set (used for VariableAwareInput) */
   temporaryVariables?: Record<string, string>
-  /** 优化模式（用于模板分类） */
+  /** Optimization mode (used for template categorization) */
   optimizationMode?: 'system' | 'user'
-  /** 变量扫描函数（标准化注入） */
+  /** Variable scanning function (standardized injection) */
   scanVariables?: (content: string) => string[]
-  /** 变量替换函数（标准化注入） */
+  /** Variable replacement function (standardized injection) */
   replaceVariables?: (content: string, variables?: Record<string, string>) => string
-  /** 预定义变量判定函数（标准化注入） */
+  /** Predefined variable check function (standardized injection) */
   isPredefinedVariable?: (name: string) => boolean
-  /** 工具数量（仅显示统计） */
+  /** Tool count (display statistics only) */
   toolCount?: number
-  /** 是否只读模式 */
+  /** Whether read-only mode */
   readonly?: boolean
-  /** 是否显示变量预览 */
+  /** Whether to show the variable preview */
   showVariablePreview?: boolean
-  /** 最大高度（像素） */
+  /** Maximum height (pixels) */
   maxHeight?: number
-  /** 是否可折叠 */
+  /** Whether collapsible */
   collapsible?: boolean
-  /** 标题 */
+  /** Title */
   title?: string
-  /** 🆕 当前选中的消息 ID（用于高亮显示） */
+  /** 🆕 Currently selected message ID (used for highlighting) */
   selectedMessageId?: string
-  /** 🆕 是否启用消息优化功能 */
+  /** 🆕 Whether to enable the message optimization feature */
   enableMessageOptimization?: boolean
-  /** 🆕 消息优化中状态 */
+  /** 🆕 Message optimizing state */
   isMessageOptimizing?: boolean
-  /** 🆕 是否启用工具管理功能 */
+  /** 🆕 Whether to enable the tool management feature */
   enableToolManagement?: boolean
 }
 
 export interface ConversationManagerEvents extends BaseComponentEvents {
-  /** 消息列表变更 */
+  /** Message list change */
   'update:messages': (messages: ConversationMessage[]) => void
-  /** 消息变更事件 */
+  /** Message change event */
   messageChange: (index: number, message: ConversationMessage, action: 'add' | 'update' | 'delete') => void
-  /** 打开上下文编辑器 */
+  /** Open the context editor */
   openContextEditor: (messages: ConversationMessage[], variables?: Record<string, string>) => void
-  /** 变量管理器打开请求 */
+  /** Variable manager open request */
   openVariableManager: (variableName?: string) => void
-  /** 消息拖拽排序 */
+  /** Message drag sorting */
   messageReorder: (fromIndex: number, toIndex: number) => void
-  /** 🆕 消息被选中用于优化 */
+  /** 🆕 Message selected for optimization */
   messageSelect: (message: ConversationMessage) => void
-  /** 🆕 触发消息优化 */
+  /** 🆕 Trigger message optimization */
   optimizeMessage: () => void
-  /** 🆕 打开工具管理器 */
+  /** 🆕 Open the tool manager */
   'open-tool-manager': () => void
-  /** 🆕 变量提取事件 */
+  /** 🆕 Variable extraction event */
   'variable-extracted': (data: {
     variableName: string
     variableValue: string
     variableType: 'global' | 'temporary'
   }) => void
-  /** 🆕 添加缺失变量事件 */
+  /** 🆕 Add missing variable event */
   'add-missing-variable': (varName: string) => void
 }
 
 /**
- * ContextEditor 组件类型（全屏上下文编辑器）
+ * ContextEditor component types (fullscreen context editor)
  */
 export interface ContextEditorProps extends BaseComponentProps {
-  /** 是否可见 */
+  /** Whether visible */
   visible: boolean
-  /** 编辑器状态 */
+  /** Editor state */
   state?: ContextEditorState
-  /** 服务实例（用于变量管理） */
+  /** Service instance (used for variable management) */
   services?: AppServices | null
-  /** 变量管理器实例（必需，用于数据同步，与全局变量管理器共享） */
+  /** Variable manager instance (required, used for data sync, shared with the global variable manager) */
   variableManager: VariableManagerHooks
-  /** 是否显示工具管理标签页 */
+  /** Whether to show the tool management tab */
   showToolManager?: boolean
-  /** 工具列表 */
+  /** Tool list */
   tools?: ToolDefinition[]
-  /** 优化模式（用于模板分类） */
+  /** Optimization mode (used for template categorization) */
   optimizationMode?: 'system' | 'user'
-  /** 变量扫描函数（标准化注入） */
+  /** Variable scanning function (standardized injection) */
   scanVariables: (content: string) => string[]
-  /** 变量替换函数（标准化注入） */
+  /** Variable replacement function (standardized injection) */
   replaceVariables: (content: string, variables?: Record<string, string>) => string
-  /** 预定义变量判定函数（标准化注入） */
+  /** Predefined variable check function (standardized injection) */
   isPredefinedVariable: (name: string) => boolean
-  /** 弹窗标题 */
+  /** Dialog title */
   title?: string
-  /** 弹窗宽度 */
+  /** Dialog width */
   width?: number | string
-  /** 弹窗高度 */
+  /** Dialog height */
   height?: number | string
-  /** 默认激活的标签页 */
+  /** Default active tab */
   defaultTab?: 'messages' | 'variables' | 'tools'
-  /** 仅显示指定标签页（隐藏其他标签页和标签栏） */
+  /** Only show the specified tab (hides the other tabs and the tab bar) */
   onlyShowTab?: 'messages' | 'variables' | 'tools' | 'templates'
 }
 
 export interface ContextEditorEvents extends BaseComponentEvents {
-  /** 可见性变更 */
+  /** Visibility change */
   'update:visible': (visible: boolean) => void
-  /** 状态变更 */
+  /** State change */
   'update:state': (state: ContextEditorState) => void
-  /** 工具列表变更 */
+  /** Tool list change */
   'update:tools': (tools: ToolDefinition[]) => void
-  /** 上下文变更 */
+  /** Context change */
   contextChange: (messages: ConversationMessage[], variables: Record<string, string>) => void
-  /** 工具变更 */
+  /** Tool change */
   toolChange: (tools: ToolDefinition[], action: 'add' | 'update' | 'delete', index?: number) => void
-  /** 保存事件 */
+  /** Save event */
   save: (context: { messages: ConversationMessage[]; variables: Record<string, string>; tools: ToolDefinition[] }) => void
-  /** 取消事件 */
+  /** Cancel event */
   cancel: () => void
-  /** 预览模式切换 */
+  /** Preview mode toggle */
   previewToggle: (enabled: boolean) => void
-  /** 打开变量管理器 */
+  /** Open the variable manager */
   openVariableManager: (focusVariable?: string) => void
-  /** 快速创建变量 */
+  /** Quick-create a variable */
   createVariable: (name: string, defaultValue?: string) => void
 }
 
 /**
- * TestAreaPanel 集成组件类型
+ * TestAreaPanel integration component types
  */
 export interface TestAreaPanelProps extends BaseComponentProps {
-  /** 优化模式 */
+  /** Optimization mode */
   optimizationMode?: 'system' | 'user'
-  /** 是否显示测试输入 */
+  /** Whether to show the test input */
   showTestInput?: boolean
-  /** 是否启用对比模式 */
+  /** Whether to enable compare mode */
   enableCompareMode?: boolean
-  /** 当前对比模式状态 */
+  /** Current compare mode state */
   isCompareMode?: boolean
-  /** 是否测试运行中 */
+  /** Whether a test is running */
   isTestRunning?: boolean
-  /** 高级模式是否启用 */
+  /** Whether advanced mode is enabled */
   advancedModeEnabled?: boolean
-  /** 测试内容 */
+  /** Test content */
   testContent?: string
 
   /** E2E: stable selector prefix, e.g. "basic-system" */
   testIdPrefix?: string
 
-  /** 主要操作按钮文字 */
+  /** Primary action button text */
   primaryActionText?: string
-  /** 主要操作是否禁用 */
+  /** Whether the primary action is disabled */
   primaryActionDisabled?: boolean
-  /** 原始测试结果（支持工具调用显示） */
+  /** Original test result (supports tool call display) */
   originalResult?: AdvancedTestResult
-  /** 优化测试结果（支持工具调用显示） */
+  /** Optimized test result (supports tool call display) */
   optimizedResult?: AdvancedTestResult
-  /** 单一测试结果（支持工具调用显示） */
+  /** Single test result (supports tool call display) */
   singleResult?: AdvancedTestResult
 }
 
 export interface TestAreaPanelEvents extends BaseComponentEvents {
-  /** 对比模式切换 */
+  /** Compare mode toggle */
   'update:isCompareMode': (enabled: boolean) => void
-  /** 测试内容变更 */
+  /** Test content change */
   'update:testContent': (content: string) => void
-  /** 对比模式切换事件 */
+  /** Compare mode toggle event */
   compareToggle: (enabled: boolean) => void
-  /** 主要操作（测试）事件 */
+  /** Primary action (test) event */
   primaryAction: () => void
-  /** 显示模型配置 */
+  /** Show the model config */
   showConfig: () => void
-  /** 高级功能事件 */
+  /** Advanced feature events */
   openVariableManager: () => void
   openContextEditor: () => void
   variableChange: (name: string, value: string) => void
@@ -254,114 +254,114 @@ export interface TestAreaPanelEvents extends BaseComponentEvents {
 }
 
 /**
- * TestResultSection 组件类型
+ * TestResultSection component types
  */
 export interface TestResultSectionProps extends BaseComponentProps {
-  /** 测试结果 */
+  /** Test result */
   result?: AdvancedTestResult
-  /** 是否显示工具调用信息 */
+  /** Whether to show tool call info */
   showToolCalls?: boolean
-  /** 是否显示变量使用信息 */
+  /** Whether to show variable usage info */
   showUsedVariables?: boolean
-  /** 是否显示元数据 */
+  /** Whether to show metadata */
   showMetadata?: boolean
-  /** 最大高度 */
+  /** Maximum height */
   maxHeight?: number | string
 }
 
 export interface TestResultSectionEvents extends BaseComponentEvents {
-  /** 工具调用详情查看 */
+  /** View tool call details */
   toolCallDetail: (toolCall: ToolCallResult) => void
-  /** 变量详情查看 */
+  /** View variable details */
   variableDetail: (variable: string, value: string) => void
-  /** 结果复制 */
+  /** Copy the result */
   copyResult: (content: string) => void
-  /** 结果导出 */
+  /** Export the result */
   exportResult: (result: AdvancedTestResult) => void
 }
 
 /**
- * 通用工具栏按钮组件类型
+ * Generic toolbar button component types
  */
 export interface ToolbarButtonProps extends BaseComponentProps {
-  /** 按钮图标 */
+  /** Button icon */
   icon?: string
-  /** 按钮文字 */
+  /** Button text */
   text?: string
-  /** 按钮类型 */
+  /** Button type */
   type?: 'default' | 'primary' | 'success' | 'warning' | 'error'
-  /** 是否为幽灵按钮 */
+  /** Whether a ghost button */
   ghost?: boolean
-  /** 提示文字 */
+  /** Tooltip text */
   tooltip?: string
-  /** 是否显示徽章 */
+  /** Whether to show the badge */
   badge?: boolean
-  /** 徽章数值 */
+  /** Badge value */
   badgeValue?: number | string
 }
 
 export interface ToolbarButtonEvents extends BaseComponentEvents {
-  /** 点击事件 */
+  /** Click event */
   click: (event: MouseEvent) => void
 }
 
 /**
- * 全局状态管理相关类型
+ * Global state management-related types
  */
 export interface AdvancedModuleConfig {
-  /** 默认组件可见性 */
+  /** Default component visibility */
   defaultVisibility: ComponentVisibility
-  /** 自动保存间隔（毫秒） */
+  /** Auto-save interval (milliseconds) */
   autoSaveInterval: number
-  /** 变量名验证规则 */
+  /** Variable name validation rules */
   variableNamePattern: RegExp
-  /** 是否启用调试模式 */
+  /** Whether to enable debug mode */
   debugMode: boolean
-  /** 最大变量数量限制 */
+  /** Maximum number of variables limit */
   maxVariables: number
-  /** 最大工具数量限制 */
+  /** Maximum number of tools limit */
   maxTools: number
 }
 
 /**
- * 组件通信数据格式
+ * Component communication data format
  */
 export interface ComponentMessage<T = unknown> {
-  /** 消息类型 */
+  /** Message type */
   type: string
-  /** 消息负载 */
+  /** Message payload */
   payload: T
-  /** 发送时间 */
+  /** Send time */
   timestamp: Date
-  /** 发送者组件ID */
+  /** Sender component ID */
   sender?: string
-  /** 目标组件ID */
+  /** Target component ID */
   target?: string
 }
 
 /**
- * 组件通信数据格式
+ * Component communication data format
  */
 export interface ComponentError {
-  /** 错误代码 */
+  /** Error code */
   code: string
-  /** 错误消息 */
+  /** Error message */
   message: string
-  /** 错误详情 */
+  /** Error details */
   details?: unknown
-  /** 发生错误的组件 */
+  /** Component where the error occurred */
   component: string
-  /** 错误时间 */
+  /** Error time */
   timestamp: Date
-  /** 是否为致命错误 */
+  /** Whether a fatal error */
   fatal: boolean
 }
 
 /**
- * 响应式布局相关类型
+ * Responsive layout-related types
  */
 export interface ResponsiveConfig {
-  /** 断点配置 */
+  /** Breakpoint config */
   breakpoints: {
     xs: number
     sm: number
@@ -369,57 +369,57 @@ export interface ResponsiveConfig {
     lg: number
     xl: number
   }
-  /** 当前断点 */
+  /** Current breakpoint */
   currentBreakpoint: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
-  /** 是否为移动端 */
+  /** Whether mobile */
   isMobile: boolean
-  /** 是否为平板 */
+  /** Whether tablet */
   isTablet: boolean
-  /** 是否为桌面端 */
+  /** Whether desktop */
   isDesktop: boolean
 }
 
 /**
- * 性能监控相关类型
+ * Performance monitoring-related types
  */
 export interface PerformanceMetrics {
-  /** 组件渲染时间 */
+  /** Component render time */
   renderTime: number
-  /** 数据加载时间 */
+  /** Data load time */
   loadTime: number
-  /** 内存使用量 */
+  /** Memory usage */
   memoryUsage: number
-  /** 组件更新次数 */
+  /** Component update count */
   updateCount: number
-  /** 最后更新时间 */
+  /** Last update time */
   lastUpdate: Date
 }
 
 /**
- * ToolManagerModal 组件类型
+ * ToolManagerModal component types
  */
 export interface ToolManagerModalProps extends BaseComponentProps {
-  /** 弹窗是否可见 */
+  /** Whether the dialog is visible */
   visible: boolean
-  /** 工具列表 */
+  /** Tool list */
   tools: ToolDefinition[]
-  /** 是否只读模式 */
+  /** Whether read-only mode */
   readonly?: boolean
-  /** 弹窗标题 */
+  /** Dialog title */
   title?: string
-  /** 弹窗宽度 */
+  /** Dialog width */
   width?: string
 }
 
 export interface ToolManagerModalEvents extends BaseComponentEvents {
-  /** 弹窗可见性变更 */
+  /** Dialog visibility change */
   'update:visible': (visible: boolean) => void
-  /** 工具列表变更 */
+  /** Tool list change */
   'update:tools': (tools: ToolDefinition[]) => void
-  /** 工具变更事件 */
+  /** Tool change event */
   toolChange: (tools: ToolDefinition[], action: 'add' | 'update' | 'delete', index: number) => void
-  /** 确认事件 */
+  /** Confirm event */
   confirm: (tools: ToolDefinition[]) => void
-  /** 取消事件 */
+  /** Cancel event */
   cancel: () => void
 }

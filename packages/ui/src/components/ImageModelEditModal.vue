@@ -11,7 +11,7 @@
   >
     <form @submit.prevent="save">
         <NForm label-placement="left" label-width="auto" size="small">
-          <!-- 基本信息区域 -->
+          <!-- Basic info section -->
           <NFormItem :label="t('image.config.displayName.label')">
             <NInput v-model:value="configForm.name" :placeholder="t('image.config.displayName.placeholder')" required />
           </NFormItem>
@@ -20,7 +20,7 @@
             <NCheckbox v-model:checked="configForm.enabled"></NCheckbox>
           </NFormItem>
 
-          <!-- 提供商配置区域 -->
+          <!-- Provider config section -->
           <NDivider style="margin: 12px 0 8px 0;" />
           <NH4 style="margin: 0 0 12px 0; font-size: 14px;">{{ t('image.provider.section') }}</NH4>
 
@@ -36,7 +36,7 @@
           </NFormItem>
 
 
-          <!-- 动态连接配置字段 -->
+          <!-- Dynamic connection config fields -->
           <NFormItem v-for="field in connectionFields" :key="field.name" :label="t(field.labelKey)">
             <template v-if="field.name === 'apiKey'" #label>
               <NSpace align="center" :size="4">
@@ -88,9 +88,9 @@
             </template>
           </NFormItem>
 
-          <!-- 代理配置通过 connectionFields 动态渲染，并基于可用性过滤，不再单独渲染 -->
+          <!-- Proxy config is rendered dynamically through connectionFields and filtered by availability, no longer rendered separately -->
 
-          <!-- 模型配置区域 -->
+          <!-- Model config section -->
           <NDivider style="margin: 12px 0 8px 0;" />
           <NH4 style="margin: 0 0 12px 0; font-size: 14px;">{{ t('image.model.section') }}</NH4>
 
@@ -141,7 +141,7 @@
           </NFormItem>
 
 
-          <!-- 选中模型的能力标签显示 - 简化为单行 -->
+          <!-- Capability tags of the selected model - simplified to a single row -->
           <NFormItem v-if="selectedModel" :label="t('image.model.capabilities')">
             <NSpace wrap>
               <NTag v-if="selectedModel.capabilities?.text2image" type="success" size="small" :bordered="false">
@@ -156,7 +156,7 @@
             </NSpace>
           </NFormItem>
 
-          <!-- 高级参数配置区域 -->
+          <!-- Advanced parameter config section -->
           <NDivider style="margin: 12px 0 8px 0;" />
           <ModelAdvancedSection
             mode="image"
@@ -170,7 +170,7 @@
 
     <template #action>
       <NSpace justify="space-between" align="center" style="width: 100%;">
-        <!-- 左侧：连接测试 -->
+        <!-- Left: connection test -->
         <NSpace align="center">
           <NButton
             @click="handleTestConnection"
@@ -201,7 +201,7 @@
             </span>
           </NTag>
 
-          <!-- 测试结果图片缩略图 -->
+          <!-- Test result image thumbnails -->
           <NImage
             v-if="testResult?.image && connectionStatus?.type === 'success'"
             :src="testResult.image.url || (testResult.image.b64?.startsWith('data:') ? testResult.image.b64 : `data:image/png;base64,${testResult.image.b64}`)"
@@ -214,7 +214,7 @@
           />
         </NSpace>
 
-        <!-- 右侧：取消/保存按钮 -->
+        <!-- Right: cancel/save buttons -->
         <NSpace>
           <NButton @click="close">{{ t('common.cancel') }}</NButton>
           <NButton type="primary" @click="save" :loading="isSaving" :disabled="!canSave">
@@ -223,7 +223,7 @@
         </NSpace>
       </NSpace>
 
-      <!-- 连接状态详细信息显示在按钮区域下方 -->
+      <!-- Detailed connection status info is shown below the button area -->
       <NText v-if="connectionStatus?.detail" depth="3" style="font-size: 12px; margin-top: 8px; display: block;">
         {{ connectionStatus.detail }}
       </NText>
@@ -263,7 +263,7 @@ const emit = defineEmits<{
   'saved': []
 }>()
 
-// 使用 composable
+// Use composables
 const {
   // data
   providers,
@@ -302,10 +302,10 @@ const {
   loadProviders,
 } = useImageModelManager()
 
-// 计算属性
+// Computed properties
 const isEditing = computed(() => !!props.configId)
 
-// 获取当前选择的 Provider 的 API Key URL
+// Get the API key URL of the currently selected Provider
 const currentProviderApiKeyUrl = computed(() => {
   return selectedProvider.value?.apiKeyUrl || null
 })
@@ -366,7 +366,7 @@ const connectionFields = computed(() => {
 
   const fields: ConnectionField[] = []
 
-  // 处理必需字段
+  // Handle required fields
   for (const fieldName of schema.required) {
     fields.push({
       name: fieldName,
@@ -378,7 +378,7 @@ const connectionFields = computed(() => {
     })
   }
 
-  // 处理可选字段
+  // Handle optional fields
   for (const fieldName of schema.optional) {
     fields.push({
       name: fieldName,
@@ -418,7 +418,7 @@ const canSave = computed(() => {
          isConnectionConfigured.value
 })
 
-// 方法
+// Methods
 const close = () => {
   emit('update:show', false)
   resetFormData()
@@ -460,12 +460,12 @@ const refreshModels = async () => {
     modelLoadingStatus.value = { type: 'error', messageKey: 'image.model.refreshError' }
     toast.error(t('image.model.refreshError'))
   } finally {
-    // composable 管理 isLoadingModels
+    // The composable manages isLoadingModels
   }
 }
 
-// 处理模型变更：无论新建还是编辑模式，切换模型都应用新模型的默认参数
-// （编辑模式会合并参数，保留用户已有配置；创建模式会替换参数）
+// Handle model changes: whether creating or editing, switching the model applies the new model's default parameters
+// (edit mode merges parameters and keeps the user's existing config; create mode replaces the parameters)
 const handleModelChange = (modelId: string) => {
   onModelChange(modelId)
 }
@@ -479,47 +479,47 @@ const save = async () => {
     emit('saved')
     close()
   } catch (_error) {
-    console.error('保存配置失败:', _error)
+    console.error('Failed to save config:', _error)
     toast.error(t('image.config.saveFailed'))
   }
 }
 
-// 监听 props 变化
+// Watch props changes
 watch(() => props.show, async (newShow) => {
   if (newShow) {
-    // 打开时准备数据
+    // Prepare data when opened
     try {
-      // 确保提供商数据最新（每次打开都刷新）
+      // Make sure the provider data is up to date (refreshed on every open)
       await loadProviders()
       await loadConfigs()
       if (props.configId) {
         const existing = configs.value.find(c => c.id === props.configId)
         if (existing) {
-          // 先填充表单数据，确保 connectionConfig 可用
+          // Fill in the form data first so connectionConfig is available
           configForm.value = JSON.parse(JSON.stringify(existing)) as ImageModelConfig
           configForm.value.paramOverrides = configForm.value.paramOverrides || {}
           selectedProviderId.value = existing.providerId
           selectedModelId.value = existing.modelId
-          // 然后再调用 handleProviderChange，此时 connectionConfig 已经可用
-          // 编辑模式：不自动选择第一个模型，不重置连接配置，保持已保存的数据
+          // Then call handleProviderChange, now that connectionConfig is available
+          // Edit mode: do not auto-select the first model, do not reset the connection config, keep the saved data
           await handleProviderChange(existing.providerId, {
             autoSelectFirstModel: false,
             resetOverrides: false,
             resetConnectionConfig: false
           })
-          // 等待一帧以确保下拉可见
+          // Wait one frame to make sure the dropdown is visible
           await nextTick()
         }
       } else {
-        // 新增模式：重置表单数据并自动选择第一个提供商和模型
+        // Create mode: reset the form data and auto-select the first provider and model
         resetFormData()
 
-        // 自动选择第一个提供商
+        // Auto-select the first provider
         if (providers.value.length > 0) {
           const firstProvider = providers.value[0]
           await handleProviderChange(firstProvider.id)
 
-          // 等待模型加载完成后自动选择第一个模型
+          // After models finish loading, auto-select the first model
           await nextTick()
           if (models.value.length > 0) {
             const firstModel = models.value[0]
@@ -528,28 +528,28 @@ watch(() => props.show, async (newShow) => {
         }
       }
     } catch (e) {
-      console.error('加载配置失败:', e)
+      console.error('Failed to load config:', e)
     }
   } else {
     resetFormData()
   }
 })
 
-// 单独监听 configId 变化，处理动态更新的情况
+// Watch configId changes separately to handle dynamic updates
 watch(() => props.configId, async (newConfigId) => {
-  // 只有在弹窗已经打开的情况下才处理
+  // Only handle it when the dialog is already open
   if (props.show && newConfigId) {
     try {
       await loadConfigs()
       const existing = configs.value.find(c => c.id === newConfigId)
       if (existing) {
-        // 先填充表单数据，确保 connectionConfig 可用
+        // Fill in the form data first so connectionConfig is available
         configForm.value = JSON.parse(JSON.stringify(existing)) as ImageModelConfig
         configForm.value.paramOverrides = configForm.value.paramOverrides || {}
         selectedProviderId.value = existing.providerId
         selectedModelId.value = existing.modelId
-        // 然后再调用 handleProviderChange，此时 connectionConfig 已经可用
-        // 编辑模式：不自动选择第一个模型，不重置连接配置，保持已保存的数据
+        // Then call handleProviderChange, now that connectionConfig is available
+        // Edit mode: do not auto-select the first model, do not reset the connection config, keep the saved data
         await handleProviderChange(existing.providerId, {
           autoSelectFirstModel: false,
           resetOverrides: false,
@@ -558,18 +558,18 @@ watch(() => props.configId, async (newConfigId) => {
         await nextTick()
       }
     } catch (e) {
-      console.error('处理 configId 变化失败:', e)
+      console.error('Failed to handle configId change:', e)
     }
   }
 }, { immediate: true })
 </script>
 
 <style scoped>
-/* 移除了不再使用的 CSS 类：
-   - .connection-test (现在使用 NFormItem)
-   - .number-input-wrapper (改为 NSpace inline)
-   - .parameter-unit (简化为 inline NText)
-   - .parameter-description (改为 template #feedback)
-   - .provider-info (简化为 NText)
+/* Removed CSS classes that are no longer used:
+   - .connection-test (now uses NFormItem)
+   - .number-input-wrapper (changed to NSpace inline)
+   - .parameter-unit (simplified to inline NText)
+   - .parameter-description (changed to template #feedback)
+   - .provider-info (simplified to NText)
 */
 </style>

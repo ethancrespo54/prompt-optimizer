@@ -1,17 +1,17 @@
 <template>
     <!--
-        App 头部操作按钮组件
+        App header action buttons component
 
-        职责:
-        - 核心功能按钮: 模板管理、历史记录、模型管理、收藏夹、数据管理
-        - 辅助功能: 主题切换、GitHub 链接、语言切换、更新检查
+        Responsibilities:
+        - Core feature buttons: template management, history, model management, favorites, data management
+        - Auxiliary features: theme toggle, GitHub link, language switch, update check
 
-        设计说明:
-        - 从 App.vue 的 #actions slot 提取出来
-        - 所有操作通过 emits 通知父组件处理
-        - 保持与原实现完全一致的 UI 和行为
+        Design notes:
+        - Extracted from the #actions slot of App.vue
+        - All actions notify the parent component through emits
+        - Keeps the UI and behavior fully consistent with the original implementation
     -->
-    <!-- 核心功能区 -->
+    <!-- Core feature area -->
     <ActionButtonUI
         icon="📝"
         :text="$t('nav.templates')"
@@ -66,7 +66,7 @@
         :ghost="false"
         :round="true"
     />
-    <!-- 辅助功能区 - 使用简化样式降低视觉权重 -->
+    <!-- Auxiliary feature area - uses simplified styles to lower the visual weight -->
     <ThemeToggleUI />
     <ActionButtonUI
         icon=""
@@ -88,22 +88,22 @@
             </svg>
         </template>
     </ActionButtonUI>
-    <!-- 自动更新组件 - 仅在Electron环境中显示 -->
+    <!-- Auto-update component - only shown in the Electron environment -->
     <UpdaterIcon />
 </template>
 
 <script setup lang="ts">
 /**
- * App 头部操作按钮组件
+ * App header action buttons component
  *
  * @description
- * 从 App.vue 提取出的头部操作按钮组件，用于 MainLayoutUI 的 #actions slot。
- * 包含核心功能按钮和辅助功能按钮两部分。
+ * A header action buttons component extracted from App.vue, used for the #actions slot of MainLayoutUI.
+ * Contains two parts: core feature buttons and auxiliary feature buttons.
  *
  * @features
- * - 核心功能: 模板管理、历史记录、模型管理、收藏夹、数据管理
- * - 辅助功能: 主题切换、GitHub 链接、语言切换、更新检查
- * - 所有操作通过 emits 通知父组件
+ * - Core features: template management, history, model management, favorites, data management
+ * - Auxiliary features: theme toggle, GitHub link, language switch, update check
+ * - All actions notify the parent component through emits
  *
  * @example
  * ```vue
@@ -124,22 +124,22 @@ import ThemeToggleUI from '../ThemeToggleUI.vue'
 import UpdaterIcon from '../UpdaterIcon.vue'
 
 // ========================
-// Emits 定义
+// Emits definition
 // ========================
 const emit = defineEmits<{
-    /** 打开模板管理器 */
+    /** Open the template manager */
     'open-templates': []
-    /** 打开历史记录 */
+    /** Open history */
     'open-history': []
-    /** 打开模型管理器 */
+    /** Open the model manager */
     'open-model-manager': []
-    /** 打开收藏夹 */
+    /** Open favorites */
     'open-favorites': []
-    /** 打开数据管理器 */
+    /** Open the data manager */
     'open-data-manager': []
-    /** 打开变量管理器 */
+    /** Open the variable manager */
     'open-variables': []
-    /** 打开 GitHub 仓库 */
+    /** Open the GitHub repository */
     'open-github': []
 }>()
 </script>

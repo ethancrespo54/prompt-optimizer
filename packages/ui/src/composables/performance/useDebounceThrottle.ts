@@ -1,18 +1,18 @@
 import { ref, onUnmounted } from 'vue'
 
 /**
- * 防抖和节流 Composable
- * 提供性能优化的事件处理
+ * Debounce and throttle composable
+ * Provides performance-optimized event handling
  */
 export function useDebounceThrottle() {
   const timers = ref(new Map<string, number>())
 
   /**
-   * 防抖函数
-   * @param fn 要执行的函数
-   * @param delay 延迟时间（毫秒）
-   * @param immediate 是否立即执行
-   * @param key 唯一标识符
+   * Debounce function
+   * @param fn The function to execute
+   * @param delay Delay in milliseconds
+   * @param immediate Whether to execute immediately
+   * @param key Unique identifier
    */
   const debounce = <Args extends unknown[]>(
     fn: (...args: Args) => unknown,
@@ -43,10 +43,10 @@ export function useDebounceThrottle() {
   }
 
   /**
-   * 节流函数
-   * @param fn 要执行的函数
-   * @param delay 节流间隔（毫秒）
-   * @param key 唯一标识符
+   * Throttle function
+   * @param fn The function to execute
+   * @param delay Throttle interval in milliseconds
+   * @param key Unique identifier
    */
   const throttle = <Args extends unknown[]>(
     fn: (...args: Args) => unknown,
@@ -66,8 +66,8 @@ export function useDebounceThrottle() {
   }
 
   /**
-   * requestAnimationFrame 节流
-   * 适用于动画和频繁的DOM更新
+   * requestAnimationFrame throttle
+   * Suited to animations and frequent DOM updates
    */
   const rafThrottle = <Args extends unknown[]>(
     fn: (...args: Args) => unknown,
@@ -88,7 +88,7 @@ export function useDebounceThrottle() {
   }
 
   /**
-   * 创建一个可取消的延迟执行函数
+   * Create a cancelable delayed execution function
    */
   const createCancelableDelay = (
     fn: () => void,
@@ -107,7 +107,7 @@ export function useDebounceThrottle() {
   }
 
   /**
-   * 取消指定的防抖/节流计时器
+   * Cancel the specified debounce/throttle timer
    */
   const cancel = (key: string = 'default') => {
     const timerId = timers.value.get(key)
@@ -118,7 +118,7 @@ export function useDebounceThrottle() {
   }
 
   /**
-   * 取消所有计时器
+   * Cancel all timers
    */
   const cancelAll = () => {
     timers.value.forEach((timerId) => {
@@ -128,12 +128,12 @@ export function useDebounceThrottle() {
   }
 
   /**
-   * 获取当前活动的计时器数量
+   * Get the number of currently active timers
    */
   const getActiveTimersCount = () => timers.value.size
 
   /**
-   * 智能防抖 - 根据输入频率自动调整延迟时间
+   * Smart debounce - automatically adjusts the delay based on the input frequency
    */
   const smartDebounce = <Args extends unknown[]>(
     fn: (...args: Args) => unknown,
@@ -151,7 +151,7 @@ export function useDebounceThrottle() {
       callCount++
       lastCallTime = now
       
-      // 根据调用频率动态调整延迟时间
+      // Dynamically adjust the delay based on the call frequency
       const frequency = callCount / Math.max(1, timeSinceLastCall / 1000)
       let adaptiveDelay = minDelay
       
@@ -163,7 +163,7 @@ export function useDebounceThrottle() {
         adaptiveDelay = Math.min(maxDelay, minDelay * 2)
       }
       
-      // 重置计数器（每10秒）
+      // Reset the counter (every 10 seconds)
       if (timeSinceLastCall > 10000) {
         callCount = 0
       }
@@ -173,7 +173,7 @@ export function useDebounceThrottle() {
   }
 
   /**
-   * 批处理执行 - 收集一段时间内的所有调用，然后批量执行
+   * Batch execution - collects all calls within a period of time and then executes them in a batch
    */
   const batchExecute = <T>(
     fn: (batch: T[]) => void,
@@ -206,7 +206,7 @@ export function useDebounceThrottle() {
     }
   }
 
-  // 清理所有计时器
+  // Clean up all timers
   onUnmounted(() => {
     cancelAll()
   })

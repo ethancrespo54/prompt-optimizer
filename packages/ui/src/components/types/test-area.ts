@@ -2,12 +2,12 @@ import type { Slot } from 'vue'
 
 import type { OptimizationMode, ToolCallResult } from '@prompt-optimizer/core'
 
-// 基础尺寸类型
+// Base size types
 export type ComponentSize = 'small' | 'medium' | 'large'
 export type LayoutMode = 'compact' | 'normal' | 'minimal'
 export type ButtonSize = 'small' | 'medium' | 'large'
 
-// TestInputSection 组件类型
+// TestInputSection component types
 export interface TestInputSectionProps {
   modelValue: string
   label: string
@@ -28,16 +28,16 @@ export interface TestInputSectionEmits {
   'update:modelValue': [value: string]
 }
 
-// TestControlBar 组件类型
+// TestControlBar component types
 export interface TestControlBarProps {
-  // 模型选择相关
+  // Model selection-related
   modelLabel: string
   
-  // 对比模式控制
+  // Compare mode control
   showCompareToggle?: boolean
   isCompareMode?: boolean
   
-  // 主要操作按钮
+  // Primary action button
   primaryActionText: string
   primaryActionDisabled?: boolean
   primaryActionLoading?: boolean
@@ -48,11 +48,11 @@ export interface TestControlBarProps {
   /** E2E: stable selector for primary action button */
   primaryActionTestId?: string
   
-  // 布局配置
+  // Layout config
   layout?: 'default' | 'compact' | 'minimal'
   buttonSize?: ButtonSize
   
-  // 响应式配置
+  // Responsive config
   modelSelectSpan?: number
   controlButtonsSpan?: number
 }
@@ -62,50 +62,50 @@ export interface TestControlBarEmits {
   'primary-action': []
 }
 
-// TestResultSection 组件类型
+// TestResultSection component types
 export interface TestResultSectionProps {
-  // 布局模式
+  // Layout mode
   isCompareMode?: boolean
   verticalLayout?: boolean
   showOriginal?: boolean
   
-  // 标题配置
+  // Title config
   originalTitle?: string
   optimizedTitle?: string
   singleResultTitle?: string
   
-  // 尺寸配置
+  // Size config
   cardSize?: ComponentSize
   
-  // 间距配置
+  // Spacing config
   gap?: string | number
 }
 
-// TestAreaPanel 主容器组件类型
+// TestAreaPanel main container component types
 export interface TestAreaPanelProps {
-  // 核心状态
+  // Core state
   optimizationMode: OptimizationMode
   isTestRunning?: boolean
   advancedModeEnabled?: boolean
   
-  // 测试内容
+  // Test content
   testContent?: string
   isCompareMode?: boolean
   
-  // 功能开关
+  // Feature toggles
   enableCompareMode?: boolean
   enableFullscreen?: boolean
 
   /** E2E: stable selector prefix, e.g. "basic-system" */
   testIdPrefix?: string
   
-  // 布局配置
+  // Layout config
   inputMode?: 'compact' | 'normal'
   controlBarLayout?: 'default' | 'compact' | 'minimal'
   buttonSize?: ButtonSize
   conversationMaxHeight?: string
   
-  // 结果显示配置
+  // Result display config
   showOriginalResult?: boolean
   resultVerticalLayout?: boolean
   originalResultTitle?: string
@@ -120,9 +120,9 @@ export interface TestAreaPanelEmits {
   'compare-toggle': []
 }
 
-// 配置对象类型
+// Config object types
 export interface TestAreaConfig {
-  // 全局布局配置
+  // Global layout config
   layout: {
     inputMode: 'compact' | 'normal'
     controlBarLayout: 'default' | 'compact' | 'minimal'
@@ -130,21 +130,21 @@ export interface TestAreaConfig {
     enableFullscreen: boolean
   }
   
-  // 功能开关
+  // Feature toggles
   features: {
     compareMode: boolean
     conversationManager: boolean
     advancedMode: boolean
   }
   
-  // 高度配置
+  // Height config
   heights: {
     testInputMin: number
     testInputMax: number
     conversationMax: string
   }
   
-  // 响应式断点配置
+  // Responsive breakpoint config
   responsive: {
     modelSelectSpan: {
       xs: number
@@ -161,7 +161,7 @@ export interface TestAreaConfig {
   }
 }
 
-// 控制布局配置类型
+// Control layout config types
 export interface TestControlLayout {
   modelSelect: {
     span: number
@@ -186,7 +186,7 @@ export interface TestControlLayout {
   }
 }
 
-// 测试结果配置类型
+// Test result config types
 export interface TestResultConfig {
   compareMode: {
     enabled: boolean
@@ -205,14 +205,14 @@ export interface TestResultConfig {
   }
 }
 
-// TestAreaPanel 暴露的工具调用状态
+// Tool call state exposed by TestAreaPanel
 export interface TestAreaToolCallState {
   original: ToolCallResult[]
   optimized: ToolCallResult[]
 }
 
-// 组件实例类型
-// TestAreaPanelInstance 同时兼容 TestAreaPanel 和 ConversationTestPanel
+// Component instance types
+// TestAreaPanelInstance is compatible with both TestAreaPanel and ConversationTestPanel
 export interface TestAreaPanelInstance {
   clearToolCalls: (testType?: 'original' | 'optimized' | 'both') => void
   handleToolCall: (toolCall: ToolCallResult, testType: 'original' | 'optimized') => void
@@ -223,7 +223,7 @@ export interface TestAreaPanelInstance {
   hidePreview: () => void
 }
 
-// 插槽类型定义
+// Slot type definitions
 export interface TestAreaSlots {
   'model-select'?: Slot
   'secondary-controls'?: Slot
@@ -234,7 +234,7 @@ export interface TestAreaSlots {
   'single-result'?: Slot
 }
 
-// 事件回调类型
+// Event callback types
 export type TestAreaEventCallbacks = {
   onTest?: () => void | Promise<void>
   onCompareToggle?: (isCompareMode: boolean) => void
@@ -242,10 +242,10 @@ export type TestAreaEventCallbacks = {
   onModelChange?: (modelKey: string) => void
 }
 
-// 工厂函数类型
+// Factory function types
 export type CreateTestAreaConfig = (options?: Partial<TestAreaConfig>) => TestAreaConfig
 
-// 预设配置类型
+// Preset config types
 export interface TestAreaPresets {
   basic: TestAreaConfig
   advanced: TestAreaConfig

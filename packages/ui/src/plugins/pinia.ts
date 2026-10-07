@@ -1,11 +1,11 @@
 /**
- * Pinia 实例管理和安装器
+ * Pinia instance management and installer
  *
- * 提供 Pinia 的创建、安装和服务注入功能
+ * Provides Pinia creation, installation, and service injection
  *
- * 使用流程：
- * 1. 在应用启动时调用 installPinia(app)
- * 2. 服务初始化完成后调用 setPiniaServices(services)
+ * Usage flow:
+ * 1. Call installPinia(app) when the app starts
+ * 2. Call setPiniaServices(services) after the services finish initializing
  */
 
 import { type App, shallowRef } from 'vue'
@@ -13,56 +13,56 @@ import { createPinia } from 'pinia'
 import type { AppServices } from '../types/services'
 
 /**
- * 模块级服务引用（使用 shallowRef 避免深度代理）
+ * Module-level service reference (uses shallowRef to avoid deep proxying)
  */
 const servicesRef = shallowRef<AppServices | null>(null)
 
 /**
- * Pinia 实例（全局单例）
+ * Pinia instance (global singleton)
  */
 export const pinia = createPinia()
 
 /**
- * 安装 Pinia
+ * Install Pinia
  *
- * 用于应用启动阶段，在 app.mount() 之前调用
+ * Used in the app startup phase, called before app.mount()
  *
- * @param app - Vue 应用实例
+ * @param app - Vue app instance
  */
 export function installPinia(app: App) {
   app.use(pinia)
 }
 
 /**
- * 设置 Pinia 服务实例
+ * Set the Pinia services instance
  *
- * 用于服务初始化完成后，注入到所有 Store
+ * Used after the services finish initializing, to inject them into all Stores
  *
- * @param services - 应用服务实例（或 null）
+ * @param services - App services instance (or null)
  */
 export function setPiniaServices(services: AppServices | null) {
   servicesRef.value = services
 }
 
 /**
- * 获取 Pinia 服务实例
+ * Get the Pinia services instance
  *
- * 这是**本项目推荐的服务访问方式**，用于 Store 和 Composable 内部访问服务。
+ * This is the **recommended way to access services in this project**, used inside Stores and Composables.
  *
- * **设计说明**：
- * - 这是本项目的标准服务访问方式（工程取舍）
- * - 基于单例模式，适用于单应用场景
- * - 测试时需要使用 setPiniaServices() 设置 mock 服务
- * - 测试后需要调用 setPiniaServices(null) 清理，避免污染
+ * **Design notes**:
+ * - This is the standard way to access services in this project (an engineering trade-off)
+ * - Based on the singleton pattern, suited to a single-app scenario
+ * - Tests need to use setPiniaServices() to set mock services
+ * - After tests, setPiniaServices(null) must be called to clean up, avoiding pollution
  *
- * **为何推荐 getPiniaServices()**：
- * - 避免 this 上下文依赖，解构调用时更安全
- * - 符合函数式编程风格，与 Composition API 一致
- * - 测试更简单（直接调用函数即可）
- * - Setup Store 中无需依赖 this，代码更清晰
- * - 全局单例模式，适用于单应用场景
+ * **Why getPiniaServices() is recommended**:
+ * - Avoids the this-context dependency, safer when destructured
+ * - Fits the functional programming style, consistent with the Composition API
+ * - Simpler tests (just call the function directly)
+ * - Setup Stores need no this dependency, so the code is clearer
+ * - Global singleton pattern, suited to a single-app scenario
  *
- * **使用示例**：
+ * **Usage example**:
  * ```typescript
  * import { getPiniaServices } from '@/plugins/pinia'
  *
@@ -84,7 +84,7 @@ export function setPiniaServices(services: AppServices | null) {
  * })
  * ```
  *
- * **测试示例**：
+ * **Test example**:
  * ```typescript
  * import { setPiniaServices } from '@/plugins/pinia'
  *
@@ -97,11 +97,11 @@ export function setPiniaServices(services: AppServices | null) {
  *
  *   expect(mockServices.modelManager.getAllModels).toHaveBeenCalled()
  *
- *   setPiniaServices(null)  // 清理
+ *   setPiniaServices(null)  // Clean up
  * })
  * ```
  *
- * @returns 应用服务实例（或 null）
+ * @returns App services instance (or null)
  */
 export function getPiniaServices(): AppServices | null {
   return servicesRef.value

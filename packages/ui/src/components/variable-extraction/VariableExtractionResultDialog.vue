@@ -10,7 +10,7 @@
     @positive-click="handleConfirm"
     @negative-click="handleCancel"
   >
-    <!-- 顶部总结 -->
+    <!-- Top summary -->
     <NAlert
       v-if="result"
       :type="result.variables.length > 0 ? 'success' : 'warning'"
@@ -18,7 +18,7 @@
       style="margin-bottom: 16px"
     />
 
-    <!-- 变量表格 (支持多选) -->
+    <!-- Variable table (supports multi-select) -->
     <NDataTable
       v-if="result && result.variables.length > 0"
       :columns="columns"
@@ -30,13 +30,13 @@
       max-height="400"
     />
 
-    <!-- 空状态 -->
+    <!-- Empty state -->
     <NEmpty
       v-else-if="result && result.variables.length === 0"
       :description="t('evaluation.variableExtraction.noVariables')"
     />
 
-    <!-- 底部统计 -->
+    <!-- Bottom statistics -->
     <template v-if="result && result.variables.length > 0" #footer>
       <NSpace justify="space-between" style="width: 100%">
         <NText depth="3">
@@ -62,22 +62,22 @@ import { useI18n } from 'vue-i18n'
 import type { ExtractedVariable, VariableExtractionResponse } from '@prompt-optimizer/core'
 
 /**
- * 组件 Props
+ * Component props
  */
 interface Props {
-  /** 是否显示对话框 */
+  /** Whether to show the dialog */
   show: boolean
-  /** 提取结果 */
+  /** Extraction result */
   result: VariableExtractionResponse | null
 }
 
 /**
- * 组件 Emits
+ * Component emits
  */
 interface Emits {
-  /** 更新显示状态 */
+  /** Update the display state */
   (event: 'update:show', value: boolean): void
-  /** 确认批量创建 */
+  /** Confirm the batch creation */
   (event: 'confirm', variables: ExtractedVariable[]): void
 }
 
@@ -85,21 +85,21 @@ const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 const { t } = useI18n()
 
-// 双向绑定显示状态
+// Two-way binding of the display state
 const visible = computed({
   get: () => props.show,
   set: (value: boolean) => emit('update:show', value),
 })
 
-// 选中的变量键（变量名）
+// Selected variable keys (variable names)
 const selectedKeys = ref<string[]>([])
 
-// 监听结果变化，自动全选
+// Watch result changes and select all automatically
 watch(
   () => props.result,
   (newResult) => {
     if (newResult && newResult.variables.length > 0) {
-      // 默认全选所有变量
+      // Select all variables by default
       selectedKeys.value = newResult.variables.map((v) => v.name)
     } else {
       selectedKeys.value = []
@@ -108,7 +108,7 @@ watch(
   { immediate: true }
 )
 
-// 表格列定义
+// Table column definitions
 const columns = computed<DataTableColumns<ExtractedVariable>>(() => [
   {
     type: 'selection',
@@ -141,18 +141,18 @@ const columns = computed<DataTableColumns<ExtractedVariable>>(() => [
   },
 ])
 
-// 处理选择变化（Naive UI RowKey = string | number）
+// Handle selection changes (Naive UI RowKey = string | number)
 const handleSelectionChange = (keys: Array<string | number>) => {
   selectedKeys.value = keys.map(String)
 }
 
-// 处理确认
+// Handle confirmation
 const handleConfirm = () => {
   if (!props.result || selectedKeys.value.length === 0) {
     return
   }
 
-  // 获取选中的变量对象
+  // Get the selected variable objects
   const selectedVariables = props.result.variables.filter((v) =>
     selectedKeys.value.includes(v.name)
   )
@@ -160,7 +160,7 @@ const handleConfirm = () => {
   emit('confirm', selectedVariables)
 }
 
-// 处理取消
+// Handle cancellation
 const handleCancel = () => {
   visible.value = false
 }

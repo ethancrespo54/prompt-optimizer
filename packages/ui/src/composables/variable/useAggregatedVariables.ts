@@ -1,21 +1,21 @@
 /**
- * 聚合变量管理 Composable
+ * Aggregated variable management composable
  *
- * 功能说明：
- * - 聚合三种类型的变量：预定义变量、全局变量、临时变量
- * - 自动处理变量优先级：临时 > 全局 > 预定义
- * - 提供统一的变量访问接口
- * - 响应式更新，任何一层变量变化都会自动反映
+ * Description:
+ * - Aggregates three types of variables: predefined, global, and temporary
+ * - Handles variable priority automatically: temporary > global > predefined
+ * - Provides a unified variable access interface
+ * - Reactive updates: a change in any layer is reflected automatically
  *
- * 变量优先级（从高到低）：
- * 1. 临时变量（temporary）- 子模式级别：Pro/Image 持久化到 session；Basic 仅内存态
- * 2. 全局变量（global）- 持久化存储，跨会话保留
- * 3. 预定义变量（predefined）- 系统内置，不可修改
+ * Variable priority (high to low):
+ * 1. Temporary variables (temporary) - sub-mode level: persisted to the session for Pro/Image; in-memory only for Basic
+ * 2. Global variables (global) - persisted storage, kept across sessions
+ * 3. Predefined variables (predefined) - built into the system, not modifiable
  *
- * 使用场景：
- * - 预览功能：需要展示所有可用变量的替换结果
- * - 变量检测：检查哪些变量缺失、来源是什么
- * - 统一变量访问：不需要关心变量来源，直接获取最终值
+ * Use cases:
+ * - Preview feature: needs to show the substitution results of all available variables
+ * - Variable detection: check which variables are missing and what their sources are
+ * - Unified variable access: no need to care about the variable source, just get the final value
  */
 
 import { computed, type ComputedRef, type Ref } from 'vue'
@@ -24,74 +24,74 @@ import type { VariableManagerHooks } from '../prompt/useVariableManager'
 import { PREDEFINED_VARIABLES } from '../../types/variable'
 
 /**
- * 变量来源类型
+ * Variable source type
  */
 export type AggregatedVariableSource = 'predefined' | 'global' | 'temporary'
 
 /**
- * 按来源分组的变量
+ * Variables grouped by source
  */
 export interface VariablesBySource {
-  /** 预定义变量（系统内置） */
+  /** Predefined variables (built into the system) */
   predefined: Record<string, string>
-  /** 全局变量（持久化） */
+  /** Global variables (persisted) */
   global: Record<string, string>
-  /** 临时变量（会话级别） */
+  /** Temporary variables (session level) */
   temporary: Record<string, string>
 }
 
 /**
- * 聚合变量管理器接口
+ * Aggregated variable manager interface
  */
 export interface AggregatedVariablesManager {
-  /** 聚合后的所有变量（按优先级合并） */
+  /** All aggregated variables (merged by priority) */
   readonly allVariables: ComputedRef<Record<string, string>>
 
-  /** 按来源分组的变量 */
+  /** Variables grouped by source */
   readonly variablesBySource: ComputedRef<VariablesBySource>
 
-  /** 查询变量来源 */
+  /** Query the variable source */
   getVariableSource: (name: string) => AggregatedVariableSource | null
 
-  /** 获取变量值（按优先级） */
+  /** Get the variable value (by priority) */
   getVariable: (name: string) => string | undefined
 
-  /** 检查变量是否存在于任何来源 */
+  /** Check whether a variable exists in any source */
   hasVariable: (name: string) => boolean
 
-  /** 列出所有变量名 */
+  /** List all variable names */
   listVariableNames: () => string[]
 }
 
 /**
- * 使用聚合变量管理器
+ * Use the aggregated variable manager
  *
- * 特性：
- * - 自动聚合三层变量
- * - 优先级自动处理
- * - 响应式更新
- * - 提供来源查询
+ * Features:
+ * - Automatically aggregates the three layers of variables
+ * - Priority handled automatically
+ * - Reactive updates
+ * - Provides source queries
  *
- * @param variableManager 全局变量管理器（来自 useVariableManager）
- * @param predefinedVariables 预定义变量（可选，默认使用系统内置）
- * @returns 聚合变量管理器
+ * @param variableManager Global variable manager (from useVariableManager)
+ * @param predefinedVariables Predefined variables (optional, defaults to the system built-ins)
+ * @returns Aggregated variable manager
  *
  * @example
  * ```typescript
- * // 在组件中使用
+ * // Use in a component
  * const variableManager = useVariableManager(services)
  * const aggregatedVars = useAggregatedVariables(variableManager)
  *
- * // 获取所有变量（自动聚合）
+ * // Get all variables (aggregated automatically)
  * const allVars = aggregatedVars.allVariables.value
  *
- * // 查询变量来源
+ * // Query the variable source
  * const source = aggregatedVars.getVariableSource('userName')
- * // 返回: 'temporary' | 'global' | 'predefined' | null
+ * // Returns: 'temporary' | 'global' | 'predefined' | null
  *
- * // 检查变量是否存在
+ * // Check whether a variable exists
  * if (aggregatedVars.hasVariable('userName')) {
- *   console.log('变量存在')
+ *   console.log('Variable exists')
  * }
  * ```
  */
@@ -100,10 +100,10 @@ export function useAggregatedVariables(
   predefinedVariables?: Record<string, string>
 ): AggregatedVariablesManager {
 
-  // 获取临时变量管理器
+  // Get the temporary variable manager
   const tempVars = useTemporaryVariables()
 
-  // 预定义变量（使用系统内置或自定义）
+  // Predefined variables (system built-ins or custom)
   const predefinedVarsMap = computed<Record<string, string>>(() => {
     if (predefinedVariables) {
       return predefinedVariables
@@ -111,7 +111,7 @@ export function useAggregatedVariables(
 
     const map: Record<string, string> = {}
 
-    // 优先从 variableManager 的 allVariables 中取值，以保留动态上下文
+    // Prefer taking the value from the variableManager's allVariables, to keep the dynamic context
     const resolved = variableManager?.allVariables?.value || {}
     PREDEFINED_VARIABLES.forEach(varName => {
       if (resolved[varName] !== undefined) {
@@ -124,19 +124,19 @@ export function useAggregatedVariables(
     return map
   })
 
-  // 全局变量
+  // Global variables
   const globalVarsMap = computed<Record<string, string>>(() => {
     if (!variableManager) return {}
     return variableManager.customVariables?.value || {}
   })
 
-  // 临时变量
+  // Temporary variables
   const temporaryVarsMap = computed<Record<string, string>>(() => {
     return tempVars.listVariables()
   })
 
   /**
-   * 按来源分组的变量
+   * Variables grouped by source
    */
   const variablesBySource = computed<VariablesBySource>(() => ({
     predefined: predefinedVarsMap.value,
@@ -145,26 +145,26 @@ export function useAggregatedVariables(
   }))
 
   /**
-   * 聚合所有变量（按优先级合并）
+   * Aggregate all variables (merged by priority)
    *
-   * 优先级：temporary > global > predefined
-   * 后面的会覆盖前面的同名变量
+   * Priority: temporary > global > predefined
+   * Later ones override earlier variables with the same name
    */
   const allVariables = computed<Record<string, string>>(() => {
     return {
-      ...predefinedVarsMap.value,  // 最低优先级
-      ...globalVarsMap.value,       // 中等优先级
-      ...temporaryVarsMap.value     // 最高优先级
+      ...predefinedVarsMap.value,  // Lowest priority
+      ...globalVarsMap.value,       // Medium priority
+      ...temporaryVarsMap.value     // Highest priority
     }
   })
 
   /**
-   * 查询变量来源
-   * @param name 变量名
-   * @returns 变量来源，如果不存在返回 null
+   * Query the variable source
+   * @param name Variable name
+   * @returns The variable source, or null if it does not exist
    */
   const getVariableSource = (name: string): AggregatedVariableSource | null => {
-    // 按优先级从高到低检查
+    // Check from the highest priority to the lowest
     if (name in temporaryVarsMap.value) {
       return 'temporary'
     }
@@ -178,26 +178,26 @@ export function useAggregatedVariables(
   }
 
   /**
-   * 获取变量值（按优先级）
-   * @param name 变量名
-   * @returns 变量值，如果不存在返回 undefined
+   * Get the variable value (by priority)
+   * @param name Variable name
+   * @returns The variable value, or undefined if it does not exist
    */
   const getVariable = (name: string): string | undefined => {
     return allVariables.value[name]
   }
 
   /**
-   * 检查变量是否存在于任何来源
-   * @param name 变量名
-   * @returns 是否存在
+   * Check whether a variable exists in any source
+   * @param name Variable name
+   * @returns Whether it exists
    */
   const hasVariable = (name: string): boolean => {
     return name in allVariables.value
   }
 
   /**
-   * 列出所有变量名
-   * @returns 所有变量名数组
+   * List all variable names
+   * @returns Array of all variable names
    */
   const listVariableNames = (): string[] => {
     return Object.keys(allVariables.value)

@@ -8,7 +8,7 @@ import type {
   ButtonSize
 } from '../../components/types/test-area'
 
-// 屏幕断点定义
+// Screen breakpoint definitions
 const BREAKPOINTS = {
   xs: 0,
   sm: 576,
@@ -21,13 +21,13 @@ const BREAKPOINTS = {
 type ScreenSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl'
 
 export interface ResponsiveTestLayoutOptions {
-  // 初始配置
+  // Initial config
   initialConfig?: Partial<TestAreaConfig>
   
-  // 自定义断点
+  // Custom breakpoints
   customBreakpoints?: Partial<typeof BREAKPOINTS>
   
-  // 是否启用自动监听
+  // Whether to enable automatic listening
   enableAutoResize?: boolean
 }
 
@@ -38,14 +38,14 @@ export function useResponsiveTestLayout(options: ResponsiveTestLayoutOptions = {
     enableAutoResize = true
   } = options
 
-  // 响应式状态
+  // Reactive state
   const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1200)
   const windowHeight = ref(typeof window !== 'undefined' ? window.innerHeight : 800)
 
-  // 合并断点配置
+  // Merge the breakpoint config
   const breakpoints = { ...BREAKPOINTS, ...customBreakpoints }
 
-  // 计算当前屏幕尺寸
+  // Compute the current screen size
   const currentScreenSize = computed<ScreenSize>(() => {
     const width = windowWidth.value
     if (width >= breakpoints.xxl) return 'xxl'
@@ -56,7 +56,7 @@ export function useResponsiveTestLayout(options: ResponsiveTestLayoutOptions = {
     return 'xs'
   })
 
-  // 屏幕尺寸检测
+  // Screen size detection
   const isXS = computed(() => currentScreenSize.value === 'xs')
   const isSM = computed(() => currentScreenSize.value === 'sm')
   const isMD = computed(() => currentScreenSize.value === 'md')
@@ -64,13 +64,13 @@ export function useResponsiveTestLayout(options: ResponsiveTestLayoutOptions = {
   const isXL = computed(() => currentScreenSize.value === 'xl')
   const isXXL = computed(() => currentScreenSize.value === 'xxl')
 
-  // 屏幕类型检测
+  // Screen type detection
   const isMobile = computed(() => windowWidth.value < breakpoints.md)
   const isTablet = computed(() => windowWidth.value >= breakpoints.md && windowWidth.value < breakpoints.lg)
   const isDesktop = computed(() => windowWidth.value >= breakpoints.lg)
   const isLargeScreen = computed(() => windowWidth.value >= breakpoints.xl)
 
-  // 智能组件尺寸计算
+  // Smart component size computation
   const smartComponentSize = computed<ComponentSize>(() => {
     if (isMobile.value) return 'small'
     if (isTablet.value) return 'medium'
@@ -80,10 +80,10 @@ export function useResponsiveTestLayout(options: ResponsiveTestLayoutOptions = {
   const smartButtonSize = computed<ButtonSize>(() => {
     if (isMobile.value) return 'small'
     if (isTablet.value) return 'medium'
-    return 'medium' // 桌面端保持中等尺寸，避免过大
+    return 'medium' // Keep the medium size on desktop to avoid being too large
   })
 
-  // 响应式布局模式
+  // Responsive layout mode
   const recommendedInputMode = computed<'compact' | 'normal'>(() => {
     return isMobile.value ? 'compact' : 'normal'
   })
@@ -94,7 +94,7 @@ export function useResponsiveTestLayout(options: ResponsiveTestLayoutOptions = {
     return 'default'
   })
 
-  // NGrid 响应式配置
+  // NGrid responsive config
   const gridResponsiveConfig = computed(() => {
     return {
       modelSelectSpan: {
@@ -116,7 +116,7 @@ export function useResponsiveTestLayout(options: ResponsiveTestLayoutOptions = {
     }
   })
 
-  // 高度配置计算
+  // Height config computation
   const responsiveHeights = computed(() => {
     const baseHeight = windowHeight.value
     
@@ -128,19 +128,19 @@ export function useResponsiveTestLayout(options: ResponsiveTestLayoutOptions = {
     }
   })
 
-  // 生成完整的测试区域配置
+  // Generate the complete test area config
   const testAreaConfig = computed<TestAreaConfig>(() => {
     return {
       layout: {
         inputMode: recommendedInputMode.value,
         controlBarLayout: recommendedControlBarLayout.value,
         buttonSize: smartButtonSize.value,
-        enableFullscreen: !isMobile.value // 移动端不建议全屏编辑
+        enableFullscreen: !isMobile.value // Fullscreen editing is not recommended on mobile
       },
       features: {
-        compareMode: !isMobile.value, // 移动端不建议对比模式
+        compareMode: !isMobile.value, // Compare mode is not recommended on mobile
         conversationManager: true,
-        advancedMode: isDesktop.value // 仅桌面端启用高级模式
+        advancedMode: isDesktop.value // Advanced mode is only enabled on desktop
       },
       heights: {
         testInputMin: responsiveHeights.value.testInputMin,
@@ -155,7 +155,7 @@ export function useResponsiveTestLayout(options: ResponsiveTestLayoutOptions = {
     }
   })
 
-  // 控制布局配置
+  // Control layout config
   const controlLayoutConfig = computed<TestControlLayout>(() => {
     return {
       modelSelect: {
@@ -182,7 +182,7 @@ export function useResponsiveTestLayout(options: ResponsiveTestLayoutOptions = {
     }
   })
 
-  // 结果显示配置
+  // Result display config
   const resultConfig = computed<TestResultConfig>(() => {
     return {
       compareMode: {
@@ -191,7 +191,7 @@ export function useResponsiveTestLayout(options: ResponsiveTestLayoutOptions = {
         showOriginal: !isMobile.value
       },
       singleMode: {
-        title: '测试结果',
+        title: 'Test Result',
         showToolbar: isDesktop.value
       },
       display: {
@@ -203,23 +203,23 @@ export function useResponsiveTestLayout(options: ResponsiveTestLayoutOptions = {
     }
   })
 
-  // 窗口尺寸变化监听
+  // Window size change listener
   const handleResize = () => {
     windowWidth.value = window.innerWidth
     windowHeight.value = window.innerHeight
   }
 
-  // 防抖处理
+  // Debounce handling
   let resizeTimer: ReturnType<typeof setTimeout> | null = null
   const debouncedHandleResize = () => {
     if (resizeTimer) clearTimeout(resizeTimer)
     resizeTimer = setTimeout(handleResize, 150)
   }
 
-  // 生命周期管理
+  // Lifecycle management
   onMounted(() => {
     if (typeof window !== 'undefined' && enableAutoResize) {
-      handleResize() // 初始化
+      handleResize() // Initialize
       window.addEventListener('resize', debouncedHandleResize)
     }
   })
@@ -234,24 +234,24 @@ export function useResponsiveTestLayout(options: ResponsiveTestLayoutOptions = {
     }
   })
 
-  // 手动触发重新计算
+  // Manually trigger a recompute
   const recalculate = () => {
     handleResize()
   }
 
-  // 获取特定断点的配置
+  // Get the config for a specific breakpoint
   const getConfigForBreakpoint = (): TestAreaConfig => {
-    // 简化实现：直接返回当前配置的副本
+    // Simplified implementation: return a copy of the current config directly
     return { ...testAreaConfig.value }
   }
 
   return {
-    // 响应式状态
+    // Reactive state
     windowWidth: readonly(windowWidth),
     windowHeight: readonly(windowHeight),
     currentScreenSize: readonly(currentScreenSize),
     
-    // 屏幕尺寸检测
+    // Screen size detection
     isXS: readonly(isXS),
     isSM: readonly(isSM),
     isMD: readonly(isMD),
@@ -259,32 +259,32 @@ export function useResponsiveTestLayout(options: ResponsiveTestLayoutOptions = {
     isXL: readonly(isXL),
     isXXL: readonly(isXXL),
     
-    // 屏幕类型检测
+    // Screen type detection
     isMobile: readonly(isMobile),
     isTablet: readonly(isTablet),
     isDesktop: readonly(isDesktop),
     isLargeScreen: readonly(isLargeScreen),
     
-    // 智能配置
+    // Smart config
     smartComponentSize: readonly(smartComponentSize),
     smartButtonSize: readonly(smartButtonSize),
     recommendedInputMode: readonly(recommendedInputMode),
     recommendedControlBarLayout: readonly(recommendedControlBarLayout),
     
-    // 响应式配置
+    // Responsive config
     gridResponsiveConfig: readonly(gridResponsiveConfig),
     responsiveHeights: readonly(responsiveHeights),
     
-    // 完整配置
+    // Full config
     testAreaConfig: readonly(testAreaConfig),
     controlLayoutConfig: readonly(controlLayoutConfig),
     resultConfig: readonly(resultConfig),
     
-    // 工具方法
+    // Utility methods
     recalculate,
     getConfigForBreakpoint,
     
-    // 常量
+    // Constants
     breakpoints: readonly(breakpoints)
   }
 }

@@ -1,5 +1,5 @@
 /**
- * 增强的模板处理器实现
+ * Enhanced template processor implementation
  */
 
 import type {
@@ -19,7 +19,7 @@ import { VARIABLE_VALIDATION, isValidVariableName, sanitizeVariableRecord } from
 
 export class EnhancedTemplateProcessor implements TemplateProcessor {
   /**
-   * 将StandardPromptData转换为模板+变量形式
+   * Convert StandardPromptData into template + variables form
    */
   toTemplate(data: StandardPromptData): {
     template: StandardPromptData
@@ -29,13 +29,13 @@ export class EnhancedTemplateProcessor implements TemplateProcessor {
     const variables: Record<string, string> = {}
     const variableDefinitions: VariableDefinition[] = []
 
-    // 从现有metadata中获取变量
+    // Get variables from the existing metadata
     if (data.metadata?.variables) {
       // Avoid prototype pollution via Object.assign and ignore invalid keys.
       Object.assign(variables, sanitizeVariableRecord(data.metadata.variables))
     }
 
-    // 扫描消息中的所有变量
+    // Scan all variables in the messages
     const allVariables = new Set<string>()
     const templateMessages: StandardMessage[] = data.messages.map(message => {
       const scannedVars = this.scanVariablesInContent(message.content)
@@ -43,18 +43,18 @@ export class EnhancedTemplateProcessor implements TemplateProcessor {
       
       return {
         ...message,
-        content: message.content // 保持原有的变量占位符
+        content: message.content // Keep the original variable placeholders
       }
     })
 
-    // 为所有发现的变量创建定义
+    // Create definitions for all discovered variables
     allVariables.forEach(varName => {
       // Preserve explicit empty-string values; only fill when the key is missing.
       if (!Object.prototype.hasOwnProperty.call(variables, varName)) {
         variables[varName] = `[${varName}_placeholder]`
       }
 
-      // 分析变量类型和特征
+      // Analyze variable types and characteristics
       const varAnalysis = this.analyzeVariable(varName, data.messages)
       variableDefinitions.push({
         name: varName,
@@ -88,7 +88,7 @@ export class EnhancedTemplateProcessor implements TemplateProcessor {
   }
 
   /**
-   * 从模板+变量生成完整的StandardPromptData
+   * Generate the full StandardPromptData from template + variables
    */
   fromTemplate(
     template: StandardPromptData, 
@@ -112,7 +112,7 @@ export class EnhancedTemplateProcessor implements TemplateProcessor {
   }
 
   /**
-   * 验证变量完整性
+   * Validate variable completeness
    */
   validateVariables(
     template: StandardPromptData, 
@@ -125,18 +125,18 @@ export class EnhancedTemplateProcessor implements TemplateProcessor {
     const requiredVariables = new Set<string>()
     const providedVariables = new Set(Object.keys(variables))
 
-    // 扫描模板中需要的所有变量
+    // Scan all variables needed in the template
     template.messages.forEach(message => {
       const scannedVars = this.scanVariablesInContent(message.content)
       scannedVars.forEach(varInfo => requiredVariables.add(varInfo.name))
     })
 
-    // 检查缺失的变量
+    // Check for missing variables
     const missingVariables = Array.from(requiredVariables).filter(
       varName => !providedVariables.has(varName)
     )
 
-    // 检查未使用的变量
+    // Check for unused variables
     const unusedVariables = Array.from(providedVariables).filter(
       varName => !requiredVariables.has(varName)
     )
@@ -149,20 +149,20 @@ export class EnhancedTemplateProcessor implements TemplateProcessor {
   }
 
   /**
-   * 替换变量为实际值
+   * Replace variables with actual values
    */
   replaceVariables(content: string, variables: Record<string, string>): string {
     let result = content
 
-    // 支持多种变量格式
+    // Support multiple variable formats
     for (const [name, value] of Object.entries(variables)) {
-      // 标准格式 {{variableName}}
+      // Standard format {{variableName}}
       const standardPattern = new RegExp(`\\{\\{\\s*${this.escapeRegExp(name)}\\s*\\}\\}`, 'g')
       result = result.replace(standardPattern, value)
 
-      // 条件格式（未来扩展）
+      // Conditional format (future extension)
       // {% if variableName %} ... {% endif %}
-      // 循环格式（未来扩展）
+      // Loop format (future extension)
       // {% for item in variableName %} ... {% endfor %}
     }
 
@@ -170,7 +170,7 @@ export class EnhancedTemplateProcessor implements TemplateProcessor {
   }
 
   /**
-   * 扫描内容中的变量占位符
+   * Scan the content for variable placeholders
    */
   scanVariablesInContent(content: string): Array<{
     name: string
@@ -210,7 +210,7 @@ export class EnhancedTemplateProcessor implements TemplateProcessor {
       variables.get(variableName)!.positions.push({ start, end })
     }
 
-    // 转换为数组格式
+    // Convert to an array format
     return Array.from(variables.entries()).map(([name, data]) => ({
       name,
       placeholder: data.placeholder,
@@ -219,7 +219,7 @@ export class EnhancedTemplateProcessor implements TemplateProcessor {
   }
 
   /**
-   * 预览变量替换效果
+   * Preview the variable substitution effect
    */
   previewReplacement(
     content: string, 
@@ -244,7 +244,7 @@ export class EnhancedTemplateProcessor implements TemplateProcessor {
 
     let processed = content
 
-    // 记录替换信息
+    // Record the substitution info
     for (const [name, value] of Object.entries(variables)) {
       const pattern = new RegExp(`\\{\\{\\s*${this.escapeRegExp(name)}\\s*\\}\\}`, 'g')
       let match: RegExpExecArray | null
@@ -258,7 +258,7 @@ export class EnhancedTemplateProcessor implements TemplateProcessor {
         })
       }
 
-      // 执行替换
+      // Perform the substitution
       processed = processed.replace(pattern, highlightVariables ? `[${value}]` : value)
     }
 
@@ -270,7 +270,7 @@ export class EnhancedTemplateProcessor implements TemplateProcessor {
   }
 
   /**
-   * 智能变量建议（基于使用模式）
+   * Smart variable suggestions (based on usage patterns)
    */
   suggestOptimizations(template: StandardPromptData): Array<{
     type: 'merge' | 'split' | 'rename' | 'extract'
@@ -287,25 +287,25 @@ export class EnhancedTemplateProcessor implements TemplateProcessor {
 
     const variableUsage = this.analyzeVariableUsage(template)
 
-    // 建议合并相似变量
+    // Suggest merging similar variables
     const similarVariables = this.findSimilarVariables(variableUsage)
     similarVariables.forEach(group => {
       if (group.length > 1) {
         suggestions.push({
           type: 'merge',
-          description: `考虑合并相似的变量: ${group.join(', ')}`,
+          description: `Consider merging similar variables: ${group.join(', ')}`,
           variables: group,
           confidence: 0.7
         })
       }
     })
 
-    // 建议拆分复杂变量
+    // Suggest splitting complex variables
     Object.entries(variableUsage).forEach(([varName, usage]) => {
       if (usage.avgLength > 1000 && usage.complexity > 0.8) {
         suggestions.push({
           type: 'split',
-          description: `变量 ${varName} 内容过于复杂，建议拆分`,
+          description: `Variable ${varName} has overly complex content; consider splitting it`,
           variables: [varName],
           confidence: 0.8
         })
@@ -315,12 +315,12 @@ export class EnhancedTemplateProcessor implements TemplateProcessor {
     return suggestions.sort((a, b) => b.confidence - a.confidence)
   }
 
-  // 私有方法：分析变量特征
+  // Private method: analyze variable characteristics
   private analyzeVariable(
     varName: string,
     messages: StandardMessage[]
   ): VariableAnalysis {
-    // 基于变量名推断类型和用途
+    // Infer the type and purpose from the variable name
     const nameLower = varName.toLowerCase()
     
     let type: VariablePrimitiveType = 'string'
@@ -328,19 +328,19 @@ export class EnhancedTemplateProcessor implements TemplateProcessor {
 
     if (nameLower.includes('count') || nameLower.includes('number') || nameLower.includes('num')) {
       type = 'number'
-      description = '数值型变量'
+      description = 'Numeric variable'
     } else if (nameLower.includes('is_') || nameLower.includes('has_') || nameLower.includes('enable')) {
       type = 'boolean'
-      description = '布尔型变量'
+      description = 'Boolean variable'
     } else if (nameLower.includes('list') || nameLower.includes('array') || nameLower.includes('items')) {
       type = 'array'
-      description = '数组型变量'
+      description = 'Array variable'
     } else if (nameLower.includes('config') || nameLower.includes('settings') || nameLower.includes('data')) {
       type = 'object'
-      description = '对象型变量'
+      description = 'Object variable'
     }
 
-    // 检查是否为必需变量（出现在多个消息中）
+    // Check whether it is a required variable (appears in multiple messages)
     let usageCount = 0
     messages.forEach(message => {
       const pattern = new RegExp(`\\{\\{\\s*${this.escapeRegExp(varName)}\\s*\\}\\}`, 'g')
@@ -351,13 +351,13 @@ export class EnhancedTemplateProcessor implements TemplateProcessor {
 
     return {
       type,
-      description: description || `${varName} 变量`,
+      description: description || `${varName} variable`,
       defaultValue: this.getDefaultValueForType(type),
       required: usageCount > 1
     }
   }
 
-  // 私有方法：获取类型的默认值
+  // Private method: get the default value of a type
   private getDefaultValueForType(type: VariablePrimitiveType): VariableDefaultValue {
     switch (type) {
       case 'string': return ''
@@ -369,7 +369,7 @@ export class EnhancedTemplateProcessor implements TemplateProcessor {
     }
   }
 
-  // 私有方法：分析变量使用情况
+  // Private method: analyze variable usage
   private analyzeVariableUsage(template: StandardPromptData): Record<string, VariableUsageStats> {
     const usage: Record<string, VariableUsageStats> = {}
 
@@ -393,7 +393,7 @@ export class EnhancedTemplateProcessor implements TemplateProcessor {
     return usage
   }
 
-  // 私有方法：查找相似变量
+  // Private method: find similar variables
   private findSimilarVariables(usage: Record<string, VariableUsageStats>): string[][] {
     const variables = Object.keys(usage)
     const groups: string[][] = []
@@ -402,7 +402,7 @@ export class EnhancedTemplateProcessor implements TemplateProcessor {
       for (let j = i + 1; j < variables.length; j++) {
         const similarity = this.calculateSimilarity(variables[i], variables[j])
         if (similarity > 0.7) {
-          // 找到或创建组
+          // Find or create a group
           const foundGroup = groups.find(group => 
             group.includes(variables[i]) || group.includes(variables[j])
           )
@@ -420,7 +420,7 @@ export class EnhancedTemplateProcessor implements TemplateProcessor {
     return groups
   }
 
-  // 私有方法：计算变量名相似度
+  // Private method: compute the similarity of variable names
   private calculateSimilarity(str1: string, str2: string): number {
     const longer = str1.length > str2.length ? str1 : str2
     const shorter = str1.length > str2.length ? str2 : str1
@@ -431,7 +431,7 @@ export class EnhancedTemplateProcessor implements TemplateProcessor {
     return (longer.length - distance) / longer.length
   }
 
-  // 私有方法：计算编辑距离
+  // Private method: compute the edit distance
   private levenshteinDistance(str1: string, str2: string): number {
     const matrix = Array(str2.length + 1).fill(null).map(() => Array(str1.length + 1).fill(null))
     
@@ -457,7 +457,7 @@ export class EnhancedTemplateProcessor implements TemplateProcessor {
     return matrix[str2.length][str1.length]
   }
 
-  // 私有方法：转义正则表达式特殊字符
+  // Private method: escape regex special characters
   private escapeRegExp(string: string): string {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
   }

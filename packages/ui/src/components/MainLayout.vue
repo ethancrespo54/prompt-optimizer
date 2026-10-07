@@ -1,5 +1,5 @@
 <template>
-  <!-- 使用ToastUI包装整个布局以提供NMessageProvider -->
+  <!-- Wrap the entire layout with ToastUI to provide NMessageProvider -->
   <ToastUI>
     <NLayout style="position: fixed; inset: 0; width: 100vw; height: 100vh;
     max-height: 100vh;
@@ -8,12 +8,12 @@
     >
 
       <NFlex vertical style="position: fixed; inset: 0; width: 100vw; max-height: 100vh; height: 100vh; min-height: 0;">
-      <!-- 顶部导航栏 -->
+      <!-- Top navigation bar -->
       <NLayoutHeader class="theme-header nav-header-enhanced">
         <NFlex justify="space-between" align="center" class="w-full nav-content" :wrap="false" :size="[16, 12]">
-          <!-- 左侧：Logo + 标题 + 核心导航 -->
+          <!-- Left: logo + title + core navigation -->
           <NFlex align="center" :size="16" :wrap="false">
-            <!-- Logo + 标题 -->
+            <!-- Logo + title -->
             <NFlex align="center" :size="8" :wrap="false">
               <NImage
                 :src="logoSrc"
@@ -31,20 +31,20 @@
               </NText>
             </NFlex>
 
-            <!-- 核心导航元素 -->
+            <!-- Core navigation elements -->
             <div class="core-navigation">
               <slot name="core-nav"></slot>
             </div>
           </NFlex>
 
-          <!-- 右侧：操作按钮 -->
+          <!-- Right: action buttons -->
           <NFlex align="center" :size="8" :wrap="true" justify="end" class="nav-actions">
             <slot name="actions"></slot>
           </NFlex>
         </NFlex>
       </NLayoutHeader>
 
-      <!-- 主要内容区域 - 严格控制在剩余空间内 -->
+      <!-- Main content area - strictly constrained to the remaining space -->
       <NLayoutContent has-sider
         style="flex: 1; min-height: 0; overflow: hidden;"
         content-style="height: 100%; max-height: 100%; min-height: 0; box-sizing: border-box; padding: 24px clamp(16px, 2vw, 48px) 40px; display: flex; flex-direction: column; align-items: stretch; overflow: hidden;"
@@ -55,7 +55,7 @@
       </NLayoutContent>
       </NFlex>
 
-      <!-- 弹窗插槽 -->
+      <!-- Dialog slot -->
       <slot name="modals"></slot>
 
     </NLayout>
@@ -72,10 +72,10 @@ import logoImage from '../assets/logo.jpg'
 
 const { t } = useI18n()
 
-// Logo图片配置
+// Logo image config
 const logoSrc = logoImage
 
-// 创建简单的SVG fallback logo
+// Create a simple SVG fallback logo
 const createFallbackSvg = () => {
   const svg = `data:image/svg+xml,${encodeURIComponent(`
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
@@ -88,7 +88,7 @@ const createFallbackSvg = () => {
 
 const fallbackLogoSrc = createFallbackSvg()
 
-// 响应式Logo尺寸 - 使用更智能的检测
+// Responsive logo size - uses smarter detection
 const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1024)
 
 const updateWindowWidth = () => {
@@ -110,11 +110,11 @@ onUnmounted(() => {
 
 const logoSize = computed(() => {
   if (windowWidth.value < 480) {
-    return 20 // 超小屏幕
+    return 20 // Extra-small screen
   } else if (windowWidth.value < 640) {
-    return 24 // 小屏幕
+    return 24 // Small screen
   }
-  return 28 // 默认尺寸
+  return 28 // Default size
 })
 </script>
 
@@ -135,7 +135,7 @@ const logoSize = computed(() => {
   min-height: 0;
 }
 
-/* 增强导航栏样式 */
+/* Enhanced navigation bar styles */
 .nav-header-enhanced {
   min-height: 64px !important;
   padding: 12px 16px !important;
@@ -149,7 +149,7 @@ const logoSize = computed(() => {
   min-height: 40px;
 }
 
-/* Logo样式优化 */
+/* Logo style optimization */
 .logo-image {
   border-radius: 6px;
   transition: transform 0.2s ease-in-out;
@@ -160,14 +160,14 @@ const logoSize = computed(() => {
   transform: scale(1.05);
 }
 
-/* 标题文字对齐优化 */
+/* Title text alignment optimization */
 .theme-title {
   line-height: 1.2 !important;
   margin: 0 !important;
   white-space: nowrap;
 }
 
-/* 核心导航样式 */
+/* Core navigation styles */
 .core-navigation {
   display: flex;
   align-items: center;
@@ -207,7 +207,7 @@ const logoSize = computed(() => {
   background: var(--hover-color, rgba(0, 0, 0, 0.06));
 }
 
-/* 响应式优化 */
+/* Responsive optimization */
 @media (max-width: 639px) {
   .logo-image {
     border-radius: 4px;

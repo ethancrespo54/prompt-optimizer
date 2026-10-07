@@ -1,15 +1,15 @@
 <template>
   <div class="evaluation-hover-card">
-    <!-- 加载状态 -->
+    <!-- Loading state -->
     <div v-if="loading" class="hover-card-loading">
       <NSpin size="small" />
       <NText depth="3" class="meta-text">{{ t('evaluation.loading') }}</NText>
     </div>
 
-    <!-- 有评估结果 -->
+    <!-- Has evaluation results -->
     <template v-else-if="result">
       <div class="hover-card-scroll">
-        <!-- 总分 + 等级 -->
+        <!-- Total score + grade -->
         <NSpace align="center" :size="12" class="score-header">
           <NProgress
             type="circle"
@@ -29,7 +29,7 @@
           </div>
         </NSpace>
 
-        <!-- 维度分数 -->
+        <!-- Dimension scores -->
         <NCard embedded size="small" :bordered="false" class="section-card">
           <template #header>
             <NText depth="2" class="section-title">{{ t('evaluation.dimensions') }}</NText>
@@ -51,7 +51,7 @@
           </NList>
         </NCard>
 
-        <!-- 精准修复（诊断分析） -->
+        <!-- Precise fixes (diagnostic analysis) -->
         <NCard
           v-if="result.patchPlan && result.patchPlan.length > 0"
           embedded
@@ -88,7 +88,7 @@
           </NList>
         </NCard>
 
-        <!-- 改进建议 -->
+        <!-- Improvement suggestions -->
         <NCard
           v-if="result.improvements && result.improvements.length > 0"
           embedded
@@ -122,7 +122,7 @@
           </NList>
         </NCard>
 
-        <!-- 一句话总结 -->
+        <!-- One-sentence summary -->
         <NCard v-if="result.summary" embedded size="small" :bordered="false" class="section-card">
           <NText class="meta-text">{{ result.summary }}</NText>
         </NCard>
@@ -152,7 +152,7 @@
       </div>
     </template>
 
-    <!-- 无结果 -->
+    <!-- No results -->
     <div v-else class="hover-card-empty">
       <NEmpty :description="t('evaluation.noResult')">
         <template #extra>
@@ -193,7 +193,7 @@ const props = defineProps<{
   result: EvaluationResponse | null
   type: EvaluationType
   loading?: boolean
-  /** 由父组件传入，用于在 popover 关闭时重置内部编辑器状态 */
+  /** Passed in by the parent component, used to reset the internal editor state when the popover closes */
   visible?: boolean
 }>()
 
@@ -217,7 +217,7 @@ watch(
   }
 )
 
-// 获取分数等级标签类型
+// Get the score grade tag type
 const getScoreLevelType = (score: number): 'success' | 'info' | 'warning' | 'error' => {
   if (score >= 80) return 'success'
   if (score >= 60) return 'info'
@@ -225,7 +225,7 @@ const getScoreLevelType = (score: number): 'success' | 'info' | 'warning' | 'err
   return 'error'
 }
 
-// 获取分数等级文本
+// Get the score grade text
 const getScoreLevelText = (score: number): string => {
   if (score >= 90) return t('evaluation.level.excellent')
   if (score >= 80) return t('evaluation.level.good')
@@ -234,14 +234,14 @@ const getScoreLevelText = (score: number): string => {
   return t('evaluation.level.veryPoor')
 }
 
-// 获取维度进度条状态
+// Get the dimension progress bar status
 const getDimensionStatus = (score: number): 'success' | 'warning' | 'error' | 'default' => {
   if (score >= 80) return 'success'
   if (score >= 60) return 'warning'
   return 'error'
 }
 
-// 处理查看详情
+// Handle viewing details
 const handleShowDetail = () => {
   emit('show-detail')
 }
@@ -259,12 +259,12 @@ const handleEvaluateClick = () => {
   feedbackDraft.value = ''
 }
 
-// 处理应用改进建议到迭代
+// Handle applying improvement suggestions to the iteration
 const handleApplyImprovement = (improvement: string) => {
   emit('apply-improvement', { improvement, type: props.type })
 }
 
-// 处理应用单个补丁
+// Handle applying a single patch
 const handleApplyPatch = (operation: PatchOperation) => {
   emit('apply-patch', { operation })
 }
@@ -273,7 +273,7 @@ const handleApplyPatch = (operation: PatchOperation) => {
 <style scoped>
 .evaluation-hover-card {
   width: min(360px, calc(100vw - 32px));
-  /* 避免在视口底部被截断：高度随视口缩放，内容内部滚动 */
+  /* Avoid being cut off at the bottom of the viewport: height scales with the viewport, and content scrolls inside */
   max-height: min(480px, calc(100vh - 32px));
   box-sizing: border-box;
   padding: 14px;
@@ -309,7 +309,7 @@ const handleApplyPatch = (operation: PatchOperation) => {
   width: 100%;
 }
 
-/* 分数头部 */
+/* Score header */
 .score-header {
   margin-bottom: 10px;
 }

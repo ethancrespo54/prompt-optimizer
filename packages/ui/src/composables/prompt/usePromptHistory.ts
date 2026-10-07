@@ -16,14 +16,14 @@ interface HistorySelectionContext {
 }
 
 /**
- * 提示词历史管理Hook
- * @param services 服务实例引用
- * @param prompt 提示词
- * @param optimizedPrompt 优化后的提示词
- * @param currentChainId 当前链ID
- * @param currentVersions 当前版本列表
- * @param currentVersionId 当前版本ID
- * @returns 提示词历史管理接口
+ * Prompt history management hook
+ * @param services Service instance reference
+ * @param prompt Prompt
+ * @param optimizedPrompt Optimized prompt
+ * @param currentChainId Current chain ID
+ * @param currentVersions Current version list
+ * @param currentVersionId Current version ID
+ * @returns Prompt history management interface
  */
 export function usePromptHistory(
   services: Ref<AppServices | null>,
@@ -36,10 +36,10 @@ export function usePromptHistory(
   const toast = useToast()
   const { t } = useI18n()
   
-  // 历史记录管理器引用
+  // History manager reference
   const historyManager = computed(() => services.value?.historyManager)
 
-  // 创建一个 reactive 状态对象
+  // Create a reactive state object
   const state = reactive({
     history: [] as PromptChain[],
     showHistory: false,
@@ -48,14 +48,14 @@ export function usePromptHistory(
       try {
         const { record, chainId, rootPrompt } = context
 
-        // 设置工作区内容
+        // Set the workspace content
         prompt.value = rootPrompt
         optimizedPrompt.value = record.optimizedPrompt
 
-        // 加载现有链（而不是创建新链）- 这是修复迭代断层问题的关键
+        // Load an existing chain (rather than creating a new one) - the key to fixing the iteration discontinuity problem
         const existingChain = await historyManager.value!.getChain(chainId)
 
-        // 恢复完整的链状态，保持版本历史连贯性
+        // Restore the full chain state, keeping the version history continuous
         currentChainId.value = existingChain.chainId
         currentVersions.value = existingChain.versions
         currentVersionId.value = record.id
@@ -65,7 +65,7 @@ export function usePromptHistory(
 
         toast.success(t('toast.success.historyLoaded'))
       } catch (error) {
-        console.error('[History] 加载历史记录失败:', error)
+        console.error('[History] Failed to load history records:', error)
         toast.error(t('toast.error.loadHistoryFailed'))
       }
     },
@@ -74,14 +74,14 @@ export function usePromptHistory(
     try {
       await historyManager.value!.clearHistory()
       
-      // 清空当前显示的内容
+      // Clear the currently displayed content
       prompt.value = '';
       optimizedPrompt.value = '';
       currentChainId.value = '';
       currentVersions.value = [];
       currentVersionId.value = '';
       
-      // 立即更新历史记录，确保UI能够反映最新状态
+      // Update the history records immediately so the UI reflects the latest state
         state.history = []
       toast.success(t('toast.success.historyClear'))
     } catch (error) {
@@ -92,17 +92,17 @@ export function usePromptHistory(
 
     handleDeleteChain: async (chainId: string) => {
     try {
-      // 获取链中的所有记录
+      // Get all records in the chain
       const allChains = await historyManager.value!.getAllChains()
       const chain = allChains.find((c) => c.chainId === chainId)
       
       if (chain) {
-        // 删除链中的所有记录
+        // Delete all records in the chain
         for (const record of chain.versions) {
           await historyManager.value!.deleteRecord(record.id)
         }
         
-        // 如果当前正在查看的是被删除的链，则清空当前显示
+        // If the chain currently being viewed is deleted, clear the current display
         if (currentChainId.value === chainId) {
           prompt.value = '';
           optimizedPrompt.value = '';
@@ -111,7 +111,7 @@ export function usePromptHistory(
           currentVersionId.value = '';
         }
         
-        // 立即更新历史记录，确保UI能够反映最新状态
+        // Update the history records immediately so the UI reflects the latest state
         const updatedChains = await historyManager.value!.getAllChains()
           state.history = [...updatedChains]
         toast.success(t('toast.success.historyChainDeleted'))
@@ -132,7 +132,7 @@ export function usePromptHistory(
   }
   })
 
-  // 添加一个刷新历史记录的函数
+  // Add a function to refresh the history records
   const refreshHistory = async () => {
     const chains = await historyManager.value!.getAllChains()
     state.history.splice(0, state.history.length, ...chains)
@@ -150,7 +150,7 @@ export function usePromptHistory(
     await refreshHistory()
   })
 
-  // 监听服务实例变化，初始化历史记录
+  // Watch service instance changes and initialize the history records
   watch(services, async () => {
     if (services.value?.historyManager) {
       await refreshHistory()

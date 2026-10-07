@@ -1,10 +1,10 @@
 /**
- * Pro-Variable Session Store (Pro-user，变量模式)
+ * Pro-Variable Session Store (Pro-user, variable mode)
  *
- * 管理 Pro 模式下 User 子模式的会话状态
- * 结构与 BasicSystemSession 类似，但专注于变量优化场景
+ * Manages the session state of the User sub-mode under Pro mode
+ * Similar structure to BasicSystemSession, but focused on the variable optimization scenario
  *
- * 注意：临时变量在 Pro/Image 子模式内会持久化到各自 session store（Basic 仍为全局内存态）
+ * Note: temporary variables are persisted to each session store within the Pro/Image sub-modes (Basic is still global in-memory state)
  */
 
 import { defineStore } from 'pinia'
@@ -25,10 +25,10 @@ export interface TestResults {
 }
 
 /**
- * pro-variable 测试面板的版本选择：
- * - 0: v0（原始提示词）
- * - >=1: v1..vn（历史链版本号）
- * - 'latest': 跟随最新 vn
+ * Version selection of the pro-variable test panel:
+ * - 0: v0 (original prompt)
+ * - >=1: v1..vn (history chain version number)
+ * - 'latest': follows the latest vn
  */
 export type TestPanelVersionValue = 0 | number | 'latest'
 
@@ -37,9 +37,9 @@ export type TestVariantId = 'a' | 'b' | 'c' | 'd'
 export type TestColumnCount = 2 | 3 | 4
 
 export interface ProVariableLayoutConfig {
-  /** 主布局左侧宽度（百分比，25..50） */
+  /** Left width of the main layout (percentage, 25..50) */
   mainSplitLeftPct: number
-  /** 测试区列数（2..4） */
+  /** Number of test area columns (2..4) */
   testColumnCount: TestColumnCount
 }
 
@@ -65,20 +65,20 @@ export interface ProVariableSessionState {
   chainId: string
   versionId: string
 
-  // 变量模式无需单独 testContent；保留字段用于兼容与最小侵入
+  // Variable mode needs no separate testContent; the field is kept for compatibility and minimal intrusion
   testContent: string
 
   /**
-   * 临时变量（子模式隔离 + 持久化）
-   * - pro-variable 维度持久化（刷新不丢）
-   * - 不与 pro-multi / image-* 共享
+   * Temporary variables (sub-mode isolated + persisted)
+   * - Persisted at the pro-variable level (survives refresh)
+   * - Not shared with pro-multi / image-*
    */
   temporaryVariables: Record<string, string>
 
-  // legacy: 旧版对比测试结果（仅 A/B）
+  // legacy: old compare test results (A/B only)
   testResults: TestResults | null
 
-  // v2: 多列测试（最多 4 列）
+  // v2: multi-column testing (up to 4 columns)
   layout: ProVariableLayoutConfig
   testVariants: TestVariantConfig[]
   testVariantResults: TestVariantResults
@@ -94,7 +94,7 @@ export interface ProVariableSessionState {
 }
 
 /**
- * 默认状态
+ * Default state
  */
 const createDefaultState = (): ProVariableSessionState => ({
   prompt: '',
@@ -134,7 +134,7 @@ const createDefaultState = (): ProVariableSessionState => ({
 })
 
 export const useProVariableSession = defineStore('proVariableSession', () => {
-  // ========== 状态定义（使用独立 ref，而非包装在 state 对象中）==========
+  // ========== State definitions (uses independent refs rather than wrapping them in a state object) ==========
 
   const prompt = ref('')
   const optimizedPrompt = ref('')
@@ -206,7 +206,7 @@ export const useProVariableSession = defineStore('proVariableSession', () => {
   const updateTestResults = (results: TestResults | null) => {
     const prev = testResults.value
 
-    // 检查是否相同
+    // Check whether they are the same
     const isSame =
       prev === results ||
       (!!prev &&
@@ -218,7 +218,7 @@ export const useProVariableSession = defineStore('proVariableSession', () => {
 
     if (isSame) return
 
-    // 直接赋值给 ref（现在是响应式的）
+    // Assign directly to the ref (now reactive)
     testResults.value = results
     lastActiveAt.value = Date.now()
   }
@@ -229,7 +229,7 @@ export const useProVariableSession = defineStore('proVariableSession', () => {
     lastActiveAt.value = Date.now()
   }
 
-  // 临时变量（持久化到 session）
+  // Temporary variables (persisted to the session)
   const setTemporaryVariable = (name: string, value: string) => {
     if (!isValidVariableName(name)) {
       console.warn('[ProVariableSession] Ignoring invalid temporary variable name:', name)
@@ -260,7 +260,7 @@ export const useProVariableSession = defineStore('proVariableSession', () => {
     if (selectedOptimizeModelKey.value === modelKey) return
     selectedOptimizeModelKey.value = modelKey
     lastActiveAt.value = Date.now()
-    // 异步保存完整状态（best-effort）
+    // Save the full state asynchronously (best-effort)
     saveSession()
   }
 
@@ -347,12 +347,12 @@ export const useProVariableSession = defineStore('proVariableSession', () => {
   const saveSession = async () => {
     const $services = getPiniaServices()
     if (!$services?.preferenceService) {
-      console.warn('[ProVariableSession] PreferenceService 不可用，无法保存会话')
+      console.warn('[ProVariableSession] PreferenceService is unavailable, cannot save the session')
       return
     }
 
     try {
-      // 构建完整的会话状态对象用于序列化
+      // Build the full session state object for serialization
       const sessionState = {
         prompt: prompt.value,
         optimizedPrompt: optimizedPrompt.value,
@@ -379,14 +379,14 @@ export const useProVariableSession = defineStore('proVariableSession', () => {
         sessionState
       )
     } catch (error) {
-      console.error('[ProVariableSession] 保存会话失败:', error)
+      console.error('[ProVariableSession] Failed to save the session:', error)
     }
   }
 
   const restoreSession = async () => {
     const $services = getPiniaServices()
     if (!$services?.preferenceService) {
-      console.warn('[ProVariableSession] PreferenceService 不可用，无法恢复会话')
+      console.warn('[ProVariableSession] PreferenceService is unavailable, cannot restore the session')
       return
     }
 
@@ -508,9 +508,9 @@ export const useProVariableSession = defineStore('proVariableSession', () => {
         isCompareMode.value = typeof parsed.isCompareMode === 'boolean' ? parsed.isCompareMode : true
         lastActiveAt.value = Date.now()
       }
-      // else: 没有保存的会话，使用默认状态
+      // else: no saved session, use the default state
 
-      // 兼容迁移：模板选择（从旧 TEMPLATE_SELECTION_KEYS 迁移一次）
+      // Compatibility migration: template selection (migrated once from the old TEMPLATE_SELECTION_KEYS)
       if (!selectedTemplateId.value) {
         const legacyTemplateId = await $services.preferenceService.get(
           TEMPLATE_SELECTION_KEYS.CONTEXT_USER_OPTIMIZE_TEMPLATE,
@@ -530,13 +530,13 @@ export const useProVariableSession = defineStore('proVariableSession', () => {
         }
       }
     } catch (error) {
-      console.error('[ProVariableSession] 恢复会话失败:', error)
+      console.error('[ProVariableSession] Failed to restore the session:', error)
       reset()
     }
   }
 
   return {
-    // ========== 状态（直接返回，Pinia 会自动追踪响应式）==========
+    // ========== State (returned directly; Pinia tracks reactivity automatically) ==========
     prompt,
     optimizedPrompt,
     reasoning,
@@ -557,7 +557,7 @@ export const useProVariableSession = defineStore('proVariableSession', () => {
     isCompareMode,
     lastActiveAt,
 
-    // ========== 更新方法 ==========
+    // ========== Update methods ==========
     updatePrompt,
     updateOptimizedResult,
     updateTestContent,
@@ -577,7 +577,7 @@ export const useProVariableSession = defineStore('proVariableSession', () => {
     updateTestVariant,
     reset,
 
-    // ========== 持久化方法 ==========
+    // ========== Persistence methods ==========
     saveSession,
     restoreSession,
   }

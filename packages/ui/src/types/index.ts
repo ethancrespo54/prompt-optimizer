@@ -1,22 +1,22 @@
 /**
- * 统一类型导出
+ * Unified type exports
  */
 
-// 现有类型
+// Existing types
 export * from './variable'
 export * from './services'
 
-// 新增的标准化prompt类型
+// Newly added standardized prompt types
 export * from './standard-prompt'
 export * from './data-converter'
 
-// 高级模块组件类型
+// Advanced module component types
 export * from './components'
 
-// 选择器选项类型
+// Selector option types
 export * from './select-options'
 
-// 测试区域组件类型
+// Test area component types
 export type {
   ComponentSize,
   LayoutMode,
@@ -35,7 +35,7 @@ export type {
   TestAreaPresets
 } from '../components/types/test-area'
 
-// 明确区分不同模块的同名类型
+// Clearly distinguish types with the same name across different modules
 export type {
   TestAreaPanelProps as TestAreaPanelLegacyProps,
   TestResultSectionProps as TestResultSectionLegacyProps
