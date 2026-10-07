@@ -10,7 +10,7 @@ Prompt Optimizer is a powerful AI prompt optimization tool that helps write bett
 
 ### Essential Commands
 
-你应该使用 pmpm dev:fresh 清理缓存并重启服务以获得服务的访问地址，并确保最新最可靠的界面体验
+You should use pnpm dev:fresh to clear the cache and restart the service to get the access URL and ensure the latest and most reliable UI experience
 
 ```bash
 # Development
@@ -218,5 +218,5 @@ pnpm run version:publish
 - `docs/archives/` - Historical development records and lessons learned
 - `docs/workspace/` - Current project work tracking and reports
 - `docs/testing/` - Testing scenarios and automation guides
-- ui应尽量使用naive ui组件
-- 记住，我们要尽量使用naive ui实现
+- The UI should use Naive UI components wherever possible
+- Remember: we want to implement things with Naive UI wherever possible

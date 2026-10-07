@@ -1,11 +1,11 @@
 /**
- * 路由初始化测试 - 验证所有下拉框都有值
+ * Route initialization tests - verify all dropdowns have values
  *
- * 功能：
- * - 验证各个路由初始化后，模型选择下拉框和提示词模板下拉框都有选项
- * - 确保数据加载正常，避免空状态
+ * Features:
+ * - Verify that after each route initializes, both the model select and the prompt template select have options
+ * - Ensure data loads correctly and avoid empty states
  *
- * 测试范围：
+ * Test scope:
  * - Basic 模式：basic-system, basic-user
  * - Pro 模式：pro-multi, pro-variable
  * - Image 模式：text2image, image2image
@@ -28,60 +28,60 @@ const ROUTES: RouteCase[] = [
     mode: 'basic' as const,
     subMode: 'system' as const,
     hashPath: '/#/basic/system',
-    modelLabel: /优化模型|Optimization Model/i,
-    templateLabel: /优化提示词模板|Optimization Template/i,
+    modelLabel: /Optimization Model/i,
+    templateLabel: /Optimization Template/i,
   },
   {
     name: 'basic-user',
     mode: 'basic' as const,
     subMode: 'user' as const,
     hashPath: '/#/basic/user',
-    modelLabel: /优化模型|Optimization Model/i,
-    templateLabel: /优化提示词模板|Optimization Template/i,
+    modelLabel: /Optimization Model/i,
+    templateLabel: /Optimization Template/i,
   },
   {
     name: 'pro-multi',
     mode: 'pro' as const,
     subMode: 'multi' as const,
     hashPath: '/#/pro/multi',
-    modelLabel: /优化模型|Optimization Model/i,
-    templateLabel: /优化提示词模板|Optimization Template/i,
+    modelLabel: /Optimization Model/i,
+    templateLabel: /Optimization Template/i,
   },
   {
     name: 'pro-variable',
     mode: 'pro' as const,
     subMode: 'variable' as const,
     hashPath: '/#/pro/variable',
-    modelLabel: /优化模型|Optimization Model/i,
-    templateLabel: /优化提示词模板|Optimization Template/i,
+    modelLabel: /Optimization Model/i,
+    templateLabel: /Optimization Template/i,
   },
   {
     name: 'image-text2image',
     mode: 'image' as const,
     subMode: 'text2image' as const,
     hashPath: '/#/image/text2image',
-    modelLabel: /Text Model|文本模型|优化模型|Optimization Model/i,
-    templateLabel: /Optimization Template|优化.*模板/i,
+    modelLabel: /Text Model|Optimization Model/i,
+    templateLabel: /Optimization Template/i,
   },
   {
     name: 'image-image2image',
     mode: 'image' as const,
     subMode: 'image2image' as const,
     hashPath: '/#/image/image2image',
-    modelLabel: /Text Model|文本模型|优化模型|Optimization Model/i,
-    templateLabel: /Optimization Template|优化.*模板/i,
+    modelLabel: /Text Model|Optimization Model/i,
+    templateLabel: /Optimization Template/i,
   },
 ]
 
 /**
- * 验证下拉框有选项
- * @description 检查 Naive UI Select 组件是否渲染了选项
+ * Verify the dropdown has options
+ * @description Check whether the Naive UI Select component rendered its options
  */
 async function expectSelectHasOptions(page: Parameters<typeof test>[0]['page'], label: RegExp): Promise<void> {
   const labelNode = page.getByText(label).first()
   await expect(labelNode).toBeVisible({ timeout: 15000 })
 
-  // 找到包含该 label 的最近选择器容器（Naive UI NSelect 会渲染 .n-base-selection）
+  // Find the nearest selector container that contains the label (Naive UI NSelect renders .n-base-selection)
   const container = labelNode.locator(
     'xpath=ancestor::*[.//div[contains(@class,"n-base-selection")]][1]'
   )
@@ -90,7 +90,7 @@ async function expectSelectHasOptions(page: Parameters<typeof test>[0]['page'], 
   await expect(select).toBeVisible({ timeout: 15000 })
   await select.click()
 
-  // 有选项时会渲染 .n-base-select-option；空态会渲染 empty slot
+  // With options it renders .n-base-select-option; the empty state renders the empty slot
   const firstOption = page.locator('.n-base-select-option').first()
   await expect(firstOption).toBeVisible({ timeout: 15000 })
 
@@ -100,13 +100,13 @@ async function expectSelectHasOptions(page: Parameters<typeof test>[0]['page'], 
   await page.keyboard.press('Escape')
 }
 
-test.describe('Route Initialization: 模型/模板下拉框有值', () => {
+test.describe('Route Initialization: model/template dropdowns have values', () => {
   for (const route of ROUTES) {
     test(route.name, async ({ page }) => {
-      // ✅ 使用 navigateToMode 导航（从 / 进入，再通过 UI 切换到目标工作区）
+      // ✅ Navigate with navigateToMode (enter from /, then switch to the target workspace via the UI)
       await navigateToMode(page, route.mode, route.subMode)
 
-      // ✅ 验证模型和模板下拉框都加载了选项
+      // ✅ Verify both the model and template dropdowns loaded options
       await expectSelectHasOptions(page, route.modelLabel)
       await expectSelectHasOptions(page, route.templateLabel)
     })

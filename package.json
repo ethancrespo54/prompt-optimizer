@@ -5,8 +5,8 @@
   "packageManager": "pnpm@10.6.1",
   "engines": {
     "node": "^18.0.0 || ^20.0.0 || ^22.0.0",
-    "npm": "请使用pnpm代替npm",
-    "yarn": "请使用pnpm代替yarn"
+    "npm": "Please use pnpm instead of npm",
+    "yarn": "Please use pnpm instead of yarn"
   },
   "scripts": {
     "build": "npm-run-all build:core build:ui build:parallel",

@@ -8,8 +8,8 @@ type ModeCase = {
   workspaceMode: string
 }
 
-const LABEL_OPTIMIZATION_MODEL = /优化模型|Optimization Model/i
-const LABEL_TEXT_MODEL = /Text Model|文本模型/i
+const LABEL_OPTIMIZATION_MODEL = /Optimization Model/i
+const LABEL_TEXT_MODEL = /Text Model/i
 
 const MODE_CASES: ModeCase[] = [
   {
@@ -71,16 +71,16 @@ function workspaceModeFromRoute(route: string): string {
 }
 
 async function gotoMode(page: any, route: string) {
-  // 通过 UI 切换到目标工作区，模拟真实用户路径（避免 `/` bootstrap 与二段式 goto 的竞态）
+  // Switch to the target workspace via the UI to simulate the real user path (avoids a race between the `/` bootstrap and a two-step goto)
   const mode = route.includes('/#/basic') ? 'basic' : route.includes('/#/pro') ? 'pro' : 'image'
   const parts = route.replace('/#/', '').split('/')
   const sub = parts[1] || ''
 
   await page.goto('/', { waitUntil: 'domcontentloaded' })
-  // 等到 root bootstrap 落到某个 workspace
+  // Wait until the root bootstrap lands on some workspace
   await expect(page.locator('[data-testid="workspace"]').first()).toBeVisible({ timeout: 20000 })
 
-  // 使用现有 core nav 控件切换
+  // Switch using the existing core nav controls
   await page.getByTestId('function-mode-selector').getByTestId(`function-mode-${mode}`).click()
 
   if (mode === 'image') {
@@ -157,7 +157,7 @@ test.describe('Model default selection + cross-mode persistence', () => {
 
       expect(options.length).toBeGreaterThan(0)
 
-      // 不依赖具体模型名称或排序：只要求“默认有选中项”，且该选中项在当前下拉选项中。
+      // Do not depend on specific model names or ordering: only require a default selected item that is among the current dropdown options.
       const selected = normalizeText(await modelSelect.textContent())
       expect(selected).not.toBe('')
       expect(options).toContain(selected)
@@ -179,7 +179,7 @@ test.describe('Model default selection + cross-mode persistence', () => {
         test.skip(true, `${c.name} has only one model option`)
       }
 
-      // 不依赖模型名称：始终选中“最后一个可选项”，并断言该选择能跨模式切换/刷新被持久化。
+      // Do not depend on model names: always pick the last option and assert the choice persists across mode switches/refreshes.
       const lastOption = optionLocator.nth(count - 1)
       const last = normalizeText(await lastOption.textContent())
       expect(last).not.toBe('')
@@ -187,15 +187,15 @@ test.describe('Model default selection + cross-mode persistence', () => {
 
       await expectSelectionEquals(page, modelSelect, last)
 
-      // 通过 UI 切换到另一工作区
+      // Switch to another workspace via the UI
       await gotoMode(page, c.switchTo)
       await waitForWorkspace(page, workspaceModeFromRoute(c.switchTo))
 
-      // 刷新后仍应停留在当前工作区
+      // After refresh we should still be on the current workspace
       await page.reload({ waitUntil: 'domcontentloaded' })
       await waitForWorkspace(page, workspaceModeFromRoute(c.switchTo))
 
-      // 再通过 UI 切换回原工作区
+      // Then switch back to the original workspace via the UI
       await gotoMode(page, c.route)
       await waitForWorkspace(page, c.workspaceMode)
 

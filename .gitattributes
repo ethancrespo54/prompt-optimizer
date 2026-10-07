@@ -1,7 +1,7 @@
-# 强制使用 LF 换行符
+# Force LF line endings
 * text=auto eol=lf
 
-# 明确指定文本文件
+# Explicitly specify text files
 *.ts text eol=lf
 *.tsx text eol=lf
 *.js text eol=lf
@@ -18,7 +18,7 @@
 *.txt text eol=lf
 *.sh text eol=lf
 
-# 二进制文件
+# Binary files
 *.png binary
 *.jpg binary
 *.jpeg binary

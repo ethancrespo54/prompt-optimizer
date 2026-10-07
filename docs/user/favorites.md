@@ -1,201 +1,201 @@
-# 收藏管理指南
+# Favorites Management Guide
 
-## 📚 收藏管理功能概览
+## 📚 Favorites Management Overview
 
-收藏管理是提示词优化器的核心功能，帮助您保存、组织和管理优化后的提示词。经过重构后，收藏管理提供了更强大的分类和标签系统。
+Favorites management is a core feature of Prompt Optimizer that helps you save, organize, and manage optimized prompts. After a refactor, favorites management offers a more powerful category and tag system.
 
-## 🏷️ 三层分类体系
+## 🏷️ Three-Level Classification
 
-### 1. 功能模式 (Function Mode) - 一级分类
-- **基础模式 (Basic)**: 标准的提示词优化
-- **上下文模式 (Context)**: 需要上下文信息的优化
-- **图像模式 (Image)**: 图像相关的提示词优化
+### 1. Function Mode - Level 1
+- **Basic Mode (Basic)**: Standard prompt optimization
+- **Context Mode (Context)**: Optimization that requires context information
+- **Image Mode (Image)**: Image-related prompt optimization
 
-### 2. 优化模式 (Optimization Mode) - 二级分类 (基础模式)
-- **系统优化 (System)**: 系统自动优化
-- **用户优化 (User)**: 用户自定义优化
+### 2. Optimization Mode - Level 2 (Basic Mode)
+- **System Optimization (System)**: Automatic optimization by the system
+- **User Optimization (User)**: User-defined optimization
 
-### 3. 图像子模式 (Image Sub Mode) - 二级分类 (图像模式)
-- **文本生成图像 (Text to Image)**: 从文本生成图像
-- **图像生成图像 (Image to Image)**: 基于图像生成新图像
+### 3. Image Sub Mode - Level 2 (Image Mode)
+- **Text to Image**: Generate images from text
+- **Image to Image**: Generate new images based on an image
 
-### 4. 分类 (Category) - 主题分类
-- 学习研究
-- 日常助手
-- 工作效率
-- 创意写作
-- 编程开发
-- 自定义分类
+### 4. Category - Topic Classification
+- Study & Research
+- Daily Assistant
+- Work Productivity
+- Creative Writing
+- Programming & Development
+- Custom Categories
 
-## 🎯 使用指南
+## 🎯 Usage Guide
 
-### 创建收藏
+### Creating a Favorite
 
-#### 方法1: 从优化历史创建
-1. 完成提示词优化后，点击 **收藏** 按钮
-2. 系统自动推断功能模式和相关设置
-3. 填写标题和标签
-4. 选择分类
-5. 点击 **保存**
+#### Method 1: Create from Optimization History
+1. After optimizing a prompt, click the **Favorite** button
+2. The system automatically infers the function mode and related settings
+3. Fill in the title and tags
+4. Choose a category
+5. Click **Save**
 
-#### 方法2: 手动创建收藏
-1. 点击 **收藏管理** 按钮
-2. 点击 **创建收藏** 按钮
-3. 选择功能模式：
-   - 基础模式：选择优化模式
-   - 图像模式：选择图像子模式
-4. 填写提示词内容
-5. 添加标签（支持自动完成）
-6. 选择分类
-7. 点击 **保存**
+#### Method 2: Create a Favorite Manually
+1. Click the **Favorites Management** button
+2. Click the **Create Favorite** button
+3. Choose a function mode:
+   - Basic mode: choose an optimization mode
+   - Image mode: choose an image sub mode
+4. Fill in the prompt content
+5. Add tags (autocomplete supported)
+6. Choose a category
+7. Click **Save**
 
-### 标签管理
+### Tag Management
 
-#### 标签自动完成
-- 在标签输入框中输入文字
-- 系统会显示匹配的标签建议
-- 使用频率高的标签会优先显示
-- 按 Enter 键或点击建议添加标签
+#### Tag Autocomplete
+- Type text in the tag input box
+- The system shows matching tag suggestions
+- Frequently used tags are shown first
+- Press Enter or click a suggestion to add the tag
 
-#### 标签管理器
-1. 在收藏管理器中点击 **标签管理**
-2. **查看标签**：列表显示所有标签和使用次数
-3. **重命名标签**：点击重命名按钮，批量更新所有相关收藏
-4. **合并标签**：将多个标签合并为一个，自动去重
-5. **删除标签**：从所有收藏中移除指定标签
-6. **搜索标签**：使用搜索框快速找到目标标签
+#### Tag Manager
+1. In the favorites manager, click **Tag Management**
+2. **View tags**: the list shows all tags and their usage counts
+3. **Rename a tag**: click the rename button to update all related favorites in bulk
+4. **Merge tags**: merge multiple tags into one, with automatic deduplication
+5. **Delete a tag**: remove the specified tag from all favorites
+6. **Search tags**: use the search box to quickly find the target tag
 
-### 分类管理
+### Category Management
 
-#### 分类管理器
-1. 在收藏管理器中点击 **分类管理**
-2. **创建分类**：
-   - 点击 **添加分类**
-   - 输入分类名称
-   - 选择颜色标识
-   - 添加描述（可选）
-3. **编辑分类**：修改分类名称、颜色或描述
-4. **排序分类**：使用上移/下移按钮调整顺序
-5. **删除分类**：
-   - 系统会检查是否有收藏使用该分类
-   - 有收藏的分类无法删除，防止数据丢失
+#### Category Manager
+1. In the favorites manager, click **Category Management**
+2. **Create a category**:
+   - Click **Add Category**
+   - Enter the category name
+   - Choose a color label
+   - Add a description (optional)
+3. **Edit a category**: change the category name, color, or description
+4. **Reorder categories**: use the move up/move down buttons to adjust the order
+5. **Delete a category**:
+   - The system checks whether any favorites use the category
+   - Categories that contain favorites cannot be deleted, to prevent data loss
 
-### 搜索和过滤
+### Search and Filtering
 
-#### 搜索功能
-- **关键词搜索**：在搜索框输入关键词，搜索标题和内容
-- **实时搜索**：输入时即时显示搜索结果
-- **搜索高亮**：匹配的文字会被高亮显示
+#### Search
+- **Keyword search**: enter keywords in the search box to search titles and content
+- **Live search**: results appear instantly as you type
+- **Search highlighting**: matching text is highlighted
 
-#### 过滤功能
-- **按分类过滤**：下拉选择特定分类
-- **按标签过滤**：选择标签进行过滤
-- **组合过滤**：可以同时使用分类和标签过滤
-- **清除过滤**：点击清除按钮重置所有过滤条件
+#### Filtering
+- **Filter by category**: select a specific category from the dropdown
+- **Filter by tag**: select tags to filter by
+- **Combined filtering**: category and tag filters can be used together
+- **Clear filters**: click the clear button to reset all filters
 
-### 导入导出
+### Import and Export
 
-#### 导出收藏
-1. 在收藏管理器中点击 **更多菜单**
-2. 选择 **导出** 选项
-3. 系统会下载包含所有收藏、标签和分类的JSON文件
-4. 导出数据包含：
-   - 收藏内容
-   - 标签信息
-   - 分类设置
-   - 使用统计
+#### Exporting Favorites
+1. In the favorites manager, click the **More Menu**
+2. Select the **Export** option
+3. The system downloads a JSON file containing all favorites, tags, and categories
+4. The exported data includes:
+   - Favorite content
+   - Tag information
+   - Category settings
+   - Usage statistics
 
-#### 导入收藏
-1. 在收藏管理器中点击 **更多菜单**
-2. 选择 **导入** 选项
-3. 选择要导入的JSON文件
-4. 系统会：
-   - 自动处理ID冲突
-   - 导入标签和分类
-   - 迁移旧数据格式
-   - 显示导入结果统计
+#### Importing Favorites
+1. In the favorites manager, click the **More Menu**
+2. Select the **Import** option
+3. Choose the JSON file to import
+4. The system will:
+   - Handle ID conflicts automatically
+   - Import tags and categories
+   - Migrate old data formats
+   - Show import result statistics
 
-## 🔧 高级功能
+## 🔧 Advanced Features
 
-### 独立标签库
-- 标签可以独立于收藏存在
-- 支持预创建标签，为后续收藏做准备
-- 导入时保留零使用次数的标签
+### Independent Tag Library
+- Tags can exist independently of favorites
+- Tags can be pre-created in preparation for future favorites
+- Tags with zero usage are preserved on import
 
-### 数据迁移
-- 系统自动检测旧版本数据
-- 自动添加缺失的功能模式字段
-- 保持向后兼容性
+### Data Migration
+- The system automatically detects data from older versions
+- Missing function mode fields are added automatically
+- Backward compatibility is maintained
 
-### 性能优化
-- 支持大量收藏（1000+）的快速搜索
-- 智能缓存统计信息
-- 批量操作原子性保证
+### Performance Optimization
+- Fast search across large numbers of favorites (1000+)
+- Smart caching of statistics
+- Batch operations are guaranteed to be atomic
 
-## 📱 快捷操作
+## 📱 Shortcuts
 
-### 收藏管理器快捷键
-- **Ctrl/Cmd + F**: 聚焦搜索框
-- **Ctrl/Cmd + N**: 创建新收藏
-- **Escape**: 关闭对话框
+### Favorites Manager Shortcuts
+- **Ctrl/Cmd + F**: Focus the search box
+- **Ctrl/Cmd + N**: Create a new favorite
+- **Escape**: Close the dialog
 
-### 标签输入快捷键
-- **Enter**: 添加当前输入的标签
-- **Tab**: 移动到下一个输入框
-- **↑/↓**: 在自动完成建议中导航
+### Tag Input Shortcuts
+- **Enter**: Add the tag currently being typed
+- **Tab**: Move to the next input box
+- **↑/↓**: Navigate the autocomplete suggestions
 
-## 🎨 界面特性
+## 🎨 Interface Features
 
-### 响应式设计
-- 适配不同屏幕尺寸
-- 移动端友好的触控操作
-- 自适应布局
+### Responsive Design
+- Adapts to different screen sizes
+- Touch-friendly interactions on mobile
+- Adaptive layout
 
-### 主题支持
-- 支持亮色/暗色主题
-- 自动跟随系统主题设置
-- 自定义颜色配置
+### Theme Support
+- Supports light/dark themes
+- Automatically follows the system theme setting
+- Custom color configuration
 
-### 无障碍访问
-- 完整的键盘导航支持
-- 屏幕阅读器兼容
-- 高对比度模式
+### Accessibility
+- Full keyboard navigation support
+- Screen reader compatible
+- High contrast mode
 
-## ⚠️ 注意事项
+## ⚠️ Notes
 
-### 数据备份
-- 定期导出收藏数据作为备份
-- 重要建议创建多个副本
-- 使用云存储同步备份文件
+### Data Backup
+- Export your favorites periodically as a backup
+- For important data, keep multiple copies
+- Use cloud storage to sync backup files
 
-### 性能建议
-- 收藏数量超过500个时，建议使用搜索和过滤功能
-- 定期清理不需要的标签和分类
-- 避免创建过多的重复标签
+### Performance Tips
+- When you have more than 500 favorites, use search and filtering
+- Periodically clean up tags and categories you no longer need
+- Avoid creating too many duplicate tags
 
-### 兼容性
-- 支持从旧版本自动升级
-- 导入的旧格式数据会自动转换
-- 跨平台数据完全兼容
+### Compatibility
+- Automatic upgrade from older versions is supported
+- Imported data in old formats is converted automatically
+- Data is fully compatible across platforms
 
-## 🆘 常见问题
+## 🆘 FAQ
 
-**Q: 为什么我的标签无法删除？**
-A: 如果标签正在被收藏使用，需要先从所有收藏中移除该标签，或者使用标签管理器的删除功能。
+**Q: Why can't I delete my tag?**
+A: If the tag is in use by favorites, remove it from all favorites first, or use the delete function in the tag manager.
 
-**Q: 导入数据时会发生什么？**
-A: 系统会自动处理ID冲突，保留现有数据，导入新数据，并自动合并标签和分类。
+**Q: What happens when I import data?**
+A: The system automatically handles ID conflicts, keeps existing data, imports the new data, and merges tags and categories.
 
-**Q: 如何批量编辑多个收藏？**
-A: 目前支持批量标签操作（重命名、合并、删除），通过标签管理器可以实现。
+**Q: How do I edit multiple favorites in bulk?**
+A: Bulk tag operations (rename, merge, delete) are currently supported through the tag manager.
 
-**Q: 收藏数量有限制吗？**
-A: 理论上没有限制，但建议保持在1000个以内以获得最佳性能。
+**Q: Is there a limit on the number of favorites?**
+A: In theory there is no limit, but we recommend staying under 1000 for the best performance.
 
-## 📞 技术支持
+## 📞 Technical Support
 
-如果在使用过程中遇到问题，请：
-1. 查看本指南的相关章节
-2. 检查是否有数据备份
-3. 重启应用尝试解决
-4. 联系技术支持团队
+If you run into problems while using the app, please:
+1. Check the relevant sections of this guide
+2. Check whether you have a data backup
+3. Restart the app to try to resolve the issue
+4. Contact the technical support team

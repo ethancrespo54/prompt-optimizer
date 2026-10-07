@@ -1,112 +1,112 @@
-# 项目文档索引
+# Project Documentation Index
 
-欢迎来到Prompt Optimizer项目文档！本文档采用分级分类的组织方式，便于不同角色的用户快速找到所需信息。
+Welcome to the Prompt Optimizer project documentation! The documentation is organized into tiers and categories so that users in different roles can quickly find what they need.
 
-## 📚 文档分类
+## 📚 Documentation Categories
 
-### 👥 [用户文档](./user/)
-面向最终用户的使用指南、部署说明和常见问题
-- 桌面版用户手册
-- Web版使用指南
-- 部署指南（Vercel等）
-- 常见问题解答
+### 👥 [User Documentation](./user/)
+Usage guides, deployment instructions, and FAQs for end users
+- Desktop user manual
+- Web usage guide
+- Deployment guides (Vercel, etc.)
+- Frequently asked questions
 
-### 👨‍💻 [开发者文档](./developer/)
-面向开发者的技术文档、API参考和故障排查
-- 技术开发指南
-- 项目结构说明
-- API文档
-- 架构设计
-- 故障排查清单
+### 👨‍💻 [Developer Documentation](./developer/)
+Technical documentation, API references, and troubleshooting for developers
+- Technical development guide
+- Project structure overview
+- API documentation
+- Architecture design
+- Troubleshooting checklists
 
-### 📋 [项目管理文档](./project/)
-面向项目管理的需求文档、状态跟踪和规划
-- 产品需求文档
-- 项目状态和进度
-- 版本管理策略
-- 功能规划
+### 📋 [Project Management Documentation](./project/)
+Requirements documents, status tracking, and planning for project management
+- Product requirements document
+- Project status and progress
+- Version management strategy
+- Feature planning
 
-### 📦 [开发过程归档](./archives/)
-按功能点归档的开发记录，用于跟踪和排错
-- 101-singleton-refactor - 单例模式重构 ✅
-- 102-web-architecture-refactor - Web架构重构 ✅
-- 103-desktop-architecture - 桌面端架构 🔄
-- 104-test-panel-refactor - 测试面板重构 📋
-- 105-output-display-v2 - 输出显示v2 📋
-- 106-template-management - 模板管理功能 🔄
+### 📦 [Development Process Archive](./archives/)
+Development records archived by feature, used for tracking and debugging
+- 101-singleton-refactor - Singleton pattern refactor ✅
+- 102-web-architecture-refactor - Web architecture refactor ✅
+- 103-desktop-architecture - Desktop architecture 🔄
+- 104-test-panel-refactor - Test panel refactor 📋
+- 105-output-display-v2 - Output display v2 📋
+- 106-template-management - Template management feature 🔄
 
-### 🛠️ [开发工作区](./workspace/)
-当前开发阶段的临时文档和开发笔记
-- 开发笔记和临时记录
-- 待办事项
-- 实验性设计
-## 🚀 快速导航
+### 🛠️ [Development Workspace](./workspace/)
+Temporary documents and development notes for the current development phase
+- Development notes and scratch records
+- To-do items
+- Experimental designs
+## 🚀 Quick Navigation
 
-### 我是用户
-- 想了解如何使用 → [用户文档](./user/)
-- 需要部署应用 → [部署指南](./user/deployment/)
-- 遇到使用问题 → [故障排查](./developer/troubleshooting/)
+### I am a user
+- Want to learn how to use it → [User Documentation](./user/)
+- Need to deploy the app → [Deployment Guide](./user/deployment/)
+- Running into usage problems → [Troubleshooting](./developer/troubleshooting/)
 
-### 我是开发者
-- 想参与开发 → [开发者文档](./developer/)
-- 需要了解架构 → [技术开发指南](./developer/technical-development-guide.md)
-- 遇到开发问题 → [故障排查](./developer/troubleshooting/)
-- 想了解历史 → [开发过程归档](./archives/)
+### I am a developer
+- Want to contribute → [Developer Documentation](./developer/)
+- Need to understand the architecture → [Technical Development Guide](./developer/technical-development-guide.md)
+- Running into development problems → [Troubleshooting](./developer/troubleshooting/)
+- Want to learn the history → [Development Process Archive](./archives/)
 
-### 我是项目管理者
-- 了解项目状态 → [项目管理文档](./project/)
-- 查看功能规划 → [产品需求文档](./project/prd.md)
-- 跟踪开发进度 → [项目状态](./project/project-status.md)
+### I am a project manager
+- Check project status → [Project Management Documentation](./project/)
+- View feature planning → [Product Requirements Document](./project/prd.md)
+- Track development progress → [Project Status](./project/project-status.md)
 
-## 📖 重要文档
+## 📖 Key Documents
 
-### 核心文档
-- [项目总体介绍](../README.md) - 项目概述和快速开始
-- [技术开发指南](./developer/technical-development-guide.md) - 完整的技术栈和开发规范
-- [项目结构](./developer/project-structure.md) - 文件和目录组织说明
-- [产品需求文档](./project/prd.md) - 产品功能需求和规格
+### Core Documents
+- [Project Overview](../README.md) - Project overview and quick start
+- [Technical Development Guide](./developer/technical-development-guide.md) - Complete tech stack and development conventions
+- [Project Structure](./developer/project-structure.md) - File and directory organization
+- [Product Requirements Document](./project/prd.md) - Product feature requirements and specifications
 
-### 专项文档
-- [LLM参数配置指南](./developer/llm-params-guide.md) - LLM参数配置详细说明
-- [AI开发流程规范](./developer/ai-development-workflow.md) - AI辅助开发的标准化流程
+### Specialized Documents
+- [LLM Parameters Guide](./developer/llm-params-guide.md) - Detailed explanation of LLM parameter configuration
+- [AI Development Workflow](./developer/ai-development-workflow.md) - Standardized workflow for AI-assisted development
 
-## 📋 使用指南
+## 📋 Usage Guide
 
-### 新成员入职
-1. 阅读[项目总体介绍](../README.md)了解项目概况
-2. 查看[项目结构](./developer/project-structure.md)了解代码组织
-3. 参考[技术开发指南](./developer/technical-development-guide.md)了解开发规范
-4. 根据角色查看对应的文档分类
+### Onboarding New Members
+1. Read the [Project Overview](../README.md) to understand the project at a high level
+2. Review the [Project Structure](./developer/project-structure.md) to understand code organization
+3. Refer to the [Technical Development Guide](./developer/technical-development-guide.md) for development conventions
+4. Read the documentation categories relevant to your role
 
-### 日常开发
-1. 遵循[技术开发指南](./developer/technical-development-guide.md)中的开发规范
-2. 遇到问题查看[故障排查](./developer/troubleshooting/)
-3. 了解历史背景查看[开发过程归档](./archives/)
+### Daily Development
+1. Follow the development conventions in the [Technical Development Guide](./developer/technical-development-guide.md)
+2. When you run into problems, see [Troubleshooting](./developer/troubleshooting/)
+3. For historical background, see the [Development Process Archive](./archives/)
 
-### 项目管理
-1. 通过[项目状态](./project/project-status.md)了解当前进度
-2. 查看[产品需求文档](./project/prd.md)了解功能规划
+### Project Management
+1. Use [Project Status](./project/project-status.md) to understand current progress
+2. Read the [Product Requirements Document](./project/prd.md) to understand feature planning
 
-## 🔄 文档维护
+## 🔄 Documentation Maintenance
 
-### 维护原则
-1. **分类明确**：按目标受众和用途分类存放
-2. **及时更新**：代码变更时同步更新相关文档
-3. **定期整理**：定期清理过期内容，整理工作区文档
-4. **交叉引用**：在相关文档间建立引用关系
+### Maintenance Principles
+1. **Clear categorization**: Store documents by target audience and purpose
+2. **Timely updates**: Update related documents whenever code changes
+3. **Regular cleanup**: Periodically remove outdated content and tidy up workspace documents
+4. **Cross-references**: Establish references between related documents
 
-### 文档规范
-- 使用Markdown格式
-- 统一的标题层级结构
-- 代码示例使用语法高亮
-- 文档末尾标注更新时间
+### Documentation Standards
+- Use Markdown format
+- Use a consistent heading hierarchy
+- Use syntax highlighting for code examples
+- Note the update date at the end of the document
 
-### 归档流程
-- **新功能开发**：在archives/中创建新的功能点目录（从107开始编号）
-- **重要经验**：及时从workspace/转移到archives/对应功能点
-- **通用指南**：从临时记录整理为正式的developer/文档
+### Archiving Process
+- **New feature development**: Create a new feature directory in archives/ (numbering starts at 107)
+- **Important lessons**: Move them promptly from workspace/ to the corresponding feature directory in archives/
+- **General guides**: Turn scratch notes into formal documents under developer/
 
 ---
 
-**文档重构完成时间**：2025-07-01
-**下一次整理计划**：根据开发进度定期更新
+**Documentation restructuring completed**: 2025-07-01
+**Next cleanup plan**: Update periodically according to development progress

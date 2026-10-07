@@ -1,10 +1,10 @@
 import { test, expect } from '../fixtures'
 
 /**
- * Image Text2Image 模式 - Session 持久化测试
+ * Image Text2Image mode - session persistence tests
  *
- * 注意：当前 session 使用 PreferenceService（IndexedDB 等）持久化，
- * 不再依赖 localStorage，因此测试应以 UI 状态为准。
+ * Note: the session is currently persisted via PreferenceService (IndexedDB, etc.),
+ * and no longer relies on localStorage, so tests should assert on UI state.
  */
 test.describe('Image Text2Image - Session Persistence', () => {
   const normalizeText = (text: string | null | undefined) =>
@@ -30,10 +30,10 @@ test.describe('Image Text2Image - Session Persistence', () => {
     return select
   }
 
-  test('切换文本模型后刷新页面，选择应该保留', async ({ page }) => {
+  test('after switching the text model and refreshing the page, the selection should be kept', async ({ page }) => {
     await gotoMode(page, '/#/image/text2image')
 
-    const select = await getSelectByLabel(page, /Text Model|文本模型|文字模型/i)
+    const select = await getSelectByLabel(page, /Text Model/i)
     await select.click()
 
     const optionLocator = page.locator('.n-base-select-option')
@@ -54,16 +54,16 @@ test.describe('Image Text2Image - Session Persistence', () => {
     await page.waitForLoadState('networkidle')
     await page.waitForTimeout(1500)
 
-    const selectAfter = await getSelectByLabel(page, /Text Model|文本模型|文字模型/i)
+    const selectAfter = await getSelectByLabel(page, /Text Model/i)
     await expect
       .poll(async () => normalizeText(await selectAfter.textContent()), { timeout: 20000 })
       .toBe(target)
   })
 
-  test('切换模板后刷新页面，选择应该保留', async ({ page }) => {
+  test('after switching the template and refreshing the page, the selection should be kept', async ({ page }) => {
     await gotoMode(page, '/#/image/text2image')
 
-    const select = await getSelectByLabel(page, /Optimization Template|优化.*模板|優化.*模板/i)
+    const select = await getSelectByLabel(page, /Optimization Template/i)
     await select.click()
 
     const optionLocator = page.locator('.n-base-select-option')
@@ -84,7 +84,7 @@ test.describe('Image Text2Image - Session Persistence', () => {
     await page.waitForLoadState('networkidle')
     await page.waitForTimeout(1500)
 
-    const selectAfter = await getSelectByLabel(page, /Optimization Template|优化.*模板|優化.*模板/i)
+    const selectAfter = await getSelectByLabel(page, /Optimization Template/i)
     await expect
       .poll(async () => normalizeText(await selectAfter.textContent()), { timeout: 20000 })
       .toBe(target)

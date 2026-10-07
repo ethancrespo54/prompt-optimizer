@@ -1,30 +1,29 @@
-# 测试运行指南（门禁）
+# Test Running Guide (Gates)
 
-本项目测试目标是：**自动拦截 UI 控制台错误/未捕获异常**，并通过 VCR 让 LLM 相关测试在 CI 中离线稳定运行。
+The goal of this project's tests is to **automatically catch UI console errors / uncaught exceptions**, and to use VCR so that LLM-related tests run offline and stably in CI.
 
-## 常用命令
+## Common Commands
 
 ```bash
-# Fast gate（用于 pre-commit）
+# Fast gate (for pre-commit)
 pnpm test:gate
 
-# Full gate（本地手动/CI 可用，包含 E2E）
+# Full gate (for manual local runs / CI, includes E2E)
 pnpm test:gate:full
 
-# 强制回放（CI 推荐：缺 fixtures/未拦截请求会失败）
+# Force replay (recommended for CI: missing fixtures / unintercepted requests fail)
 pnpm test:replay
 
-# 重新录制 fixtures（真实 API，会产生费用）
+# Re-record fixtures (real API, incurs costs)
 pnpm test:record
 ```
 
 ## VCR
 
-- 使用说明：`docs/testing/vcr-usage-guide.md`
-- fixtures 默认目录：`packages/core/tests/fixtures/`
+- Usage guide: `docs/testing/vcr-usage-guide.md`
+- Default fixtures directory: `packages/core/tests/fixtures/`
 
-## UI 错误门禁
+## UI Error Gates
 
-- Vitest（UI 包）：`packages/ui/tests/utils/error-detection.ts`
-- Playwright（E2E）：`tests/e2e/fixtures.ts`
-
+- Vitest (UI package): `packages/ui/tests/utils/error-detection.ts`
+- Playwright (E2E): `tests/e2e/fixtures.ts`

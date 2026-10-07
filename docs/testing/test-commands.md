@@ -1,182 +1,182 @@
-# 测试命令说明
+# Test Commands Reference
 
-## 📝 命令总览
+## 📝 Command Overview
 
-### 日常开发（推荐）
+### Daily Development (Recommended)
 
 ```bash
-# 运行所有测试（单元 + E2E）- 统一入口
+# Run all tests (unit + E2E) - unified entry point
 pnpm test
 
-# 只运行单元测试（快速）
+# Run unit tests only (fast)
 pnpm test:unit
 
-# 快速验证（等同于 test:unit）
+# Quick verification (same as test:unit)
 pnpm test:fast
 ```
 
 ### E2E 测试
 
 ```bash
-# 智能运行 E2E（自动回放/录制）
+# Smart E2E run (automatic replay/record)
 pnpm test:e2e:smart
 
-# 明确回放模式
+# Explicit replay mode
 pnpm test:e2e:replay
 
-# 明确录制模式（覆盖已有 fixtures）
+# Explicit record mode (overwrites existing fixtures)
 pnpm test:e2e:record
 
-# 只运行 E2E，不运行单元测试
+# Run E2E only, without unit tests
 pnpm test:e2e
 ```
 
-### CI/CD 门禁
+### CI/CD Gates
 
 ```bash
-# 轻量级门禁（单元 + 关键 E2E）
+# Lightweight gate (unit + critical E2E)
 pnpm test:gate
 
-# 完整门禁（单元 + 关键 E2E）
+# Full gate (unit + critical E2E)
 pnpm test:gate:full
 ```
 
-## 🔧 智能测试逻辑
+## 🔧 Smart Test Logic
 
-### `pnpm test` 的行为
+### Behavior of `pnpm test`
 
-执行 `pnpm test` 时，会按顺序执行：
+When `pnpm test` runs, it executes in order:
 
-1. **单元测试**（`test:unit`）
-   - 运行所有包的 Vitest 单元测试
-   - 快速验证核心功能
+1. **Unit tests** (`test:unit`)
+   - Runs the Vitest unit tests of all packages
+   - Quickly verifies core functionality
 
-2. **E2E 测试**（`test:e2e:smart`）
-   - 自动检查 VCR fixtures 是否完整
-   - **全部存在**：使用回放模式（快速，不消耗 API）
-   - **有缺失**：自动切换到录制模式（消耗 API，创建 fixtures）
+2. **E2E tests** (`test:e2e:smart`)
+   - Automatically checks whether the VCR fixtures are complete
+   - **All present**: uses replay mode (fast, no API usage)
+   - **Some missing**: automatically switches to record mode (uses the API, creates fixtures)
 
-### 自动录制场景
+### Automatic Recording Scenarios
 
-智能脚本会在以下情况自动录制：
+The smart script records automatically in the following cases:
 
-- ✅ 首次运行 E2E 测试
-- ✅ 新增测试用例
-- ✅ 删除了 VCR fixtures
+- ✅ First run of E2E tests
+- ✅ New test cases added
+- ✅ VCR fixtures deleted
 
-**不会被覆盖的情况**：
+**Cases that are not overwritten**:
 
-- ✅ 修改测试代码逻辑（fixture 已存在，自动回放）
-- ✅ 修改 UI 代码（fixture 已存在，自动回放）
-- ✅ 修改评估逻辑（fixture 已存在，回放失败，需手动录制）
+- ✅ Test code logic changed (fixture exists, replays automatically)
+- ✅ UI code changed (fixture exists, replays automatically)
+- ✅ Evaluation logic changed (fixture exists, replay fails, manual recording required)
 
-### 强制覆盖录制
+### Forced Overwrite Recording
 
-当评估逻辑变更时，需要重新录制：
+When the evaluation logic changes, re-recording is required:
 
 ```bash
-# 方式 1：使用明确的录制命令
+# Option 1: use the explicit record command
 pnpm test:e2e:record
 
-# 方式 2：删除特定 fixtures 后运行
-rm tests/e2e/fixtures/vcr/analysis-*/评估*.json
+# Option 2: delete specific fixtures, then run
+rm tests/e2e/fixtures/vcr/analysis-*/evaluation*.json
 pnpm test
 ```
 
-## 📊 测试覆盖
+## 📊 Test Coverage
 
-### 单元测试（~20-30秒）
-- Core 包：业务逻辑、服务层
-- UI 包：组件、工具函数
+### Unit Tests (~20-30 seconds)
+- Core package: business logic, service layer
+- UI package: components, utility functions
 
-### E2E 测试（~40-90秒）
+### E2E Tests (~40-90 seconds)
 
-#### Analysis 测试（10 个测试用例）
-- ✅ Basic-System（2 个测试）
-- ✅ Basic-User（2 个测试）
-- ✅ Image-Text2Image（2 个测试）
-- ✅ Image-Image2Image（2 个测试）
-- ✅ Pro-Variable（2 个测试）
+#### Analysis Tests (10 test cases)
+- ✅ Basic-System (2 tests)
+- ✅ Basic-User (2 tests)
+- ✅ Image-Text2Image (2 tests)
+- ✅ Image-Image2Image (2 tests)
+- ✅ Pro-Variable (2 tests)
 
-#### Gate 测试（2 个测试文件）
-- ✅ Regression 测试
-- ✅ Route Smoke 测试（6 个路由）
+#### Gate Tests (2 test files)
+- ✅ Regression tests
+- ✅ Route Smoke tests (6 routes)
 
-## ⚡ 性能对比
+## ⚡ Performance Comparison
 
-| 命令 | 场景 | 时间 | API 调用 |
+| Command | Scenario | Time | API Calls |
 |------|------|------|----------|
-| `pnpm test:unit` | 日常开发 | ~20秒 | 无 |
-| `pnpm test` | 完整验证 | ~60秒 | 仅缺失时 |
-| `pnpm test:e2e:record` | 重新录制 | ~90秒 | 是 |
-| `pnpm test:e2e:replay` | 离线回放 | ~50秒 | 否 |
+| `pnpm test:unit` | Daily development | ~20 sec | None |
+| `pnpm test` | Full verification | ~60 sec | Only when missing |
+| `pnpm test:e2e:record` | Re-recording | ~90 sec | Yes |
+| `pnpm test:e2e:replay` | Offline replay | ~50 sec | No |
 
-## 💡 最佳实践
+## 💡 Best Practices
 
-### 日常开发流程
+### Daily Development Workflow
 ```bash
-# 1. 修改代码
-# 2. 快速验证单元测试
+# 1. Modify code
+# 2. Quickly verify with unit tests
 pnpm test:unit
 
-# 3. 提交前完整验证
+# 3. Full verification before committing
 pnpm test
 ```
 
-### 评估逻辑变更流程
+### Evaluation Logic Change Workflow
 ```bash
-# 1. 修改评估模板或逻辑
-# 2. 强制重新录制 E2E 测试
+# 1. Modify the evaluation template or logic
+# 2. Force re-recording of E2E tests
 pnpm test:e2e:record
 
-# 3. 验证所有测试通过
+# 3. Verify all tests pass
 pnpm test
 ```
 
-### 新增测试用例流程
+### New Test Case Workflow
 ```bash
-# 1. 添加新测试代码
-# 2. 运行测试（自动录制缺失的 fixtures）
+# 1. Add new test code
+# 2. Run tests (missing fixtures are recorded automatically)
 pnpm test
 
-# 3. 验证新增的测试
-# 脚本会自动检测并录制新 fixtures
+# 3. Verify the newly added tests
+# The script automatically detects and records new fixtures
 ```
 
-## 🔍 故障排查
+## 🔍 Troubleshooting
 
-### 测试失败怎么办？
+### What to do when tests fail?
 
-**单元测试失败**：
+**Unit test failure**:
 ```bash
-# 单独运行单元测试查看详细错误
+# Run unit tests separately to see detailed errors
 pnpm test:unit
 ```
 
-**E2E 回放失败**：
-- 检查是否是评估逻辑变更导致
-- 如果是，运行 `pnpm test:e2e:record` 重新录制
+**E2E replay failure**:
+- Check whether it was caused by an evaluation logic change
+- If so, run `pnpm test:e2e:record` to re-record
 
-**E2E 录制失败**：
-- 检查 `.env.local` 是否配置 API keys
-- 检查网络连接
-- 查看具体错误日志
+**E2E recording failure**:
+- Check whether API keys are configured in `.env.local`
+- Check the network connection
+- Review the specific error logs
 
-### Fixture 缺失
+### Missing Fixtures
 
-智能脚本会自动处理，但如果你遇到问题：
+The smart script handles this automatically, but if you run into problems:
 
 ```bash
-# 查看哪些 fixtures 缺失
+# See which fixtures are missing
 ls tests/e2e/fixtures/vcr/
 
-# 删除所有 fixtures 重新录制
+# Delete all fixtures and re-record
 rm -rf tests/e2e/fixtures/vcr/
 pnpm test
 ```
 
-## 📚 相关文档
+## 📚 Related Documentation
 
-- [E2E 测试指南](./e2e-guide.md)
-- [VCR 使用说明](./e2e-vcr-guide.md)
-- [选择器策略](./e2e-selector-strategy.md)
+- [E2E Testing Guide](./e2e-guide.md)
+- [VCR Usage Guide](./e2e-vcr-guide.md)
+- [Selector Strategy](./e2e-selector-strategy.md)

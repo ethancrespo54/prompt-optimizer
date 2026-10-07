@@ -12,42 +12,42 @@ const MODE_CASES: ModeCase[] = [
   {
     name: 'basic-system',
     route: '/#/basic/system',
-    templateLabel: /优化提示词模板|Optimization Template/i,
+    templateLabel: /Optimization Template/i,
     switchTo: '/#/pro/variable',
     workspaceMode: 'basic-system',
   },
   {
     name: 'basic-user',
     route: '/#/basic/user',
-    templateLabel: /优化提示词模板|Optimization Template/i,
+    templateLabel: /Optimization Template/i,
     switchTo: '/#/pro/variable',
     workspaceMode: 'basic-user',
   },
   {
     name: 'pro-multi',
     route: '/#/pro/multi',
-    templateLabel: /优化提示词模板|Optimization Template/i,
+    templateLabel: /Optimization Template/i,
     switchTo: '/#/image/text2image',
     workspaceMode: 'pro-multi',
   },
   {
     name: 'pro-variable',
     route: '/#/pro/variable',
-    templateLabel: /优化提示词模板|Optimization Template/i,
+    templateLabel: /Optimization Template/i,
     switchTo: '/#/image/text2image',
     workspaceMode: 'pro-variable',
   },
   {
     name: 'image-text2image',
     route: '/#/image/text2image',
-    templateLabel: /优化模板|Optimization Template/i,
+    templateLabel: /Optimization Template/i,
     switchTo: '/#/basic/user',
     workspaceMode: 'image-text2image',
   },
   {
     name: 'image-image2image',
     route: '/#/image/image2image',
-    templateLabel: /优化模板|Optimization Template/i,
+    templateLabel: /Optimization Template/i,
     switchTo: '/#/basic/user',
     workspaceMode: 'image-image2image',
   },
@@ -58,7 +58,7 @@ function normalizeText(text: string | null | undefined): string {
 }
 
 async function gotoMode(page: any, route: string) {
-  // 统一走“用户路径”：从 / 进入，再通过顶部导航切换到目标工作区
+  // Follow the user path consistently: enter from /, then switch to the target workspace via the top nav
   const mode = route.includes('/#/basic') ? 'basic' : route.includes('/#/pro') ? 'pro' : 'image'
   const parts = route.replace('/#/', '').split('/')
   const sub = parts[1] || ''

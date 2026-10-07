@@ -1,137 +1,137 @@
-# UI 模块文件级排查清单 (v3)
+# UI Module File-Level Troubleshooting Checklist (v3)
 
-本文档将常见问题排查清单以**具体文件为单位**进行组织和索引。当遇到问题时，可直接定位到相关文件，并检查下文中列出的所有关键点。每次团队成员根据此清单解决问题后，都应考虑更新此文件，以保证其时效性。
+This document organizes and indexes the common troubleshooting checklists **by specific file**. When you hit a problem, you can go straight to the relevant file and check all the key points listed below. Whenever a team member solves a problem using this checklist, they should consider updating this file to keep it current.
 
 ---
 
-## Part 1: 应用入口与状态组装
+## Part 1: Application Entry and State Assembly
 
 ### 📍 `packages/web/src/App.vue`
 
-这是组装所有核心 Composable 和 UI 组件的主入口，是检查问题的起点。
+This is the main entry point that assembles all core Composables and UI components, and is the starting point for investigating problems.
 
-- **[x] 顶层 Composable 调用**: 确认所有 `use...()` hook 都在 `<script setup>` 的顶层被调用。它们绝不能存在于 `async` 函数、`.then()` 回调或任何其他异步逻辑内部。
-- **[x] `toRef` 适配器**: 检查所有传递给子 Composable 的 props。如果一个 `reactive` 对象的属性（如 `optimizerState.currentChainId`）被传递给一个期望 `Ref` 类型参数的 Composable，请确保它被 `toRef(optimizerState, 'currentChainId')` 正确包装。
+- **[x] Top-level Composable calls**: Confirm that all `use...()` hooks are called at the top level of `<script setup>`. They must never live inside `async` functions, `.then()` callbacks, or any other asynchronous logic.
+- **[x] `toRef` adapter**: Check all props passed to child Composables. If a property of a `reactive` object (such as `optimizerState.currentChainId`) is passed to a Composable that expects a `Ref` parameter, make sure it is correctly wrapped with `toRef(optimizerState, 'currentChainId')`.
 
 ---
 
-## Part 2: Composable 架构与逻辑
+## Part 2: Composable Architecture and Logic
 
 ### 📍 `packages/ui/src/composables/useAppInitializer.ts`
-- **[x] 依赖注入完整性**: 确认所有被应用依赖的服务（如 `templateLanguageService`）都已在 `services` 对象中正确注册并返回。
+- **[x] Dependency injection completeness**: Confirm that all services the app depends on (such as `templateLanguageService`) are correctly registered in the `services` object and returned.
 
 ### 📍 `packages/ui/src/composables/usePromptOptimizer.ts`
-- **[x] 返回 `reactive`**: 确认 `return` 语句返回的是单一的 `reactive` 对象。
-- **[x] `nextTick` 防护**: 在 `handleOptimizePrompt` 等函数中，确认在 `await` 异步服务**之前**，已同步完成状态清理（如 `optimizedPrompt.value = ''`），并紧跟 `await nextTick()`。
+- **[x] Returns `reactive`**: Confirm that the `return` statement returns a single `reactive` object.
+- **[x] `nextTick` guard**: In functions such as `handleOptimizePrompt`, confirm that state cleanup (such as `optimizedPrompt.value = ''`) is completed synchronously **before** `await`ing the async service, followed immediately by `await nextTick()`.
 
 ### 📍 `packages/ui/src/composables/useModelManager.ts`
-- **[x] 返回 `reactive`**: 确认 `return` 语句返回的是单一的 `reactive` 对象。
-- **[x] `watch` 内部依赖**: 确认其内部通过 `watch` 监听 `services` 的就绪状态来执行初始化逻辑。
+- **[x] Returns `reactive`**: Confirm that the `return` statement returns a single `reactive` object.
+- **[x] `watch` internal dependency**: Confirm that it uses `watch` internally to listen for the readiness of `services` before running initialization logic.
 
 ### 📍 `packages/ui/src/composables/useTemplateManager.ts`
-- **[x] 返回 `reactive`**: 确认 `return` 语句返回的是单一的 `reactive` 对象。
-- **[x] `watch` 内部依赖**: 确认其内部通过 `watch` 监听 `services` 的就绪状态。
+- **[x] Returns `reactive`**: Confirm that the `return` statement returns a single `reactive` object.
+- **[x] `watch` internal dependency**: Confirm that it uses `watch` internally to listen for the readiness of `services`.
 
 ### 📍 `packages/ui/src/composables/useHistoryManager.ts`
-- **[x] 返回 `reactive`**: 确认 `return` 语句返回的是单一的 `reactive` 对象。
-- **[x] `watch` 内部依赖**: 确认其内部通过 `watch` 监听 `services` 的就绪状态。
+- **[x] Returns `reactive`**: Confirm that the `return` statement returns a single `reactive` object.
+- **[x] `watch` internal dependency**: Confirm that it uses `watch` internally to listen for the readiness of `services`.
 
 ### 📍 `packages/ui/src/composables/usePromptHistory.ts`
-- **[x] `watch` 内部依赖**: 确认其内部通过 `watch` 监听 `services` 的就绪状态。
-- **[x] `Ref` 参数类型**: 确认其接收的 `currentChainId` 等参数都是 `Ref` 类型。
+- **[x] `watch` internal dependency**: Confirm that it uses `watch` internally to listen for the readiness of `services`.
+- **[x] `Ref` parameter types**: Confirm that parameters it receives, such as `currentChainId`, are all `Ref` types.
 
 ### 📍 `packages/ui/src/composables/usePromptTester.ts`
-- **[x] 返回 `reactive`**: 确认 `return` 语句返回的是单一的 `reactive` 对象。
-- **[x] `watch` 内部依赖**: 确认其内部通过 `watch` 监听 `services` 的就绪状态。
+- **[x] Returns `reactive`**: Confirm that the `return` statement returns a single `reactive` object.
+- **[x] `watch` internal dependency**: Confirm that it uses `watch` internally to listen for the readiness of `services`.
 
 ### 📍 `packages/ui/src/composables/useStorage.ts`
-- **[x] `watch` 内部依赖**: 确认其内部通过 `watch` 监听 `services` 的就绪状态，以避免 `Invalid watch source` 警告。
+- **[x] `watch` internal dependency**: Confirm that it uses `watch` internally to listen for the readiness of `services`, to avoid the `Invalid watch source` warning.
 
 ---
 
-## Part 3: UI 组件实现
+## Part 3: UI Component Implementation
 
 ### 📍 `packages/ui/src/components/MainLayout.vue`
-- **[x] Flexbox 父容器**: 检查根元素是否为 `flex` 容器，为子元素（如 `InputPanel`）的 `flex-1` 提供约束。
+- **[x] Flexbox parent container**: Check whether the root element is a `flex` container, providing the constraint for `flex-1` on child elements (such as `InputPanel`).
 
 ### 📍 `packages/ui/src/components/InputPanel.vue`
-- **[x] `min-h-0` 约束**: 检查内部需要滚动的 `textarea` 区域，其父级容器链条上是否应用了 `flex-1 min-h-0` 以实现正确的空间分配。
+- **[x] `min-h-0` constraint**: For the internal scrollable `textarea` area, check whether `flex-1 min-h-0` is applied along its chain of parent containers for correct space allocation.
 
 ### 📍 `packages/ui/src/components/OutputPanel.vue`
-- **[x] `min-h-0` 约束**: 同 `InputPanel.vue`，检查滚动区域的 Flex 约束。
+- **[x] `min-h-0` constraint**: Same as `InputPanel.vue`; check the Flex constraints on the scrollable area.
 
 ### 📍 `packages/ui/src/components/TestPanel.vue`
-- **[x] `min-h-0` 约束**: 特别注意检查此组件，因其布局复杂，需要确保所有 `flex` 子项都有正确的 `min-h-0` 约束。
+- **[x] `min-h-0` constraint**: Pay special attention to this component, because its layout is complex and all `flex` children need correct `min-h-0` constraints.
 
 ### 📍 `packages/ui/src/components/Modal.vue`
-- **[x] `v-if` 根元素**: 确认组件的根 DOM 元素上有 `v-if="modelValue"` 指令。
-- **[x] `v-model` 支持**: 确认 `close()` 方法中调用了 `emit('update:modelValue', false)`。
-- **[x] 安全背景点击**: 确认背景遮罩层的 `@click` 事件处理函数中使用了 `event.target === event.currentTarget` 判断。
+- **[x] `v-if` root element**: Confirm that the component's root DOM element has the `v-if="modelValue"` directive.
+- **[x] `v-model` support**: Confirm that the `close()` method calls `emit('update:modelValue', false)`.
+- **[x] Safe backdrop click**: Confirm that the backdrop's `@click` handler uses the `event.target === event.currentTarget` check.
 
 ### 📍 `packages/ui/src/components/FullscreenDialog.vue`
-- **[x] `v-if` / `v-model`**: 同 `Modal.vue`。
-- **[x] 安全背景点击**: 同 `Modal.vue`。
+- **[x] `v-if` / `v-model`**: Same as `Modal.vue`.
+- **[x] Safe backdrop click**: Same as `Modal.vue`.
 
 ### 📍 `packages/ui/src/components/TemplateManager.vue`
-- **[x] `v-if` / `v-model`**: 同 `Modal.vue`。
-- **[x] 安全背景点击**: 同 `Modal.vue`。
+- **[x] `v-if` / `v-model`**: Same as `Modal.vue`.
+- **[x] Safe backdrop click**: Same as `Modal.vue`.
 
 ### 📍 `packages/ui/src/components/ModelManager.vue`
-- **[x] `v-if` / `v-model`**: 同 `Modal.vue`。
-- **[x] 安全背景点击**: 同 `Modal.vue`。
+- **[x] `v-if` / `v-model`**: Same as `Modal.vue`.
+- **[x] Safe backdrop click**: Same as `Modal.vue`.
 
 ### 📍 `packages/ui/src/components/HistoryDrawer.vue`
-- **[x] `v-if` / `v-model`**: 检查 `v-if="show"` 和 `emit('update:show', false)`。
-- **[x] 安全背景点击**: 同 `Modal.vue`。
+- **[x] `v-if` / `v-model`**: Check `v-if="show"` and `emit('update:show', false)`.
+- **[x] Safe backdrop click**: Same as `Modal.vue`.
 
 ### 📍 `packages/ui/src/components/OutputDisplayCore.vue`
-- **[x] 实时 `emit`**: 检查 `<script setup>` 中是否存在一个 `watch`，它正在监听本地的编辑状态，并在内容变化时**立即**通过 `emit('update:content', ...)` 通知父组件。
+- **[x] Real-time `emit`**: Check whether `<script setup>` contains a `watch` that listens to the local editing state and **immediately** notifies the parent component via `emit('update:content', ...)` when the content changes.
 
 ### 📍 `packages/ui/src/components/MarkdownRenderer.vue`
-- **[x] 实时 `emit`**: 检查 `<script setup>` 中是否存在一个 `watch`，它正在监听本地的编辑状态，并在内容变化时**立即**通过 `emit('update:content', ...)` 通知父组件。
-- **[x] 无 `prose` 类**: 检查组件模板中的 `class` 属性，确认其中没有 `@apply prose` 或其变体，以避免与自定义主题的样式冲突。
+- **[x] Real-time `emit`**: Check whether `<script setup>` contains a `watch` that listens to the local editing state and **immediately** notifies the parent component via `emit('update:content', ...)` when the content changes.
+- **[x] No `prose` class**: Check the `class` attributes in the component template and confirm there is no `@apply prose` or its variants, to avoid style conflicts with the custom theme.
 
 ---
 
-## Part 4: 架构一致性与错误处理
+## Part 4: Architectural Consistency and Error Handling
 
-### 📍 **职责分离检查** ✅
-- **[✅] 单一职责原则**: 每个 Composable 只负责一个明确的功能域，不应承担其他职责
-- **[✅] 重复逻辑检查**: 确认没有多个 Composable 实现相同的功能（如模板管理、存储操作）
-- **[✅] 初始化逻辑集中**: 相关资源的初始化逻辑应集中在一个地方，避免竞争条件
+### 📍 **Separation of Responsibilities Check** ✅
+- **[✅] Single responsibility principle**: Each Composable should be responsible for only one clear functional domain and should not take on other responsibilities
+- **[✅] Duplicate logic check**: Confirm that no multiple Composables implement the same functionality (such as template management or storage operations)
+- **[✅] Centralized initialization logic**: Initialization logic for related resources should be centralized in one place to avoid race conditions
 
-### 📍 **存储键管理** ✅
-- **[✅] 统一存储键定义**: 所有存储键应定义在 `packages/ui/src/constants/storage-keys.ts` 中
-- **[✅] 避免魔法字符串**: 不应在代码中直接使用字符串作为存储键
-- **[✅] 存储键一致性**: 确认 DataManager 中的存储键与 UI 包中的定义保持同步
+### 📍 **Storage Key Management** ✅
+- **[✅] Unified storage key definitions**: All storage keys should be defined in `packages/ui/src/constants/storage-keys.ts`
+- **[✅] Avoid magic strings**: Strings should not be used directly as storage keys in code
+- **[✅] Storage key consistency**: Confirm that storage keys in DataManager stay in sync with the definitions in the UI package
 
-### 📍 **服务依赖管理** ✅
-- **[✅] 统一服务获取**: 优先使用 `inject('services')` 获取服务，避免 props 和 inject 混用
-- **[✅] 服务空值检查**: 如果 services 未正确注入，应立即抛出错误而不是静默处理
-- **[✅] 立即失败原则**: 发现服务依赖问题时立即报错，不要使用重试机制掩盖问题
+### 📍 **Service Dependency Management** ✅
+- **[✅] Unified service retrieval**: Prefer `inject('services')` to obtain services, and avoid mixing props and inject
+- **[✅] Service null check**: If services are not injected correctly, throw an error immediately instead of handling it silently
+- **[✅] Fail-fast principle**: Report an error immediately when a service dependency problem is found; do not use retry mechanisms to mask the problem
 
-### 📍 **错误处理原则** ✅
-- **[✅] 避免静默处理**: 不应使用 try-catch 静默处理错误，应让错误向上传播
-- **[✅] 移除掩盖机制**: 不应有备用逻辑或重试机制掩盖真正的问题
-- **[✅] 明确错误信息**: 错误信息应明确指出问题所在，便于快速定位
-- **[✅] watch中的错误处理**: 即使在watch回调中，也不应掩盖错误，应让错误向上传播
+### 📍 **Error Handling Principles** ✅
+- **[✅] Avoid silent handling**: Do not use try-catch to silently swallow errors; let errors propagate upward
+- **[✅] Remove masking mechanisms**: There should be no fallback logic or retry mechanisms that mask the real problem
+- **[✅] Clear error messages**: Error messages should clearly indicate where the problem is, to enable quick diagnosis
+- **[✅] Error handling in watch**: Even inside watch callbacks, errors should not be masked and should propagate upward
 
-### 📍 **事件处理一致性** ✅
-- **[✅] v-model 优先**: 优先使用 v-model 双向绑定，避免复杂的事件处理链
-- **[✅] 事件参数一致**: 确认组件发出的事件参数与处理函数期望的参数匹配
-- **[✅] 异步事件处理**: 如果事件处理函数是异步的，确认调用方正确处理 Promise
+### 📍 **Event Handling Consistency** ✅
+- **[✅] Prefer v-model**: Prefer v-model two-way binding and avoid complex event handling chains
+- **[✅] Consistent event parameters**: Confirm that the parameters of events emitted by a component match what the handler expects
+- **[✅] Async event handling**: If an event handler is asynchronous, confirm that the caller handles the Promise correctly
 
-### 📍 **架构分层检查** ✅
-- **[✅] 插件层独立性**: 插件层（如 i18n.ts）不应依赖UI组件层的常量或组件
-- **[✅] 避免循环依赖**: 确认不同层级之间没有循环引用
-- **[✅] 降级处理合理性**: 区分合理的降级处理和掩盖问题的静默处理
+### 📍 **Architectural Layering Check** ✅
+- **[✅] Plugin layer independence**: The plugin layer (such as i18n.ts) should not depend on constants or components from the UI component layer
+- **[✅] Avoid circular dependencies**: Confirm that there are no circular references between layers
+- **[✅] Reasonable degradation**: Distinguish reasonable graceful degradation from silent handling that masks problems
 
-### 📍 **Electron兼容性检查** ✅
-- **[✅] 存储实例一致性**: 确保i18n等插件使用与App.vue相同的存储实例，避免UI进程和主进程数据不一致
-- **[✅] 服务依赖注入**: 插件层应接收服务实例而不是自己创建，确保Electron环境下的数据同步
-- **[✅] 延迟初始化**: Web和Extension应用中的i18n都应等待存储服务准备好后再初始化
-- **[✅] 避免main创建服务**: main.ts不应直接使用StorageFactory.createDefault()，应由App.vue统一管理
-- **[✅] 文件扩展名一致性**: Web和Extension应用都应使用main.ts而不是混用.js和.ts
-- **[✅] 模块级副作用检查**: 确保模块导入不会产生存储创建等副作用，特别是factory文件
-- **[✅] 历史数据清理**: 修复代码后需要清理浏览器中的历史IndexedDB数据
-- **[✅] 强制明确性**: 删除便利方法如createDefault()，强制开发者明确指定存储类型
+### 📍 **Electron Compatibility Check** ✅
+- **[✅] Storage instance consistency**: Ensure plugins such as i18n use the same storage instance as App.vue, to avoid data inconsistency between the UI process and the main process
+- **[✅] Service dependency injection**: The plugin layer should receive service instances rather than create its own, to ensure data synchronization in the Electron environment
+- **[✅] Lazy initialization**: i18n in both Web and Extension apps should wait until the storage service is ready before initializing
+- **[✅] Avoid creating services in main**: main.ts should not use StorageFactory.createDefault() directly; it should be managed uniformly by App.vue
+- **[✅] File extension consistency**: Both Web and Extension apps should use main.ts rather than mixing .js and .ts
+- **[✅] Module-level side effect check**: Ensure that importing a module does not produce side effects such as creating storage, especially in factory files
+- **[✅] Clean up historical data**: After fixing code, historical IndexedDB data in the browser needs to be cleared
+- **[✅] Enforce explicitness**: Remove convenience methods such as createDefault() to force developers to specify the storage type explicitly

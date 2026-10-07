@@ -1,142 +1,142 @@
-# 服务单例模式重构计划 (Singleton Refactor Plan)
+# Service Singleton Refactor Plan
 
-## 1. 问题背景
+## 1. Background
 
-经过深入排查，我们发现当前架构存在一个核心缺陷：**服务实例在模块导入时被过早创建（Eager Instantiation）**，并作为单例（Singleton）在多个包之间导出和传递。
+After thorough investigation, we found a core flaw in the current architecture: **service instances are created too early at module import time (Eager Instantiation)** and are exported and passed between packages as singletons.
 
-这导致了以下严重问题：
+This caused the following serious problems:
 
-1.  **"幽灵"服务**：在Electron的渲染进程中，意外地创建了一套基于 `Dexie` (IndexedDB) 的Web端服务。这些服务虽然未被最终使用，但占用了资源并造成了数据混乱的假象。
-2.  **状态不一致**：由于服务实例的创建不感知运行环境，导致UI进程（看到的是Web版实例状态）和主进程（实际执行逻辑）之间存在状态不一致。
-3.  **架构耦合**：`@prompt-optimizer/ui` 包不必要地导出了核心服务实例，使其职责不清，更像一个服务中转站而非纯UI库。
-4.  **测试困难**：单例模式使得在测试中隔离和模拟服务变得非常困难。
+1.  **"Ghost" services**: In the Electron renderer process, a set of web-side services based on `Dexie` (IndexedDB) was created unexpectedly. Although these services were never ultimately used, they consumed resources and created the illusion of data corruption.
+2.  **Inconsistent state**: Because service instances were created without awareness of the runtime environment, state was inconsistent between the UI process (which saw the web-version instances) and the main process (which actually executed the logic).
+3.  **Architectural coupling**: The `@prompt-optimizer/ui` package needlessly exported core service instances, blurring its responsibilities and making it more of a service relay than a pure UI library.
+4.  **Hard to test**: The singleton pattern made it very difficult to isolate and mock services in tests.
 
-## 2. 重构目标
+## 2. Refactor Goals
 
-本次重构的核心目标是**实现服务的延迟初始化（Lazy Initialization）和依赖注入（Dependency Injection）**，确保只在需要时、在正确的环境中、创建唯一正确的服务实例。
+The core goal of this refactor is to **implement lazy initialization and dependency injection for services**, ensuring that the single correct service instance is created only when needed and in the correct environment.
 
-- **移除单例导出**：任何包（`core`, `ui`）都不应再导出预先创建好的服务实例。
-- **统一初始化入口**：创建一个唯一的、环境感知的应用初始化器。
-- **清晰的职责划分**：`core` 只提供服务类和工厂函数，`ui` 只提供UI组件和Hooks，应用入口（`App.vue`）负责编排。
+- **Remove singleton exports**: No package (`core`, `ui`) should export pre-created service instances anymore.
+- **Unified initialization entry point**: Create a single, environment-aware application initializer.
+- **Clear separation of responsibilities**: `core` provides only service classes and factory functions, `ui` provides only UI components and Hooks, and the application entry point (`App.vue`) handles orchestration.
 
-## 3. 实施计划与成果
+## 3. Implementation Plan and Results
 
-本次重构已**圆满完成**。所有核心服务均已从单例模式迁移至工厂函数和依赖注入模式，实现了按需、按环境创建服务实例的目标。
+This refactor has been **successfully completed**. All core services have been migrated from the singleton pattern to factory functions and dependency injection, achieving the goal of creating service instances on demand and per environment.
 
-### 阶段一：改造 Core 包，移除单例导出 (已完成) ✅
+### Phase 1: Modify the Core package and remove singleton exports (Completed) ✅
 
-**目标**：将所有服务的单例导出模式（`export const service = new Service()`) 改为工厂函数模式 (`export function createService()`)。
+**Goal**: Change every service's singleton export pattern (`export const service = new Service()`) to a factory function pattern (`export function createService()`).
 
-**步骤**：
-1.  [x] **`services/storage/factory.ts`**: 移除 `storageProvider` 单例导出。
-2.  [x] **`services/model/manager.ts`**: 移除 `modelManager` 单例导出，并使其工厂函数接收依赖。
-3.  [x] **`services/template/manager.ts`**: 移除 `templateManager` 单例导出，并使其工厂函数接收依赖。
-4.  [x] **`services/history/manager.ts`**: 移除 `historyManager` 单例导出，并使其工厂函数接收依赖。
-5.  [x] **`index.ts`**: 更新入口文件，确保只导出模块和工厂函数。
+**Steps**:
+1.  [x] **`services/storage/factory.ts`**: Removed the `storageProvider` singleton export.
+2.  [x] **`services/model/manager.ts`**: Removed the `modelManager` singleton export and made its factory function accept dependencies.
+3.  [x] **`services/template/manager.ts`**: Removed the `templateManager` singleton export and made its factory function accept dependencies.
+4.  [x] **`services/history/manager.ts`**: Removed the `historyManager` singleton export and made its factory function accept dependencies.
+5.  [x] **`index.ts`**: Updated the entry file to export only modules and factory functions.
 
-**期间发现的偏差及处理**：
+**Deviations found along the way and how they were handled**:
 
-*   **`TemplateManager` 的深层依赖**：
-    *   **发现**：`TemplateManager` 依赖另一个未被发现的单例 `templateLanguageService`。
-    *   **措施**：对 `services/template/languageService.ts` 进行了相同的重构，移除了单例并创建了 `createTemplateLanguageService` 工厂函数。相应地，`createTemplateManager` 现在接收 `storageProvider` 和 `languageService` 两个实例作为参数。
+*   **Deep dependency of `TemplateManager`**:
+    *   **Finding**: `TemplateManager` depended on another previously undiscovered singleton, `templateLanguageService`.
+    *   **Action**: Applied the same refactor to `services/template/languageService.ts`, removing the singleton and creating a `createTemplateLanguageService` factory function. Accordingly, `createTemplateManager` now takes two instances as parameters: `storageProvider` and `languageService`.
 
-*   **`index.ts` 的导出清理**：
-    *   **发现**：`index.ts` 导出了属于应用层的 `electron-proxy.ts` 文件。
-    *   **措施**：清理了 `index.ts`，移除了这些不应由 `core` 包暴露的导出项，使 API 更纯净。
+*   **Export cleanup in `index.ts`**:
+    *   **Finding**: `index.ts` exported the `electron-proxy.ts` file, which belongs to the application layer.
+    *   **Action**: Cleaned up `index.ts` and removed these exports that should not be exposed by the `core` package, making the API cleaner.
 
-### 阶段二：净化 UI 包，停止导出服务 (已完成) ✅
+### Phase 2: Clean up the UI package and stop exporting services (Completed) ✅
 
-**目标**：让 `@prompt-optimizer/ui` 回归其纯粹的UI库职责。
+**Goal**: Return `@prompt-optimizer/ui` to its role as a pure UI library.
 
 6.  **`packages/ui/src/index.ts`**
-    - [x] **移除**所有从 `@prompt-optimizer/core` 重新导出的服务实例。UI包已回归纯UI库职责。
+    - [x] **Removed** all service instances re-exported from `@prompt-optimizer/core`. The UI package is back to being a pure UI library.
 
-### 阶段三：创建统一的应用初始化器 (已完成) ✅
+### Phase 3: Create a unified application initializer (Completed) ✅
 
-**目标**：将所有初始化逻辑收敛到一个可复用的 `composable` 中。
+**Goal**: Consolidate all initialization logic into a single reusable `composable`.
 
-7.  **文件**: `packages/ui/src/composables/useAppInitializer.ts` (新建)
-    - [x] **创建文件**并实现以下逻辑：
-        - 导入所有 `create...` 工厂函数和 Electron 代理类。
-        - 定义 `services` 和 `isInitializing` refs。
-        - 在 `onMounted` 中，通过 `isRunningInElectron()` 判断环境：
-            - **如果为 Electron**：创建所有服务的 **代理** 实例。
-            - **如果为 Web**：创建所有 **真实** 服务实例（包括 `storageProvider`）。
-            - 将所有服务实例聚合到 `services` ref 中。
-            - 更新 `isInitializing` 状态。
+7.  **File**: `packages/ui/src/composables/useAppInitializer.ts` (new)
+    - [x] **Created the file** and implemented the following logic:
+        - Import all `create...` factory functions and Electron proxy classes.
+        - Define the `services` and `isInitializing` refs.
+        - In `onMounted`, detect the environment via `isRunningInElectron()`:
+            - **If Electron**: create **proxy** instances of all services.
+            - **If Web**: create all **real** service instances (including `storageProvider`).
+            - Aggregate all service instances into the `services` ref.
+            - Update the `isInitializing` state.
 
-### 阶段四：重构应用入口 (`App.vue`) (已完成) ✅
+### Phase 4: Refactor the application entry (`App.vue`) (Completed) ✅
 
-**目标**：让应用入口变得简洁，只负责消费初始化器返回的服务。
+**Goal**: Make the application entry concise, responsible only for consuming the services returned by the initializer.
 
-8.  **修改 `packages/web/src/App.vue` & `packages/extension/src/App.vue`**
-    - [x] **完成**: Web端和插件端的应用入口已重构，消费 `useAppInitializer` 返回的服务，实现了清晰的初始化流程。
-    - [x] **深化**: 进一步重构了 `App.vue` 下的所有UI子组件（如 `ModelSelect`, `TemplateSelect` 等），使其不再直接导入服务单例，而是通过 `props` 或 `inject` 接收服务实例，彻底完成了UI层的架构统一。
+8.  **Modify `packages/web/src/App.vue` & `packages/extension/src/App.vue`**
+    - [x] **Done**: The web and extension application entries have been refactored to consume the services returned by `useAppInitializer`, giving a clear initialization flow.
+    - [x] **Deepened**: Further refactored all UI child components under `App.vue` (such as `ModelSelect`, `TemplateSelect`, etc.) so they no longer import service singletons directly but receive service instances via `props` or `inject`, fully unifying the architecture of the UI layer.
 
-## 4. 预期成果 (已达成)
+## 4. Expected Outcomes (Achieved)
 
--   [x] **无"幽灵"服务**：`Dexie` 将只在Web环境下被创建一次。
--   [x] **清晰的数据流**：依赖关系变为 `useAppInitializer` -> `App.vue` -> `Components`，单向且清晰。
--   [x] **健壮的初始化**：所有服务都在正确的时机、以正确的配置被创建。
--   [x] **彻底解决状态不一致问题**：因为服务实例的创建逻辑是统一且唯一的。
+-   [x] **No "ghost" services**: `Dexie` will be created only once, and only in the web environment.
+-   [x] **Clear data flow**: Dependencies become `useAppInitializer` -> `App.vue` -> `Components`, one-directional and clear.
+-   [x] **Robust initialization**: All services are created at the right time with the right configuration.
+-   [x] **Inconsistent state fully resolved**: Because the logic for creating service instances is unified and unique.
 
-这个计划将从根本上解决我们发现的架构问题，为项目未来的可维护性和可扩展性奠定坚实的基础。
+This plan fundamentally resolves the architectural problems we found and lays a solid foundation for the project's future maintainability and extensibility.
 
-## 5. 重构反思与后续决策
+## 5. Reflections on the Refactor and Follow-up Decisions
 
-本次重构成功地将核心服务从单例模式转换为了工厂函数模式，解决了环境隔离和状态不一致的根本问题。然而，在修复因此产生的大量测试失败的过程中，我们也总结出了一些宝贵的经验和需要进一步完善的设计决策：
+This refactor successfully converted the core services from the singleton pattern to the factory function pattern, resolving the root problems of environment isolation and inconsistent state. However, while fixing the large number of test failures this caused, we also drew some valuable lessons and identified design decisions that need further refinement:
 
-### 5.1 关于强制调用 `ensureInitialized()`
+### 5.1 On requiring `ensureInitialized()`
 
-- **现状反思**: 当前设计要求调用者在获取 `Manager` 实例后，必须手动调用 `await manager.ensureInitialized()` 来完成异步初始化。这虽然将实例的创建和初始化过程解耦，但也暴露了内部实现细节，增加了调用者的负担。
-- **优化方向**: 更理想的设计是让工厂函数（如 `createTemplateManager`）本身成为一个异步函数，内部处理完所有初始化逻辑后，直接返回一个完全可用的实例 `Promise<Manager>`。这样调用者只需 `await` 一次，接口更简洁、封装性更好。
-- **决策**: **暂时接受**当前的设计，但将其标记为**未来可优化的点**。当前的核心任务是稳定重构后的代码。
+- **Reflection on the current state**: The current design requires callers, after obtaining a `Manager` instance, to manually call `await manager.ensureInitialized()` to complete asynchronous initialization. While this decouples instance creation from initialization, it exposes internal implementation details and adds a burden on callers.
+- **Direction for improvement**: A better design would make the factory function itself (e.g. `createTemplateManager`) asynchronous, handle all initialization logic internally, and return a fully usable instance as `Promise<Manager>`. Callers would then only need to `await` once, giving a cleaner interface and better encapsulation.
+- **Decision**: **Accept the current design for now**, but mark it as a **point for future optimization**. The current core task is to stabilize the refactored code.
 
-### 5.2 关于错误处理：坚持"快速失败"原则
+### 5.2 On error handling: stick to the "fail fast" principle
 
-- **问题发现**: 重构后的 `TemplateManager` 在初始化时若遇到存储错误，会静默地降级使用内置模板，而不是抛出错误。
-- **决策**: 这掩盖了底层的严重问题，违反了"快速失败"(Fail-fast)原则。我们决定**修正此行为**。`TemplateManager` 在初始化遇到存储访问等关键错误时，**必须向上抛出异常**。由应用的顶层逻辑来捕获并决定如何处理（如向用户报错、进入安全模式等）。
+- **Problem found**: After the refactor, if `TemplateManager` hit a storage error during initialization, it silently fell back to the built-in templates instead of throwing an error.
+- **Decision**: This masks serious underlying problems and violates the Fail-fast principle. We decided to **correct this behavior**. When `TemplateManager` encounters critical errors such as storage access failures during initialization, it **must throw an exception upward**. The top-level application logic then catches it and decides how to handle it (e.g. report an error to the user, enter safe mode).
 
-### 5.3 关于测试代码的严谨性
+### 5.3 On the rigor of test code
 
-- **问题发现**: 部分旧的单元测试不够严谨。
-- **决策与成果**: **已修复**。在本次重构的测试修复阶段，重写了大量断言，使用 `expect.objectContaining` 等方式增强了测试的稳定性和可靠性。所有核心测试已通过。
+- **Problem found**: Some older unit tests were not rigorous enough.
+- **Decision and result**: **Fixed**. During the test-fixing phase of this refactor, a large number of assertions were rewritten, using constructs such as `expect.objectContaining` to make the tests more stable and reliable. All core tests now pass.
 
-### 5.4 UI 层的连锁反应与应对
+### 5.4 Ripple effects on the UI layer and the response
 
-- **发现**: 核心服务的"去单例化"重构，对上层 UI 和 Composable 的冲击比预期更大。原先直接导入单例的模式被破坏后，引发了包括`属性类型检查失败`、`响应式状态丢失`和`服务未初始化`在内的一系列连锁问题。
-- **应对**: 我们为此制定了专门的 [`composables-refactor-plan.md`](./composables-refactor-plan.md) 和 [`web-refactor-plan.md`](./web-refactor-plan.md)。核心对策是：1) 将返回多个 `ref` 的 Composable 重构为返回单个 `reactive` 对象，以解决属性传递问题。2) 在组件层级，通过 `provide/inject` 机制注入服务，减少了属性钻孔 (`props drilling`)。这次经历表明，底层架构的重大变更，必须伴随对上层应用影响的充分评估和细致的改造计划。
+- **Finding**: The "de-singletonization" of core services had a bigger impact on the upper UI and Composable layers than expected. Once the pattern of directly importing singletons was broken, it triggered a chain of problems including `property type check failures`, `loss of reactive state`, and `uninitialized services`.
+- **Response**: We drew up dedicated plans, [`composables-refactor-plan.md`](./composables-refactor-plan.md) and [`web-refactor-plan.md`](./web-refactor-plan.md). The core measures were: 1) Refactor Composables that return multiple `ref`s to return a single `reactive` object, to solve the property passing problem. 2) At the component level, inject services through the `provide/inject` mechanism, reducing `props drilling`. This experience shows that major changes to the underlying architecture must be accompanied by a thorough assessment of the impact on upper-level applications and a careful migration plan.
 
-## 6. 详细修改清单
+## 6. Detailed Change List
 
-此清单中的所有项目均已在最近的提交中完成。
+All items in this list were completed in recent commits.
 
-### **阶段一：改造 Core 包**
+### **Phase 1: Modify the Core package**
 
-1.  **文件**: `packages/core/src/services/storage/factory.ts`
-    - [x] **删除** (约 L125): `export const storageProvider = StorageFactory.createDefault();`
+1.  **File**: `packages/core/src/services/storage/factory.ts`
+    - [x] **Delete** (around L125): `export const storageProvider = StorageFactory.createDefault();`
 
-2.  **文件**: `packages/core/src/services/model/manager.ts`
-    - [x] **删除** (约 L427): `export const modelManager = ...`
-    - [x] **修改** (约 L428): `export function createModelManager(storageProvider?: IStorageProvider): ModelManager`
-        - **改为**: `export function createModelManager(storageProvider: IStorageProvider): ModelManager`
-        - **移除**: `storageProvider = storageProvider || StorageFactory.createDefault();`
+2.  **File**: `packages/core/src/services/model/manager.ts`
+    - [x] **Delete** (around L427): `export const modelManager = ...`
+    - [x] **Modify** (around L428): `export function createModelManager(storageProvider?: IStorageProvider): ModelManager`
+        - **Change to**: `export function createModelManager(storageProvider: IStorageProvider): ModelManager`
+        - **Remove**: `storageProvider = storageProvider || StorageFactory.createDefault();`
 
-3.  **文件**: `packages/core/src/services/template/manager.ts`
-    - [x] **删除** (约 L300): `export const templateManager = ...`
+3.  **File**: `packages/core/src/services/template/manager.ts`
+    - [x] **Delete** (around L300): `export const templateManager = ...`
 
-4.  **文件**: `packages/core/src/services/history/manager.ts`
-    - [x] **删除** (约 L230): `export const historyManager = ...`
+4.  **File**: `packages/core/src/services/history/manager.ts`
+    - [x] **Delete** (around L230): `export const historyManager = ...`
 
-5.  **文件**: `packages/core/src/services/data/manager.ts`
-    - [x] **删除** (约 L80): `export const dataManager = ...`
-    - [x] **修改** (构造函数): `constructor()` -> `constructor(modelManager: IModelManager, templateManager: ITemplateManager, historyManager: IHistoryManager)`
-    - [x] **修改** (工厂函数): `createDataManager()` -> `createDataManager(modelManager: IModelManager, templateManager: ITemplateManager, historyManager: IHistoryManager)`
+5.  **File**: `packages/core/src/services/data/manager.ts`
+    - [x] **Delete** (around L80): `export const dataManager = ...`
+    - [x] **Modify** (constructor): `constructor()` -> `constructor(modelManager: IModelManager, templateManager: ITemplateManager, historyManager: IHistoryManager)`
+    - [x] **Modify** (factory function): `createDataManager()` -> `createDataManager(modelManager: IModelManager, templateManager: ITemplateManager, historyManager: IHistoryManager)`
 
-### **阶段二：净化 UI 包**
+### **Phase 2: Clean up the UI package**
 
-6.  **文件**: `packages/ui/src/index.ts`
-    - [x] **删除** (约 L45-53):
+6.  **File**: `packages/ui/src/index.ts`
+    - [x] **Delete** (around L45-53):
         ```typescript
         export {
             templateManager,
@@ -148,28 +148,28 @@
             createPromptService
         } from '@prompt-optimizer/core'
         ```
-    - [x] **新增**: 导出 `createDataManager` 等其他必要的工厂函数。
+    - [x] **Add**: Export `createDataManager` and other necessary factory functions.
 
-### **阶段三：创建统一的应用初始化器**
+### **Phase 3: Create a unified application initializer**
 
-7.  **文件**: `packages/ui/src/composables/useAppInitializer.ts` (新建)
-    - [x] **创建文件**并实现以下逻辑：
-        - 导入所有 `create...` 工厂函数和 Electron 代理类。
-        - 定义 `services` 和 `isInitializing` refs。
-        - 在 `onMounted` 中，通过 `isRunningInElectron()` 判断环境：
-            - **如果为 Electron**：创建所有服务的 **代理** 实例。
-            - **如果为 Web**：创建所有 **真实** 服务实例（包括 `storageProvider`）。
-            - 将所有服务实例聚合到 `services` ref 中。
-            - 更新 `isInitializing` 状态。
+7.  **File**: `packages/ui/src/composables/useAppInitializer.ts` (new)
+    - [x] **Created the file** and implemented the following logic:
+        - Import all `create...` factory functions and Electron proxy classes.
+        - Define the `services` and `isInitializing` refs.
+        - In `onMounted`, detect the environment via `isRunningInElectron()`:
+            - **If Electron**: create **proxy** instances of all services.
+            - **If Web**: create all **real** service instances (including `storageProvider`).
+            - Aggregate all service instances into the `services` ref.
+            - Update the `isInitializing` state.
 
-### **阶段四：重构应用入口**
+### **Phase 4: Refactor the application entry**
 
-8.  **文件**: `packages/web/src/App.vue` & `packages/extension/src/App.vue`
-    - [x] **移除**: 所有对 `modelManager`, `templateManager`, `historyManager` 等服务单例的导入。
-    - [x] **替换**:
-        - **旧**: `import { modelManager, ... } from '@prompt-optimizer/ui'`
-        - **新**: `import { useAppInitializer } from '@prompt-optimizer/ui'`
-    - [x] **调用**: `const { services, isInitializing } = useAppInitializer();`
-    - [x] **包裹**: 在模板的根元素上使用 `v-if="!isInitializing"`，并添加一个 `v-else` 的加载状态。
-    - [x] **传递**: 将 `services.value` 作为 props 传递给需要的子组件，或在 `composable` 中使用 `services.value.modelManager` 等。
-    - [x] **清理**: 删除 `onMounted` 中手动的初始化逻辑。 
+8.  **File**: `packages/web/src/App.vue` & `packages/extension/src/App.vue`
+    - [x] **Remove**: All imports of service singletons such as `modelManager`, `templateManager`, `historyManager`.
+    - [x] **Replace**:
+        - **Old**: `import { modelManager, ... } from '@prompt-optimizer/ui'`
+        - **New**: `import { useAppInitializer } from '@prompt-optimizer/ui'`
+    - [x] **Call**: `const { services, isInitializing } = useAppInitializer();`
+    - [x] **Wrap**: Use `v-if="!isInitializing"` on the template's root element and add a `v-else` loading state.
+    - [x] **Pass**: Pass `services.value` as props to the child components that need it, or use `services.value.modelManager` etc. in `composable`s.
+    - [x] **Clean up**: Delete the manual initialization logic in `onMounted`.

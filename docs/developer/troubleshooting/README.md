@@ -1,53 +1,53 @@
-# 故障排查指南
+# Troubleshooting Guide
 
-这里包含了开发过程中常见问题的排查清单和解决方案。
+This directory contains troubleshooting checklists and solutions for common problems encountered during development.
 
-## 📋 排查清单
+## 📋 Troubleshooting Checklists
 
-### 通用问题
-- [通用排查清单](./general-checklist.md) - UI模块文件级排查清单，按具体文件组织的问题排查指南
+### General Issues
+- [General Troubleshooting Checklist](./general-checklist.md) - File-level troubleshooting checklist for UI modules, organized by specific file
 
-### 特定功能问题
-- 模板管理问题 - 参见归档文档 [106-template-management](../../archives/106-template-management/troubleshooting.md)
+### Feature-Specific Issues
+- Template management issues - see the archived document [106-template-management](../../archives/106-template-management/troubleshooting.md)
 
-## 🔍 问题分类
+## 🔍 Problem Categories
 
-### 应用启动问题
-- 应用无法启动
-- 白屏问题
-- 服务初始化失败
+### Application Startup Issues
+- Application fails to start
+- Blank screen
+- Service initialization failure
 
-### 组件渲染问题
-- 模态框显示异常
-- 组件状态错误
-- 响应式数据问题
+### Component Rendering Issues
+- Modal displays abnormally
+- Component state errors
+- Reactive data issues
 
-### 异步操作问题
-- API调用失败
-- 异步方法缺少await
-- 时序问题
+### Async Operation Issues
+- API call failures
+- Missing await on async methods
+- Timing issues
 
-### 架构相关问题
-- 依赖注入问题
-- Composable使用错误
-- 服务层问题
+### Architecture-Related Issues
+- Dependency injection issues
+- Composable usage errors
+- Service layer issues
 
-## 📝 使用说明
+## 📝 Usage Instructions
 
-1. **定位问题类型**：根据问题现象确定属于哪个分类
-2. **查看对应清单**：找到相关的排查清单文档
-3. **按步骤排查**：按照清单逐项检查
-4. **记录解决方案**：解决问题后更新相关文档
+1. **Identify the problem type**: Determine which category it belongs to based on the symptoms
+2. **Find the matching checklist**: Locate the relevant troubleshooting checklist document
+3. **Troubleshoot step by step**: Check each item on the checklist in order
+4. **Record the solution**: After solving the problem, update the related documents
 
-## 🔄 文档维护
+## 🔄 Documentation Maintenance
 
-- 每次解决新问题后，考虑更新相关排查清单
-- 定期审查排查清单的有效性
-- 将常见问题的解决方案添加到清单中
+- After solving each new problem, consider updating the related troubleshooting checklist
+- Regularly review the effectiveness of the troubleshooting checklists
+- Add solutions for common problems to the checklists
 
-## 📞 获取帮助
+## 📞 Getting Help
 
-如果排查清单无法解决问题：
-1. 查看相关的归档文档中的经验总结
-2. 在项目仓库提交Issue
-3. 联系项目团队
+If the troubleshooting checklists cannot solve the problem:
+1. Check the lessons learned in the related archived documents
+2. Submit an Issue in the project repository
+3. Contact the project team

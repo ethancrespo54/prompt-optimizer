@@ -1,49 +1,49 @@
-# 开发者文档
+# Developer Documentation
 
-欢迎参与Prompt Optimizer的开发！这里包含了所有开发相关的技术文档。
+Welcome to Prompt Optimizer development! This directory contains all development-related technical documentation.
 
-## 🚀 快速开始
+## 🚀 Quick Start
 
-- 快速开始指南（待创建） - 开发环境搭建和项目启动
-- [技术开发指南](./technical-development-guide.md) - 完整的技术栈和开发规范
-- [项目结构](./project-structure.md) - 项目文件和目录组织说明
-- [AI开发流程规范](./ai-development-workflow.md) - AI辅助开发的标准化流程
-- [通用开发经验](./general-experience.md) - 项目开发中的通用经验与最佳实践
+- Quick start guide (to be created) - Development environment setup and project launch
+- [Technical Development Guide](./technical-development-guide.md) - Complete tech stack and development conventions
+- [Project Structure](./project-structure.md) - Project file and directory organization
+- [AI Development Workflow](./ai-development-workflow.md) - Standardized workflow for AI-assisted development
+- [General Development Experience](./general-experience.md) - General lessons and best practices from project development
 
-## 📱 平台开发指南
+## 📱 Platform Development Guides
 
-### 桌面端
-- [桌面开发指南](./desktop-developer-guide.md) - Electron桌面应用开发
+### Desktop
+- [Desktop Development Guide](./desktop-developer-guide.md) - Electron desktop application development
 
-### Web端
-- Web开发指南（待创建） - Web应用开发说明
+### Web
+- Web development guide (to be created) - Web application development notes
 
-### 浏览器插件
-- 插件开发指南（待创建） - Chrome扩展开发
+### Browser Extension
+- Extension development guide (to be created) - Chrome extension development
 
-## 📚 API文档
+## 📚 API Documentation
 
-- [核心API文档](./api/core-api.md)（待创建） - @prompt-optimizer/core包API参考
+- [Core API Documentation](./api/core-api.md) (to be created) - @prompt-optimizer/core package API reference
 
-## 🏗️ 架构文档
+## 🏗️ Architecture Documentation
 
-- [架构概览](./architecture/overview.md)（待创建） - 系统整体架构
-- [设计模式](./architecture/design-patterns.md)（待创建） - 项目中使用的设计模式
+- [Architecture Overview](./architecture/overview.md) (to be created) - Overall system architecture
+- [Design Patterns](./architecture/design-patterns.md) (to be created) - Design patterns used in the project
 
-## 🔧 故障排查
+## 🔧 Troubleshooting
 
-- [通用排查清单](./troubleshooting/general-checklist.md) - 常见问题的排查步骤
-- [排查指南索引](./troubleshooting/README.md)（待创建） - 所有排查文档的索引
+- [General Troubleshooting Checklist](./troubleshooting/general-checklist.md) - Troubleshooting steps for common problems
+- [Troubleshooting Guide Index](./troubleshooting/README.md) (to be created) - Index of all troubleshooting documents
 
-## 🤝 贡献指南
+## 🤝 Contribution Guide
 
-- 贡献指南（待创建） - 如何参与项目开发
-- 代码规范（在技术开发指南中） - 编码标准和最佳实践
-- 提交规范（待创建） - Git提交消息规范
+- Contribution guide (to be created) - How to participate in project development
+- Code conventions (in the technical development guide) - Coding standards and best practices
+- Commit conventions (to be created) - Git commit message conventions
 
-## 📋 开发流程
+## 📋 Development Process
 
-- [开发任务清单](./todo.md) - 按功能模块和优先级组织的任务列表
-- 开发流程（待创建） - 从需求到发布的完整流程
-- 测试指南（待创建） - 单元测试和集成测试
-- 发布流程（待创建） - 版本发布和部署流程
+- [Development Task List](./todo.md) - Task list organized by feature module and priority
+- Development process (to be created) - Complete process from requirements to release
+- Testing guide (to be created) - Unit tests and integration tests
+- Release process (to be created) - Version release and deployment process

@@ -1,43 +1,43 @@
-# 115-IPC序列化修复与数据一致性
+# 115-IPC Serialization Fixes and Data Consistency
 
-## 📋 概述
+## 📋 Overview
 
-解决Electron应用中Vue响应式对象IPC序列化问题，以及由此引发的数据一致性问题。
+Resolves the IPC serialization problem of Vue reactive objects in the Electron app, and the data consistency problems it caused.
 
-**📝 专注领域**：本文档专注于Vue响应式对象的IPC序列化问题，其他IPC架构问题请参考[112-desktop-ipc-fixes](../112-desktop-ipc-fixes/)。
+**📝 Focus**: This document focuses on the IPC serialization problem of Vue reactive objects. For other IPC architecture issues, see [112-desktop-ipc-fixes](../112-desktop-ipc-fixes/).
 
-## 🚨 核心问题
+## 🚨 Core Problems
 
-### 1. IPC序列化错误
+### 1. IPC Serialization Error
 ```
 An object could not be cloned
 ```
 
-**原因**：Vue响应式对象包含不可序列化的属性（Proxy、Symbol等），无法通过Electron IPC传递。
+**Cause**: Vue reactive objects contain non-serializable properties (Proxy, Symbol, etc.) and cannot be passed through Electron IPC.
 
-### 2. 数据一致性问题
+### 2. Data Consistency Problem
 ```
-修改gemini模型apiKey → 其他模型(openai, deepseek等)全部消失
+Modify the gemini model apiKey → all other models (openai, deepseek, etc.) disappear
 ```
 
-**根本原因**：ModelManager的updateData回调函数基于不完整的存储数据进行操作。
+**Root cause**: ModelManager's updateData callback operates on incomplete stored data.
 
-## ✅ 解决方案
+## ✅ Solution
 
-### 1. IPC层序列化保护
+### 1. IPC-layer Serialization Protection
 
 #### safeSerialize函数
-```typescript
+#### safeSerialize Function
 /**
- * 安全序列化函数，用于清理Vue响应式对象
- * 确保所有通过IPC传递的对象都是纯净的JavaScript对象
+ * Safe serialization function used to clean Vue reactive objects
+ * Ensures all objects passed through IPC are plain JavaScript objects
  */
 function safeSerialize(obj) {
   if (obj === null || obj === undefined) {
     return obj;
   }
   
-  // 对于基本类型，直接返回
+  // Return primitive types directly
   if (typeof obj !== 'object') {
     return obj;
   }
@@ -51,9 +51,9 @@ function safeSerialize(obj) {
 }
 ```
 
-#### IPC处理器应用
+#### Applying It in IPC Handlers
 ```typescript
-// 模型管理相关
+// Model management
 ipcMain.handle('model-updateModel', async (event, id, updates) => {
   try {
     const safeUpdates = safeSerialize(updates);
@@ -75,7 +75,7 @@ ipcMain.handle('model-addModel', async (event, model) => {
   }
 });
 
-// 模板管理相关
+// Template management
 ipcMain.handle('template-createTemplate', async (event, template) => {
   try {
     const safeTemplate = safeSerialize(template);
@@ -98,7 +98,7 @@ ipcMain.handle('template-updateTemplate', async (event, id, updates) => {
   }
 });
 
-// 历史记录相关
+// History
 ipcMain.handle('history-addRecord', async (event, record) => {
   try {
     const safeRecord = safeSerialize(record);
@@ -130,92 +130,92 @@ ipcMain.handle('history-addIteration', async (event, params) => {
 });
 ```
 
-### 2. 业务逻辑层数据一致性修复
+### 2. Business-logic-layer Data Consistency Fix
 
-#### 问题根因
-ModelManager的updateData回调函数错误地基于可能不完整的存储数据：
+#### Root Cause
+ModelManager's updateData callback was wrongly based on potentially incomplete stored data:
 
 ```typescript
-// ❌ 错误的实现
+// ❌ Wrong implementation
 (currentModels) => {
-  const models = currentModels || {}; // 可能不完整！
+  const models = currentModels || {}; // may be incomplete!
   return {
-    ...models, // 基于不完整的数据
+    ...models, // based on incomplete data
     [key]: updatedConfig
   };
 }
 ```
 
-#### 正确的解决方案
+#### Correct Solution
 ```typescript
-// ✅ 正确的实现
+// ✅ Correct implementation
 (currentModels) => {
-  // 使用内存中的完整模型列表作为基础
+  // Use the complete in-memory model list as the base
   const models = { ...this.models };
   
-  // 如果存储中有数据，合并到内存状态中
+  // If storage has data, merge it into the in-memory state
   if (currentModels) {
     Object.assign(models, currentModels);
   }
   
   return {
-    ...models, // 完整的模型列表
+    ...models, // complete model list
     [key]: updatedConfig
   };
 }
 ```
 
-#### 修复范围
-所有ModelManager的数据更新方法：
+#### Scope of the Fix
+All ModelManager data update methods:
 
-1. **addModel** - 添加模型时保持完整列表
-2. **updateModel** - 更新模型时保持完整列表
-3. **deleteModel** - 删除模型时基于完整列表
-4. **enableModel** - 启用模型时保持完整列表
-5. **disableModel** - 禁用模型时保持完整列表
+1. **addModel** - keep the complete list when adding a model
+2. **updateModel** - keep the complete list when updating a model
+3. **deleteModel** - operate on the complete list when deleting a model
+4. **enableModel** - keep the complete list when enabling a model
+5. **disableModel** - keep the complete list when disabling a model
 
-### 3. 双重保护机制
+### 3. Dual Protection Mechanism
 
 ```
-Vue组件 → safeSerialize → IPC → 业务逻辑修复 → 增强的FileStorageProvider
+Vue component → safeSerialize → IPC → business logic fix → enhanced FileStorageProvider
          ↑                    ↑                    ↑
-    清理响应式对象        数据完整性保障        原子性操作+备份保护
+    Clean reactive objects     Data integrity guarantee     Atomic operations + backup protection
 ```
 
-## 🛡️ 核心原则
+## 🛡️ Core Principles
 
-### 1. 分层修复原则
-**在正确的层级解决对应的问题**
+### 1. Layered Fix Principle
+**Solve each problem at the right layer**
 
-- **IPC传输问题** → IPC层 (main.js)
-- **业务逻辑错误** → 业务逻辑层 (ModelManager)
-- **存储安全问题** → 存储层 (FileStorageProvider)
+- **IPC transport problems** → IPC layer (main.js)
+- **Business logic errors** → business logic layer (ModelManager)
+- **Storage safety problems** → storage layer (FileStorageProvider)
 
-### 2. 数据完整性优先原则
-**始终基于完整的数据进行操作**
+### 2. Data Integrity First Principle
+**Always operate on complete data**
 
 ```typescript
-// 错误：基于可能不完整的存储状态
+// Wrong: based on potentially incomplete stored state
 const models = currentModels || {};
 
-// 正确：基于内存中的完整状态
+// Correct: based on the complete in-memory state
 const models = { ...this.models };
 if (currentModels) {
   Object.assign(models, currentModels);
 }
 ```
 
-### 3. 边界清理原则
-**在IPC边界清理Vue响应式对象**
+### 3. Boundary Cleaning Principle
+**Clean Vue reactive objects at the IPC boundary**
 
 ```typescript
-// 在IPC处理器中统一清理
+// Clean uniformly in the IPC handler
 const safeData = safeSerialize(reactiveData);
 ```
 
-## 🧪 测试验证
+## 🧪 Test Verification
 
-### 1. IPC序列化测试
+### 1. IPC Serialization Test
 ```typescript
 describe('IPC Serialization', () => {
   it('should handle Vue reactive objects', async () => {
@@ -229,17 +229,17 @@ describe('IPC Serialization', () => {
 });
 ```
 
-### 2. 数据一致性测试
+### 2. Data Consistency Test
 ```typescript
 describe('Data Consistency', () => {
   it('should maintain complete model list when updating single model', async () => {
-    // 初始化完整的模型列表
+    // Initialize the complete model list
     const initialModels = { openai: config1, gemini: config2, deepseek: config3 };
     
-    // 更新单个模型
+    // Update a single model
     await modelManager.updateModel('gemini', { apiKey: 'new-key' });
     
-    // 验证其他模型没有丢失
+    // Verify the other models were not lost
     const allModels = await modelManager.getAllModels();
     expect(Object.keys(allModels)).toHaveLength(3);
     expect(allModels.openai).toBeDefined();
@@ -248,67 +248,67 @@ describe('Data Consistency', () => {
 });
 ```
 
-## 📊 技术价值
+## 📊 Technical Value
 
-### 1. 问题解决
-- ✅ 彻底解决IPC序列化错误
-- ✅ 修复数据丢失问题
-- ✅ 建立数据一致性保障机制
+### 1. Problem Resolution
+- ✅ Completely resolves the IPC serialization error
+- ✅ Fixes the data loss problem
+- ✅ Establishes a data consistency guarantee mechanism
 
-### 2. 架构完善
-- ✅ 分层修复，职责清晰
-- ✅ 双重保护机制
-- ✅ 统一的错误处理
+### 2. Architecture Improvements
+- ✅ Layered fixes with clear responsibilities
+- ✅ Dual protection mechanism
+- ✅ Unified error handling
 
-### 3. 开发体验
-- ✅ 透明的序列化处理
-- ✅ 可靠的数据操作
-- ✅ 完善的测试覆盖
+### 3. Developer Experience
+- ✅ Transparent serialization handling
+- ✅ Reliable data operations
+- ✅ Comprehensive test coverage
 
-## 🔗 相关文档
+## 🔗 Related Documents
 
-- [114-desktop-file-storage](../114-desktop-file-storage/) - 存储层安全增强
-- [112-desktop-ipc-fixes](../112-desktop-ipc-fixes/) - 早期IPC修复经验
+- [114-desktop-file-storage](../114-desktop-file-storage/) - Storage layer safety enhancements
+- [112-desktop-ipc-fixes](../112-desktop-ipc-fixes/) - Early IPC fix experience
 
-## 💡 最佳实践
+## 💡 Best Practices
 
-### IPC序列化
-- ✅ 在ElectronProxy层统一处理序列化（已完成）
-- ✅ 使用通用的safeSerializeForIPC函数（已完成）
-- ✅ 保持调用方的透明性（已完成）
-- ✅ 清理UI层的手动序列化代码（已完成）
+### IPC Serialization
+- ✅ Handle serialization uniformly in the ElectronProxy layer (done)
+- ✅ Use the generic safeSerializeForIPC function (done)
+- ✅ Keep it transparent to callers (done)
+- ✅ Clean up manual serialization code in the UI layer (done)
 
-### 数据一致性
-- 基于完整的内存状态进行更新
-- 合并存储中的增量更新
-- 确保返回完整的数据集
+### Data Consistency
+- Update based on the complete in-memory state
+- Merge incremental updates from storage
+- Ensure the complete data set is returned
 
-### 错误处理
-- 在正确的层级处理对应的错误
-- 提供详细的错误信息
-- 建立完整的错误恢复机制
+### Error Handling
+- Handle each error at the right layer
+- Provide detailed error messages
+- Establish a complete error recovery mechanism
 
-### 架构演进
-这些修复经历了两个阶段：
-1. **第一阶段**：在UI层手动序列化（112-desktop-ipc-fixes）
-2. **第二阶段**：移到ElectronProxy层自动序列化（当前方案）
+### Architecture Evolution
+These fixes went through two phases:
+1. **Phase 1**: manual serialization in the UI layer (112-desktop-ipc-fixes)
+2. **Phase 2**: moved to automatic serialization in the ElectronProxy layer (current approach)
 
-最终实现了对Vue组件完全透明的IPC序列化处理，确保了Electron应用中数据操作的可靠性和一致性。
+Ultimately, IPC serialization became fully transparent to Vue components, ensuring reliable and consistent data operations in the Electron app.
 
-## 📁 文档结构
+## 📁 Document Structure
 
-本目录包含以下文档：
+This directory contains the following documents:
 
-- **README.md** - 主要概述和最佳实践
-- **proxy-layer-serialization.md** - ElectronProxy层序列化技术实现
-- **architecture-evolution.md** - 架构演进完整记录
+- **README.md** - Main overview and best practices
+- **proxy-layer-serialization.md** - Technical implementation of ElectronProxy-layer serialization
+- **architecture-evolution.md** - Complete record of the architecture evolution
 
-## 🔗 相关文档
+## 🔗 Related Documents
 
-- [112-Desktop IPC修复](../112-desktop-ipc-fixes/) - IPC架构问题和语言切换修复
-- [Electron IPC最佳实践](../../developer/electron-ipc-best-practices.md) - 当前开发指南
+- [112-Desktop IPC Fixes](../112-desktop-ipc-fixes/) - IPC architecture issues and language switching fixes
+- [Electron IPC Best Practices](../../developer/electron-ipc-best-practices.md) - Current development guide
 
-## 💡 文档分工
+## 💡 Division of Documents
 
-**112专注于**：IPC架构完整性、异步接口设计、语言切换等功能性问题
-**115专注于**：Vue响应式对象序列化、ElectronProxy层自动化处理
+**112 focuses on**: IPC architecture integrity, async interface design, language switching and other functional issues
+**115 focuses on**: Vue reactive object serialization and automated handling in the ElectronProxy layer

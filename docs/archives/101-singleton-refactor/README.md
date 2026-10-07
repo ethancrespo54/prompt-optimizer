@@ -1,32 +1,32 @@
-# 101-singleton-refactor - 单例模式重构
+# 101-singleton-refactor - Singleton Pattern Refactor
 
-## 概述
-移除项目中的单例模式，改为依赖注入架构，提高代码的可测试性和可维护性。
+## Overview
+Remove the singleton pattern from the project and switch to a dependency injection architecture, improving testability and maintainability.
 
-## 时间线
-- 开始时间：2024-12-20
-- 完成时间：2024-12-29
-- 状态：✅ 已完成
+## Timeline
+- Start date: 2024-12-20
+- Completion date: 2024-12-29
+- Status: ✅ Completed
 
-## 相关开发者
-- 主要开发者：项目团队
-- 代码审查：项目团队
+## Contributors
+- Main developer: Project team
+- Code review: Project team
 
-## 文档清单
-- [x] `plan.md` - 重构计划和实施步骤
-- [ ] `experience.md` - 重构过程中的经验总结（待从experience.md中提取）
+## Document List
+- [x] `plan.md` - Refactor plan and implementation steps
+- [ ] `experience.md` - Lessons learned during the refactor (to be extracted from experience.md)
 
-## 相关代码变更
-- 影响包：@prompt-optimizer/core, @prompt-optimizer/ui
-- 主要变更：移除单例服务，改为依赖注入
-- 重构范围：服务层架构完全重构
+## Related Code Changes
+- Affected packages: @prompt-optimizer/core, @prompt-optimizer/ui
+- Main change: Removed singleton services in favor of dependency injection
+- Refactor scope: Complete refactor of the service layer architecture
 
-## 后续影响
-- 为Web架构重构奠定基础
-- 提高了代码的可测试性
-- 简化了依赖管理
-- 使服务更容易进行单元测试
+## Follow-up Impact
+- Laid the foundation for the web architecture refactor
+- Improved code testability
+- Simplified dependency management
+- Made services easier to unit test
 
-## 相关功能点
-- 前置依赖：无
-- 后续功能：102-web-architecture-refactor
+## Related Features
+- Prerequisites: None
+- Follow-up work: 102-web-architecture-refactor
