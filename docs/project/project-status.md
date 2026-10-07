@@ -260,7 +260,7 @@ Prompt Optimizer is a tool that helps users optimize AI prompts, supporting mult
 - 2024-11-30: Implemented a unified storage layer and data import/export
 - 2024-11-25: Implemented fullscreen dialog and optimized component interactions
 - 2024-11-20: Integrated Vercel Analytics
-- 2024-11-15: Added Zhipu AI (智谱AI) model support
+- 2024-11-15: Added Zhipu AI model support
 - 2024-11-10: Optimized the style and layout of the version selection button in the PromptPanel component
 - 2024-11-05: Added an enlarge-dialog feature to the test result display box
 

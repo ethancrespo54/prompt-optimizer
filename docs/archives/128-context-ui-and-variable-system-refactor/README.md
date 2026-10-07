@@ -1,30 +1,30 @@
-# 128 - 上下文模式 UI 改造与变量系统重构
+# 128 - Context Mode UI Rework and Variable System Refactor
 
-## 📋 功能概述
+## 📋 Feature Overview
 
-归档“上下文模式（User/System）UI 改造 + 变量系统重构”的设计、任务与实施记录。该模块的关键目标包括：
+Archives the design, tasks, and implementation record of the "Context mode (User/System) UI rework + variable system refactor". The key goals of this module include:
 
-- 子模式选择器移到导航栏，统一模式层级与用户心智
-- 快捷操作栏移到测试区，贴近使用场景并释放左侧空间
-- 变量系统简化：移除“会话变量”，引入测试区临时变量，并明确三层变量优先级
+- Move the sub-mode selector to the navigation bar to unify the mode hierarchy and the user's mental model
+- Move the quick action bar to the test area, closer to the usage scenario, freeing up space on the left
+- Simplify the variable system: remove "conversation variables", introduce temporary variables in the test area, and clarify the three-layer variable priority
 
-## ⏱️ 时间线
+## ⏱️ Timeline
 
-- **开始时间**: 2025-10-21
-- **完成时间**: 2025-10-23
-- **状态**: ✅ 已完成（文档为当时设计/实施记录归档）
+- **Start date**: 2025-10-21
+- **Completion date**: 2025-10-23
+- **Status**: ✅ Completed (the documents are an archive of the design/implementation records at the time)
 
-## 📁 文档清单
+## 📁 Document List
 
-- [x] `analysis.md` - UI 设计分析报告（包含阶段目标与问题拆解）
-- [x] `plan.md` - UI 改造任务文档（执行清单/里程碑）
-- [x] `design.md` - 变量系统重构设计文档（含实施细节与差异记录）
-- [x] `implementation-codemirror.md` - CodeMirror 6 变量高亮/补全实现记录（VariableAwareInput）
+- [x] `analysis.md` - UI design analysis report (including phase goals and problem breakdown)
+- [x] `plan.md` - UI rework task document (execution checklist/milestones)
+- [x] `design.md` - Variable system refactor design document (including implementation details and variance records)
+- [x] `implementation-codemirror.md` - CodeMirror 6 variable highlighting/completion implementation record (VariableAwareInput)
 
-## 🔗 相关实现参考（代码）
+## 🔗 Related Implementation References (Code)
 
-- `packages/ui/src/components/app-layout/PromptOptimizerApp.vue`（主装配与导航栏模式管理）
+- `packages/ui/src/components/app-layout/PromptOptimizerApp.vue` (main assembly and navigation bar mode management)
 - `packages/ui/src/components/context-mode/ContextUserWorkspace.vue` / `packages/ui/src/components/context-mode/ContextSystemWorkspace.vue`
-- `packages/ui/src/components/TestAreaPanel.vue`（测试区变量输入与测试入口）
-- `packages/ui/src/composables/context/useContextManagement.ts`（上下文管理）
-- `packages/ui/src/composables/variable/useTemporaryVariables.ts`（临时变量，若启用）
+- `packages/ui/src/components/TestAreaPanel.vue` (test area variable input and test entry point)
+- `packages/ui/src/composables/context/useContextManagement.ts` (context management)
+- `packages/ui/src/composables/variable/useTemporaryVariables.ts` (temporary variables, if enabled)

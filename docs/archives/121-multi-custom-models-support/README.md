@@ -1,142 +1,142 @@
-# 多自定义模型环境变量支持
+# Multi Custom Model Environment Variable Support
 
-## 📋 项目概述
+## 📋 Project Overview
 
-- **项目编号**: 121
-- **项目名称**: 多自定义模型环境变量支持
-- **开发时间**: 2025-01-27
-- **项目状态**: ✅ 已完成
-- **负责人**: AI助手
+- **Project number**: 121
+- **Project name**: Multi Custom Model Environment Variable Support
+- **Development date**: 2025-01-27
+- **Project status**: ✅ Completed
+- **Owner**: AI Assistant
 
-## 🎯 项目目标
+## 🎯 Project Goals
 
-### 主要目标
-- 实现支持无限数量自定义模型的动态环境变量功能
-- 允许用户通过 `VITE_CUSTOM_API_*_suffix` 模式自动注册多个自定义模型
-- 保持完全的向后兼容性，不影响现有用户配置
+### Main Goals
+- Implement dynamic environment variable support for an unlimited number of custom models
+- Allow users to automatically register multiple custom models via the `VITE_CUSTOM_API_*_suffix` pattern
+- Maintain full backward compatibility without affecting existing user configurations
 
-### 技术目标
-- 统一各模块的环境变量处理逻辑
-- 实现动态模型发现和注册机制
-- 提供完整的配置验证和错误处理
-- 支持Web、Desktop、Docker三种部署环境
+### Technical Goals
+- Unify the environment variable handling logic across modules
+- Implement a dynamic model discovery and registration mechanism
+- Provide complete configuration validation and error handling
+- Support the three deployment environments: Web, Desktop and Docker
 
-## ✅ 完成情况
+## ✅ Completion Status
 
-### 核心功能完成情况
-- ✅ **环境变量扫描**: 实现了统一的 `scanCustomModelEnvVars` 函数
-- ✅ **动态模型生成**: 支持自动发现和注册多个自定义模型
-- ✅ **多环境支持**: Web/Desktop/Docker环境完全兼容
-- ✅ **配置验证**: 完整的配置验证和错误处理机制
-- ✅ **向后兼容**: 保持原有 `VITE_CUSTOM_API_*` 配置的完全兼容
+### Core Feature Completion
+- ✅ **Environment variable scanning**: implemented the unified `scanCustomModelEnvVars` function
+- ✅ **Dynamic model generation**: supports automatic discovery and registration of multiple custom models
+- ✅ **Multi-environment support**: fully compatible with Web/Desktop/Docker environments
+- ✅ **Configuration validation**: complete configuration validation and error handling mechanism
+- ✅ **Backward compatibility**: fully compatible with the original `VITE_CUSTOM_API_*` configuration
 
-### 技术实现完成情况
-- ✅ **Core模块**: defaults.ts 和 electron-config.ts 动态模型生成
-- ✅ **MCP Server**: 动态环境变量映射和扫描
-- ✅ **Desktop模块**: 环境变量检查和IPC处理
-- ✅ **Docker模块**: 运行时配置动态生成
-- ✅ **文档更新**: 用户指南和配置示例完善
+### Technical Implementation Completion
+- ✅ **Core module**: dynamic model generation in defaults.ts and electron-config.ts
+- ✅ **MCP Server**: dynamic environment variable mapping and scanning
+- ✅ **Desktop module**: environment variable checks and IPC handling
+- ✅ **Docker module**: dynamic generation of runtime configuration
+- ✅ **Documentation updates**: user guide and configuration examples completed
 
-## 🎉 主要成果
+## 🎉 Main Results
 
-### 架构改进
-- **统一环境变量处理**: 各模块使用相同的扫描和验证逻辑
-- **动态配置生成**: 支持运行时发现和注册新模型
-- **模块化设计**: 清晰的职责分离和接口定义
+### Architecture Improvements
+- **Unified environment variable handling**: all modules use the same scanning and validation logic
+- **Dynamic configuration generation**: supports discovering and registering new models at runtime
+- **Modular design**: clear separation of responsibilities and interface definitions
 
-### 稳定性提升
-- **完整错误处理**: 配置错误不会影响系统稳定性
-- **配置验证**: 严格的配置完整性检查
-- **容错机制**: 跳过无效配置，继续处理有效配置
+### Stability Improvements
+- **Complete error handling**: configuration errors do not affect system stability
+- **Configuration validation**: strict configuration completeness checks
+- **Fault tolerance**: invalid configurations are skipped while valid ones continue to be processed
 
-### 开发体验优化
-- **简化配置**: 用户只需设置环境变量即可自动注册模型
-- **清晰文档**: 详细的配置指南和示例
-- **调试友好**: 完整的日志输出和错误提示
+### Developer Experience Improvements
+- **Simplified configuration**: users only need to set environment variables to register models automatically
+- **Clear documentation**: detailed configuration guide and examples
+- **Debug friendly**: complete log output and error messages
 
-### 用户体验提升
-- **无限模型支持**: 不再限制自定义模型数量
-- **灵活命名**: 支持用户自定义模型后缀名
-- **即时生效**: 环境变量更新后自动识别新模型
+### User Experience Improvements
+- **Unlimited model support**: the number of custom models is no longer limited
+- **Flexible naming**: supports user-defined model suffix names
+- **Takes effect immediately**: new models are recognized automatically after environment variables are updated
 
-## 🔧 代码质量修复 (2025-01-27)
+## 🔧 Code Quality Fixes (2025-01-27)
 
-### 修复成果
-- **发现问题**: 10个潜在问题
-- **实际修复**: 4个真正的Bug
-- **重新评估**: 6个问题确认为合理设计
-- **修复质量**: 高质量，无新Bug引入
+### Fix Results
+- **Issues found**: 10 potential issues
+- **Actually fixed**: 4 real bugs
+- **Re-evaluated**: 6 issues confirmed as reasonable designs
+- **Fix quality**: high quality, no new bugs introduced
 
-### 主要修复
-1. **配置验证逻辑重复** - 实施单点验证，性能提升66%
-2. **MCP Server大小写转换Bug** - 修复环境变量映射失败
-3. **ValidationResult接口冲突** - 解决类型冲突问题
-4. **静态模型键硬编码** - 实现动态获取，自动同步
+### Main Fixes
+1. **Duplicated configuration validation logic** - implemented single-point validation, 66% performance improvement
+2. **MCP Server case conversion bug** - fixed environment variable mapping failure
+3. **ValidationResult interface conflict** - resolved the type conflict
+4. **Hardcoded static model keys** - implemented dynamic retrieval with automatic synchronization
 
-### 质量提升
-- **性能优化**: 减少重复验证，提升处理效率
-- **类型安全**: 解决接口冲突，增强类型定义
-- **代码一致性**: 统一处理逻辑，消除硬编码
-- **维护性**: 显著降低维护成本和错误风险
+### Quality Improvements
+- **Performance optimization**: fewer duplicate validations, improved processing efficiency
+- **Type safety**: resolved interface conflicts and strengthened type definitions
+- **Code consistency**: unified processing logic and eliminated hardcoding
+- **Maintainability**: significantly lower maintenance cost and error risk
 
-## 🚀 后续工作
+## 🚀 Follow-up Work
 
-### 已识别的待办事项
-- 无重要待办事项，功能已完整实现
+### Identified To-dos
+- No significant to-dos; the feature has been fully implemented
 
-### 建议的改进方向
-- **性能优化**: 考虑缓存机制减少重复扫描（优先级低）
-- **UI增强**: 在设置界面显示动态发现的模型（优先级低）
-- **监控功能**: 添加模型配置变更的监控和通知（优先级低）
+### Suggested Improvement Directions
+- **Performance optimization**: consider a caching mechanism to reduce repeated scanning (low priority)
+- **UI enhancement**: show dynamically discovered models in the settings interface (low priority)
+- **Monitoring**: add monitoring and notifications for model configuration changes (low priority)
 
-## 📊 项目统计
+## 📊 Project Statistics
 
-### 代码变更
-- **修改文件**: 8个核心文件
-- **新增功能**: 1个主要功能模块
-- **测试用例**: 14个测试场景，100%通过率
+### Code Changes
+- **Modified files**: 8 core files
+- **New features**: 1 main feature module
+- **Test cases**: 14 test scenarios, 100% pass rate
 
-### 开发时间
-- **总开发时间**: 1天
-- **功能实现**: 6小时
-- **测试验证**: 2小时
-- **文档整理**: 2小时
+### Development Time
+- **Total development time**: 1 day
+- **Feature implementation**: 6 hours
+- **Test verification**: 2 hours
+- **Documentation**: 2 hours
 
-### 质量指标
-- **代码审查**: 4轮深度审查
-- **Bug修复**: 6个问题修复
-- **向后兼容**: 100%兼容现有配置
+### Quality Metrics
+- **Code review**: 4 rounds of in-depth review
+- **Bug fixes**: 6 issues fixed
+- **Backward compatibility**: 100% compatible with existing configuration
 
-## 🔗 相关文档
+## 🔗 Related Documents
 
-- [技术实现详解](./implementation.md)
-- [开发经验总结](./experience.md)
-- [代码质量修复记录](./code-quality-fixes.md)
-- [用户配置指南](../../user/multi-custom-models.md)
-- [环境变量示例](../../../env.local.example)
+- [Technical Implementation Details](./implementation.md)
+- [Development Lessons Learned](./experience.md)
+- [Code Quality Fix Records](./code-quality-fixes.md)
+- [User Configuration Guide](../../user/multi-custom-models.md)
+- [Environment Variable Example](../../../env.local.example)
 
-## 📝 使用说明
+## 📝 Usage Instructions
 
-### 配置示例
+### Configuration Example
 ```bash
-# Qwen3 模型
+# Qwen3 model
 VITE_CUSTOM_API_KEY_qwen3=your-api-key
 VITE_CUSTOM_API_BASE_URL_qwen3=http://localhost:11434/v1
 VITE_CUSTOM_API_MODEL_qwen3=qwen3:8b
 
-# Qwen2.5 模型
+# Qwen2.5 model
 VITE_CUSTOM_API_KEY_qwen2_5=your-api-key
 VITE_CUSTOM_API_BASE_URL_qwen2_5=http://localhost:11434/v1
 VITE_CUSTOM_API_MODEL_qwen2_5=qwen2.5:14b
 ```
 
-### 后缀名规则
-- 只能包含字母（a-z, A-Z）、数字（0-9）、下划线（_）、连字符（-）
-- 不支持点号（.）、空格、特殊符号
-- 最大长度50个字符
-- 不能与现有静态模型名冲突
+### Suffix Naming Rules
+- May only contain letters (a-z, A-Z), digits (0-9), underscores (_) and hyphens (-)
+- Dots (.), spaces and special symbols are not supported
+- Maximum length of 50 characters
+- Must not conflict with existing static model names
 
-### 显示效果
-- `qwen3` → 显示为 "Qwen3"
-- `qwen2_5` → 显示为 "Qwen2 5"
-- `claude_local` → 显示为 "Claude Local"
+### Display Result
+- `qwen3` → displayed as "Qwen3"
+- `qwen2_5` → displayed as "Qwen2 5"
+- `claude_local` → displayed as "Claude Local"
