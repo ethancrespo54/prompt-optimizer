@@ -123,16 +123,16 @@ describe('TextAdapterRegistry', () => {
     });
 
     it('should cache static models on subsequent calls', () => {
-      // 清理缓存,确保从干净状态开始
+      // Clear the cache to make sure we start from a clean state
       registry.clearCache();
 
       // First call
       const models1 = registry.getStaticModels('openai');
 
-      // Second call - should use cache (即使无法直接验证 spy,我们可以验证返回相同引用)
+      // Second call - should use cache (even if we cannot verify the spy directly, we can verify the same reference is returned)
       const models2 = registry.getStaticModels('openai');
 
-      // 缓存应该返回相同的对象引用
+      // The cache should return the same object reference
       expect(models1).toBe(models2);
     });
 
@@ -152,20 +152,20 @@ describe('TextAdapterRegistry', () => {
 
   describe('clearCache', () => {
     it('should clear static models cache', () => {
-      // 清理并获取第一次的models
+      // Clear and get the first models
       registry.clearCache();
       const models1 = registry.getStaticModels('openai');
 
-      // 清理缓存
+      // Clear the cache
       registry.clearCache();
 
-      // 再次获取应该是新的引用(证明缓存被清除)
+      // Getting again should return a new reference (proving the cache was cleared)
       const models2 = registry.getStaticModels('openai');
 
-      // 清除缓存后重新获取的应该是新对象(不同引用)
-      // 但内容应该相等
+      // After clearing the cache, the re-fetched result should be a new object (different reference)
+      // but the contents should be equal
       expect(models2).toEqual(models1);
-      // 新架构可能每次返回新数组,所以这个测试重点是验证功能不报错
+      // The new architecture may return a new array each time, so this test focuses on verifying that the function does not error
       expect(Array.isArray(models2)).toBe(true);
       expect(models2.length).toBeGreaterThan(0);
     });

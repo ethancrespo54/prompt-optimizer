@@ -57,7 +57,7 @@ describe('LLMService', () => {
         ...mockConfig,
         connectionConfig: { ...mockConfig.connectionConfig, apiKey: '' }
       };
-      // 新架构下不在这里验证 apiKey，Adapter 会处理
+      // In the new architecture apiKey is not validated here; the Adapter handles it
       expect(() => service['validateModelConfig'](configWithEmptyApiKey))
         .not.toThrow();
     });

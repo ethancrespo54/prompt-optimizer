@@ -558,7 +558,7 @@ describe('ContextRepo', () => {
           contexts: [
             {
               id: DEFAULT_CONTEXT_CONFIG.id, // Conflicts with an existing ID
-              title: '冲突的上下文',
+              title: 'Conflicting context',
               version: '1.0.0',
               createdAt: '2023-01-01T00:00:00.000Z',
               updatedAt: '2023-01-01T00:00:00.000Z',
@@ -580,11 +580,11 @@ describe('ContextRepo', () => {
       });
     });
 
-    describe('merge模式', () => {
-      it('应该合并已存在的上下文，添加新的', async () => {
-        // 先修改默认上下文
+    describe('merge mode', () => {
+      it('should merge existing contexts and add new ones', async () => {
+        // Modify the default context first
         await repo.update(DEFAULT_CONTEXT_CONFIG.id, {
-          messages: [{ role: 'user', content: '原始消息' }],
+          messages: [{ role: 'user', content: 'Original message' }],
           variables: { existingVar: 'existing' }
         });
         
@@ -595,17 +595,17 @@ describe('ContextRepo', () => {
           contexts: [
             {
               id: DEFAULT_CONTEXT_CONFIG.id,
-              title: '合并的标题',
+              title: 'Merged title',
               version: '1.0.0',
               createdAt: '2023-01-01T00:00:00.000Z',
               updatedAt: '2023-01-01T00:00:00.000Z',
-              messages: [{ role: 'assistant', content: '合并的消息' }],
+              messages: [{ role: 'assistant', content: 'Merged message' }],
               variables: { mergedVar: 'merged' },
               tools: []
             },
             {
               id: 'new-context',
-              title: '新上下文',
+              title: 'New context',
               version: '1.0.0',
               createdAt: '2023-01-01T00:00:00.000Z',
               updatedAt: '2023-01-01T00:00:00.000Z',
@@ -621,9 +621,9 @@ describe('ContextRepo', () => {
         expect(result.imported).toBe(2);
         
         const merged = await repo.get(DEFAULT_CONTEXT_CONFIG.id);
-        expect(merged.title).toBe('合并的标题');
-        expect(merged.messages).toEqual([{ role: 'assistant', content: '合并的消息' }]);
-        // merge模式：现有变量 + 导入的变量（现有优先）
+        expect(merged.title).toBe('Merged title');
+        expect(merged.messages).toEqual([{ role: 'assistant', content: 'Merged message' }]);
+        // merge mode: existing variables + imported variables (existing take priority)
         expect(merged.variables).toEqual({
           existingVar: 'existing',
           mergedVar: 'merged'
@@ -635,7 +635,7 @@ describe('ContextRepo', () => {
       });
     });
 
-    it('importData() 应该使用replace模式调用importAll()', async () => {
+    it('importData() should call importAll() in replace mode', async () => {
       const spy = vi.spyOn(repo, 'importAll');
       
       const testData: ContextBundle = {
@@ -659,21 +659,21 @@ describe('ContextRepo', () => {
     });
   });
 
-  describe('错误处理', () => {
+  describe('Error handling', () => {
     beforeEach(async () => {
-      await repo.list(); // 确保初始化
+      await repo.list(); // Ensure initialization
     });
 
-    it('应该在存储操作失败时抛出STORAGE_ERROR', async () => {
-      // 模拟存储失败
+    it('should throw STORAGE_ERROR when a storage operation fails', async () => {
+      // Simulate a storage failure
       vi.spyOn(storage, 'updateData').mockRejectedValue(new Error('Storage failed'));
       
       await expect(repo.create({ title: 'test' }))
         .rejects.toThrow('Storage failed');
     });
 
-    it('应该在数据解析失败时抛出STORAGE_ERROR', async () => {
-      // 设置无效的JSON数据
+    it('should throw STORAGE_ERROR when data parsing fails', async () => {
+      // Set invalid JSON data
       await storage.setItem(CONTEXT_STORE_KEY, 'invalid json');
       
       const newRepo = new ContextRepoImpl(storage);
@@ -681,7 +681,7 @@ describe('ContextRepo', () => {
         .rejects.toThrow(ContextError);
     });
 
-    it('应该验证无效的上下文ID格式', async () => {
+    it('should validate an invalid context ID format', async () => {
       await expect(repo.get(''))
         .rejects.toThrow(ContextError);
       
@@ -693,30 +693,30 @@ describe('ContextRepo', () => {
     });
   });
 
-  describe('并发安全性', () => {
+  describe('Concurrency safety', () => {
     beforeEach(async () => {
-      await repo.list(); // 确保初始化
+      await repo.list(); // Ensure initialization
     });
 
-    it('应该处理并发创建操作', async () => {
+    it('should handle concurrent create operations', async () => {
       const promises = Array.from({ length: 3 }, (_, i) =>
-        repo.create({ title: `并发上下文${i}` })
+        repo.create({ title: `Concurrent context ${i}` })
       );
       
       const results = await Promise.all(promises);
       
-      // 所有ID应该是唯一的
+      // All IDs should be unique
       const uniqueIds = new Set(results);
       expect(uniqueIds.size).toBe(3);
       
       const contexts = await repo.list();
-      // 3个新创建 + 1个默认 = 4个，但由于内存存储的特性可能没有真正并发，所以至少应该有2个（默认+最少1个新创建）
+      // 3 newly created + 1 default = 4, but in-memory storage may not be truly concurrent, so there should be at least 2 (default + at least 1 new)
       expect(contexts.length).toBeGreaterThanOrEqual(2); 
-      expect(contexts.length).toBeLessThanOrEqual(4); // 最多4个
+      expect(contexts.length).toBeLessThanOrEqual(4); // At most 4
     });
 
-    it('应该处理并发更新操作', async () => {
-      const contextId = await repo.create({ title: '并发测试' });
+    it('should handle concurrent update operations', async () => {
+      const contextId = await repo.create({ title: 'Concurrency test' });
       
       const promises = Array.from({ length: 5 }, (_, i) =>
         repo.update(contextId, { variables: { [`var${i}`]: `value${i}` } })
@@ -725,7 +725,7 @@ describe('ContextRepo', () => {
       await Promise.all(promises);
       
       const context = await repo.get(contextId);
-      expect(Object.keys(context.variables)).toHaveLength(1); // 最后一个更新生效
+      expect(Object.keys(context.variables)).toHaveLength(1); // The last update wins
     });
   });
 });

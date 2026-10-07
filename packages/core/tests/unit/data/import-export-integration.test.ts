@@ -27,7 +27,7 @@ describe('DataManager Import/Export Integration', () => {
     storageProvider = new MemoryStorageProvider();
     await storageProvider.clearAll();
 
-    // 创建真实的服务实例
+    // Create real service instances
     registry = new TextAdapterRegistry();
     preferenceService = new PreferenceService(storageProvider);
     modelManager = new ModelManager(storageProvider, registry);
@@ -39,7 +39,7 @@ describe('DataManager Import/Export Integration', () => {
 
     historyManager = new HistoryManager(storageProvider, modelManager);
 
-    // 创建 mockContextRepo
+    // Create mockContextRepo
     mockContextRepo = {
       list: vi.fn().mockResolvedValue([]),
       getCurrentId: vi.fn().mockResolvedValue('default'),
@@ -68,9 +68,9 @@ describe('DataManager Import/Export Integration', () => {
 
   describe('Full Import/Export Cycle', () => {
     it('should export and import all data correctly', async () => {
-      // 1. 准备测试数据
+      // 1. Prepare test data
 
-      // 添加模型
+      // Add models
       const adapter = registry.getAdapter('openai');
       const testModel: TextModelConfig = {
         id: 'test-model-key',
@@ -86,7 +86,7 @@ describe('DataManager Import/Export Integration', () => {
       };
       await modelManager.addModel('test-model-key', testModel);
 
-      // 添加模板
+      // Add templates
       const testTemplate: Template = {
         id: 'test-template',
         name: 'Test Template',
@@ -101,7 +101,7 @@ describe('DataManager Import/Export Integration', () => {
       };
       await templateManager.saveTemplate(testTemplate);
 
-      // 添加历史记录
+      // Add history records
       const testRecord: PromptRecord = {
         id: 'test-record',
         originalPrompt: 'Test prompt',
@@ -115,11 +115,11 @@ describe('DataManager Import/Export Integration', () => {
       };
       await historyManager.addRecord(testRecord);
 
-      // 添加偏好设置
+      // Add preferences
       await preferenceService.set('app:settings:ui:theme-id', 'dark');
       await preferenceService.set('app:selected-optimize-model', 'test-model-key');
 
-      // 2. 导出数据
+      // 2. Export data
       const exportedDataString = await dataManager.exportAllData();
       expect(typeof exportedDataString).toBe('string');
 
@@ -127,13 +127,13 @@ describe('DataManager Import/Export Integration', () => {
       expect(exportedData).toHaveProperty('version', 1);
       expect(exportedData).toHaveProperty('data');
 
-      // 验证导出的数据结构
+      // Verify the exported data structure
       expect(exportedData.data).toHaveProperty('models');
       expect(exportedData.data).toHaveProperty('userTemplates');
       expect(exportedData.data).toHaveProperty('history');
       expect(exportedData.data).toHaveProperty('userSettings');
 
-      // 验证导出的具体内容
+      // Verify the specific exported content
       const exportedModel = exportedData.data.models.find((m: any) => m.id === 'test-model-key');
       expect(exportedModel).toBeDefined();
       expect(exportedModel.name).toBe('Test Model');
@@ -148,35 +148,35 @@ describe('DataManager Import/Export Integration', () => {
 
       expect(exportedData.data.userSettings['app:settings:ui:theme-id']).toBe('dark');
 
-      // 3. 清空数据
+      // 3. Clear data
       await historyManager.clearHistory();
       await preferenceService.clear();
-      // 注意：模型和模板的清空需要通过删除操作
+      // Note: clearing models and templates requires delete operations
 
-      // 4. 导入数据
+      // 4. Import data
       await dataManager.importAllData(exportedDataString);
 
-      // 5. 验证导入结果
+      // 5. Verify the import result
       
-      // 验证模型
+      // Verify models
       const importedModel = await modelManager.getModel('test-model-key');
       expect(importedModel).toBeDefined();
       expect(importedModel?.name).toBe('Test Model');
       expect(importedModel?.enabled).toBe(true);
 
-      // 验证模板
+      // Verify templates
       const importedTemplates = await templateManager.listTemplates();
       const importedTemplate = importedTemplates.find(t => t.id === 'test-template');
       expect(importedTemplate).toBeDefined();
       expect(importedTemplate?.name).toBe('Test Template');
 
-      // 验证历史记录
+      // Verify history records
       const importedRecords = await historyManager.getRecords();
       const importedRecord = importedRecords.find(r => r.id === 'test-record');
       expect(importedRecord).toBeDefined();
       expect(importedRecord?.originalPrompt).toBe('Test prompt');
 
-      // 验证偏好设置
+      // Verify preferences
       const importedTheme = await preferenceService.get('app:settings:ui:theme-id', null);
       const importedModel2 = await preferenceService.get('app:selected-optimize-model', null);
       expect(importedTheme).toBe('dark');
@@ -184,9 +184,9 @@ describe('DataManager Import/Export Integration', () => {
     });
 
     it('should handle legacy data format', async () => {
-      // 测试旧版本数据格式的兼容性
+      // Test compatibility with the legacy data format
       const legacyData = {
-        // 没有version字段的旧格式
+        // Legacy format without a version field
         models: [
           {
             key: 'legacy-model',
@@ -226,17 +226,17 @@ describe('DataManager Import/Export Integration', () => {
           }
         ],
         userSettings: {
-          'theme-id': 'light', // 旧版本键名
-          'preferred-language': 'en-US' // 旧版本键名
+          'theme-id': 'light', // Legacy key name
+          'preferred-language': 'en-US' // Legacy key name
         }
       };
 
       const legacyDataString = JSON.stringify(legacyData);
 
-      // 导入旧版本数据
+      // Import legacy data
       await dataManager.importAllData(legacyDataString);
 
-      // 验证导入结果
+      // Verify the import result
       const importedModel = await modelManager.getModel('legacy-model');
       expect(importedModel).toBeDefined();
       expect(importedModel?.enabled).toBe(false);
@@ -249,7 +249,7 @@ describe('DataManager Import/Export Integration', () => {
       const importedRecord = importedRecords.find(r => r.id === 'legacy-record');
       expect(importedRecord).toBeDefined();
 
-      // 验证旧版本键名转换
+      // Verify legacy key name conversion
       const theme = await preferenceService.get('app:settings:ui:theme-id', null);
       const language = await preferenceService.get('app:settings:ui:preferred-language', null);
       expect(theme).toBe('light');
@@ -257,13 +257,13 @@ describe('DataManager Import/Export Integration', () => {
     });
 
     it('should handle partial import failures gracefully', async () => {
-      // 准备部分有效、部分无效的数据
+      // Prepare partially valid, partially invalid data
       const mixedData = {
         version: 1,
         data: {
           models: [
             {
-              // 有效模型
+              // Valid model
               key: 'valid-model',
               name: 'Valid Model',
               baseURL: 'https://api.valid.com/v1',
@@ -273,7 +273,7 @@ describe('DataManager Import/Export Integration', () => {
               enabled: true
             },
             {
-              // 无效模型（缺少key）
+              // Invalid model (missing key)
               name: 'Invalid Model',
               baseURL: 'https://api.invalid.com/v1',
               models: ['invalid'],
@@ -284,7 +284,7 @@ describe('DataManager Import/Export Integration', () => {
           ],
           userTemplates: [
             {
-              // 有效模板
+              // Valid template
               id: 'valid-template',
               name: 'Valid Template',
               content: 'Valid content',
@@ -299,7 +299,7 @@ describe('DataManager Import/Export Integration', () => {
           ],
           history: [
             {
-              // 有效记录
+              // Valid record
               id: 'valid-record',
               originalPrompt: 'Valid prompt',
               optimizedPrompt: 'Valid response',
@@ -312,18 +312,18 @@ describe('DataManager Import/Export Integration', () => {
             }
           ],
           userSettings: {
-            'app:settings:ui:theme-id': 'dark', // 有效设置
-            'malicious-key': 'malicious-value' // 无效设置
+            'app:settings:ui:theme-id': 'dark', // Valid setting
+            'malicious-key': 'malicious-value' // Invalid setting
           }
         }
       };
 
       const mixedDataString = JSON.stringify(mixedData);
 
-      // 导入混合数据，应该不抛出错误
+      // Import mixed data; should not throw
       await expect(dataManager.importAllData(mixedDataString)).resolves.not.toThrow();
 
-      // 验证有效数据被导入
+      // Verify the valid data was imported
       const validModel = await modelManager.getModel('valid-model');
       expect(validModel).toBeDefined();
 
@@ -338,7 +338,7 @@ describe('DataManager Import/Export Integration', () => {
       const theme = await preferenceService.get('app:settings:ui:theme-id', null);
       expect(theme).toBe('dark');
 
-      // 验证无效数据被跳过
+      // Verify the invalid data was skipped
       const maliciousValue = await preferenceService.get('malicious-key', null);
       expect(maliciousValue).toBe(null);
     });
@@ -360,7 +360,7 @@ describe('DataManager Import/Export Integration', () => {
 
   describe('Service Coordination', () => {
     it('should call each service exportData method', async () => {
-      // 监视各个服务的exportData方法
+      // Spy on each service's exportData method
       const modelExportSpy = vi.spyOn(modelManager, 'exportData');
       const templateExportSpy = vi.spyOn(templateManager, 'exportData');
       const historyExportSpy = vi.spyOn(historyManager, 'exportData');
@@ -385,7 +385,7 @@ describe('DataManager Import/Export Integration', () => {
         }
       };
 
-      // 监视各个服务的importData方法
+      // Spy on each service's importData method
       const modelImportSpy = vi.spyOn(modelManager, 'importData');
       const templateImportSpy = vi.spyOn(templateManager, 'importData');
       const historyImportSpy = vi.spyOn(historyManager, 'importData');

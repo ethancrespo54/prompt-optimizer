@@ -51,14 +51,14 @@ describe('GeminiImageAdapter', () => {
 
       expect(model.parameterDefinitions).toBeDefined()
       expect(Array.isArray(model.parameterDefinitions)).toBe(true)
-      // 默认输出格式
+      // Default output format
       expect(model.defaultParameterValues).toHaveProperty('outputMimeType')
     })
   })
 
   // Dynamic models are not supported
 
-  // 连接验证已移除
+  // Connection validation has been removed
 
   describe('Image Generation', () => {
     test('should generate image successfully with mocked SDK', async () => {
@@ -155,17 +155,17 @@ describe('GeminiImageAdapter', () => {
     })
   })
 
-  // 注意：由于当前 Gemini 适配器需要完整重构，跳过真实 API 测试
+  // Note: the current Gemini adapter needs a full refactor, so the real API test is skipped
   describe('Future Implementation Notes', () => {
     test('should document requirements for complete implementation', () => {
-      // 记录完整实现的要求：
-      // 1. 使用正确的 @google/generative-ai SDK
-      // 2. 实现正确的认证流程
-      // 3. 处理 Gemini 特有的图像生成 API
-      // 4. 支持 Gemini 的多模态能力
-      // 5. 正确的错误处理和响应解析
+      // Requirements for a complete implementation:
+      // 1. Use the correct @google/generative-ai SDK
+      // 2. Implement the correct authentication flow
+      // 3. Handle Gemini-specific image generation APIs
+      // 4. Support Gemini's multimodal capabilities
+      // 5. Correct error handling and response parsing
 
-      expect(true).toBe(true) // 占位测试
+      expect(true).toBe(true) // Placeholder test
     })
   })
 })

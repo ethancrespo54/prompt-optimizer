@@ -115,7 +115,7 @@ class StubModelManager implements IModelManager {
  *
  * The goal is NOT to test LLM reasoning. Instead, this is a regression test
  * ensuring our prompt-iterate templates carry the disambiguation rules that
- * steer ambiguous feedback like "要简化输出结构" toward OutputFormat/Workflows
+ * steer ambiguous feedback like "Simplify the output structure" toward OutputFormat/Workflows
  * rather than deleting prompt sections (Profile/Skills/Rules).
  */
 class RuleBasedEvaluationLLM implements ILLMService {
@@ -133,26 +133,26 @@ class RuleBasedEvaluationLLM implements ILLMService {
 
     const improvements = hasDisambiguationRule
       ? [
-          '优先收紧 OutputFormat：默认只输出标题+正文；除非用户明确要求，否则不输出赏析/解释。',
-          '在 Workflows/默认输出规则中明确：当用户反馈提到“输出/格式/示例”但未提到提示词结构时，按最终输出格式处理。'
+          'Prioritize tightening OutputFormat: by default output only the title + body; unless the user explicitly asks, do not output commentary or explanations.',
+          'State in Workflows/default output rules: when user feedback mentions "output/format/examples" but not the prompt structure, treat it as the final output format.'
         ]
       : [
-          '建议简化提示词结构：删掉 Profile/Skills/Rules 等章节，只保留最短指令。'
+          'Suggest simplifying the prompt structure: delete sections such as Profile/Skills/Rules and keep only the shortest instruction.'
         ]
 
     return JSON.stringify({
       score: {
         overall: 90,
         dimensions: [
-          { key: 'structureClarity', label: '结构清晰度', score: 90 },
-          { key: 'intentExpression', label: '意图表达', score: 90 },
-          { key: 'constraintCompleteness', label: '约束完整性', score: 90 },
-          { key: 'improvementDegree', label: '改进程度', score: 90 },
+          { key: 'structureClarity', label: 'Structure clarity', score: 90 },
+          { key: 'intentExpression', label: 'Intent expression', score: 90 },
+          { key: 'constraintCompleteness', label: 'Constraint completeness', score: 90 },
+          { key: 'improvementDegree', label: 'Degree of improvement', score: 90 },
         ],
       },
       improvements,
       patchPlan: [],
-      summary: hasDisambiguationRule ? '聚焦输出格式' : '误解为删结构',
+      summary: hasDisambiguationRule ? 'Focus on output format' : 'Misread as deleting structure',
     })
   }
 
@@ -183,7 +183,7 @@ class RuleBasedEvaluationLLM implements ILLMService {
 }
 
 describe('Prompt-iterate ambiguous feedback behavior (contract)', () => {
-  it('interprets "要简化输出结构" as final output format and avoids deleting prompt sections', async () => {
+  it('interprets "Simplify the output structure" as final output format and avoids deleting prompt sections', async () => {
     const templateManager = new TemplateManager(
       new MemoryStorageProvider(),
       new StubTemplateLanguageService('en-US')
@@ -221,10 +221,10 @@ describe('Prompt-iterate ambiguous feedback behavior (contract)', () => {
       type: 'prompt-iterate',
       evaluationModelKey: modelKey,
       mode: { functionMode: 'basic', subMode: 'system' },
-      originalPrompt: '旧版本（不重要）',
-      optimizedPrompt: '# Profile\n...\n\n# Workflows\n...\n\n# OutputFormat\n默认只输出标题+正文',
-      iterateRequirement: '背景：用户进徽章主要想看分析结果；需要简化最终输出结构（非提示词章节结构）。',
-      userFeedback: '要简化输出结构',
+      originalPrompt: 'Old version (not important)',
+      optimizedPrompt: '# Profile\n...\n\n# Workflows\n...\n\n# OutputFormat\nBy default output only the title + body',
+      iterateRequirement: 'Background: users mainly want to see the analysis results; the final output structure needs to be simplified (not the prompt section structure).',
+      userFeedback: 'Simplify the output structure',
       testContent: '',
     }
 
@@ -234,13 +234,13 @@ describe('Prompt-iterate ambiguous feedback behavior (contract)', () => {
     expect(promptText).toContain('How to Interpret User Feedback (Important)')
     expect(promptText).toContain('OutputFormat')
     expect(promptText).toContain('Profile/Skills/Rules')
-    expect(promptText).toContain('要简化输出结构')
-    expect(promptText).toContain('用户进徽章主要想看分析结果')
+    expect(promptText).toContain('Simplify the output structure')
+    expect(promptText).toContain('users mainly want to see the analysis results')
 
     const improvementsText = result.improvements.join('\n')
     expect(improvementsText).toContain('OutputFormat')
     expect(improvementsText).not.toContain('Profile/Skills/Rules')
-    expect(improvementsText).not.toContain('删掉')
-    expect(improvementsText).not.toContain('删除')
+    expect(improvementsText).not.toContain('delete')
+    expect(improvementsText).not.toContain('remove')
   })
 })

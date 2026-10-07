@@ -69,7 +69,7 @@ describe('OpenAIImageAdapter', () => {
 
   // Dynamic models are not supported for OpenAI in current implementation
 
-  // 连接验证已移除
+  // Connection validation has been removed
 
   describe('Image Generation', () => {
     test('should generate image with GPT Image 1', async () => {
@@ -221,7 +221,7 @@ describe('OpenAIImageAdapter', () => {
     test('should perform real API call when API key is provided', async () => {
       const apiKey = process.env.VITE_OPENAI_API_KEY
       if (!apiKey) {
-        console.log('跳过 OpenAI 真实 API 测试：未设置 VITE_OPENAI_API_KEY')
+        console.log('Skipping OpenAI real API test: VITE_OPENAI_API_KEY is not set')
         return
       }
 
@@ -257,11 +257,11 @@ describe('OpenAIImageAdapter', () => {
         expect(result.text).toBeTruthy()
       }
 
-      // 验证图像 URL 可访问性
+      // Verify the image URL is accessible
       if (result.images[0].url) {
         const response = await fetch(result.images[0].url, { method: 'HEAD' })
         expect(response.ok).toBe(true)
       }
-    }, 60000) // 60秒超时，OpenAI可能较慢
+    }, 60000) // 60-second timeout; OpenAI may be slow
   })
 })

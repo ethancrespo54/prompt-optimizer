@@ -10,7 +10,7 @@ describe('ImageAdapterRegistry', () => {
     expect(providers).toBeInstanceOf(Array)
     expect(providers.length).toBeGreaterThan(0)
 
-    // 检查必要的 provider
+    // Check the required providers
     const providerIds = providers.map(p => p.id)
     expect(providerIds).toContain('gemini')
     expect(providerIds).toContain('openai')
@@ -54,7 +54,7 @@ describe('ImageAdapterRegistry', () => {
       const models = registry.getStaticModels(provider.id)
       expect(Array.isArray(models)).toBe(true)
 
-      // 验证模型结构
+      // Verify the model structure
       models.forEach(model => {
         expect(model).toHaveProperty('id')
         expect(model).toHaveProperty('name')
@@ -65,9 +65,9 @@ describe('ImageAdapterRegistry', () => {
     })
   })
 
-  // 别名不再支持
+  // Aliases are no longer supported
 
-  // 连接验证已移除
+  // Connection validation has been removed
 
   it('should check dynamic model support', () => {
     const providers = registry.getAllProviders()
@@ -92,19 +92,19 @@ describe('ImageAdapterRegistry', () => {
     })
   })
 
-  // 移除别名映射相关测试
+  // Removed alias-mapping related tests
 
   it('should clear cache and reload models', () => {
-    // 获取清除前的模型
+    // Get the models before clearing
     const modelsBefore = registry.getStaticModels('openai')
 
-    // 清除缓存
+    // Clear the cache
     registry.clearCache()
 
-    // 获取清除后的模型
+    // Get the models after clearing
     const modelsAfter = registry.getStaticModels('openai')
 
-    // 应该仍然有相同的模型
+    // Should still have the same models
     expect(modelsAfter).toEqual(modelsBefore)
   })
 

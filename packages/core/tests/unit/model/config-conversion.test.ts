@@ -287,7 +287,7 @@ describe('Config Conversion', () => {
     it('should fallback to OpenAI on error', async () => {
       const legacyConfig: ModelConfig = {
         name: 'Invalid',
-        provider: 'openai' as any, // 使用 openai 但让 adapter 抛出错误
+        provider: 'openai' as any, // Use openai but make the adapter throw an error
         baseURL: 'https://invalid.com',
         apiKey: 'test-key',
         models: ['test-model'],
@@ -295,14 +295,14 @@ describe('Config Conversion', () => {
         enabled: true
       };
 
-      // 创建一个 mock registry，第一次调用 getAdapter 时抛出错误
-      // 但第二次（fallback时）能成功返回 openai adapter
+      // Create a mock registry that throws on the first getAdapter call
+      // but successfully returns the openai adapter on the second call (the fallback)
       let callCount = 0;
       const mockRegistry = {
         getAdapter: (providerId: string) => {
           callCount++;
           if (callCount === 1) {
-            // 第一次调用：模拟 getModelById 抛出错误
+            // First call: simulate getModelById throwing an error
             const mockAdapter = {
               getProvider: () => registry.getAdapter('openai').getProvider(),
               getModels: () => {
@@ -314,7 +314,7 @@ describe('Config Conversion', () => {
             };
             return mockAdapter as any;
           } else {
-            // 第二次调用（fallback）：返回真实的 openai adapter
+            // Second call (fallback): return the real openai adapter
             return registry.getAdapter('openai');
           }
         }

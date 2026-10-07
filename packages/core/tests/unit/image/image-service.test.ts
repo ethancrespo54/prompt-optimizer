@@ -21,12 +21,12 @@ if (!dashscopeEditModel) {
 const dashscopeEditModelId = dashscopeEditModel.id
 const dashscopeEditModelName = dashscopeEditModel.name
 
-// Mock 图像模型管理器
+// Mock the image model manager
 class MockImageModelManager implements IImageModelManager {
   private configs: Map<string, ImageModelConfig> = new Map()
 
   constructor() {
-    // 预设一些测试配置
+    // Preset some test configs
     this.configs.set('test-openai-config', {
       id: 'test-openai-config',
       name: 'Test OpenAI Config',
@@ -37,7 +37,7 @@ class MockImageModelManager implements IImageModelManager {
         apiKey: 'test-api-key'
       },
       paramOverrides: {},
-      // 自包含字段
+      // Self-contained fields
       provider: {
         id: 'openai',
         name: 'OpenAI',
@@ -71,7 +71,7 @@ class MockImageModelManager implements IImageModelManager {
         apiKey: 'test-api-key'
       },
       paramOverrides: {},
-      // 自包含字段
+      // Self-contained fields
       provider: {
         id: 'openai',
         name: 'OpenAI',
@@ -95,7 +95,7 @@ class MockImageModelManager implements IImageModelManager {
       }
     })
 
-    // 添加支持image2image的配置用于测试
+    // Add a config that supports image2image for testing
     this.configs.set('test-image2image-config', {
       id: 'test-image2image-config',
       name: 'Test Image2Image Config',
@@ -106,7 +106,7 @@ class MockImageModelManager implements IImageModelManager {
         apiKey: 'test-api-key'
       },
       paramOverrides: {},
-      // 自包含字段
+      // Self-contained fields
       provider: {
         id: 'seedream',
         name: 'SeedreamAI',
@@ -158,7 +158,7 @@ class MockImageModelManager implements IImageModelManager {
     return Array.from(this.configs.values()).filter(config => config.enabled)
   }
 
-  // IImportExportable 实现
+  // IImportExportable implementation
   async exportData(): Promise<any[]> {
     return Array.from(this.configs.values())
   }
@@ -271,7 +271,7 @@ describe('ImageService', () => {
     test('should reject unsupported image formats', async () => {
       const request: ImageRequest = {
         prompt: 'test prompt',
-        configId: 'test-image2image-config', // 使用支持image2image的配置
+        configId: 'test-image2image-config', // Use the config that supports image2image
         inputImage: {
           b64: 'test-base64-data',
           mimeType: 'image/webp'
@@ -285,12 +285,12 @@ describe('ImageService', () => {
     })
 
     test('should reject oversized base64 images', async () => {
-      // 创建超过10MB的base64字符串
+      // Create a base64 string larger than 10MB
       const largeBase64 = 'A'.repeat(Math.ceil((10 * 1024 * 1024 + 1024) * 4 / 3))
 
       const request: ImageRequest = {
         prompt: 'test prompt',
-        configId: 'test-image2image-config', // 使用支持image2image的配置
+        configId: 'test-image2image-config', // Use the config that supports image2image
         inputImage: {
           b64: largeBase64,
           mimeType: 'image/png'
@@ -306,7 +306,7 @@ describe('ImageService', () => {
     test('should accept valid PNG input image', async () => {
       const request: ImageRequest = {
         prompt: 'test prompt',
-        configId: 'test-image2image-config', // 使用支持image2image的配置
+        configId: 'test-image2image-config', // Use the config that supports image2image
         inputImage: {
           b64: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==',
           mimeType: 'image/png'
@@ -319,7 +319,7 @@ describe('ImageService', () => {
     test('should accept valid JPEG input image', async () => {
       const request: ImageRequest = {
         prompt: 'test prompt',
-        configId: 'test-image2image-config', // 使用支持image2image的配置
+        configId: 'test-image2image-config', // Use the config that supports image2image
         inputImage: {
           b64: '/9j/4AAQSkZJRgABAQEAAQABAAD//gA+Q1JFQVRFRC',
           mimeType: 'image/jpeg'
@@ -330,16 +330,16 @@ describe('ImageService', () => {
     })
 
       test('should validate model capabilities for image2image using config.model capabilities', async () => {
-       // 添加一个不支持image2image的配置
+       // Add a config that does not support image2image
        await mockModelManager.addConfig({
          id: 'text-only-config',
          name: 'Text Only Config',
          providerId: 'openai',
-         modelId: 'dall-e-2', // dall-e-2 不支持 image2image
+         modelId: 'dall-e-2', // dall-e-2 does not support image2image
          enabled: true,
          connectionConfig: { apiKey: 'test' },
          paramOverrides: {},
-         // 自包含字段
+         // Self-contained fields
          provider: {
            id: 'openai',
            name: 'OpenAI',
@@ -372,7 +372,7 @@ describe('ImageService', () => {
          }
        }
 
-        // 即使静态列表缺失，也应使用 config.model.capabilities 做能力校验
+        // Even if the static list is missing, config.model.capabilities should be used for capability validation
         await expect(imageService.validateRequest(request)).rejects.toMatchObject({
           code: IMAGE_ERROR_CODES.MODEL_NOT_SUPPORT_IMAGE2IMAGE,
         })
@@ -421,7 +421,7 @@ describe('ImageService', () => {
      })
 
      test('should provide clear error when using image2image-only model without input image', async () => {
-       // dashscope 的 qwen-image-edit 是 image2image-only
+       // dashscope's qwen-image-edit is image2image-only
        await mockModelManager.addConfig({
          id: 'dashscope-edit-config',
          name: 'DashScope Edit Config',
@@ -462,7 +462,7 @@ describe('ImageService', () => {
         configId: 'test-openai-config'
       }
 
-      // Mock 适配器的 generate 方法
+      // Mock the adapter's generate method
       const mockResult: ImageResult = {
         images: [
           {
@@ -477,7 +477,7 @@ describe('ImageService', () => {
         }
       }
 
-      // 由于我们使用的是真实的适配器，我们需要mock fetch
+      // Since we use the real adapter, we need to mock fetch
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: () => Promise.resolve({
@@ -532,7 +532,7 @@ describe('ImageService', () => {
         configId: 'test-openai-config'
       }
 
-      // Mock 适配器返回没有元数据的结果
+      // Mock the adapter returning a result without metadata
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: () => Promise.resolve({
@@ -560,7 +560,7 @@ describe('ImageService', () => {
         configId: 'test-openai-config'
       }
 
-       // Mock 网络错误
+       // Mock a network error
        global.fetch = vi.fn().mockRejectedValue(new Error('Network error'))
 
        await expect(imageService.generate(request)).rejects.toMatchObject({
@@ -575,7 +575,7 @@ describe('ImageService', () => {
         configId: 'test-openai-config'
       }
 
-      // Mock 抛出非Error对象
+      // Mock throwing a non-Error object
       global.fetch = vi.fn().mockRejectedValue('String error')
 
       await expect(imageService.generate(request)).rejects.toMatchObject({
@@ -592,11 +592,11 @@ describe('ImageService', () => {
         configId: 'test-openai-config'
       }
 
-      // 在验证后删除配置
+      // Delete the config after validation
       const originalValidate = imageService.validateRequest
       imageService.validateRequest = vi.fn().mockResolvedValue(undefined)
 
-      // Mock getConfig 返回 null
+      // Mock getConfig returning null
       mockModelManager.getConfig = vi.fn().mockResolvedValue(null)
 
       await expect(imageService.generate(request)).rejects.toMatchObject({
@@ -609,7 +609,7 @@ describe('ImageService', () => {
       const request: ImageRequest = {
         prompt: 'test prompt',
         configId: 'test-openai-config'
-        // count 未定义，应该默认为1
+        // count is undefined, should default to 1
       }
 
       await expect(imageService.validateRequest(request)).resolves.not.toThrow()
@@ -618,10 +618,10 @@ describe('ImageService', () => {
     test('should handle mimeType case insensitivity', async () => {
       const request: ImageRequest = {
         prompt: 'test prompt',
-        configId: 'test-image2image-config', // 使用支持image2image的配置
+        configId: 'test-image2image-config', // Use the config that supports image2image
         inputImage: {
           b64: 'test-base64',
-          mimeType: 'IMAGE/PNG' // 大写
+          mimeType: 'IMAGE/PNG' // Uppercase
         }
       }
 
@@ -632,18 +632,18 @@ describe('ImageService', () => {
       const requests = [
         {
           prompt: 'test',
-          configId: 'test-image2image-config', // 使用支持image2image的配置
-          inputImage: { b64: 'AAAA', mimeType: 'image/png' } // 无填充
+          configId: 'test-image2image-config', // Use the config that supports image2image
+          inputImage: { b64: 'AAAA', mimeType: 'image/png' } // No padding
         },
         {
           prompt: 'test',
-          configId: 'test-image2image-config', // 使用支持image2image的配置
-          inputImage: { b64: 'AAA=', mimeType: 'image/png' } // 1个填充
+          configId: 'test-image2image-config', // Use the config that supports image2image
+          inputImage: { b64: 'AAA=', mimeType: 'image/png' } // 1 padding character
         },
         {
           prompt: 'test',
-          configId: 'test-image2image-config', // 使用支持image2image的配置
-          inputImage: { b64: 'AA==', mimeType: 'image/png' } // 2个填充
+          configId: 'test-image2image-config', // Use the config that supports image2image
+          inputImage: { b64: 'AA==', mimeType: 'image/png' } // 2 padding characters
         }
       ]
 

@@ -50,7 +50,7 @@ describe('SiliconFlowImageAdapter', () => {
         parameterDefinitions: expect.any(Array)
       })
 
-      // 验证 Flux 模型也存在
+      // Verify the Flux models also exist
       const qwenModel = models.find(m => m.id === 'Qwen/Qwen-Image')
       expect(qwenModel).toBeDefined()
     })
@@ -61,19 +61,19 @@ describe('SiliconFlowImageAdapter', () => {
 
       expect(kolorsModel?.parameterDefinitions).toBeDefined()
 
-      // 验证 image_size 参数
+      // Verify the image_size parameter
       const sizeParam = kolorsModel?.parameterDefinitions?.find(p => p.name === 'image_size')
       expect(sizeParam).toBeDefined()
       expect(sizeParam?.type).toBe('string')
       expect(sizeParam?.allowedValues).toContain('1024x1024')
 
-      // 验证 num_inference_steps 参数
+      // Verify the num_inference_steps parameter
       const stepsParam = kolorsModel?.parameterDefinitions?.find(p => p.name === 'num_inference_steps')
       expect(stepsParam).toBeDefined()
       expect(stepsParam?.type).toBe('integer')
       expect(stepsParam?.defaultValue).toBe(20)
 
-      // 验证 guidance_scale 参数
+      // Verify the guidance_scale parameter
       const guidanceParam = kolorsModel?.parameterDefinitions?.find(p => p.name === 'guidance_scale')
       expect(guidanceParam).toBeDefined()
       expect(guidanceParam?.type).toBe('number')
@@ -83,7 +83,7 @@ describe('SiliconFlowImageAdapter', () => {
 
   // Dynamic model fetching is not enabled via provider flag; adapter may still expose helper, skip tests here
 
-  // 连接验证已移除
+  // Connection validation has been removed
 
   describe('Image Generation', () => {
     test('should generate image with valid configuration', async () => {
@@ -109,7 +109,7 @@ describe('SiliconFlowImageAdapter', () => {
       }
 
       const request: ImageRequest = {
-        prompt: '一个美丽的景色，高质量，细节丰富',
+        prompt: 'A beautiful landscape, high quality, rich in detail',
         configId: config.id,
         count: 1,
         paramOverrides: {
@@ -221,7 +221,7 @@ describe('SiliconFlowImageAdapter', () => {
     test('should perform real API call when API key is provided', async () => {
       const apiKey = process.env.VITE_SILICONFLOW_API_KEY
       if (!apiKey) {
-        console.log('跳过 SiliconFlow 真实 API 测试：未设置 VITE_SILICONFLOW_API_KEY')
+        console.log('Skipping SiliconFlow real API test: VITE_SILICONFLOW_API_KEY is not set')
         return
       }
 
@@ -247,7 +247,7 @@ describe('SiliconFlowImageAdapter', () => {
       }
 
       const request: ImageRequest = {
-        prompt: '星际穿越，黑洞，蒸汽朋克风格，科幻电影场景，高质量，8K分辨率',
+        prompt: 'Interstellar, black hole, steampunk style, sci-fi movie scene, high quality, 8K resolution',
         configId: config.id,
         count: 1
       }
@@ -259,11 +259,11 @@ describe('SiliconFlowImageAdapter', () => {
       expect(result.images[0].url).toBeTruthy()
       expect(result.metadata?.seed).toBeGreaterThan(0)
 
-      // 验证 URL 可访问性
+      // Verify the URL is accessible
       if (result.images[0].url) {
         const response = await fetch(result.images[0].url, { method: 'HEAD' })
         expect(response.ok).toBe(true)
       }
-    }, 30000) // 30秒超时
+    }, 30000) // 30-second timeout
   })
 })

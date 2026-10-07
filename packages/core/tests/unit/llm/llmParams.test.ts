@@ -326,12 +326,12 @@ describe.skipIf(!RUN_REAL_API)('LLM Parameters (llmParams) Functionality', () =>
     });
 
     it('should filter unsafe parameters in Gemini configuration', () => {
-      // 这里我们测试的是参数验证，虽然buildGeminiGenerationConfig是私有方法
-      // 但我们可以通过集成测试来验证它的行为
+      // Here we test parameter validation; although buildGeminiGenerationConfig is a private method
+      // its behavior can be verified through integration tests
       const unsafeParams = {
         temperature: 0.8,
         maxOutputTokens: 2048,
-        // 这些参数应该被警告或过滤
+        // These parameters should be warned about or filtered
         dangerousParam: 'malicious_value',
         __proto__: 'attack',
         eval: 'dangerous_code'
@@ -339,7 +339,7 @@ describe.skipIf(!RUN_REAL_API)('LLM Parameters (llmParams) Functionality', () =>
 
       const result = validateLLMParams(unsafeParams, 'gemini');
 
-      // 验证不安全的参数被拒绝
+      // Verify that unsafe parameters are rejected
       expect(result.warnings.length).toBeGreaterThan(0);
       expect(result.warnings.some(w => w.parameterName === 'dangerousParam')).toBe(true);
     });
@@ -484,12 +484,12 @@ describe.skipIf(!RUN_REAL_API)('LLM Parameters (llmParams) Functionality', () =>
     // Gemini specific parameters
     describe('Gemini Specific Parameters', () => {
       beforeEach(async () => {
-        await new Promise(resolve => setTimeout(resolve, 10000)); // 等待 10 秒
+        await new Promise(resolve => setTimeout(resolve, 10000)); // Wait 10 seconds
       });
 
       if (hasGeminiKey && geminiConfig) {
         it('should accept valid maxOutputTokens for Gemini provider', async () => {
-          // 添加间隔，避免频率限制，先等10秒
+          // Add an interval to avoid rate limiting; wait 10 seconds first
           await new Promise(resolve => setTimeout(resolve, 10000)); 
           const storage = new LocalStorageProvider();
           const modelManager = new ModelManager(storage);
@@ -517,7 +517,7 @@ describe.skipIf(!RUN_REAL_API)('LLM Parameters (llmParams) Functionality', () =>
             expect(response.length).toBeGreaterThan(0);
         }, 60000);
         it('should accept valid candidateCount for Gemini provider', async () => {
-          // 添加间隔，避免频率限制，先等10秒
+          // Add an interval to avoid rate limiting; wait 10 seconds first
           await new Promise(resolve => setTimeout(resolve, 10000)); 
           const storage = new LocalStorageProvider();
           const modelManager = new ModelManager(storage);
@@ -546,7 +546,7 @@ describe.skipIf(!RUN_REAL_API)('LLM Parameters (llmParams) Functionality', () =>
         }, 60000);
       } else {
         it('should skip Gemini tests when API key is not available', () => {
-          expect(true).toBe(true); // 占位测试，确保套件不为空
+          expect(true).toBe(true); // Placeholder test to make sure the suite is not empty
         });
       }
     });
@@ -571,21 +571,21 @@ describe.skipIf(!RUN_REAL_API)('LLM Parameters (llmParams) Functionality', () =>
             models: [config.defaultModel],
             llmParams: {
               temperature: 0.6,
-              max_tokens: 50, // 减少token数量以加快响应
+              max_tokens: 50, // Reduce the token count to speed up the response
               top_p: 0.9,
               presence_penalty: 0.2,
               frequency_penalty: 0.1,
-              timeout: 20000 // 减少超时时间
+              timeout: 20000 // Reduce the timeout
             }
           });
 
-          const messages = [{ role: 'user' as const, content: 'Say hello' }]; // 简化请求
+          const messages = [{ role: 'user' as const, content: 'Say hello' }]; // Simplified request
 
           const response = await llmService.sendMessage(messages, config.key);
             expect(response).toBeDefined();
             expect(typeof response).toBe('string');
             expect(response.length).toBeGreaterThan(0);
-        }, 45000); // 增加测试超时时间
+        }, 45000); // Increase the test timeout
       });
     });
   });

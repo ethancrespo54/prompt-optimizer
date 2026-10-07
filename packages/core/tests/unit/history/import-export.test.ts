@@ -22,7 +22,7 @@ describe('HistoryManager Import/Export', () => {
 
   describe('exportData', () => {
     it('should export all history records', async () => {
-      // 添加一些历史记录
+      // Add some history records
       const record1: PromptRecord = {
         id: 'record-1',
         originalPrompt: 'Test prompt 1',
@@ -51,14 +51,14 @@ describe('HistoryManager Import/Export', () => {
       await historyManager.addRecord(record1);
       await historyManager.addRecord(record2);
 
-      // 导出数据
+      // Export data
       const exportedData = await historyManager.exportData();
 
-      // 验证导出的数据
+      // Verify the exported data
       expect(Array.isArray(exportedData)).toBe(true);
       expect(exportedData.length).toBe(2);
 
-      // 验证记录内容
+      // Verify record content
       const exportedRecord1 = exportedData.find(record => record.id === 'record-1');
       const exportedRecord2 = exportedData.find(record => record.id === 'record-2');
 
@@ -78,7 +78,7 @@ describe('HistoryManager Import/Export', () => {
     });
 
     it('should handle export error gracefully', async () => {
-      // 模拟getRecords错误
+      // Simulate a getRecords error
       vi.spyOn(historyManager, 'getRecords').mockRejectedValue(new Error('Storage error'));
 
       await expect(historyManager.exportData()).rejects.toThrow('Failed to export history data');
@@ -87,7 +87,7 @@ describe('HistoryManager Import/Export', () => {
 
   describe('importData', () => {
     it('should replace existing history records', async () => {
-      // 先添加一些现有记录
+      // Add some existing records first
       const existingRecord: PromptRecord = {
         id: 'existing-record',
         originalPrompt: 'Existing prompt',
@@ -102,11 +102,11 @@ describe('HistoryManager Import/Export', () => {
 
       await historyManager.addRecord(existingRecord);
 
-      // 验证记录存在
+      // Verify the records exist
       const beforeImport = await historyManager.getRecords();
       expect(beforeImport.length).toBe(1);
 
-      // 导入新记录
+      // Import new records
       const importData: PromptRecord[] = [
         {
           id: 'imported-record-1',
@@ -135,7 +135,7 @@ describe('HistoryManager Import/Export', () => {
 
       await historyManager.importData(importData);
 
-      // 验证替换模式：旧记录被删除，新记录被添加
+      // Verify replace mode: old records are deleted, new records are added
       const afterImport = await historyManager.getRecords();
       expect(afterImport.length).toBe(2);
       
@@ -145,7 +145,7 @@ describe('HistoryManager Import/Export', () => {
     });
 
     it('should preserve original IDs and maintain data relationships', async () => {
-      // 导入有关联关系的记录
+      // Import records with relationships
       const importData: PromptRecord[] = [
         {
           id: 'parent-record',
@@ -168,21 +168,21 @@ describe('HistoryManager Import/Export', () => {
           timestamp: Date.now() + 1000,
           modelKey: 'openai',
           templateId: 'template-2',
-          previousId: 'parent-record' // 引用父记录
+          previousId: 'parent-record' // References the parent record
         }
       ];
 
       await historyManager.importData(importData);
 
-      // 验证ID和关联关系被保持
+      // Verify IDs and relationships are preserved
       const afterImport = await historyManager.getRecords();
       const parentRecord = afterImport.find(r => r.id === 'parent-record');
       const childRecord = afterImport.find(r => r.id === 'child-record');
 
       expect(parentRecord).toBeDefined();
       expect(childRecord).toBeDefined();
-      expect(childRecord?.previousId).toBe('parent-record'); // 关联关系应该被保持
-      expect(childRecord?.chainId).toBe('test-chain'); // 链ID应该被保持
+      expect(childRecord?.previousId).toBe('parent-record'); // The relationship should be preserved
+      expect(childRecord?.chainId).toBe('test-chain'); // The chain ID should be preserved
     });
 
     it('should handle records with missing optional fields', async () => {
@@ -197,7 +197,7 @@ describe('HistoryManager Import/Export', () => {
           timestamp: Date.now(),
           modelKey: 'openai',
           templateId: 'template-1'
-          // 没有previousId（因为是第一个版本）
+          // No previousId (since this is the first version)
         }
       ];
 
@@ -227,15 +227,15 @@ describe('HistoryManager Import/Export', () => {
         }
       ];
 
-      // 模拟addRecord错误
+      // Simulate an addRecord error
       vi.spyOn(historyManager, 'addRecord').mockRejectedValue(new Error('Add record error'));
 
-      // 应该不抛出错误，只是记录失败
+      // Should not throw, just record the failure
       await expect(historyManager.importData(importData)).resolves.not.toThrow();
     });
 
     it('should clear history before importing', async () => {
-      // 添加现有记录
+      // Add existing records
       const existingRecord: PromptRecord = {
         id: 'existing-record',
         originalPrompt: 'Existing prompt',
@@ -250,7 +250,7 @@ describe('HistoryManager Import/Export', () => {
 
       await historyManager.addRecord(existingRecord);
 
-      // 验证clearHistory被调用
+      // Verify clearHistory was called
       const clearHistorySpy = vi.spyOn(historyManager, 'clearHistory');
 
       const importData: PromptRecord[] = [
@@ -312,38 +312,38 @@ describe('HistoryManager Import/Export', () => {
     });
 
     it('should reject invalid data formats', async () => {
-      // 非数组
+      // Not an array
       expect(await historyManager.validateData({})).toBe(false);
       expect(await historyManager.validateData('string')).toBe(false);
       expect(await historyManager.validateData(null)).toBe(false);
 
-      // 缺少必需字段
+      // Missing required fields
       expect(await historyManager.validateData([
         {
           originalPrompt: 'Test prompt',
-          // 缺少id
+          // Missing id
           optimizedPrompt: 'Test response',
           timestamp: Date.now()
         }
       ])).toBe(false);
 
-      // 字段类型错误
+      // Wrong field type
       expect(await historyManager.validateData([
         {
           id: 'test-record',
-          originalPrompt: 123, // 应该是字符串
+          originalPrompt: 123, // Should be a string
           optimizedPrompt: 'Test response',
           timestamp: Date.now()
         }
       ])).toBe(false);
 
-      // timestamp类型错误
+      // Wrong timestamp type
       expect(await historyManager.validateData([
         {
           id: 'test-record',
           originalPrompt: 'Test prompt',
           optimizedPrompt: 'Test response',
-          timestamp: 'invalid-timestamp' // 应该是数字
+          timestamp: 'invalid-timestamp' // Should be a number
         }
       ])).toBe(false);
     });
@@ -357,7 +357,7 @@ describe('HistoryManager Import/Export', () => {
 
   describe('data integrity', () => {
     it('should maintain chain relationships after import', async () => {
-      // 创建一个完整的对话链
+      // Create a complete conversation chain
       const importData: PromptRecord[] = [
         {
           id: 'chain-start',
@@ -398,7 +398,7 @@ describe('HistoryManager Import/Export', () => {
 
       await historyManager.importData(importData);
 
-      // 验证链关系完整性
+      // Verify chain relationship integrity
       const afterImport = await historyManager.getRecords();
       const startRecord = afterImport.find(r => r.id === 'chain-start');
       const middleRecord = afterImport.find(r => r.id === 'chain-middle');

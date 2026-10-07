@@ -94,7 +94,7 @@ describe('SeedreamImageAdapter', () => {
       }
 
       const request: ImageRequest = {
-        prompt: '美丽的山水画，中国传统艺术风格',
+        prompt: 'Beautiful landscape painting, traditional Chinese art style',
         configId: config.id,
         count: 1,
         paramOverrides: {
@@ -198,7 +198,7 @@ describe('SeedreamImageAdapter', () => {
       }
 
       const request: ImageRequest = {
-        prompt: '古代中国山水画，水墨画风格，朦胧意境',
+        prompt: 'Ancient Chinese landscape painting, ink wash style, hazy atmosphere',
         configId: config.id,
         count: 1
       }
@@ -219,11 +219,11 @@ describe('SeedreamImageAdapter', () => {
 
       expect(result).toBeDefined()
       expect(result.images).toHaveLength(1)
-      // 验证请求体中包含正确的中文提示词
+      // Verify the request body contains the correct prompt
       expect(fetch).toHaveBeenCalledWith(
         expect.any(String),
         expect.objectContaining({
-          body: expect.stringContaining('古代中国山水画')
+          body: expect.stringContaining('Ancient Chinese landscape painting')
         })
       )
     })
@@ -291,7 +291,7 @@ describe('SeedreamImageAdapter', () => {
       }
 
       const request: ImageRequest = {
-        prompt: '中国传统山水画，水墨画风格，远山如黛，云雾缭绕',
+        prompt: 'Traditional Chinese landscape painting, ink wash style, distant mountains like dark jade, swirling mist',
         configId: config.id,
         count: 1
       }
@@ -302,9 +302,9 @@ describe('SeedreamImageAdapter', () => {
       expect(result.images).toHaveLength(1)
       expect(result.images[0].url).toBeTruthy()
 
-      // 验证图像 URL 可访问性
+      // Verify the image URL is accessible
       if (result.images[0].url) {
-        // Seedream 返回的签名 URL 对 HTTP method 敏感（HEAD 可能 403），用 GET 进行可达性校验
+        // The signed URL returned by Seedream is sensitive to the HTTP method (HEAD may return 403), so use GET for the reachability check
         const response = await fetch(result.images[0].url, { method: 'GET' })
         if (!response.ok) {
           throw new Error(
@@ -315,9 +315,9 @@ describe('SeedreamImageAdapter', () => {
         const contentType = response.headers.get('content-type') || ''
         expect(contentType.startsWith('image/')).toBe(true)
 
-        // 确保连接被消费/释放
+        // Make sure the connection is consumed/released
         await response.arrayBuffer()
       }
-    }, 45000) // 45秒超时
+    }, 45000) // 45-second timeout
   })
 })

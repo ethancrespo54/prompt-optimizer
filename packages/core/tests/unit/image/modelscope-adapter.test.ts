@@ -52,14 +52,14 @@ describe('ModelScopeImageAdapter', () => {
 
       expect(zImageModel?.parameterDefinitions).toBeDefined()
 
-      // 验证 size 参数
+      // Verify the size parameter
       const sizeParam = zImageModel?.parameterDefinitions?.find(p => p.name === 'size')
       expect(sizeParam).toBeDefined()
       expect(sizeParam?.type).toBe('string')
       expect(sizeParam?.defaultValue).toBe('1024x1024')
       expect(sizeParam?.allowedValues).toContain('1024x1024')
 
-      // 验证 n 参数
+      // Verify the n parameter
       const nParam = zImageModel?.parameterDefinitions?.find(p => p.name === 'n')
       expect(nParam).toBeDefined()
       expect(nParam?.type).toBe('integer')
@@ -76,7 +76,7 @@ describe('ModelScopeImageAdapter', () => {
         modelId: 'Tongyi-MAI/Z-Image-Turbo',
         enabled: true,
         connectionConfig: {
-          // 缺少 apiKey
+          // Missing apiKey
         },
         provider: adapter.getProvider(),
         model: adapter.getModels()[0]
@@ -84,7 +84,7 @@ describe('ModelScopeImageAdapter', () => {
 
       const request: ImageRequest = {
         configId: 'test-config',
-        prompt: '一朵简单的红色花朵',
+        prompt: 'A simple red flower',
         count: 1
       }
 
@@ -108,7 +108,7 @@ describe('ModelScopeImageAdapter', () => {
 
       const invalidRequest: ImageRequest = {
         configId: 'test-config',
-        prompt: '', // 空提示词
+        prompt: '', // Empty prompt
         count: 1
       }
 
@@ -174,7 +174,7 @@ describe('ModelScopeImageAdapter', () => {
 
       const request: ImageRequest = {
         configId: 'test-config',
-        prompt: '一朵简单的红色花朵',
+        prompt: 'A simple red flower',
         count: 1
       }
 
@@ -193,6 +193,6 @@ describe('ModelScopeImageAdapter', () => {
         imageUrl: result.images[0].url?.substring(0, 100),
         metadata: result.metadata
       })
-    }, 180000) // 180秒超时，异步任务轮询需要更长时间
+    }, 180000) // 180-second timeout; async task polling needs longer
   })
 })

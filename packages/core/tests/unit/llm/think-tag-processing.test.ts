@@ -1,10 +1,10 @@
 import { describe, it, expect, vi } from 'vitest';
 import { OpenAIAdapter } from '../../../src/services/llm/adapters/openai-adapter';
 
-describe('Think标签处理测试', () => {
+describe('Think tag processing test', () => {
 
-  describe('流式处理', () => {
-    it('应该能正确处理流式think标签：开始标签 -> 推理内容 -> 结束标签 -> 正文', () => {
+  describe('Streaming processing', () => {
+    it('should correctly handle streaming think tags: start tag -> reasoning content -> end tag -> body', () => {
       const adapter = new OpenAIAdapter();
 
       const mockCallbacks = {
@@ -16,35 +16,35 @@ describe('Think标签处理测试', () => {
 
       const thinkState = { isInThinkMode: false, buffer: '' };
 
-      // 模拟流式处理：分多个chunk接收
-      // Chunk 1: 开始标签
+      // Simulate streaming: receive multiple chunks
+      // Chunk 1: start tag
       (adapter as any).processStreamContentWithThinkTags('<think>', mockCallbacks, thinkState);
 
-      // Chunk 2: 推理内容第一部分
-      (adapter as any).processStreamContentWithThinkTags('我需要思考', mockCallbacks, thinkState);
+      // Chunk 2: first part of the reasoning content
+      (adapter as any).processStreamContentWithThinkTags('I need to think', mockCallbacks, thinkState);
 
-      // Chunk 3: 推理内容第二部分
-      (adapter as any).processStreamContentWithThinkTags('这个问题', mockCallbacks, thinkState);
+      // Chunk 3: second part of the reasoning content
+      (adapter as any).processStreamContentWithThinkTags('about this question', mockCallbacks, thinkState);
 
-      // Chunk 4: 结束标签
+      // Chunk 4: end tag
       (adapter as any).processStreamContentWithThinkTags('</think>', mockCallbacks, thinkState);
 
-      // Chunk 5: 正文内容
-      (adapter as any).processStreamContentWithThinkTags('这是最终答案', mockCallbacks, thinkState);
+      // Chunk 5: body content
+      (adapter as any).processStreamContentWithThinkTags('This is the final answer', mockCallbacks, thinkState);
 
-      // 验证推理内容被正确分离
-      expect(mockCallbacks.onReasoningToken).toHaveBeenCalledWith('我需要思考');
-      expect(mockCallbacks.onReasoningToken).toHaveBeenCalledWith('这个问题');
+      // Verify the reasoning content is separated correctly
+      expect(mockCallbacks.onReasoningToken).toHaveBeenCalledWith('I need to think');
+      expect(mockCallbacks.onReasoningToken).toHaveBeenCalledWith('about this question');
 
-      // 验证正文内容被正确发送
-      expect(mockCallbacks.onToken).toHaveBeenCalledWith('这是最终答案');
+      // Verify the body content is sent correctly
+      expect(mockCallbacks.onToken).toHaveBeenCalledWith('This is the final answer');
 
-      // 验证没有将标签内容发送到主流
+      // Verify tag content is not sent to the main stream
       expect(mockCallbacks.onToken).not.toHaveBeenCalledWith('<think>');
       expect(mockCallbacks.onToken).not.toHaveBeenCalledWith('</think>');
     });
 
-    it('应该能处理单个chunk包含完整think标签的情况', () => {
+    it('should handle a single chunk containing complete think tags', () => {
       const adapter = new OpenAIAdapter();
 
       const mockCallbacks = {
@@ -56,19 +56,19 @@ describe('Think标签处理测试', () => {
 
       const thinkState = { isInThinkMode: false, buffer: '' };
 
-      // 单个chunk包含完整的think标签
+      // A single chunk containing complete think tags
       (adapter as any).processStreamContentWithThinkTags(
-        '前面内容<think>推理过程</think>后面内容',
+        'Before<think>reasoning process</think>After',
         mockCallbacks,
         thinkState
       );
 
-      expect(mockCallbacks.onToken).toHaveBeenCalledWith('前面内容');
-      expect(mockCallbacks.onReasoningToken).toHaveBeenCalledWith('推理过程');
-      expect(mockCallbacks.onToken).toHaveBeenCalledWith('后面内容');
+      expect(mockCallbacks.onToken).toHaveBeenCalledWith('Before');
+      expect(mockCallbacks.onReasoningToken).toHaveBeenCalledWith('reasoning process');
+      expect(mockCallbacks.onToken).toHaveBeenCalledWith('After');
     });
 
-    it('应该能处理跨chunk的think标签', () => {
+    it('should handle think tags that span chunks', () => {
       const adapter = new OpenAIAdapter();
 
       const mockCallbacks = {
@@ -80,44 +80,44 @@ describe('Think标签处理测试', () => {
 
       const thinkState = { isInThinkMode: false, buffer: '' };
 
-      // Chunk 1: 包含开始标签的一部分
-      (adapter as any).processStreamContentWithThinkTags('前面<thi', mockCallbacks, thinkState);
+      // Chunk 1: contains part of the start tag
+      (adapter as any).processStreamContentWithThinkTags('Before<thi', mockCallbacks, thinkState);
 
-      // Chunk 2: 完成开始标签并开始推理内容
-      (adapter as any).processStreamContentWithThinkTags('nk>推理开始', mockCallbacks, thinkState);
+      // Chunk 2: completes the start tag and begins the reasoning content
+      (adapter as any).processStreamContentWithThinkTags('nk>reasoning begins', mockCallbacks, thinkState);
 
-      // Chunk 3: 推理内容和部分结束标签
-      (adapter as any).processStreamContentWithThinkTags('推理结束</thi', mockCallbacks, thinkState);
+      // Chunk 3: reasoning content and part of the end tag
+      (adapter as any).processStreamContentWithThinkTags('reasoning ends</thi', mockCallbacks, thinkState);
 
-      // Chunk 4: 完成结束标签并开始正文
-      (adapter as any).processStreamContentWithThinkTags('nk>正文内容', mockCallbacks, thinkState);
+      // Chunk 4: completes the end tag and begins the body
+      (adapter as any).processStreamContentWithThinkTags('nk>Body content', mockCallbacks, thinkState);
 
-      expect(mockCallbacks.onToken).toHaveBeenCalledWith('前面');
-      expect(mockCallbacks.onReasoningToken).toHaveBeenCalledWith('推理开始');
-      expect(mockCallbacks.onReasoningToken).toHaveBeenCalledWith('推理结束');
-      expect(mockCallbacks.onToken).toHaveBeenCalledWith('正文内容');
+      expect(mockCallbacks.onToken).toHaveBeenCalledWith('Before');
+      expect(mockCallbacks.onReasoningToken).toHaveBeenCalledWith('reasoning begins');
+      expect(mockCallbacks.onReasoningToken).toHaveBeenCalledWith('reasoning ends');
+      expect(mockCallbacks.onToken).toHaveBeenCalledWith('Body content');
     });
 
-    it('应该能处理没有推理回调的流式情况', () => {
+    it('should handle streaming without a reasoning callback', () => {
       const adapter = new OpenAIAdapter();
 
       const mockCallbacks = {
         onToken: vi.fn(),
         onComplete: vi.fn(),
         onError: vi.fn()
-        // 注意：没有 onReasoningToken
+        // Note: no onReasoningToken
       };
 
       const thinkState = { isInThinkMode: false, buffer: '' };
 
       (adapter as any).processStreamContentWithThinkTags(
-        '<think>推理过程</think>正文内容',
+        '<think>reasoning process</think>Body content',
         mockCallbacks,
         thinkState
       );
 
-      // 当没有推理回调时，think标签内容被过滤，只返回正文
-      expect(mockCallbacks.onToken).toHaveBeenCalledWith('正文内容');
+      // Without a reasoning callback, think tag content is filtered out and only the body is returned
+      expect(mockCallbacks.onToken).toHaveBeenCalledWith('Body content');
     });
   });
 });

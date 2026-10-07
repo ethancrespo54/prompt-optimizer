@@ -22,7 +22,7 @@ describe('ModelManager Import/Export', () => {
 
   describe('exportData', () => {
     it('should export all models', async () => {
-      // 添加一些测试模型
+      // Add some test models
       const adapter = registry.getAdapter('openai');
       const testModel: TextModelConfig = {
         id: 'test-model',
@@ -39,14 +39,14 @@ describe('ModelManager Import/Export', () => {
 
       await modelManager.addModel('test-model', testModel);
 
-      // 导出数据
+      // Export data
       const exportedData = await modelManager.exportData();
 
-      // 验证导出的数据
+      // Verify the exported data
       expect(Array.isArray(exportedData)).toBe(true);
       expect(exportedData.length).toBeGreaterThan(0);
 
-      // 查找我们添加的测试模型
+      // Find the test models we added
       const exportedTestModel = exportedData.find(model => model.id === 'test-model');
       expect(exportedTestModel).toBeDefined();
       expect(exportedTestModel?.name).toBe('Test Model');
@@ -56,7 +56,7 @@ describe('ModelManager Import/Export', () => {
     it('should include built-in models in export', async () => {
       const exportedData = await modelManager.exportData();
 
-      // 应该包含内置模型
+      // Should include built-in models
       const builtinModels = exportedData.filter(model =>
         ['openai', 'anthropic', 'gemini'].includes(model.id)
       );
@@ -64,7 +64,7 @@ describe('ModelManager Import/Export', () => {
     });
 
     it('should handle export error gracefully', async () => {
-      // 模拟存储错误
+      // Simulate a storage error
       vi.spyOn(modelManager, 'getAllModels').mockRejectedValue(new Error('Storage error'));
 
       await expect(modelManager.exportData()).rejects.toThrow('Failed to export model data');
@@ -96,7 +96,7 @@ describe('ModelManager Import/Export', () => {
 
       await modelManager.importData(importData);
 
-      // 验证模型已被导入
+      // Verify the model was imported
       const model1 = await modelManager.getModel('new-model-1');
       expect(model1).toBeDefined();
       expect(model1?.name).toBe('New Model 1');
@@ -109,7 +109,7 @@ describe('ModelManager Import/Export', () => {
     });
 
     it('should update existing models', async () => {
-      // 先添加一个模型
+      // Add a model first
       const adapter = registry.getAdapter('openai');
       const originalModel: TextModelConfig = {
         id: 'existing-model',
@@ -125,11 +125,11 @@ describe('ModelManager Import/Export', () => {
       };
       await modelManager.addModel('existing-model', originalModel);
 
-      // 导入更新的模型配置
+      // Import an updated model config
       const updatedConfig: TextModelConfig = {
         id: 'existing-model',
         name: 'Updated Model',
-        enabled: true, // 更新启用状态
+        enabled: true, // Updated enabled state
         providerMeta: adapter.getProvider(),
         modelMeta: adapter.buildDefaultModel('updated'),
         connectionConfig: {
@@ -142,38 +142,38 @@ describe('ModelManager Import/Export', () => {
 
       await modelManager.importData(importData);
 
-      // 验证模型已被更新
+      // Verify the model was updated
       const updatedModel = await modelManager.getModel('existing-model');
       expect(updatedModel).toBeDefined();
       expect(updatedModel?.name).toBe('Updated Model');
-      expect(updatedModel?.enabled).toBe(true); // 应该使用导入的启用状态
+      expect(updatedModel?.enabled).toBe(true); // Should use the imported enabled state
       expect(updatedModel?.connectionConfig.apiKey).toBe('new-api-key');
     });
 
     it('should prioritize imported enabled status', async () => {
-      // 测试启用状态的优先级处理
+      // Test priority handling of the enabled state
       const importData = [
         {
-          key: 'openai', // 内置模型
+          key: 'openai', // Built-in model
           name: 'OpenAI',
           baseURL: 'https://api.openai.com/v1',
           models: ['gpt-4', 'gpt-3.5-turbo'],
           defaultModel: 'gpt-4',
           provider: 'openai',
-          enabled: false // 导入时设置为禁用
+          enabled: false // Set to disabled on import
         }
       ];
 
       await modelManager.importData(importData);
 
       const openaiModel = await modelManager.getModel('openai');
-      expect(openaiModel?.enabled).toBe(false); // 应该使用导入的状态
+      expect(openaiModel?.enabled).toBe(false); // Should use the imported state
     });
 
     it('should skip invalid models', async () => {
       const importData = [
         {
-          // 缺少key字段
+          // Missing key field
           name: 'Invalid Model',
           baseURL: 'https://api.invalid.com/v1',
           models: ['invalid'],
@@ -192,10 +192,10 @@ describe('ModelManager Import/Export', () => {
         }
       ];
 
-      // 应该不抛出错误，只是跳过无效模型
+      // Should not throw, just skip invalid models
       await expect(modelManager.importData(importData)).resolves.not.toThrow();
 
-      // 验证有效模型被导入
+      // Verify the valid model was imported
       const validModel = await modelManager.getModel('valid-model');
       expect(validModel).toBeDefined();
     });
@@ -213,10 +213,10 @@ describe('ModelManager Import/Export', () => {
         }
       ];
 
-      // 模拟addModel错误
+      // Simulate an addModel error
       vi.spyOn(modelManager, 'addModel').mockRejectedValue(new Error('Add model error'));
 
-      // 应该不抛出错误，只是记录失败
+      // Should not throw, just record the failure
       await expect(modelManager.importData(importData)).resolves.not.toThrow();
     });
   });
@@ -239,16 +239,16 @@ describe('ModelManager Import/Export', () => {
     });
 
     it('should reject invalid data formats', async () => {
-      // 非数组
+      // Not an array
       expect(await modelManager.validateData({})).toBe(false);
       expect(await modelManager.validateData('string')).toBe(false);
       expect(await modelManager.validateData(null)).toBe(false);
 
-      // 缺少必需字段
+      // Missing required fields
       expect(await modelManager.validateData([
         {
           name: 'Test Model',
-          // 缺少key
+          // Missing key
           baseURL: 'https://api.test.com/v1',
           models: ['test'],
           defaultModel: 'test',
@@ -257,11 +257,11 @@ describe('ModelManager Import/Export', () => {
         }
       ])).toBe(false);
 
-      // 字段类型错误
+      // Wrong field type
       expect(await modelManager.validateData([
         {
           key: 'test-model',
-          name: 123, // 应该是字符串
+          name: 123, // Should be a string
           baseURL: 'https://api.test.com/v1',
           models: ['test'],
           defaultModel: 'test',

@@ -38,10 +38,10 @@ describe('ModelManager', () => {
   };
 
   beforeEach(async () => {
-    // 为每个测试创建一个新的、干净的内存存储实例
+    // Create a new, clean in-memory storage instance for each test
     storageProvider = new MemoryStorageProvider();
     registry = new TextAdapterRegistry();
-    // 清理存储状态
+    // Clean up the storage state
     await storageProvider.clearAll();
     // 使用工厂函数创建 ModelManager 实例,注入Registry
     modelManager = new ModelManager(storageProvider, registry);

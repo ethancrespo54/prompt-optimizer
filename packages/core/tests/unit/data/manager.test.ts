@@ -18,10 +18,10 @@ describe('DataManager', () => {
   let mockStorageProvider: MemoryStorageProvider;
 
   beforeEach(() => {
-    // 1. 创建存储提供者的mock
+    // 1. Create a storage provider mock
     mockStorageProvider = new MemoryStorageProvider();
 
-    // 2. 创建PreferenceService的mock
+    // 2. Create a PreferenceService mock
     mockPreferenceService = {
       get: vi.fn().mockResolvedValue(null),
       set: vi.fn().mockResolvedValue(undefined),
@@ -35,7 +35,7 @@ describe('DataManager', () => {
       validateData: vi.fn().mockReturnValue(true),
     };
 
-    // 3. 为每个管理器创建全面的模拟对象
+    // 3. Create comprehensive mock objects for each manager
     mockModelManager = {
       getAllModels: vi.fn().mockResolvedValue([]),
       addModel: vi.fn().mockResolvedValue(undefined),
@@ -111,7 +111,7 @@ describe('DataManager', () => {
       validateData: vi.fn().mockReturnValue(true),
     } as ContextRepo;
 
-    // 4. 使用正确的参数顺序实例化 DataManager
+    // 4. Instantiate DataManager with the correct argument order
     dataManager = new DataManager(
       mockModelManager,
       mockTemplateManager,
@@ -247,13 +247,13 @@ describe('DataManager', () => {
         version: 1,
         data: {
           userSettings: {
-            // 旧版本的简短键名
+            // Legacy short key name
             'theme-id': 'dark',
             'preferred-language': 'en',
             'builtin-template-language': 'zh',
-            // 新版本的完整键名
+            // New full key name
             'app:selected-optimize-model': 'gemini',
-            // 无效的键名
+            // Invalid key name
             'invalid-key': 'should-be-ignored'
           },
         },
@@ -261,7 +261,7 @@ describe('DataManager', () => {
 
       await dataManager.importAllData(JSON.stringify(legacyTestPayload));
 
-      // 验证 PreferenceService 的 importData 被调用
+      // Verify that PreferenceService's importData was called
       expect(mockPreferenceService.importData).toHaveBeenCalledWith(legacyTestPayload.data.userSettings);
     });
   });

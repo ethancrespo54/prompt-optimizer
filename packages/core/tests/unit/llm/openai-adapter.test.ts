@@ -2,11 +2,11 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { OpenAIAdapter } from '../../../src/services/llm/adapters/openai-adapter';
 import type { TextModelConfig, Message } from '../../../src/services/llm/types';
 
-// 创建 mock OpenAI 实例
+// Create a mock OpenAI instance
 let mockOpenAIInstance: any;
 let mockOpenAIConfig: any;
 
-// Mock OpenAI SDK - 使用工厂函数返回一个类
+// Mock the OpenAI SDK - use a factory function to return a class
 vi.mock('openai', () => {
   return {
     default: class MockOpenAI {
@@ -81,7 +81,7 @@ describe('OpenAIAdapter', () => {
     mockOpenAIConfig = undefined;
     vi.clearAllMocks();
 
-    // 在每个测试前重新创建 mock OpenAI 实例
+    // Recreate the mock OpenAI instance before each test
     mockOpenAIInstance = {
       chat: {
         completions: {
@@ -121,7 +121,7 @@ describe('OpenAIAdapter', () => {
       expect(Array.isArray(models)).toBe(true);
       expect(models.length).toBeGreaterThan(0);
 
-      // 验证至少包含 GPT-5 Mini
+      // Verify it contains at least GPT-5 Mini
       const gpt5Mini = models.find(m => m.id === 'gpt-5-mini');
       expect(gpt5Mini).toBeDefined();
       expect(gpt5Mini?.name).toBe('GPT-5 Mini');
@@ -209,7 +209,7 @@ describe('OpenAIAdapter', () => {
         await adapter.sendMessage(mockMessages, mockConfig);
         expect.fail('Should have thrown error');
       } catch (error: any) {
-        // 验证错误堆栈被保留
+        // Verify the error stack is preserved
         expect(error.stack).toContain('Original Stack Trace');
       }
     });
@@ -375,7 +375,7 @@ describe('OpenAIAdapter', () => {
       expect(callbacks.onError).not.toHaveBeenCalled();
     });
 
-    // 删除"should call onError with preserved stack" - 这是过度测试错误堆栈保留的内部实现细节
+    // Removed "should call onError with preserved stack" - it over-tests an internal implementation detail of error stack preservation
   });
 
   describe('error handling', () => {
@@ -402,7 +402,7 @@ describe('OpenAIAdapter', () => {
         }
       };
 
-      // 模拟 API 调用失败
+      // Simulate an API call failure
       mockOpenAIInstance.chat.completions.create.mockRejectedValue(new Error('Invalid URL'));
 
       await expect(

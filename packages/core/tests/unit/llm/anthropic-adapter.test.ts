@@ -88,7 +88,7 @@ describe('AnthropicAdapter', () => {
       expect(Array.isArray(models)).toBe(true);
       expect(models.length).toBeGreaterThan(0);
 
-      // 更新为新的 Claude 4.0 模型
+      // Updated to the new Claude 4.0 models
       const claude4 = models.find(m => m.id.includes('claude-'));
       expect(claude4).toBeDefined();
       expect(claude4?.providerId).toBe('anthropic');

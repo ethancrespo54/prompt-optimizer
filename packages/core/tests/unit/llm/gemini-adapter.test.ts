@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { GeminiAdapter } from '../../../src/services/llm/adapters/gemini-adapter';
 import type { TextModelConfig, Message } from '../../../src/services/llm/types';
 
-// 单元测试不应触发真实网络请求，必要处通过最小 mock 隔离 SDK
+// Unit tests should not trigger real network requests; isolate the SDK with minimal mocks where necessary
 
 describe('GeminiAdapter', () => {
   let adapter: GeminiAdapter;
@@ -17,7 +17,7 @@ describe('GeminiAdapter', () => {
       description: 'Google Generative AI models',
       requiresApiKey: true,
       defaultBaseURL: 'https://generativelanguage.googleapis.com',
-      supportsDynamicModels: true, // 更新为 true
+      supportsDynamicModels: true, // Updated to true
       connectionSchema: {
         required: ['apiKey'],
         optional: ['baseURL'],
@@ -62,7 +62,7 @@ describe('GeminiAdapter', () => {
       expect(provider.id).toBe('gemini');
       expect(provider.name).toBe('Google Gemini');
       expect(provider.defaultBaseURL).toBe('https://generativelanguage.googleapis.com');
-      expect(provider.supportsDynamicModels).toBe(true); // 更新期望值
+      expect(provider.supportsDynamicModels).toBe(true); // Updated expected value
       expect(provider.requiresApiKey).toBe(true);
     });
   });
@@ -74,7 +74,7 @@ describe('GeminiAdapter', () => {
       expect(Array.isArray(models)).toBe(true);
       expect(models.length).toBeGreaterThan(0);
 
-      // 更新为新版本的模型 ID
+      // Updated to the new model IDs
       const gemini25Flash = models.find(m => m.id === 'gemini-2.5-flash');
       expect(gemini25Flash).toBeDefined();
       expect(gemini25Flash?.providerId).toBe('gemini');
@@ -98,20 +98,20 @@ describe('GeminiAdapter', () => {
 
       const paramNames = model.parameterDefinitions.map(p => p.name);
 
-      // 验证基础参数存在
+      // Verify the base parameters exist
       expect(paramNames).toContain('temperature');
       expect(paramNames).toContain('topP');
       expect(paramNames).toContain('maxOutputTokens');
 
-      // 验证思考参数存在
+      // Verify the thinking parameters exist
       expect(paramNames).toContain('thinkingBudget');
       expect(paramNames).toContain('includeThoughts');
 
-      // 验证思考参数定义
+      // Verify the thinking parameter definitions
       const thinkingBudget = model.parameterDefinitions.find(p => p.name === 'thinkingBudget');
       expect(thinkingBudget).toBeDefined();
       expect(thinkingBudget?.type).toBe('number');
-      expect(thinkingBudget?.min).toBe(0);  // 允许0来禁用思考功能
+      expect(thinkingBudget?.min).toBe(0);  // Allow 0 to disable thinking
       expect(thinkingBudget?.max).toBe(8192);
       expect(thinkingBudget?.description).toContain('Gemini 2.5+');
 
@@ -127,11 +127,11 @@ describe('GeminiAdapter', () => {
 
       const defaultValues = model.defaultParameterValues || {};
 
-      // 默认值现在返回空对象，让服务器使用官方默认值
-      // 这是为了避免客户端错误默认值影响效果
+      // The default value now returns an empty object so the server uses its official defaults
+      // This avoids incorrect client-side defaults affecting results
       expect(defaultValues).toEqual({});
 
-      // 验证参数定义中包含思考参数
+      // Verify the parameter definitions include the thinking parameters
       const paramNames = model.parameterDefinitions.map(p => p.name);
       expect(paramNames).toContain('thinkingBudget');
       expect(paramNames).toContain('includeThoughts');
@@ -150,7 +150,7 @@ describe('GeminiAdapter', () => {
 
       const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-      // 避免调用真实 SDK / 网络：注入一个会拒绝的 client
+      // Avoid calling the real SDK / network: inject a client that rejects
       (adapter as any).createClient = () => ({
         models: {
           generateContent: vi.fn().mockRejectedValue(new Error('Missing API key'))

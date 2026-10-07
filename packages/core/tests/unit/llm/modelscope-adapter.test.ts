@@ -2,10 +2,10 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ModelScopeAdapter } from '../../../src/services/llm/adapters/modelscope-adapter';
 import type { TextModelConfig, Message } from '../../../src/services/llm/types';
 
-// 创建 mock OpenAI 实例
+// Create a mock OpenAI instance
 let mockOpenAIInstance: any;
 
-// Mock OpenAI SDK - 使用工厂函数返回一个类
+// Mock the OpenAI SDK - use a factory function to return a class
 vi.mock('openai', () => {
   return {
     default: class MockOpenAI {
@@ -27,7 +27,7 @@ describe('ModelScopeAdapter', () => {
   beforeEach(() => {
     adapter = new ModelScopeAdapter();
 
-    // 动态获取第一个可用模型来构建 mockConfig
+    // Dynamically get the first available model to build mockConfig
     const firstModel = adapter.getModels()[0];
     const provider = adapter.getProvider();
 
@@ -55,7 +55,7 @@ describe('ModelScopeAdapter', () => {
 
     vi.clearAllMocks();
 
-    // 在每个测试前重新创建 mock OpenAI 实例
+    // Recreate the mock OpenAI instance before each test
     mockOpenAIInstance = {
       chat: {
         completions: {
