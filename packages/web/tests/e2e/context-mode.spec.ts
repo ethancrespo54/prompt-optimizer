@@ -1,212 +1,212 @@
 import { test, expect, type Page } from '@playwright/test';
 
 /**
- * 上下文模式 E2E 测试
+ * Context mode E2E test
  *
- * 测试完整的用户流程：
- * 1. 模式切换按钮交互
- * 2. 变量管理器集成
- * 3. 预览面板联动
- * 4. 测试面板模式化行为
+ * Tests the complete user flow:
+ * 1. Mode toggle button interaction
+ * 2. Variable manager integration
+ * 3. Preview panel linkage
+ * 4. Mode-specific behavior of the test panel
  */
 
-// 测试前的设置
+// Setup before the tests
 test.beforeEach(async ({ page }) => {
-  // 导航到应用首页
+  // Navigate to the app home page
   await page.goto('/');
 
-  // 等待应用加载完成
+  // Wait for the app to finish loading
   await page.waitForLoadState('networkidle');
 });
 
-test.describe('上下文模式切换', () => {
-  test('应该默认显示用户模式', async ({ page }) => {
-    // 查找模式切换按钮组
-    const userModeButton = page.getByRole('button', { name: /用户模式/ });
-    const systemModeButton = page.getByRole('button', { name: /系统模式/ });
+test.describe('Context mode switching', () => {
+  test('should show user mode by default', async ({ page }) => {
+    // Find the mode toggle button group
+    const userModeButton = page.getByRole('button', { name: /User Mode/ });
+    const systemModeButton = page.getByRole('button', { name: /System Mode/ });
 
-    // 用户模式应该默认激活
+    // User mode should be active by default
     await expect(userModeButton).toHaveClass(/primary/);
     await expect(systemModeButton).not.toHaveClass(/primary/);
   });
 
-  test('应该能够切换到系统模式', async ({ page }) => {
-    const systemModeButton = page.getByRole('button', { name: /系统模式/ });
+  test('should be able to switch to system mode', async ({ page }) => {
+    const systemModeButton = page.getByRole('button', { name: /System Mode/ });
 
-    // 点击系统模式按钮
+    // Click the system mode button
     await systemModeButton.click();
 
-    // 等待 UI 更新
+    // Wait for the UI to update
     await page.waitForTimeout(200);
 
-    // 系统模式应该激活
+    // System mode should be active
     await expect(systemModeButton).toHaveClass(/primary/);
   });
 
-  test('应该能够在模式之间来回切换', async ({ page }) => {
-    const userModeButton = page.getByRole('button', { name: /用户模式/ });
-    const systemModeButton = page.getByRole('button', { name: /系统模式/ });
+  test('should be able to switch back and forth between modes', async ({ page }) => {
+    const userModeButton = page.getByRole('button', { name: /User Mode/ });
+    const systemModeButton = page.getByRole('button', { name: /System Mode/ });
 
-    // 切换到系统模式
+    // Switch to system mode
     await systemModeButton.click();
     await page.waitForTimeout(200);
     await expect(systemModeButton).toHaveClass(/primary/);
 
-    // 切换回用户模式
+    // Switch back to user mode
     await userModeButton.click();
     await page.waitForTimeout(200);
     await expect(userModeButton).toHaveClass(/primary/);
 
-    // 再次切换到系统模式
+    // Switch to system mode again
     await systemModeButton.click();
     await page.waitForTimeout(200);
     await expect(systemModeButton).toHaveClass(/primary/);
   });
 });
 
-test.describe('快捷操作按钮', () => {
-  test('应该显示变量管理器按钮', async ({ page }) => {
-    const variableButton = page.getByRole('button', { name: /变量管理/ });
+test.describe('Quick action buttons', () => {
+  test('should show the variable manager button', async ({ page }) => {
+    const variableButton = page.getByRole('button', { name: /Variable Manage/ });
 
     await expect(variableButton).toBeVisible();
   });
 
-  test('应该在系统模式下显示对话管理按钮', async ({ page }) => {
-    // 切换到系统模式
-    const systemModeButton = page.getByRole('button', { name: /系统模式/ });
+  test('should show the conversation manager button in system mode', async ({ page }) => {
+    // Switch to system mode
+    const systemModeButton = page.getByRole('button', { name: /System Mode/ });
     await systemModeButton.click();
     await page.waitForTimeout(200);
 
-    // 对话管理按钮应该可见
-    const conversationButton = page.getByRole('button', { name: /管理对话|对话/ });
+    // The conversation manager button should be visible
+    const conversationButton = page.getByRole('button', { name: /Manage Conversation|Conversation/ });
     await expect(conversationButton).toBeVisible();
   });
 
-  test('应该在用户模式下隐藏对话管理按钮', async ({ page }) => {
-    // 确保在用户模式
-    const userModeButton = page.getByRole('button', { name: /用户模式/ });
+  test('should hide the conversation manager button in user mode', async ({ page }) => {
+    // Make sure we are in user mode
+    const userModeButton = page.getByRole('button', { name: /User Mode/ });
     await userModeButton.click();
     await page.waitForTimeout(200);
 
-    // 对话管理按钮应该不可见
-    const conversationButton = page.getByRole('button', { name: /管理对话|对话/ });
+    // The conversation manager button should not be visible
+    const conversationButton = page.getByRole('button', { name: /Manage Conversation|Conversation/ });
     await expect(conversationButton).not.toBeVisible();
   });
 
-  test('应该显示预览按钮', async ({ page }) => {
-    const previewButton = page.getByRole('button', { name: /预览/ });
+  test('should show the preview button', async ({ page }) => {
+    const previewButton = page.getByRole('button', { name: /Preview/ });
 
     await expect(previewButton).toBeVisible();
   });
 });
 
-test.describe('变量管理器集成', () => {
-  test('点击变量管理器按钮应该打开变量管理器', async ({ page }) => {
-    const variableButton = page.getByRole('button', { name: /变量管理/ });
+test.describe('Variable manager integration', () => {
+  test('clicking the variable manager button should open the variable manager', async ({ page }) => {
+    const variableButton = page.getByRole('button', { name: /Variable Manage/ });
 
     await variableButton.click();
 
-    // 等待变量管理器打开
+    // Wait for the variable manager to open
     await page.waitForTimeout(300);
 
-    // 检查变量管理器是否可见（可能是模态框或面板）
-    // 注意：实际的选择器需要根据实际实现调整
+    // Check whether the variable manager is visible (may be a modal or a panel)
+    // Note: the actual selectors need to be adjusted to match the real implementation
     const variableManager = page.locator('[data-testid="variable-manager"], .variable-manager, .n-modal');
     await expect(variableManager).toBeVisible({ timeout: 3000 });
   });
 
-  test('变量管理器应该支持添加自定义变量', async ({ page }) => {
-    // 打开变量管理器
-    const variableButton = page.getByRole('button', { name: /变量管理/ });
+  test('the variable manager should support adding custom variables', async ({ page }) => {
+    // Open the variable manager
+    const variableButton = page.getByRole('button', { name: /Variable Manage/ });
     await variableButton.click();
     await page.waitForTimeout(300);
 
-    // 查找添加变量的输入框或按钮
-    const addButton = page.getByRole('button', { name: /添加|新建/ });
+    // Find the input or button for adding a variable
+    const addButton = page.getByRole('button', { name: /Add|New/ });
 
     if (await addButton.isVisible()) {
       await addButton.click();
       await page.waitForTimeout(200);
 
-      // 输入变量名和值（实际选择器需要根据实现调整）
-      const nameInput = page.locator('input[placeholder*="名称"], input[placeholder*="name"]').first();
-      const valueInput = page.locator('input[placeholder*="值"], input[placeholder*="value"], textarea[placeholder*="值"]').first();
+      // Enter the variable name and value (the actual selectors need to be adjusted to match the implementation)
+      const nameInput = page.locator('input[placeholder*="name"]').first();
+      const valueInput = page.locator('input[placeholder*="value"], textarea[placeholder*="value"]').first();
 
       if (await nameInput.isVisible() && await valueInput.isVisible()) {
         await nameInput.fill('testVar');
         await valueInput.fill('testValue');
 
-        // 保存变量
-        const saveButton = page.getByRole('button', { name: /保存|确定/ });
+        // Save the variable
+        const saveButton = page.getByRole('button', { name: /Save|Confirm/ });
         await saveButton.click();
         await page.waitForTimeout(300);
 
-        // 验证变量已添加（可能显示在列表中）
+        // Verify the variable was added (it may be shown in a list)
         await expect(page.locator('text=testVar')).toBeVisible({ timeout: 3000 });
       }
     }
   });
 });
 
-test.describe('预览面板联动', () => {
-  test('点击预览按钮应该打开预览面板', async ({ page }) => {
-    const previewButton = page.getByRole('button', { name: /预览/ });
+test.describe('Preview panel linkage', () => {
+  test('clicking the preview button should open the preview panel', async ({ page }) => {
+    const previewButton = page.getByRole('button', { name: /Preview/ });
 
     await previewButton.click();
 
-    // 等待预览面板打开
+    // Wait for the preview panel to open
     await page.waitForTimeout(300);
 
-    // 检查预览面板是否可见
+    // Check whether the preview panel is visible
     const previewPanel = page.locator('[data-testid="preview-panel"], .preview-panel, .n-modal');
     await expect(previewPanel).toBeVisible({ timeout: 3000 });
   });
 
-  test('预览面板应该实时显示变量替换结果', async ({ page }) => {
-    // 这个测试需要先设置一些提示词内容和变量
-    // 具体实现取决于实际应用的结构
+  test('the preview panel should show variable replacement results in real time', async ({ page }) => {
+    // This test first needs some prompt content and variables to be set up
+    // The exact implementation depends on the structure of the real app
 
-    // 打开预览面板
-    const previewButton = page.getByRole('button', { name: /预览/ });
+    // Open the preview panel
+    const previewButton = page.getByRole('button', { name: /Preview/ });
     await previewButton.click();
     await page.waitForTimeout(300);
 
-    // 预览面板应该显示渲染后的内容
+    // The preview panel should show the rendered content
     const previewContent = page.locator('[data-testid="preview-content"], .preview-content');
     await expect(previewContent).toBeVisible({ timeout: 3000 });
   });
 });
 
-test.describe('测试面板模式化行为', () => {
-  test('用户模式下测试面板应该显示变量提示', async ({ page }) => {
-    // 确保在用户模式
-    const userModeButton = page.getByRole('button', { name: /用户模式/ });
+test.describe('Mode-specific test panel behavior', () => {
+  test('the test panel should show variable hints in user mode', async ({ page }) => {
+    // Make sure we are in user mode
+    const userModeButton = page.getByRole('button', { name: /User Mode/ });
     await userModeButton.click();
     await page.waitForTimeout(200);
 
-    // 如果有变量，应该显示变量提示
-    // 注意：这需要先有包含变量的提示词内容
-    const variableHint = page.locator('[data-testid="variable-hint"], .variable-hint, text=/检测到变量|Variables Detected/');
+    // If there are variables, a variable hint should be shown
+    // Note: this requires prompt content that contains variables first
+    const variableHint = page.locator('[data-testid="variable-hint"], .variable-hint, text=/Variables Detected/');
 
-    // 检查是否存在（如果有变量的话）
+    // Check whether it exists (if there are variables)
     const isVisible = await variableHint.isVisible({ timeout: 2000 }).catch(() => false);
 
-    // 这个测试可能需要根据实际数据状态调整
+    // This test may need to be adjusted based on the actual data state
     if (isVisible) {
       await expect(variableHint).toBeVisible();
     }
   });
 
-  test('系统模式下应该显示测试输入区域', async ({ page }) => {
-    // 切换到系统模式
-    const systemModeButton = page.getByRole('button', { name: /系统模式/ });
+  test('the test input area should be shown in system mode', async ({ page }) => {
+    // Switch to system mode
+    const systemModeButton = page.getByRole('button', { name: /System Mode/ });
     await systemModeButton.click();
     await page.waitForTimeout(200);
 
-    // 测试输入区域应该可见
-    const testInput = page.locator('[data-testid="test-input"], textarea[placeholder*="测试"], textarea[placeholder*="问题"]');
+    // The test input area should be visible
+    const testInput = page.locator('[data-testid="test-input"], textarea[placeholder*="test"], textarea[placeholder*="question"]');
 
-    // 检查是否存在测试输入区
+    // Check whether the test input area exists
     const hasTestInput = await testInput.count() > 0;
 
     if (hasTestInput) {
@@ -214,96 +214,96 @@ test.describe('测试面板模式化行为', () => {
     }
   });
 
-  test('用户模式下应该隐藏测试输入区域', async ({ page }) => {
-    // 确保在用户模式
-    const userModeButton = page.getByRole('button', { name: /用户模式/ });
+  test('the test input area should be hidden in user mode', async ({ page }) => {
+    // Make sure we are in user mode
+    const userModeButton = page.getByRole('button', { name: /User Mode/ });
     await userModeButton.click();
     await page.waitForTimeout(200);
 
-    // 测试输入区域应该不可见或不存在
-    const testInput = page.locator('[data-testid="test-input"], textarea[placeholder*="测试"], textarea[placeholder*="问题"]');
+    // The test input area should be invisible or absent
+    const testInput = page.locator('[data-testid="test-input"], textarea[placeholder*="test"], textarea[placeholder*="question"]');
 
-    // 在用户模式下，测试输入应该不可见
+    // In user mode, the test input should not be visible
     const isVisible = await testInput.isVisible({ timeout: 1000 }).catch(() => false);
 
     if (!isVisible) {
-      // 测试通过：输入区域确实不可见
+      // Test passes: the input area is indeed not visible
       expect(true).toBe(true);
     } else {
-      // 如果可见，可能是配置问题
+      // If it is visible, it may be a configuration issue
       await expect(testInput).not.toBeVisible();
     }
   });
 });
 
-test.describe('变量值输入表单（完整实现）', () => {
-  test('应该在有变量时显示变量值输入表单', async ({ page }) => {
-    // 首先需要优化一个包含变量的提示词
-    // 这个测试可能需要先设置包含{{variable}}的内容
+test.describe('Variable value input form (full implementation)', () => {
+  test('should show the variable value input form when there are variables', async ({ page }) => {
+    // First a prompt containing variables needs to be optimized
+    // This test may first need content containing {{variable}} to be set up
 
-    // 查找变量值表单标题
-    const formTitle = page.locator('text=/变量值设置|Variable Values/');
-    const formCard = page.locator('.n-card:has-text("变量值设置"), .n-card:has-text("Variable Values")');
+    // Find the variable value form title
+    const formTitle = page.locator('text=/Variable Values/');
+    const formCard = page.locator('.n-card:has-text("Variable Values")');
 
-    // 如果有变量，表单应该可见
+    // If there are variables, the form should be visible
     const hasForm = await formCard.isVisible({ timeout: 3000 }).catch(() => false);
 
     if (hasForm) {
       await expect(formTitle).toBeVisible();
 
-      // 验证显示变量计数
-      const varCount = page.locator('text=/个变量|variables/');
+      // Verify the variable count is displayed
+      const varCount = page.locator('text=/variables/');
       await expect(varCount).toBeVisible();
     }
   });
 
-  test('应该为每个变量提供输入框', async ({ page }) => {
-    // 查找变量输入表单
-    const formCard = page.locator('.n-card:has-text("变量值设置"), .n-card:has-text("Variable Values")');
+  test('should provide an input for each variable', async ({ page }) => {
+    // Find the variable input form
+    const formCard = page.locator('.n-card:has-text("Variable Values")');
 
     const hasForm = await formCard.isVisible({ timeout: 3000 }).catch(() => false);
 
     if (hasForm) {
-      // 查找变量输入框（应该有多个）
-      const variableInputs = page.locator('input[placeholder*="变量值"], input[placeholder*="variable value"]');
+      // Find the variable inputs (there should be several)
+      const variableInputs = page.locator('input[placeholder*="variable value"]');
       const inputCount = await variableInputs.count();
 
-      // 至少应该有一个变量输入框
+      // There should be at least one variable input
       if (inputCount > 0) {
         expect(inputCount).toBeGreaterThan(0);
 
-        // 验证可以在输入框中输入内容
+        // Verify that content can be typed into the input
         const firstInput = variableInputs.first();
-        await firstInput.fill('测试值');
-        await expect(firstInput).toHaveValue('测试值');
+        await firstInput.fill('test value');
+        await expect(firstInput).toHaveValue('test value');
       }
     }
   });
 
-  test('应该提供清空全部按钮', async ({ page }) => {
-    const formCard = page.locator('.n-card:has-text("变量值设置"), .n-card:has-text("Variable Values")');
+  test('should provide a Clear All button', async ({ page }) => {
+    const formCard = page.locator('.n-card:has-text("Variable Values")');
 
     const hasForm = await formCard.isVisible({ timeout: 3000 }).catch(() => false);
 
     if (hasForm) {
-      // 查找清空按钮
-      const clearButton = page.getByRole('button', { name: /清空全部|Clear All/ });
+      // Find the clear button
+      const clearButton = page.getByRole('button', { name: /Clear All/ });
 
       const hasClearButton = await clearButton.isVisible({ timeout: 1000 }).catch(() => false);
 
       if (hasClearButton) {
         await expect(clearButton).toBeVisible();
 
-        // 填写一个变量值
-        const variableInputs = page.locator('input[placeholder*="变量值"], input[placeholder*="variable value"]');
+        // Fill in a variable value
+        const variableInputs = page.locator('input[placeholder*="variable value"]');
         if (await variableInputs.count() > 0) {
-          await variableInputs.first().fill('测试值');
+          await variableInputs.first().fill('test value');
 
-          // 点击清空按钮
+          // Click the clear button
           await clearButton.click();
           await page.waitForTimeout(200);
 
-          // 验证输入框被清空
+          // Verify the inputs were cleared
           await expect(variableInputs.first()).toHaveValue('');
         }
       }
@@ -311,54 +311,54 @@ test.describe('变量值输入表单（完整实现）', () => {
   });
 });
 
-test.describe('双轮替换预览（完整实现）', () => {
-  test('系统模式应该显示第一轮和第二轮替换', async ({ page }) => {
-    // 切换到系统模式
-    const systemModeButton = page.getByRole('button', { name: /系统模式/ });
+test.describe('Two-round replacement preview (full implementation)', () => {
+  test('system mode should show the first and second round replacements', async ({ page }) => {
+    // Switch to system mode
+    const systemModeButton = page.getByRole('button', { name: /System Mode/ });
     await systemModeButton.click();
     await page.waitForTimeout(200);
 
-    // 查找预览卡片
-    const previewCard = page.locator('.n-card:has-text("预览结果"), .n-card:has-text("Preview Result")');
+    // Find the preview card
+    const previewCard = page.locator('.n-card:has-text("Preview Result")');
 
     const hasPreview = await previewCard.isVisible({ timeout: 3000 }).catch(() => false);
 
     if (hasPreview) {
-      // 验证显示第一轮替换
-      const firstRound = page.locator('text=/第一轮替换|First Round/');
+      // Verify the first round replacement is shown
+      const firstRound = page.locator('text=/First Round/');
       const hasFirstRound = await firstRound.isVisible({ timeout: 1000 }).catch(() => false);
 
       if (hasFirstRound) {
         await expect(firstRound).toBeVisible();
 
-        // 验证显示第二轮替换
-        const secondRound = page.locator('text=/第二轮替换|Second Round/');
+        // Verify the second round replacement is shown
+        const secondRound = page.locator('text=/Second Round/');
         await expect(secondRound).toBeVisible();
       }
     }
   });
 
-  test('用户模式应该只显示最终预览', async ({ page }) => {
-    // 确保在用户模式
-    const userModeButton = page.getByRole('button', { name: /用户模式/ });
+  test('user mode should show only the final preview', async ({ page }) => {
+    // Make sure we are in user mode
+    const userModeButton = page.getByRole('button', { name: /User Mode/ });
     await userModeButton.click();
     await page.waitForTimeout(200);
 
-    // 查找预览卡片
-    const previewCard = page.locator('.n-card:has-text("预览结果"), .n-card:has-text("Preview Result")');
+    // Find the preview card
+    const previewCard = page.locator('.n-card:has-text("Preview Result")');
 
     const hasPreview = await previewCard.isVisible({ timeout: 3000 }).catch(() => false);
 
     if (hasPreview) {
-      // 验证显示最终预览
-      const finalPreview = page.locator('text=/最终预览|Final Preview/');
+      // Verify the final preview is shown
+      const finalPreview = page.locator('text=/Final Preview/');
       const hasFinalPreview = await finalPreview.isVisible({ timeout: 1000 }).catch(() => false);
 
       if (hasFinalPreview) {
         await expect(finalPreview).toBeVisible();
 
-        // 验证不显示第一轮和第二轮（系统模式专有）
-        const firstRound = page.locator('text=/第一轮替换|First Round/');
+        // Verify the first and second rounds are not shown (specific to system mode)
+        const firstRound = page.locator('text=/First Round/');
         const hasFirstRound = await firstRound.isVisible({ timeout: 500 }).catch(() => false);
 
         expect(hasFirstRound).toBe(false);
@@ -366,135 +366,135 @@ test.describe('双轮替换预览（完整实现）', () => {
     }
   });
 
-  test('变量值改变应该实时更新预览', async ({ page }) => {
-    const formCard = page.locator('.n-card:has-text("变量值设置"), .n-card:has-text("Variable Values")');
-    const previewCard = page.locator('.n-card:has-text("预览结果"), .n-card:has-text("Preview Result")');
+  test('changing a variable value should update the preview in real time', async ({ page }) => {
+    const formCard = page.locator('.n-card:has-text("Variable Values")');
+    const previewCard = page.locator('.n-card:has-text("Preview Result")');
 
     const hasForm = await formCard.isVisible({ timeout: 3000 }).catch(() => false);
     const hasPreview = await previewCard.isVisible({ timeout: 3000 }).catch(() => false);
 
     if (hasForm && hasPreview) {
-      // 填写变量值
-      const variableInputs = page.locator('input[placeholder*="变量值"], input[placeholder*="variable value"]');
+      // Fill in the variable value
+      const variableInputs = page.locator('input[placeholder*="variable value"]');
 
       if (await variableInputs.count() > 0) {
-        const testValue = 'E2E测试变量值';
+        const testValue = 'E2E test variable value';
         await variableInputs.first().fill(testValue);
 
-        // 等待预览更新
+        // Wait for the preview to update
         await page.waitForTimeout(500);
 
-        // 验证预览中包含输入的值（如果变量被使用）
-        // 注意：这取决于实际的提示词内容
+        // Verify the preview contains the entered value (if the variable is used)
+        // Note: this depends on the actual prompt content
         const previewContent = previewCard.locator('.n-card__content');
         const content = await previewContent.textContent();
 
-        // 基本验证：预览内容不为空
+        // Basic check: the preview content is not empty
         expect(content).toBeTruthy();
       }
     }
   });
 });
 
-test.describe('完整工作流', () => {
-  test('应该支持完整的用户模式工作流', async ({ page }) => {
-    // 步骤 1: 确认在用户模式
-    const userModeButton = page.getByRole('button', { name: /用户模式/ });
+test.describe('Full workflow', () => {
+  test('should support the full user mode workflow', async ({ page }) => {
+    // Step 1: confirm we are in user mode
+    const userModeButton = page.getByRole('button', { name: /User Mode/ });
     await userModeButton.click();
     await page.waitForTimeout(200);
 
-    // 步骤 2: 打开变量管理器
-    const variableButton = page.getByRole('button', { name: /变量管理/ });
+    // Step 2: open the variable manager
+    const variableButton = page.getByRole('button', { name: /Variable Manage/ });
     await variableButton.click();
     await page.waitForTimeout(300);
 
-    // 步骤 3: 关闭变量管理器（如果有关闭按钮）
-    const closeButton = page.getByRole('button', { name: /关闭|取消/ }).first();
+    // Step 3: close the variable manager (if there is a close button)
+    const closeButton = page.getByRole('button', { name: /Close|Cancel/ }).first();
     if (await closeButton.isVisible({ timeout: 1000 })) {
       await closeButton.click();
       await page.waitForTimeout(200);
     } else {
-      // 可能点击遮罩层关闭
+      // May click the overlay to close
       await page.keyboard.press('Escape');
       await page.waitForTimeout(200);
     }
 
-    // 步骤 4: 打开预览
-    const previewButton = page.getByRole('button', { name: /预览/ });
+    // Step 4: open the preview
+    const previewButton = page.getByRole('button', { name: /Preview/ });
     await previewButton.click();
     await page.waitForTimeout(300);
 
-    // 验证预览面板打开
+    // Verify the preview panel is open
     const previewPanel = page.locator('[data-testid="preview-panel"], .preview-panel, .n-modal');
     await expect(previewPanel).toBeVisible({ timeout: 3000 });
   });
 
-  test('应该支持完整的系统模式工作流', async ({ page }) => {
-    // 步骤 1: 切换到系统模式
-    const systemModeButton = page.getByRole('button', { name: /系统模式/ });
+  test('should support the full system mode workflow', async ({ page }) => {
+    // Step 1: switch to system mode
+    const systemModeButton = page.getByRole('button', { name: /System Mode/ });
     await systemModeButton.click();
     await page.waitForTimeout(200);
 
-    // 步骤 2: 验证对话管理按钮可见
-    const conversationButton = page.getByRole('button', { name: /管理对话|对话/ });
+    // Step 2: verify the conversation manager button is visible
+    const conversationButton = page.getByRole('button', { name: /Manage Conversation|Conversation/ });
     await expect(conversationButton).toBeVisible();
 
-    // 步骤 3: 打开变量管理器
-    const variableButton = page.getByRole('button', { name: /变量管理/ });
+    // Step 3: open the variable manager
+    const variableButton = page.getByRole('button', { name: /Variable Manage/ });
     await variableButton.click();
     await page.waitForTimeout(300);
 
-    // 步骤 4: 关闭变量管理器
+    // Step 4: close the variable manager
     await page.keyboard.press('Escape');
     await page.waitForTimeout(200);
 
-    // 步骤 5: 打开预览
-    const previewButton = page.getByRole('button', { name: /预览/ });
+    // Step 5: open the preview
+    const previewButton = page.getByRole('button', { name: /Preview/ });
     await previewButton.click();
     await page.waitForTimeout(300);
 
-    // 验证预览面板打开
+    // Verify the preview panel is open
     const previewPanel = page.locator('[data-testid="preview-panel"], .preview-panel, .n-modal');
     await expect(previewPanel).toBeVisible({ timeout: 3000 });
   });
 
-  test('应该支持模式切换后的状态保持', async ({ page }) => {
-    // 步骤 1: 在用户模式下打开预览
-    const userModeButton = page.getByRole('button', { name: /用户模式/ });
+  test('should support state retention after a mode switch', async ({ page }) => {
+    // Step 1: open the preview in user mode
+    const userModeButton = page.getByRole('button', { name: /User Mode/ });
     await userModeButton.click();
     await page.waitForTimeout(200);
 
-    const previewButton = page.getByRole('button', { name: /预览/ });
+    const previewButton = page.getByRole('button', { name: /Preview/ });
     await previewButton.click();
     await page.waitForTimeout(300);
 
-    // 步骤 2: 切换到系统模式
-    await page.keyboard.press('Escape'); // 关闭预览
+    // Step 2: switch to system mode
+    await page.keyboard.press('Escape'); // Close the preview
     await page.waitForTimeout(200);
 
-    const systemModeButton = page.getByRole('button', { name: /系统模式/ });
+    const systemModeButton = page.getByRole('button', { name: /System Mode/ });
     await systemModeButton.click();
     await page.waitForTimeout(200);
 
-    // 步骤 3: 验证系统模式下的特性可用
-    const conversationButton = page.getByRole('button', { name: /管理对话|对话/ });
+    // Step 3: verify the system mode features are available
+    const conversationButton = page.getByRole('button', { name: /Manage Conversation|Conversation/ });
     await expect(conversationButton).toBeVisible();
 
-    // 步骤 4: 切换回用户模式
+    // Step 4: switch back to user mode
     await userModeButton.click();
     await page.waitForTimeout(200);
 
-    // 步骤 5: 验证对话管理按钮消失
+    // Step 5: verify the conversation manager button disappears
     await expect(conversationButton).not.toBeVisible();
   });
 });
 
-test.describe('错误处理与边界情况', () => {
-  test('应该处理快速模式切换', async ({ page }) => {
-    const userModeButton = page.getByRole('button', { name: /用户模式/ });
-    const systemModeButton = page.getByRole('button', { name: /系统模式/ });
+test.describe('Error handling and edge cases', () => {
+  test('should handle rapid mode switching', async ({ page }) => {
+    const userModeButton = page.getByRole('button', { name: /User Mode/ });
+    const systemModeButton = page.getByRole('button', { name: /System Mode/ });
 
-    // 快速切换多次
+    // Switch rapidly several times
     for (let i = 0; i < 5; i++) {
       await systemModeButton.click();
       await userModeButton.click();
@@ -502,14 +502,14 @@ test.describe('错误处理与边界情况', () => {
 
     await page.waitForTimeout(200);
 
-    // 应该仍然正常工作
+    // Should still work normally
     await expect(userModeButton).toHaveClass(/primary/);
   });
 
-  test('应该处理快速打开关闭操作', async ({ page }) => {
-    const variableButton = page.getByRole('button', { name: /变量管理/ });
+  test('should handle rapid open/close operations', async ({ page }) => {
+    const variableButton = page.getByRole('button', { name: /Variable Manage/ });
 
-    // 快速打开关闭变量管理器
+    // Rapidly open and close the variable manager
     for (let i = 0; i < 3; i++) {
       await variableButton.click();
       await page.waitForTimeout(100);
@@ -517,7 +517,7 @@ test.describe('错误处理与边界情况', () => {
       await page.waitForTimeout(100);
     }
 
-    // 应该仍然正常工作
+    // Should still work normally
     await variableButton.click();
     await page.waitForTimeout(300);
 
