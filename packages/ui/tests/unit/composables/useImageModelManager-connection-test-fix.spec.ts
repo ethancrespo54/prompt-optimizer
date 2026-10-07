@@ -75,7 +75,7 @@ describe('Image Model Manager Connection Test Fix', () => {
   })
 
   it('should find model in static models list', () => {
-    // 模拟静态模型列表
+    // Mock the static model list
     const models = ref([
       {
            id: 'google/gemini-2.5-flash-image',
@@ -92,7 +92,7 @@ describe('Image Model Manager Connection Test Fix', () => {
       providerId: 'openrouter'
     })
 
-    // 测试在静态模型列表中查找
+    // Test looking up in the static model list
     let selectedModel = models.value.find(m => m.id === configForm.value.modelId)
 
     expect(selectedModel).toBeDefined()
@@ -101,7 +101,7 @@ describe('Image Model Manager Connection Test Fix', () => {
   })
 
   it('should use buildDefaultModel for custom model ID', () => {
-    // 模拟静态模型列表（不包含自定义模型）
+    // Mock the static model list (excluding custom models)
     const models = ref([
       {
          id: 'google/gemini-2.5-flash-image',
@@ -114,30 +114,30 @@ describe('Image Model Manager Connection Test Fix', () => {
     ])
 
     const configForm = ref({
-      modelId: 'custom/my-random-model',  // 用户随意填写的模型ID
+      modelId: 'custom/my-random-model',  // A model ID the user entered freely
       providerId: 'openrouter'
     })
 
-    // 测试连接测试逻辑
+    // Test the connection test logic
     let selectedModel = models.value.find(m => m.id === configForm.value.modelId)
 
-    // 应该未在静态列表中找到
+    // Should not be found in the static list
     expect(selectedModel).toBeUndefined()
 
-    // 模拟buildDefaultModel调用
+    // Mock the buildDefaultModel call
     if (!selectedModel) {
       const adapter = mockRegistry.getAdapter('openrouter')
       selectedModel = adapter.buildDefaultModel(configForm.value.modelId)
     }
 
-    // 验证通过buildDefaultModel构建的模型
+    // Verify the model built via buildDefaultModel
     expect(selectedModel).toBeDefined()
     expect(selectedModel!.id).toBe('custom/my-random-model')
     expect(selectedModel!.name).toBe('custom/my-random-model')
     expect(selectedModel!.providerId).toBe('openrouter')
     expect(selectedModel!.capabilities.text2image).toBe(true)
 
-    // 验证buildDefaultModel被调用
+    // Verify buildDefaultModel was called
     expect(mockAdapter.buildDefaultModel).toHaveBeenCalledWith('custom/my-random-model')
   })
 
@@ -159,21 +159,21 @@ describe('Image Model Manager Connection Test Fix', () => {
 
     expect(selectedModel).toBeUndefined()
 
-    // 测试错误处理
+    // Test error handling
     expect(() => {
       if (!selectedModel) {
         try {
           const adapter = mockRegistry.getAdapter('openrouter')
           selectedModel = adapter.buildDefaultModel(configForm.value.modelId)
         } catch (error) {
-          throw new Error(`无法构建模型 ${configForm.value.modelId}: ${error instanceof Error ? error.message : String(error)}`)
+          throw new Error(`Unable to build model ${configForm.value.modelId}: ${error instanceof Error ? error.message : String(error)}`)
         }
       }
-    }).toThrow('无法构建模型 invalid/model: Invalid model ID format')
+    }).toThrow('Unable to build model invalid/model: Invalid model ID format')
   })
 })
 
-// 集成测试：验证修复前后的行为差异
+// Integration test: verify the behavior difference before and after the fix
 describe('Connection Test Behavior Comparison', () => {
   it('should demonstrate the difference between old and new logic', () => {
     const models = ref<ImageModel[]>([])
@@ -182,20 +182,20 @@ describe('Connection Test Behavior Comparison', () => {
       providerId: 'openrouter'
     })
 
-    // 旧逻辑（修复前）：直接查找，找不到就报错
+    // Old logic (before the fix): look up directly and error if not found
     const oldLogic = () => {
       const selectedModel = models.value.find(m => m.id === configForm.value.modelId)
       if (!selectedModel) {
-        throw new Error('选中的模型未找到')  // 这里会报错
+        throw new Error('Selected model not found')  // This will error
       }
       return selectedModel
     }
 
-    // 新逻辑（修复后）：查找 + buildDefaultModel后备
+    // New logic (after the fix): look up + buildDefaultModel fallback
     const newLogic = () => {
       let selectedModel = models.value.find(m => m.id === configForm.value.modelId)
       if (!selectedModel) {
-        // 使用buildDefaultModel构建
+        // Build with buildDefaultModel
         selectedModel = {
           id: configForm.value.modelId,
           name: configForm.value.modelId,
@@ -208,10 +208,10 @@ describe('Connection Test Behavior Comparison', () => {
       return selectedModel
     }
 
-    // 验证旧逻辑失败
-    expect(() => oldLogic()).toThrow('选中的模型未找到')
+    // Verify the old logic fails
+    expect(() => oldLogic()).toThrow('Selected model not found')
 
-    // 验证新逻辑成功
+    // Verify the new logic succeeds
     const result = newLogic()
     expect(result).toBeDefined()
     expect(result.id).toBe('user-custom-model-123')

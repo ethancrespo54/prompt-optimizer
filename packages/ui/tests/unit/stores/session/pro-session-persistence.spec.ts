@@ -81,10 +81,10 @@ describe('Session stores (pro) persistence', () => {
     expect(store.selectedTemplateId).toBe('legacy-opt')
     expect(store.selectedIterateTemplateId).toBe('legacy-iter')
 
-    // restoreSession 会读取 3 个键：
+    // restoreSession reads 3 keys:
     // 1. session/v1/pro-variable
-    // 2. app:selected-context-user-optimize-template (迁移)
-    // 3. app:selected-context-iterate-template (迁移)
+    // 2. app:selected-context-user-optimize-template (migration)
+    // 3. app:selected-context-iterate-template (migration)
     expect(get).toHaveBeenCalledTimes(3)
     expect(get).toHaveBeenCalledWith('session/v1/pro-variable', null)
   })

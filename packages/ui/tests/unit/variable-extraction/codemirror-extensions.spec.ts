@@ -11,7 +11,7 @@ import type { DetectedVariable } from '../../../src/components/variable-extracti
 
 describe('codemirror-extensions', () => {
   describe('variableHighlighter', () => {
-    it('应该创建高亮装饰器插件', () => {
+    it('should create the highlight decorator plugin', () => {
       const getVariables = vi.fn().mockReturnValue([])
       const plugin = variableHighlighter(getVariables)
 
@@ -19,7 +19,7 @@ describe('codemirror-extensions', () => {
       expect(typeof plugin).toBe('object')
     })
 
-    it('创建插件时不应立即调用 getVariables', () => {
+    it('should not call getVariables immediately when creating the plugin', () => {
       const mockVariables: DetectedVariable[] = [
         { name: 'var1', source: 'global', value: 'value1', from: 0, to: 8 }
       ]
@@ -30,7 +30,7 @@ describe('codemirror-extensions', () => {
       expect(getVariables).not.toHaveBeenCalled()
     })
 
-    it('应该为不同来源的变量创建插件', () => {
+    it('should create plugins for variables from different sources', () => {
       const sources: Array<DetectedVariable['source']> = ['global', 'temporary', 'predefined', 'missing']
 
       sources.forEach(source => {
@@ -48,23 +48,23 @@ describe('codemirror-extensions', () => {
 
   describe('variableAutocompletion', () => {
     const mockLabels: VariableDetectionLabels = {
-      sourceGlobal: '全局变量',
-      sourceTemporary: '临时变量',
-      sourcePredefined: '预定义变量',
-      missingVariable: '缺失变量',
-      addToTemporary: '添加到临时变量',
-      emptyValue: '(空)',
-      valuePreview: (value: string) => `值: ${value}`
+      sourceGlobal: 'Global variable',
+      sourceTemporary: 'Temporary variable',
+      sourcePredefined: 'Predefined variable',
+      missingVariable: 'Missing variable',
+      addToTemporary: 'Add to temporary variables',
+      emptyValue: '(empty)',
+      valuePreview: (value: string) => `Value: ${value}`
     }
 
-    it('应该创建自动完成扩展', () => {
+    it('should create the autocomplete extension', () => {
       const extension = variableAutocompletion({}, {}, {}, mockLabels)
 
       expect(extension).toBeDefined()
       expect(typeof extension).toBe('object')
     })
 
-    it('应该能处理带有变量的配置', () => {
+    it('should handle a config with variables', () => {
       const globalVariables = { username: 'John', email: 'john@example.com' }
       const temporaryVariables = { tempVar1: 'temp value 1' }
       const predefinedVariables = { lastOptimizedPrompt: 'system value' }
@@ -79,7 +79,7 @@ describe('codemirror-extensions', () => {
       expect(extension).toBeDefined()
     })
 
-    it('应该处理空变量集合', () => {
+    it('should handle an empty variable set', () => {
       const extension = variableAutocompletion({}, {}, {}, mockLabels)
 
       expect(extension).toBeDefined()
@@ -87,7 +87,7 @@ describe('codemirror-extensions', () => {
   })
 
   describe('createVariableCompletionOption', () => {
-    it('应该创建包含正确属性的补全选项', () => {
+    it('should create completion options with the correct properties', () => {
       const option = createVariableCompletionOption({
         name: 'testVar',
         source: 'global',
@@ -101,7 +101,7 @@ describe('codemirror-extensions', () => {
       expect((option as any).sourceType).toBe('global')
     })
 
-    it('应该为不同来源设置正确的补全选项', () => {
+    it('should set the correct completion options for different sources', () => {
       const sources: Array<'global' | 'temporary' | 'predefined'> = ['global', 'temporary', 'predefined']
 
       sources.forEach(source => {
@@ -117,7 +117,7 @@ describe('codemirror-extensions', () => {
       })
     })
 
-    it('apply 函数应该存在', () => {
+    it('the apply function should exist', () => {
       const option = createVariableCompletionOption({
         name: 'testVar',
         source: 'global',
@@ -132,16 +132,16 @@ describe('codemirror-extensions', () => {
 
   describe('missingVariableTooltip', () => {
     const mockLabels: VariableDetectionLabels = {
-      sourceGlobal: '全局变量',
-      sourceTemporary: '临时变量',
-      sourcePredefined: '预定义变量',
-      missingVariable: '该变量尚未定义',
-      addToTemporary: '添加到临时变量',
-      emptyValue: '(空)',
-      valuePreview: (value: string) => `值: ${value}`
+      sourceGlobal: 'Global variable',
+      sourceTemporary: 'Temporary variable',
+      sourcePredefined: 'Predefined variable',
+      missingVariable: 'This variable is not defined yet',
+      addToTemporary: 'Add to temporary variables',
+      emptyValue: '(empty)',
+      valuePreview: (value: string) => `Value: ${value}`
     }
 
-    it('应该创建悬浮提示扩展', () => {
+    it('should create the hover tooltip extension', () => {
       const onAddVariable = vi.fn()
       const extension = missingVariableTooltip(onAddVariable, mockLabels)
 
@@ -149,7 +149,7 @@ describe('codemirror-extensions', () => {
       expect(typeof extension).toBe('object')
     })
 
-    it('应该接受自定义主题配置', () => {
+    it('should accept a custom theme config', () => {
       const onAddVariable = vi.fn()
       const customTheme = {
         backgroundColor: '#ffffff',
@@ -165,7 +165,7 @@ describe('codemirror-extensions', () => {
       expect(extension).toBeDefined()
     })
 
-    it('创建扩展时不应调用回调函数', () => {
+    it('should not call the callback function when creating the extension', () => {
       const onAddVariable = vi.fn()
       missingVariableTooltip(onAddVariable, mockLabels)
 
@@ -183,14 +183,14 @@ describe('codemirror-extensions', () => {
       hoverColor: '#f5f5f5'
     }
 
-    it('应该创建主题扩展', () => {
+    it('should create the theme extension', () => {
       const extension = createThemeExtension(mockThemeVars)
 
       expect(extension).toBeDefined()
       expect(typeof extension).toBe('object')
     })
 
-    it('应该使用自定义主题变量', () => {
+    it('should use custom theme variables', () => {
       const customThemeVars = {
         ...mockThemeVars,
         primaryColor: '#ff0000',
@@ -203,16 +203,16 @@ describe('codemirror-extensions', () => {
     })
   })
 
-  describe('集成测试', () => {
-    it('所有扩展工厂函数应该能够被调用而不抛出错误', () => {
+  describe('Integration test', () => {
+    it('all extension factory functions should be callable without throwing', () => {
       const mockLabels: VariableDetectionLabels = {
-        sourceGlobal: '全局变量',
-        sourceTemporary: '临时变量',
-        sourcePredefined: '预定义变量',
-        missingVariable: '缺失变量',
-        addToTemporary: '添加到临时变量',
-        emptyValue: '(空)',
-        valuePreview: (value: string) => `值: ${value}`
+        sourceGlobal: 'Global variable',
+        sourceTemporary: 'Temporary variable',
+        sourcePredefined: 'Predefined variable',
+        missingVariable: 'Missing variable',
+        addToTemporary: 'Add to temporary variables',
+        emptyValue: '(empty)',
+        valuePreview: (value: string) => `Value: ${value}`
       }
 
       const mockThemeVars = {
@@ -227,7 +227,7 @@ describe('codemirror-extensions', () => {
       const getVariables = vi.fn().mockReturnValue([])
       const onAddVariable = vi.fn()
 
-      // 验证所有工厂函数都能正常工作
+      // Verify all factory functions work correctly
       expect(() => variableHighlighter(getVariables)).not.toThrow()
       expect(() => variableAutocompletion({}, {}, {}, mockLabels)).not.toThrow()
       expect(() => missingVariableTooltip(onAddVariable, mockLabels)).not.toThrow()

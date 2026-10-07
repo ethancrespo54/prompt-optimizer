@@ -1394,7 +1394,7 @@ describe('useAppPromptGardenImport', () => {
       expect(String(inputImageAssetIds[0] || '')).toMatch(/^img_/)
       expect(imageStorageService.saveImage).toHaveBeenCalled()
 
-      // saveToFavorites 查询参数会和 import 参数一起清理。
+      // The saveToFavorites query parameter is cleaned up together with the import parameters.
       expect(currentRoute.value.query.importCode).toBeUndefined()
       expect(currentRoute.value.query.saveToFavorites).toBeUndefined()
     } finally {
@@ -1481,7 +1481,7 @@ describe('useAppPromptGardenImport', () => {
             title: 'Confirm Prompt Title',
             description: 'Confirm Prompt Description',
             tags: ['confirm', 'garden'],
-            categoryKey: '文本生成',
+            categoryKey: 'Text Generation',
           },
         }),
         {
@@ -1534,7 +1534,7 @@ describe('useAppPromptGardenImport', () => {
       expect(savedArg.prefill?.title).toBe('Confirm Prompt Title')
       expect(savedArg.prefill?.description).toBe('Confirm Prompt Description')
       expect(savedArg.prefill?.tags).toEqual(['confirm', 'garden'])
-      expect(savedArg.prefill?.category).toBe('文本生成')
+      expect(savedArg.prefill?.category).toBe('Text Generation')
       expect(savedArg.prefill?.functionMode).toBe('basic')
       expect(savedArg.prefill?.metadata?.gardenSnapshot).toBeTruthy()
 

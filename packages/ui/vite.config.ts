@@ -21,7 +21,7 @@ export default defineConfig({
       formats: ['es', 'cjs']
     },
     watch: process.env.NODE_ENV === 'development' ? {
-      // 更精确的监听配置
+      // More precise watch configuration
       include: ['src/**/*'],
       buildDelay: 100
     } : null,

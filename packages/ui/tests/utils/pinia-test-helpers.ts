@@ -1,12 +1,12 @@
 /**
- * Pinia 测试辅助工具
+ * Pinia test helpers
  *
- * 提供标准化的 Pinia 测试设置和清理机制
+ * Provides standardized Pinia test setup and cleanup mechanisms
  *
- * 设计原则（基于 Codex 建议）：
- * - 全局 afterEach 兜底清理（在 tests/setup.ts 中配置）
- * - Helper 提供标准测试入口（更短、更一致）
- * - 两者结合使用，即使 helper 忘了清理也不怕
+ * Design principles (based on Codex suggestions):
+ * - A global afterEach fallback cleanup (configured in tests/setup.ts)
+ * - Helpers provide the standard test entry point (shorter, more consistent)
+ * - Using both together means nothing breaks even if a helper forgets to clean up
  */
 
 import { createPinia, type Pinia } from 'pinia'
@@ -16,9 +16,9 @@ import type { AppServices } from '../../src/types/services'
 import type { IPreferenceService } from '@prompt-optimizer/core'
 
 /**
- * 创建 PreferenceService stub（可复用的默认实现）
+ * Create a PreferenceService stub (reusable default implementation)
  *
- * @param overrides - 可选的方法覆盖
+ * @param overrides - Optional method overrides
  * @returns PreferenceService stub
  *
  * @example
@@ -48,14 +48,14 @@ export function createPreferenceServiceStub(
 }
 
 /**
- * 创建用于测试的 Pinia 实例和服务
+ * Create a Pinia instance and services for testing
  *
- * 这是 Codex 建议的标准测试入口，提供：
- * - 预配置的 Pinia 实例
- * - 默认的服务 stub（可覆盖）
- * - 清理函数（可选调用，全局 afterEach 会兜底）
+ * This is the standard test entry point suggested by Codex, providing:
+ * - A preconfigured Pinia instance
+ * - Default service stubs (overridable)
+ * - A cleanup function (optional to call; the global afterEach is the fallback)
  *
- * @param servicesOverrides - 可选的服务覆盖配置
+ * @param servicesOverrides - Optional service overrides
  * @returns { pinia, services, cleanup }
  *
  * @example
@@ -71,7 +71,7 @@ export function createPreferenceServiceStub(
  *   await store.saveSession()
  *
  *   expect(services.preferenceService.set).toHaveBeenCalled()
- *   // 清理由全局 afterEach 自动完成，无需手动 cleanup
+ *   // Cleanup is done automatically by the global afterEach; no manual cleanup needed
  * })
  * ```
  */
@@ -82,24 +82,24 @@ export function createTestPinia(
   services: AppServices
   cleanup: () => void
 } {
-  // 创建默认服务 stub
+  // Create default service stubs
   const defaultServices: AppServices = {
     preferenceService: createPreferenceServiceStub(),
-    // 其他服务可以按需添加默认 stub
+    // Other services can have default stubs added as needed
     ...servicesOverrides,
   } as AppServices
 
-  // 创建 Pinia 实例
+  // Create the Pinia instance
   const pinia = createPinia()
 
-  // 创建 Vue 应用（Pinia 需要）
+  // Create the Vue app (Pinia requires it)
   const app = createApp({ render: () => null })
   app.use(pinia)
 
-  // 设置全局服务（供 getPiniaServices() 使用）
+  // Set global services (used by getPiniaServices())
   setPiniaServices(defaultServices)
 
-  // 提供清理函数（可选调用，全局 afterEach 会兜底）
+  // Provide a cleanup function (optional to call; the global afterEach is the fallback)
   const cleanup = () => {
     setPiniaServices(null)
   }
@@ -112,16 +112,16 @@ export function createTestPinia(
 }
 
 /**
- * 使用 mock 服务运行测试函数（自动清理/恢复）
+ * Run a test function with mock services (automatic cleanup/restore)
  *
- * 这是更简洁的测试入口，适合需要自动清理的场景。
+ * This is a more concise test entry point, suitable for scenarios that need automatic cleanup.
  *
- * ✅ Codex 建议：支持嵌套调用和可恢复
- * - 结束时恢复到调用前的 services，而不是一律置 null
- * - 避免嵌套 helper 或同用例多次切换服务时出现问题
+ * ✅ Codex suggestion: support nested calls and restoration
+ * - On exit, restore to the services from before the call instead of always setting null
+ * - Avoids problems with nested helpers or switching services multiple times in one test case
  *
- * @param servicesOverrides - 服务覆盖配置
- * @param testFn - 测试函数
+ * @param servicesOverrides - Service override config
+ * @param testFn - Test function
  *
  * @example
  * ```typescript
@@ -138,17 +138,17 @@ export function createTestPinia(
  *       expect(store.prompt).toBe('saved-data')
  *     }
  *   )
- *   // 自动恢复到调用前的状态
+ *   // Automatically restored to the state before the call
  * })
  *
- * // ✅ 支持嵌套调用
+ * // ✅ Supports nested calls
  * it('supports nested calls', async () => {
  *   await withMockPiniaServices({ service1 }, async () => {
- *     // 外层服务
+ *     // Outer services
  *     await withMockPiniaServices({ service2 }, async () => {
- *       // 内层服务
+ *       // Inner services
  *     })
- *     // 自动恢复到外层服务
+ *     // Automatically restored to the outer services
  *   })
  * })
  * ```
@@ -157,7 +157,7 @@ export async function withMockPiniaServices(
   servicesOverrides: Partial<AppServices>,
   testFn: (ctx: { pinia: Pinia; services: AppServices }) => void | Promise<void>
 ): Promise<void> {
-  // ✅ Codex 建议：保存调用前的 services，结束时恢复
+  // ✅ Codex suggestion: save the services from before the call and restore them on exit
   const previousServices = getPiniaServices()
 
   const { pinia, services, cleanup } = createTestPinia(servicesOverrides)
@@ -166,7 +166,7 @@ export async function withMockPiniaServices(
     await testFn({ pinia, services })
   } finally {
     cleanup()
-    // ✅ 恢复到调用前的状态（而非一律置 null）
+    // ✅ Restore to the state before the call (instead of always setting null)
     setPiniaServices(previousServices)
   }
 }

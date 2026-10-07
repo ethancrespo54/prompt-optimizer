@@ -1,7 +1,7 @@
 /**
- * messageChainMap Key 格式迁移测试
+ * messageChainMap key format migration test
  *
- * 验证从旧格式（mode:messageId）到新格式（messageId）的迁移逻辑
+ * Verifies the migration logic from the legacy format (mode:messageId) to the new format (messageId)
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { ref } from 'vue'
@@ -32,7 +32,7 @@ vi.mock('vue-i18n', async (importOriginal) => {
   }
 })
 
-describe('messageChainMap 迁移逻辑测试', () => {
+describe('messageChainMap migration logic test', () => {
   let mockSession: any
   let services: any
   let conversationMessages: any
@@ -42,7 +42,7 @@ describe('messageChainMap 迁移逻辑测试', () => {
   let selectedIterateTemplate: any
 
   beforeEach(() => {
-    // Mock session store（标准模式，直接暴露字段）
+    // Mock the session store (standard mode, fields exposed directly)
     mockSession = {
       selectedMessageId: '',
       messageChainMap: {},
@@ -69,15 +69,15 @@ describe('messageChainMap 迁移逻辑测试', () => {
     selectedIterateTemplate = ref({ id: 'test-iterate-template', name: 'Test Iterate Template' })
   })
 
-  it('应该将旧格式 key (system:messageId) 迁移为新格式 (messageId)', () => {
-    // 准备旧格式数据
+  it('should migrate legacy keys (system:messageId) to the new format (messageId)', () => {
+    // Prepare legacy-format data
     mockSession.messageChainMap = {
       'system:msg-123': 'chain-abc',
       'system:msg-456': 'chain-def',
       'user:msg-789': 'chain-ghi'
     }
 
-    // 创建 composable
+    // Create the composable
     const composable = useConversationOptimization(
       services,
       conversationMessages,
@@ -87,20 +87,20 @@ describe('messageChainMap 迁移逻辑测试', () => {
       selectedIterateTemplate
     )
 
-    // 触发恢复（模拟应用启动时的 session restore）
+    // Trigger restore (simulates session restore on app startup)
     composable.restoreFromSessionStore()
 
-    // 验证 messageChainMap 使用新格式
+    // Verify messageChainMap uses the new format
     expect(composable.messageChainMap.value.get('msg-123')).toBe('chain-abc')
     expect(composable.messageChainMap.value.get('msg-456')).toBe('chain-def')
     expect(composable.messageChainMap.value.get('msg-789')).toBe('chain-ghi')
 
-    // 验证旧格式 key 不存在
+    // Verify legacy keys no longer exist
     expect(composable.messageChainMap.value.has('system:msg-123')).toBe(false)
     expect(composable.messageChainMap.value.has('system:msg-456')).toBe(false)
     expect(composable.messageChainMap.value.has('user:msg-789')).toBe(false)
 
-    // 验证迁移后自动保存到 session store
+    // Verify the session store is saved automatically after migration
     expect(mockSession.setMessageChainMap).toHaveBeenCalledWith({
       'msg-123': 'chain-abc',
       'msg-456': 'chain-def',
@@ -108,8 +108,8 @@ describe('messageChainMap 迁移逻辑测试', () => {
     })
   })
 
-  it('应该正确处理新格式 key（不需要迁移）', () => {
-    // 准备新格式数据
+  it('should handle new-format keys correctly (no migration needed)', () => {
+    // Prepare new-format data
     mockSession.messageChainMap = {
       'msg-123': 'chain-abc',
       'msg-456': 'chain-def'
@@ -126,16 +126,16 @@ describe('messageChainMap 迁移逻辑测试', () => {
 
     composable.restoreFromSessionStore()
 
-    // 验证数据正确恢复
+    // Verify the data is restored correctly
     expect(composable.messageChainMap.value.get('msg-123')).toBe('chain-abc')
     expect(composable.messageChainMap.value.get('msg-456')).toBe('chain-def')
 
-    // 验证没有触发迁移保存（因为都是新格式）
+    // Verify no migration save was triggered (since everything is in the new format)
     expect(mockSession.setMessageChainMap).not.toHaveBeenCalled()
   })
 
-  it('应该正确处理混合格式数据（部分旧格式，部分新格式）', () => {
-    // 准备混合格式数据
+  it('should handle mixed-format data correctly (some legacy, some new)', () => {
+    // Prepare mixed-format data
     mockSession.messageChainMap = {
       'system:msg-old-1': 'chain-old-1',
       'msg-new-1': 'chain-new-1',
@@ -154,13 +154,13 @@ describe('messageChainMap 迁移逻辑测试', () => {
 
     composable.restoreFromSessionStore()
 
-    // 验证所有数据都使用新格式
+    // Verify all data uses the new format
     expect(composable.messageChainMap.value.get('msg-old-1')).toBe('chain-old-1')
     expect(composable.messageChainMap.value.get('msg-new-1')).toBe('chain-new-1')
     expect(composable.messageChainMap.value.get('msg-old-2')).toBe('chain-old-2')
     expect(composable.messageChainMap.value.get('msg-new-2')).toBe('chain-new-2')
 
-    // 验证迁移后保存
+    // Verify the save after migration
     expect(mockSession.setMessageChainMap).toHaveBeenCalledWith({
       'msg-old-1': 'chain-old-1',
       'msg-new-1': 'chain-new-1',
@@ -169,7 +169,7 @@ describe('messageChainMap 迁移逻辑测试', () => {
     })
   })
 
-  it('应该正确处理空数据', () => {
+  it('should handle empty data correctly', () => {
     mockSession.messageChainMap = {}
 
     const composable = useConversationOptimization(
@@ -183,19 +183,19 @@ describe('messageChainMap 迁移逻辑测试', () => {
 
     composable.restoreFromSessionStore()
 
-    // 验证 Map 为空
+    // Verify the Map is empty
     expect(composable.messageChainMap.value.size).toBe(0)
 
-    // 验证没有触发保存
+    // Verify no save was triggered
     expect(mockSession.setMessageChainMap).not.toHaveBeenCalled()
   })
 
-  it('应该忽略非 system 模式的迁移（只在 Pro-system 模式触发）', () => {
+  it('should ignore migration for non-system modes (only triggered in Pro-system mode)', () => {
     mockSession.messageChainMap = {
       'system:msg-123': 'chain-abc'
     }
 
-    // 切换到 user 模式
+    // Switch to user mode
     optimizationMode.value = 'user'
 
     const composable = useConversationOptimization(
@@ -209,20 +209,20 @@ describe('messageChainMap 迁移逻辑测试', () => {
 
     composable.restoreFromSessionStore()
 
-    // 验证 Map 仍为空（因为不是 system 模式）
+    // Verify the Map is still empty (because it is not system mode)
     expect(composable.messageChainMap.value.size).toBe(0)
 
-    // 验证没有触发保存
+    // Verify no save was triggered
     expect(mockSession.setMessageChainMap).not.toHaveBeenCalled()
   })
 
-  it('应该使用严格前缀匹配，不误迁移包含 : 的 messageId', () => {
-    // 准备混合数据：包含旧格式、新格式、以及包含 : 但不是旧格式的 messageId
+  it('should use strict prefix matching and not wrongly migrate messageIds containing :', () => {
+    // Prepare mixed data: legacy format, new format, and messageIds containing : that are not legacy format
     mockSession.messageChainMap = {
-      'system:msg-123': 'chain-abc',         // 旧格式，应迁移
-      'msg-with:colon': 'chain-def',         // 新格式但包含 :，不应迁移
-      'random:prefix:msg': 'chain-ghi',      // 新格式但包含多个 :，不应迁移
-      'user:msg-456': 'chain-jkl'            // 旧格式，应迁移
+      'system:msg-123': 'chain-abc',         // Legacy format, should be migrated
+      'msg-with:colon': 'chain-def',         // New format but contains :, should not be migrated
+      'random:prefix:msg': 'chain-ghi',      // New format but contains multiple :, should not be migrated
+      'user:msg-456': 'chain-jkl'            // Legacy format, should be migrated
     }
 
     const composable = useConversationOptimization(
@@ -236,19 +236,19 @@ describe('messageChainMap 迁移逻辑测试', () => {
 
     composable.restoreFromSessionStore()
 
-    // 验证旧格式被正确迁移
+    // Verify the legacy format was migrated correctly
     expect(composable.messageChainMap.value.get('msg-123')).toBe('chain-abc')
     expect(composable.messageChainMap.value.get('msg-456')).toBe('chain-jkl')
 
-    // 验证包含 : 的新格式 messageId 保持原样（不被误迁移）
+    // Verify new-format messageIds containing : are kept as-is (not wrongly migrated)
     expect(composable.messageChainMap.value.get('msg-with:colon')).toBe('chain-def')
     expect(composable.messageChainMap.value.get('random:prefix:msg')).toBe('chain-ghi')
 
-    // 验证旧格式 key 不存在
+    // Verify legacy keys no longer exist
     expect(composable.messageChainMap.value.has('system:msg-123')).toBe(false)
     expect(composable.messageChainMap.value.has('user:msg-456')).toBe(false)
 
-    // 验证迁移后保存
+    // Verify the save after migration
     expect(mockSession.setMessageChainMap).toHaveBeenCalledWith({
       'msg-123': 'chain-abc',
       'msg-with:colon': 'chain-def',
@@ -257,8 +257,8 @@ describe('messageChainMap 迁移逻辑测试', () => {
     })
   })
 
-  it('应该支持所有已知的旧格式前缀 (system, user, basic, pro, image)', () => {
-    // 准备所有旧格式前缀的数据
+  it('should support all known legacy format prefixes (system, user, basic, pro, image)', () => {
+    // Prepare data with all legacy format prefixes
     mockSession.messageChainMap = {
       'system:msg-1': 'chain-1',
       'user:msg-2': 'chain-2',
@@ -278,14 +278,14 @@ describe('messageChainMap 迁移逻辑测试', () => {
 
     composable.restoreFromSessionStore()
 
-    // 验证所有前缀都被正确迁移
+    // Verify all prefixes were migrated correctly
     expect(composable.messageChainMap.value.get('msg-1')).toBe('chain-1')
     expect(composable.messageChainMap.value.get('msg-2')).toBe('chain-2')
     expect(composable.messageChainMap.value.get('msg-3')).toBe('chain-3')
     expect(composable.messageChainMap.value.get('msg-4')).toBe('chain-4')
     expect(composable.messageChainMap.value.get('msg-5')).toBe('chain-5')
 
-    // 验证迁移后保存
+    // Verify the save after migration
     expect(mockSession.setMessageChainMap).toHaveBeenCalled()
   })
 })

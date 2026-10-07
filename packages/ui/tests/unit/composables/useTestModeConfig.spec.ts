@@ -5,7 +5,7 @@ import { useTestModeConfig } from '../../../src/composables/ui/useTestModeConfig
 type OptimizationMode = 'system' | 'user'
 
 describe('useTestModeConfig', () => {
-  it('基础初始化测试', () => {
+  it('basic initialization test', () => {
     const optimizationMode = ref<OptimizationMode>('system')
     const testModeConfig = useTestModeConfig(optimizationMode)
 

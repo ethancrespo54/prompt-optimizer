@@ -4,7 +4,7 @@ export default {
     "./index.html",
     "./src/**/*.{vue,js,ts,jsx,tsx}",
   ],
-  darkMode: 'class', // 启用基于类的暗黑模式
+  darkMode: 'class', // Enable class-based dark mode
   theme: {
     extend: {
       colors: {
@@ -21,7 +21,7 @@ export default {
     require('@tailwindcss/forms'),
     require('@tailwindcss/typography'),
     function({ addVariant, e }) {
-      // 添加自定义主题变体
+      // Add custom theme variants
       addVariant('theme-blue', ['.theme-blue &', ':root.theme-blue &'])
       addVariant('theme-green', ['.theme-green &', ':root.theme-green &'])
       addVariant('theme-purple', ['.theme-purple &', ':root.theme-purple &'])

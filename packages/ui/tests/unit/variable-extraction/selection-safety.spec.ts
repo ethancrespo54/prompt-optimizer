@@ -1,16 +1,16 @@
 import { describe, it, expect } from 'vitest'
 
 /**
- * 选择安全机制测试
+ * Selection safety mechanism test
  *
- * 这些函数在 VariableAwareInput.vue 组件内部实现
- * 这里测试它们的核心逻辑
+ * These functions are implemented inside the VariableAwareInput.vue component
+ * Here we test their core logic
  */
 
 describe('selection-safety', () => {
   describe('isInsideVariablePlaceholder', () => {
     /**
-     * 判断给定位置是否位于变量占位符内部
+     * Determine whether the given position is inside a variable placeholder
      */
     const isInsideVariablePlaceholder = (text: string, index: number): boolean => {
       const beforeText = text.substring(0, index)
@@ -19,48 +19,48 @@ describe('selection-safety', () => {
       return openBraces > closeBraces
     }
 
-    it('应该识别占位符外部的位置', () => {
+    it('should identify positions outside a placeholder', () => {
       const text = 'Hello {{name}}'
 
       expect(isInsideVariablePlaceholder(text, 0)).toBe(false)  // 'H'
       expect(isInsideVariablePlaceholder(text, 5)).toBe(false)  // ' '
     })
 
-    it('应该识别占位符内部的位置', () => {
+    it('should identify positions inside a placeholder', () => {
       const text = 'Hello {{name}}'
 
       expect(isInsideVariablePlaceholder(text, 8)).toBe(true)   // 'n' in name
       expect(isInsideVariablePlaceholder(text, 11)).toBe(true)  // 'e' in name
     })
 
-    it('应该正确处理开始括号位置', () => {
+    it('should handle the opening bracket positions correctly', () => {
       const text = 'Hello {{name}}'
 
-      expect(isInsideVariablePlaceholder(text, 6)).toBe(false)  // 第一个 '{'
-      expect(isInsideVariablePlaceholder(text, 7)).toBe(false)  // 第二个 '{'
+      expect(isInsideVariablePlaceholder(text, 6)).toBe(false)  // The first '{'
+      expect(isInsideVariablePlaceholder(text, 7)).toBe(false)  // The second '{'
     })
 
-    it('应该正确处理结束括号位置', () => {
+    it('should handle the closing bracket positions correctly', () => {
       const text = 'Hello {{name}}'
 
-      expect(isInsideVariablePlaceholder(text, 12)).toBe(true)  // 第一个 '}'
-      expect(isInsideVariablePlaceholder(text, 13)).toBe(true)  // 第二个 '}'
-      expect(isInsideVariablePlaceholder(text, 14)).toBe(false) // 结束后
+      expect(isInsideVariablePlaceholder(text, 12)).toBe(true)  // The first '}'
+      expect(isInsideVariablePlaceholder(text, 13)).toBe(true)  // The second '}'
+      expect(isInsideVariablePlaceholder(text, 14)).toBe(false) // After the end
     })
 
-    it('应该处理多个变量', () => {
+    it('should handle multiple variables', () => {
       const text = '{{var1}} and {{var2}}'
 
-      expect(isInsideVariablePlaceholder(text, 3)).toBe(true)   // var1 内部
-      expect(isInsideVariablePlaceholder(text, 9)).toBe(false)  // 两个变量之间
-      expect(isInsideVariablePlaceholder(text, 16)).toBe(true)  // var2 内部
+      expect(isInsideVariablePlaceholder(text, 3)).toBe(true)   // Inside var1
+      expect(isInsideVariablePlaceholder(text, 9)).toBe(false)  // Between the two variables
+      expect(isInsideVariablePlaceholder(text, 16)).toBe(true)  // Inside var2
     })
 
-    it('应该处理嵌套的括号', () => {
+    it('should handle nested brackets', () => {
       const text = '{{outer {{inner}}}}'
 
-      // 注意: 这个测试展示了简单的括号计数方法的局限性
-      // 实际的变量占位符不应该嵌套
+      // Note: this test shows the limitation of the simple bracket-counting approach
+      // Real variable placeholders should not be nested
       expect(isInsideVariablePlaceholder(text, 3)).toBe(true)
       expect(isInsideVariablePlaceholder(text, 10)).toBe(true)
     })
@@ -68,7 +68,7 @@ describe('selection-safety', () => {
 
   describe('validateSelection', () => {
     /**
-     * 校验选中文本是否合法 (不得跨越变量边界)
+     * Validate that the selected text is legal (must not cross a variable boundary)
      */
     const validateSelection = (
       fullText: string,
@@ -76,37 +76,37 @@ describe('selection-safety', () => {
       end: number,
       selectedText: string
     ): { isValid: boolean; reason?: string } => {
-      // 是否有有效选择
+      // Whether there is a valid selection
       if (start === end || !selectedText.trim()) {
-        return { isValid: false, reason: '未选中任何文本' }
+        return { isValid: false, reason: 'No text selected' }
       }
 
-      // 检查是否跨越变量边界
+      // Check whether it crosses a variable boundary
       const beforeSelection = fullText.substring(0, start)
       const afterSelection = fullText.substring(end)
 
       const openBracesBefore = (beforeSelection.match(/\{\{/g) || []).length
       const closeBracesBefore = (beforeSelection.match(/\}\}/g) || []).length
       if (openBracesBefore > closeBracesBefore) {
-        return { isValid: false, reason: '不能跨越变量边界' }
+        return { isValid: false, reason: 'Cannot cross a variable boundary' }
       }
 
       const openBracesAfter = (afterSelection.match(/\{\{/g) || []).length
       const closeBracesAfter = (afterSelection.match(/\}\}/g) || []).length
       if (closeBracesAfter > openBracesAfter) {
-        return { isValid: false, reason: '不能跨越变量边界' }
+        return { isValid: false, reason: 'Cannot cross a variable boundary' }
       }
 
       const openBracesInSelection = (selectedText.match(/\{\{/g) || []).length
       const closeBracesInSelection = (selectedText.match(/\}\}/g) || []).length
       if (openBracesInSelection !== closeBracesInSelection) {
-        return { isValid: false, reason: '不能跨越变量边界' }
+        return { isValid: false, reason: 'Cannot cross a variable boundary' }
       }
 
       return { isValid: true }
     }
 
-    it('应该接受正常的文本选择', () => {
+    it('should accept a normal text selection', () => {
       const text = 'Hello world'
       const result = validateSelection(text, 0, 5, 'Hello')
 
@@ -114,69 +114,69 @@ describe('selection-safety', () => {
       expect(result.reason).toBeUndefined()
     })
 
-    it('应该拒绝空选择', () => {
+    it('should reject an empty selection', () => {
       const text = 'Hello world'
       const result = validateSelection(text, 5, 5, '')
 
       expect(result.isValid).toBe(false)
-      expect(result.reason).toBe('未选中任何文本')
+      expect(result.reason).toBe('No text selected')
     })
 
-    it('应该拒绝仅包含空格的选择', () => {
+    it('should reject a selection containing only spaces', () => {
       const text = 'Hello   world'
       const result = validateSelection(text, 5, 8, '   ')
 
       expect(result.isValid).toBe(false)
-      expect(result.reason).toBe('未选中任何文本')
+      expect(result.reason).toBe('No text selected')
     })
 
-    it('应该接受完整变量的选择', () => {
+    it('should accept a selection of a complete variable', () => {
       const text = 'Hello {{name}} world'
       const result = validateSelection(text, 6, 14, '{{name}}')
 
       expect(result.isValid).toBe(true)
     })
 
-    it('应该拒绝从变量内部开始的选择', () => {
+    it('should reject a selection that starts inside a variable', () => {
       const text = 'Hello {{name}} world'
       const result = validateSelection(text, 8, 14, 'name}}')
 
       expect(result.isValid).toBe(false)
-      expect(result.reason).toBe('不能跨越变量边界')
+      expect(result.reason).toBe('Cannot cross a variable boundary')
     })
 
-    it('应该拒绝在变量内部结束的选择', () => {
+    it('should reject a selection that ends inside a variable', () => {
       const text = 'Hello {{name}} world'
       const result = validateSelection(text, 6, 12, '{{name')
 
       expect(result.isValid).toBe(false)
-      expect(result.reason).toBe('不能跨越变量边界')
+      expect(result.reason).toBe('Cannot cross a variable boundary')
     })
 
-    it('应该拒绝跨越变量开始边界的选择', () => {
+    it('should reject a selection that crosses the variable start boundary', () => {
       const text = 'Hello {{name}} world'
       const result = validateSelection(text, 3, 10, 'lo {{na')
 
       expect(result.isValid).toBe(false)
-      expect(result.reason).toBe('不能跨越变量边界')
+      expect(result.reason).toBe('Cannot cross a variable boundary')
     })
 
-    it('应该拒绝跨越变量结束边界的选择', () => {
+    it('should reject a selection that crosses the variable end boundary', () => {
       const text = 'Hello {{name}} world'
       const result = validateSelection(text, 10, 17, 'me}} wo')
 
       expect(result.isValid).toBe(false)
-      expect(result.reason).toBe('不能跨越变量边界')
+      expect(result.reason).toBe('Cannot cross a variable boundary')
     })
 
-    it('应该接受包含多个完整变量的选择', () => {
+    it('should accept a selection containing multiple complete variables', () => {
       const text = 'Hello {{name}} and {{age}}'
       const result = validateSelection(text, 6, 26, '{{name}} and {{age}}')
 
       expect(result.isValid).toBe(true)
     })
 
-    it('应该接受变量之间的文本选择', () => {
+    it('should accept a selection of text between variables', () => {
       const text = '{{var1}} middle {{var2}}'
       const result = validateSelection(text, 9, 16, 'middle ')
 
@@ -186,7 +186,7 @@ describe('selection-safety', () => {
 
   describe('countOccurrencesOutsideVariables', () => {
     /**
-     * 统计文本中目标字符串的出现次数 (忽略变量占位符内部)
+     * Count the occurrences of the target string in the text (ignoring the inside of variable placeholders)
      */
     const isInsideVariablePlaceholder = (text: string, index: number): boolean => {
       const beforeText = text.substring(0, index)
@@ -232,67 +232,67 @@ describe('selection-safety', () => {
       return count
     }
 
-    it('应该统计纯文本中的出现次数', () => {
+    it('should count occurrences in plain text', () => {
       const text = 'test test test'
       const count = countOccurrencesOutsideVariables(text, 'test')
 
       expect(count).toBe(3)
     })
 
-    it('应该忽略变量占位符内部的匹配', () => {
+    it('should ignore matches inside variable placeholders', () => {
       const text = 'test {{test}} test'
       const count = countOccurrencesOutsideVariables(text, 'test')
 
-      expect(count).toBe(2) // 只统计外部的两个 'test'
+      expect(count).toBe(2) // Only the two outer 'test' occurrences are counted
     })
 
-    it('应该处理部分匹配在变量内部的情况', () => {
+    it('should handle partial matches inside variables', () => {
       const text = 'customer {{customer_name}} customer'
       const count = countOccurrencesOutsideVariables(text, 'customer')
 
-      expect(count).toBe(2) // 只统计外部的两个 'customer'
+      expect(count).toBe(2) // Only the two outer 'customer' occurrences are counted
     })
 
-    it('应该处理空搜索文本', () => {
+    it('should handle empty search text', () => {
       const text = 'test {{var}} test'
       const count = countOccurrencesOutsideVariables(text, '')
 
       expect(count).toBe(0)
     })
 
-    it('应该处理仅包含空格的搜索文本', () => {
+    it('should handle search text containing only spaces', () => {
       const text = 'test {{var}} test'
       const count = countOccurrencesOutsideVariables(text, '   ')
 
       expect(count).toBe(0)
     })
 
-    it('应该处理无匹配的情况', () => {
+    it('should handle no matches', () => {
       const text = 'test {{var}} test'
       const count = countOccurrencesOutsideVariables(text, 'nomatch')
 
       expect(count).toBe(0)
     })
 
-    it('应该处理多个变量的情况', () => {
+    it('should handle multiple variables', () => {
       const text = 'name {{name}} age {{age}} name'
       const count = countOccurrencesOutsideVariables(text, 'name')
 
-      expect(count).toBe(2) // 开头和结尾的 'name'
+      expect(count).toBe(2) // 'name' at the start and the end
     })
 
-    it('应该正确处理重叠的搜索文本', () => {
+    it('should handle overlapping search text correctly', () => {
       const text = 'aaa {{aaa}} aaa'
       const count = countOccurrencesOutsideVariables(text, 'aa')
 
-      // 'aaa' 包含两个 'aa',但我们从左到右扫描,每次匹配后跳过整个匹配
-      expect(count).toBe(2) // 开头的 'aaa' 中的一个 'aa' + 结尾的 'aaa' 中的一个 'aa'
+      // 'aaa' contains two 'aa', but we scan left to right and skip the entire match after each match
+      expect(count).toBe(2) // One 'aa' in the leading 'aaa' + one 'aa' in the trailing 'aaa'
     })
   })
 
   describe('replaceAllOccurrencesOutsideVariables', () => {
     /**
-     * 替换文本中所有目标字符串 (忽略变量占位符内部)
+     * Replace all target strings in the text (ignoring the inside of variable placeholders)
      */
     const isInsideVariablePlaceholder = (text: string, index: number): boolean => {
       const beforeText = text.substring(0, index)
@@ -342,76 +342,76 @@ describe('selection-safety', () => {
       return result
     }
 
-    it('应该替换纯文本中的所有出现', () => {
+    it('should replace all occurrences in plain text', () => {
       const text = 'test test test'
       const result = replaceAllOccurrencesOutsideVariables(text, 'test', 'replaced')
 
       expect(result).toBe('replaced replaced replaced')
     })
 
-    it('应该保护变量占位符内部的文本', () => {
+    it('should protect text inside variable placeholders', () => {
       const text = 'test {{test}} test'
       const result = replaceAllOccurrencesOutsideVariables(text, 'test', 'replaced')
 
       expect(result).toBe('replaced {{test}} replaced')
     })
 
-    it('应该保护变量名不被破坏', () => {
+    it('should protect variable names from being corrupted', () => {
       const text = 'customer {{customer_name}} customer'
       const result = replaceAllOccurrencesOutsideVariables(text, 'customer', '{{user}}')
 
       expect(result).toBe('{{user}} {{customer_name}} {{user}}')
     })
 
-    it('应该处理空搜索文本', () => {
+    it('should handle empty search text', () => {
       const text = 'test {{var}} test'
       const result = replaceAllOccurrencesOutsideVariables(text, '', 'replaced')
 
-      expect(result).toBe(text) // 不应该改变
+      expect(result).toBe(text) // Should not change
     })
 
-    it('应该处理无匹配的情况', () => {
+    it('should handle no matches', () => {
       const text = 'test {{var}} test'
       const result = replaceAllOccurrencesOutsideVariables(text, 'nomatch', 'replaced')
 
-      expect(result).toBe(text) // 不应该改变
+      expect(result).toBe(text) // Should not change
     })
 
-    it('应该处理替换文本比原文本长的情况', () => {
+    it('should handle replacement text longer than the original', () => {
       const text = 'a {{a}} a'
       const result = replaceAllOccurrencesOutsideVariables(text, 'a', 'longer')
 
       expect(result).toBe('longer {{a}} longer')
     })
 
-    it('应该处理替换文本比原文本短的情况', () => {
+    it('should handle replacement text shorter than the original', () => {
       const text = 'longer {{longer}} longer'
       const result = replaceAllOccurrencesOutsideVariables(text, 'longer', 'a')
 
       expect(result).toBe('a {{longer}} a')
     })
 
-    it('应该处理多个变量的复杂情况', () => {
+    it('should handle complex cases with multiple variables', () => {
       const text = 'name is {{name}} and age is {{age}}, name again'
       const result = replaceAllOccurrencesOutsideVariables(text, 'name', '{{username}}')
 
       expect(result).toBe('{{username}} is {{name}} and age is {{age}}, {{username}} again')
     })
 
-    it('应该正确处理替换后文本长度变化', () => {
+    it('should handle text length changes after replacement correctly', () => {
       const text = 'a {{b}} a {{c}} a'
       const result = replaceAllOccurrencesOutsideVariables(text, 'a', 'xxx')
 
       expect(result).toBe('xxx {{b}} xxx {{c}} xxx')
 
-      // 验证变量占位符没有被破坏
+      // Verify the variable placeholders were not corrupted
       expect(result).toContain('{{b}}')
       expect(result).toContain('{{c}}')
     })
   })
 
-  describe('边界情况综合测试', () => {
-    it('应该处理连续的变量占位符', () => {
+  describe('Edge case comprehensive test', () => {
+    it('should handle consecutive variable placeholders', () => {
       const isInsideVariablePlaceholder = (text: string, index: number): boolean => {
         const beforeText = text.substring(0, index)
         const openBraces = (beforeText.match(/\{\{/g) || []).length
@@ -421,12 +421,12 @@ describe('selection-safety', () => {
 
       const text = '{{var1}}{{var2}}{{var3}}'
 
-      expect(isInsideVariablePlaceholder(text, 3)).toBe(true)   // var1 内部
-      expect(isInsideVariablePlaceholder(text, 8)).toBe(false)  // var1 和 var2 之间
-      expect(isInsideVariablePlaceholder(text, 11)).toBe(true)  // var2 内部
+      expect(isInsideVariablePlaceholder(text, 3)).toBe(true)   // Inside var1
+      expect(isInsideVariablePlaceholder(text, 8)).toBe(false)  // Between var1 and var2
+      expect(isInsideVariablePlaceholder(text, 11)).toBe(true)  // Inside var2
     })
 
-    it('应该处理变量占位符在文本开头', () => {
+    it('should handle a variable placeholder at the start of the text', () => {
       const text = '{{var}} text'
 
       const isInsideVariablePlaceholder = (text: string, index: number): boolean => {
@@ -441,7 +441,7 @@ describe('selection-safety', () => {
       expect(isInsideVariablePlaceholder(text, 7)).toBe(false)
     })
 
-    it('应该处理变量占位符在文本结尾', () => {
+    it('should handle a variable placeholder at the end of the text', () => {
       const text = 'text {{var}}'
 
       const isInsideVariablePlaceholder = (text: string, index: number): boolean => {

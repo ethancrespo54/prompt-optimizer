@@ -7,12 +7,12 @@ declare module '*.vue' {
   export default component
 }
 
-// Vite 已经通过 /// <reference types="vite/client" /> 提供了内置的环境变量类型
+// Vite already provides built-in environment variable types via /// <reference types="vite/client" />
 
-// E2E: 注入到 window 的测试辅助变量
+// E2E: test helper variables injected into window
 interface Window {
   __TEST_DB_NAME__?: string
 }
 
-// 引入 Electron 类型定义
+// Import Electron type definitions
 /// <reference path="./src/types/electron.d.ts" />

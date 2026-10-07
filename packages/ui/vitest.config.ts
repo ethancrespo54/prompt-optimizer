@@ -5,19 +5,19 @@ import vue from '@vitejs/plugin-vue'
 export default defineConfig({
   plugins: [vue()],
   test: {
-    // 全局超时设置为5秒
+    // Global timeout set to 5 seconds
     testTimeout: 5000,
-    // 环境设置
+    // Environment setup
     environment: 'jsdom',
-    // 全局设置文件
+    // Global setup file
     setupFiles: ['./tests/setup.ts'],
-    // 包含的文件模式
+    // File patterns to include
     include: ['tests/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
-    // 排除的文件模式
+    // File patterns to exclude
     exclude: ['**/node_modules/**', '**/dist/**', '**/.{idea,git,cache,output,temp}/**'],
-    // 全局测试设置
+    // Global test setup
     globals: true,
-    // 测试覆盖率配置
+    // Test coverage configuration
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

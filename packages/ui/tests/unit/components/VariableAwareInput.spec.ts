@@ -292,7 +292,7 @@ describe('VariableAwareInput', () => {
       expect(wrapper.find('.codemirror-container').exists()).toBe(true)
     })
 
-    it('应该同时高亮多种类型的变量', () => {
+    it('should highlight multiple variable types at the same time', () => {
       const wrapper = mount(VariableAwareInput, {
         props: {
           modelValue: '{{global}} {{temp}} {{predef}} {{missing}}',
@@ -309,8 +309,8 @@ describe('VariableAwareInput', () => {
     })
   })
 
-  describe('边界情况处理', () => {
-    it('应该处理空文本', () => {
+  describe('Edge case handling', () => {
+    it('should handle empty text', () => {
       const wrapper = mount(VariableAwareInput, {
         props: {
           modelValue: ''
@@ -320,7 +320,7 @@ describe('VariableAwareInput', () => {
       expect(wrapper.exists()).toBe(true)
     })
 
-    it('应该处理无变量的文本', () => {
+    it('should handle text without variables', () => {
       const wrapper = mount(VariableAwareInput, {
         props: {
           modelValue: 'Plain text without variables'
@@ -330,7 +330,7 @@ describe('VariableAwareInput', () => {
       expect(wrapper.exists()).toBe(true)
     })
 
-    it('应该处理长文本', () => {
+    it('should handle long text', () => {
       const longText = 'a'.repeat(10000)
       const wrapper = mount(VariableAwareInput, {
         props: {
@@ -341,7 +341,7 @@ describe('VariableAwareInput', () => {
       expect(wrapper.exists()).toBe(true)
     })
 
-    it('应该处理包含特殊字符的文本', () => {
+    it('should handle text containing special characters', () => {
       const wrapper = mount(VariableAwareInput, {
         props: {
           modelValue: '{{var}} with <html> & "quotes" and \'apostrophes\''
@@ -351,17 +351,17 @@ describe('VariableAwareInput', () => {
       expect(wrapper.exists()).toBe(true)
     })
 
-    it('应该处理 Unicode 字符', () => {
+    it('should handle Unicode characters', () => {
       const wrapper = mount(VariableAwareInput, {
         props: {
-          modelValue: '你好 {{用户名}} 😀'
+          modelValue: 'Hello {{usuário}} 😀'
         }
       })
 
       expect(wrapper.exists()).toBe(true)
     })
 
-    it('应该处理换行符', () => {
+    it('should handle line breaks', () => {
       const wrapper = mount(VariableAwareInput, {
         props: {
           modelValue: 'Line 1\nLine 2\n{{var}}\nLine 4'
@@ -372,8 +372,8 @@ describe('VariableAwareInput', () => {
     })
   })
 
-  describe('响应式更新', () => {
-    it('应该响应 modelValue 的变化', async () => {
+  describe('Reactive updates', () => {
+    it('should react to changes in modelValue', async () => {
       const wrapper = mount(VariableAwareInput, {
         props: {
           modelValue: 'Initial'
@@ -385,7 +385,7 @@ describe('VariableAwareInput', () => {
       expect(wrapper.props('modelValue')).toBe('Updated')
     })
 
-    it('应该响应变量列表的变化', async () => {
+    it('should react to changes in the variable list', async () => {
       const wrapper = mount(VariableAwareInput, {
         props: {
           modelValue: '{{var1}}',
@@ -393,10 +393,10 @@ describe('VariableAwareInput', () => {
         }
       })
 
-      // 初始状态: var1 是缺失变量
+      // Initial state: var1 is a missing variable
       expect(wrapper.props('existingGlobalVariables')).toEqual([])
 
-      // 添加 var1 到全局变量
+      // Add var1 to the global variables
       await wrapper.setProps({
         existingGlobalVariables: ['var1'],
         globalVariableValues: { var1: 'value' }
@@ -405,7 +405,7 @@ describe('VariableAwareInput', () => {
       expect(wrapper.props('existingGlobalVariables')).toEqual(['var1'])
     })
 
-    it('应该响应变量值的变化', async () => {
+    it('should react to changes in variable values', async () => {
       const wrapper = mount(VariableAwareInput, {
         props: {
           modelValue: '{{var1}}',
@@ -422,19 +422,19 @@ describe('VariableAwareInput', () => {
     })
   })
 
-  describe('事件系统', () => {
-    it('应该正确声明所有事件', () => {
+  describe('Event system', () => {
+    it('should declare all events correctly', () => {
       const wrapper = mount(VariableAwareInput, {
         props: {
           modelValue: ''
         }
       })
 
-      // 验证组件可以触发所有声明的事件
+      // Verify the component can emit all declared events
       expect(wrapper.vm.$emit).toBeDefined()
     })
 
-    it('应该支持 update:modelValue 事件', async () => {
+    it('should support the update:modelValue event', async () => {
       const wrapper = mount(VariableAwareInput, {
         props: {
           modelValue: 'test'
@@ -446,7 +446,7 @@ describe('VariableAwareInput', () => {
       expect(wrapper.emitted('update:modelValue')).toBeTruthy()
     })
 
-    it('应该支持 variable-extracted 事件', async () => {
+    it('should support the variable-extracted event', async () => {
       const wrapper = mount(VariableAwareInput, {
         props: {
           modelValue: 'test'
@@ -462,7 +462,7 @@ describe('VariableAwareInput', () => {
       expect(wrapper.emitted('variable-extracted')).toBeTruthy()
     })
 
-    it('应该支持 add-missing-variable 事件', async () => {
+    it('should support the add-missing-variable event', async () => {
       const wrapper = mount(VariableAwareInput, {
         props: {
           modelValue: '{{missing}}'
@@ -475,8 +475,8 @@ describe('VariableAwareInput', () => {
     })
   })
 
-  describe('性能测试', () => {
-    it('应该能够处理大量变量', () => {
+  describe('Performance test', () => {
+    it('should be able to handle many variables', () => {
       const variables = Array.from({ length: 100 }, (_, i) => `var${i}`)
       const text = variables.map(v => `{{${v}}}`).join(' ')
 
@@ -490,7 +490,7 @@ describe('VariableAwareInput', () => {
       expect(wrapper.exists()).toBe(true)
     })
 
-    it('应该能够快速更新', async () => {
+    it('should be able to update quickly', async () => {
       const wrapper = mount(VariableAwareInput, {
         props: {
           modelValue: 'test'
@@ -506,31 +506,31 @@ describe('VariableAwareInput', () => {
       const endTime = Date.now()
       const duration = endTime - startTime
 
-      // 10次更新应该在合理时间内完成 (< 1秒)
+      // 10 updates should complete within a reasonable time (< 1 second)
       expect(duration).toBeLessThan(1000)
     })
   })
 
-  describe('可访问性', () => {
-    it('应该有合适的 ARIA 属性', () => {
+  describe('Accessibility', () => {
+    it('should have appropriate ARIA attributes', () => {
       const wrapper = mount(VariableAwareInput, {
         props: {
           modelValue: 'test'
         }
       })
 
-      // CodeMirror 容器应该存在
+      // The CodeMirror container should exist
       expect(wrapper.find('.codemirror-container').exists()).toBe(true)
     })
 
-    it('应该支持键盘导航', () => {
+    it('should support keyboard navigation', () => {
       const wrapper = mount(VariableAwareInput, {
         props: {
           modelValue: 'test'
         }
       })
 
-      // 组件应该可以接收焦点
+      // The component should be able to receive focus
       expect(wrapper.find('.codemirror-container').exists()).toBe(true)
     })
   })
