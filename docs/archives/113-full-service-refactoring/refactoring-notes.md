@@ -1,88 +1,88 @@
-# 开发草稿本
+# Development Scratchpad
 
-记录当前开发任务的进展和思考。
+Records the progress and thinking on the current development task.
 
-## 当前任务
+## Current Task
 
-### [任务名称] - [开始日期]
-**目标**: [具体目标描述]
-**状态**: 进行中
+### [Task name] - [Start date]
+**Goal**: [Description of the specific goal]
+**Status**: In progress
 
-#### 计划步骤
-[ ] 1. 需求分析
-[ ] 2. 技术方案设计  
-[ ] 3. 功能实现
-[ ] 4. 测试验证
-[ ] 5. 文档更新
+#### Planned Steps
+[ ] 1. Requirements analysis
+[ ] 2. Technical design  
+[ ] 3. Implementation
+[ ] 4. Testing and verification
+[ ] 5. Documentation update
 
-#### 进展记录
-- [日期] [具体进展描述]
-- [日期] [遇到的问题和解决方案]
+#### Progress Log
+- [Date] [Description of specific progress]
+- [Date] [Problems encountered and solutions]
 
-#### 重要发现
-- [记录重要的技术发现或经验]
-
----
-
-## 历史任务
-
-### [已完成任务名称] - [完成日期] ✅
-**总结**: [简要总结]
-**经验**: [重要经验提取]
+#### Key Findings
+- [Record important technical findings or lessons]
 
 ---
 
-## 待办事项
+## Past Tasks
 
-### 紧急
-- [ ] [紧急任务1]
-- [ ] [紧急任务2]
-
-### 重要
-- [ ] [重要任务1]
-- [ ] [重要任务2]
-
-### 一般
-- [ ] [一般任务1]
-- [ ] [一般任务2]
+### [Completed task name] - [Completion date] ✅
+**Summary**: [Brief summary]
+**Lessons**: [Key lessons extracted]
 
 ---
 
-## 问题记录
+## To-dos
 
-### 未解决
-- [问题描述] - [发现日期]
+### Urgent
+- [ ] [Urgent task 1]
+- [ ] [Urgent task 2]
 
-### 已解决
-- [问题描述] - [解决方案] - [解决日期]
+### Important
+- [ ] [Important task 1]
+- [ ] [Important task 2]
+
+### General
+- [ ] [General task 1]
+- [ ] [General task 2]
 
 ---
 
-## 备注
-[其他需要记录的信息]
+## Issue Log
 
-## 任务：核心服务接口隔离重构 - 2025-07-03
+### Unresolved
+- [Issue description] - [Date found]
 
-### 目标
-逐项检查 `ui` 模块对 `core` 模块的引用，确保所有调用都通过接口（如 `IModelManager`）而不是具体实现类（如 `ModelManager`）。统一 Web 和 Desktop 版的调用规范，修复因此产生的 IPC 通信链路问题。
+### Resolved
+- [Issue description] - [Solution] - [Date resolved]
 
-### 计划步骤
-*见 `todo.md`*
+---
 
-### 进展记录
-- **2025-07-03**: **里程碑完成：核心管理器重构**
-  - **成果**: 成功重构 `ModelManager` 和 `HistoryManager`。通过在 `useAppInitializer.ts` 中创建适配器，强制 UI 层仅通过接口调用。
-  - **发现**: Web 应用能工作的"捷径"（直接调用实例）是导致 Desktop 版（多进程IPC）失败的根源。架构上必须在初始化源头屏蔽实现细节。
-  - **状态**: 已完成对 `IModelManager`, `IHistoryManager` 及其对应实现、代理和 IPC 链路的更新。
+## Notes
+[Other information to record]
 
-### 问题记录
-*暂无*
+## Task: Core Service Interface Isolation Refactoring - 2025-07-03
 
-### 里程碑
-- [x] 重构 ModelManager
-- [x] 重构 HistoryManager
-- [ ] 重构 TemplateManager
-- [ ] 重构 LLMService
-- [ ] 重构 PromptService
-- [ ] 重构其他服务
-- [ ] 完成最终测试
+### Goal
+Check, item by item, the references from the `ui` module to the `core` module, and ensure that all calls go through interfaces (such as `IModelManager`) rather than concrete implementation classes (such as `ModelManager`). Unify the calling conventions of the Web and Desktop versions, and fix the resulting IPC communication chain problems.
+
+### Planned Steps
+*See `todo.md`*
+
+### Progress Log
+- **2025-07-03**: **Milestone completed: core manager refactoring**
+  - **Result**: Successfully refactored `ModelManager` and `HistoryManager`. By creating adapters in `useAppInitializer.ts`, the UI layer is forced to call only through interfaces.
+  - **Finding**: The "shortcut" that makes the Web app work (calling instances directly) is the root cause of the failures in the Desktop version (multi-process IPC). Architecturally, implementation details must be hidden at the initialization source.
+  - **Status**: Updated `IModelManager`, `IHistoryManager`, and their corresponding implementations, proxies, and IPC chains.
+
+### Issue Log
+*None yet*
+
+### Milestones
+- [x] Refactor ModelManager
+- [x] Refactor HistoryManager
+- [ ] Refactor TemplateManager
+- [ ] Refactor LLMService
+- [ ] Refactor PromptService
+- [ ] Refactor other services
+- [ ] Complete final testing

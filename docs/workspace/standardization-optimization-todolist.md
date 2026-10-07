@@ -4,7 +4,7 @@ This document records pending optimization items related to code quality and eng
 
 ## Code Formatting Standardization
 
-### Prettier 配置
+### Prettier Configuration
 
 **Priority**: P2 - Code quality improvement
 **Estimated effort**: 1-2 hours

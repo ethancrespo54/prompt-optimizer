@@ -1,183 +1,183 @@
-# 提示词优化器 - 权限说明
+# Prompt Optimizer - Permissions Explanation
 
-本文档详细解释了提示词优化器Chrome扩展请求的各项权限及其用途，帮助您了解我们为何需要这些权限以及它们如何用于提供服务。
+This document explains in detail the permissions requested by the Prompt Optimizer Chrome extension and what they are used for, to help you understand why we need these permissions and how they are used to provide the service.
 
-## 单一用途说明 (Single Purpose Description)
+## Single Purpose Description
 
-**提示词优化器的主要目的是：优化用户的AI提示词，以获得更精准、高质量的AI回复。**
+**The main purpose of Prompt Optimizer is to optimize users' AI prompts so that they get more accurate, higher-quality AI responses.**
 
-本扩展请求的所有权限都直接服务于这一单一核心目的：
-- **存储权限**用于保存用户的API密钥和设置，使用户能够连接到AI服务
-- **API域名访问权限**用于直接从用户浏览器发送提示词优化请求到相应的AI服务提供商
-- **标签页权限**用于在标签页中打开设置界面，提供更好的用户体验
+All permissions requested by this extension directly serve this single core purpose:
+- The **storage permission** is used to save the user's API keys and settings so that the user can connect to AI services
+- The **API domain access permissions** are used to send prompt optimization requests directly from the user's browser to the corresponding AI service providers
+- The **tabs permission** is used to open the settings interface in a tab, providing a better user experience
 
-这些权限对于实现扩展的主要功能至关重要，没有这些权限，扩展将无法执行其核心功能。同时，我们严格遵循最小权限原则，仅请求完成核心任务所必需的权限，不收集任何与此核心功能无关的数据。
+These permissions are essential for implementing the main functionality of the extension. Without them, the extension cannot perform its core function. At the same time, we strictly follow the principle of least privilege: we only request the permissions necessary to complete the core task and do not collect any data unrelated to this core function.
 
-## 请求的权限
+## Requested Permissions
 
-### 存储权限 (`storage`)
+### Storage Permission (`storage`)
 
-**用途：**
-- 在本地安全存储API密钥
-- 保存您的扩展设置和偏好
-- 存储提示词优化历史记录（如果启用了此功能）
+**Purpose:**
+- Securely store API keys locally
+- Save your extension settings and preferences
+- Store prompt optimization history (if this feature is enabled)
 
-**重要说明：**
-- 所有数据仅存储在您的本地设备上
-- 不会上传到任何服务器
-- 您可以随时通过扩展设置清除这些数据
+**Important notes:**
+- All data is stored only on your local device
+- Nothing is uploaded to any server
+- You can clear this data at any time through the extension settings
 
-### 标签页权限 (`tabs`)
+### Tabs Permission (`tabs`)
 
-**用途：**
-- 允许扩展在标签页中展示所有核心功能，包括提示词优化、模型管理以及其他用户交互界面
-- 提供更宽敞、更灵活的用户体验，让所有功能都在独立标签页中运行
+**Purpose:**
+- Allows the extension to present all core features in a tab, including prompt optimization, model management, and other user interaction interfaces
+- Provides a more spacious and flexible user experience, with all features running in a standalone tab
 
-**重要说明：**
-- 扩展在用户主动操作时会在标签页中打开并展示所有功能界面
-- 不会在后台监控您的标签页
-- 不会记录您的浏览历史或收集标签页数据
-- 仅用于提供更好的用户界面体验，所有核心功能均在标签页中完成
+**Important notes:**
+- The extension opens in a tab and presents all feature interfaces when the user takes an action
+- It does not monitor your tabs in the background
+- It does not record your browsing history or collect tab data
+- It is only used to provide a better user interface experience, and all core features are completed in the tab
 
-## 主机权限 (`host_permissions`)
+## Host Permissions (`host_permissions`)
 
 ### 1. OpenAI API (`https://api.openai.com/*`)
 
-**用途：**
-- 允许扩展直接从您的浏览器向OpenAI的API发送请求
-- 用于使用OpenAI模型（如GPT-3.5、GPT-4）优化提示词
+**Purpose:**
+- Allows the extension to send requests directly from your browser to OpenAI's API
+- Used to optimize prompts with OpenAI models (such as GPT-3.5 and GPT-4)
 
 ### 2. Google Gemini API (`https://generativelanguage.googleapis.com/*`)
 
-**用途：**
-- 允许扩展直接从您的浏览器向Google的Gemini API发送请求
-- 用于使用Google Gemini模型优化提示词
+**Purpose:**
+- Allows the extension to send requests directly from your browser to Google's Gemini API
+- Used to optimize prompts with Google Gemini models
 
 ### 3. DeepSeek API (`https://api.deepseek.com/*`)
 
-**用途：**
-- 允许扩展直接从您的浏览器向DeepSeek的API发送请求
-- 用于使用DeepSeek模型优化提示词
+**Purpose:**
+- Allows the extension to send requests directly from your browser to DeepSeek's API
+- Used to optimize prompts with DeepSeek models
 
 ### 4. SiliconFlow API (`https://api.siliconflow.cn/*`)
 
-**用途：**
-- 允许扩展直接从您的浏览器向SiliconFlow的API发送请求
-- 用于使用SiliconFlow模型优化提示词
+**Purpose:**
+- Allows the extension to send requests directly from your browser to SiliconFlow's API
+- Used to optimize prompts with SiliconFlow models
 
-**重要说明：**
-- 所有API请求都直接从您的浏览器发起
-- 使用您自己提供的API密钥
-- 不经过我们的服务器或任何中间服务器
-- 您的提示词内容会发送到相应的AI服务提供商，并受其隐私政策约束
+**Important notes:**
+- All API requests are sent directly from your browser
+- They use the API keys you provide yourself
+- They do not pass through our servers or any intermediary servers
+- Your prompt content is sent to the corresponding AI service provider and is subject to its privacy policy
 
-## 关于自定义API的说明
+## About Custom APIs
 
-虽然扩展在manifest中只预先声明了OpenAI、Google Gemini和DeepSeek的API域名权限，但您仍然可以使用自定义API。这是因为：
+Although the extension only pre-declares the API domain permissions for OpenAI, Google Gemini, and DeepSeek in its manifest, you can still use a custom API. This is because:
 
-1. **内容安全策略的工作方式**：Chrome扩展的内容安全策略允许扩展在运行时连接到用户明确授权的域名，即使这些域名没有在manifest中预先声明。
+1. **How the Content Security Policy works**: The Content Security Policy of Chrome extensions allows the extension to connect, at runtime, to domains that the user has explicitly authorized, even if those domains are not pre-declared in the manifest.
 
-2. **如何使用自定义API**：
-   - 在扩展的"模型管理"界面中，点击"添加自定义模型"
-   - 填写自定义API的相关信息，包括API地址、模型名称和API密钥
-   - 保存后，您就可以使用这个自定义API了
+2. **How to use a custom API**:
+   - In the extension's "Model Management" interface, click "Add Custom Model"
+   - Fill in the information of the custom API, including the API URL, model name, and API key
+   - After saving, you can use this custom API
 
-3. **首次连接授权**：
-   - 当您首次尝试使用自定义API时，Chrome浏览器会显示一个权限请求对话框
-   - 您需要明确授权扩展连接到这个自定义域名
-   - 授权后，扩展就可以与该自定义API通信了
+3. **Authorization on first connection**:
+   - When you first try to use a custom API, Chrome shows a permission request dialog
+   - You need to explicitly authorize the extension to connect to this custom domain
+   - After authorization, the extension can communicate with that custom API
 
-4. **安全考虑**：
-   - 这种方式确保了扩展只能连接到您明确授权的域名
-   - 所有连接仍然是从您的浏览器直接发起的，不经过我们的服务器
-   - 您可以随时在Chrome的扩展权限设置中撤销这些授权
+4. **Security considerations**:
+   - This approach ensures the extension can only connect to domains you have explicitly authorized
+   - All connections are still made directly from your browser and do not pass through our servers
+   - You can revoke these authorizations at any time in Chrome's extension permission settings
 
-5. **适用场景**：
-   - 使用公司内部的AI服务
-   - 连接到其他兼容OpenAI格式的API服务
-   - 使用自托管的开源模型API
-   - 连接到任何符合OpenAI兼容格式的API端点
+5. **Applicable scenarios**:
+   - Using an AI service inside your company
+   - Connecting to other API services compatible with the OpenAI format
+   - Using a self-hosted open-source model API
+   - Connecting to any API endpoint that conforms to the OpenAI-compatible format
 
-这种设计既保证了扩展的灵活性，允许您连接到任何需要的API服务，同时也维护了Chrome扩展的安全模型，确保所有连接都是经过您明确授权的。
+This design preserves the flexibility of the extension, allowing you to connect to any API service you need, while also maintaining the security model of Chrome extensions, ensuring that all connections are explicitly authorized by you.
 
-## 为什么需要特定API域名的访问权限？
+## Why Is Access to Specific API Domains Needed?
 
-Chrome浏览器的安全机制要求扩展明确声明它需要访问的外部域名。这是一项重要的安全功能，称为"内容安全策略"(Content Security Policy)，它限制扩展只能与预先声明的域名通信，防止恶意扩展向未授权的服务器发送数据。
+Chrome's security mechanism requires extensions to explicitly declare the external domains they need to access. This is an important security feature, known as the "Content Security Policy", which restricts extensions to communicating only with pre-declared domains and prevents malicious extensions from sending data to unauthorized servers.
 
-### 为什么我们需要这些特定域名的权限：
+### Why we need permissions for these specific domains:
 
-1. **直接API调用的必要条件**：
-   - 没有这些权限，浏览器会阻止扩展向这些AI服务提供商发送请求
-   - 这些权限是实现"纯客户端应用"架构的关键，使扩展能够直接从您的浏览器调用AI服务，而无需通过我们的服务器
+1. **A prerequisite for direct API calls**:
+   - Without these permissions, the browser would block the extension from sending requests to these AI service providers
+   - These permissions are key to the "pure client-side application" architecture, enabling the extension to call AI services directly from your browser without going through our servers
 
-2. **精确的最小权限原则**：
-   - 我们只请求访问必要的API域名（如OpenAI、Google Gemini、DeepSeek）
-   - 不请求访问其他不相关的域名
-   - 每个请求的域名都有明确的用途（提供AI模型服务）
+2. **A precise principle of least privilege**:
+   - We only request access to the necessary API domains (such as OpenAI, Google Gemini, and DeepSeek)
+   - We do not request access to other unrelated domains
+   - Each requested domain has a clear purpose (providing AI model services)
 
-3. **透明的数据流向**：
-   - 这些权限使数据流向完全透明 - 从您的浏览器直接到AI服务提供商
-   - 没有中间服务器或第三方参与数据传输过程
+3. **Transparent data flow**:
+   - These permissions make the data flow fully transparent - from your browser directly to the AI service provider
+   - No intermediary server or third party takes part in the data transmission
 
-4. **安全性考虑**：
-   - 使用通配符模式（如`https://api.openai.com/*`）允许访问该域名下的所有路径
-   - 这是必要的，因为AI服务提供商可能在不同路径提供不同的API端点
-   - 所有通信都通过安全的HTTPS连接进行
+4. **Security considerations**:
+   - Using wildcard patterns (such as `https://api.openai.com/*`) allows access to all paths under that domain
+   - This is necessary because AI service providers may offer different API endpoints under different paths
+   - All communication takes place over secure HTTPS connections
 
-### 如果没有这些权限会怎样？
+### What if we didn't have these permissions?
 
-如果我们不请求这些特定API域名的访问权限：
+If we did not request access to these specific API domains:
 
-1. 扩展将无法直接调用AI服务提供商的API
-2. 提示词优化功能将无法工作
-3. 我们将不得不采用服务器中转架构，这会：
-   - 降低数据隐私性（您的数据需要经过我们的服务器）
-   - 增加延迟（多一层数据传输）
-   - 引入额外的安全风险
+1. The extension could not call the AI service providers' APIs directly
+2. The prompt optimization feature would not work
+3. We would have to adopt a server relay architecture, which would:
+   - Reduce data privacy (your data would have to pass through our servers)
+   - Increase latency (one more layer of data transmission)
+   - Introduce additional security risks
 
-### 用户控制
+### User Control
 
-重要的是，即使授予了这些权限：
+Importantly, even after these permissions are granted:
 
-- 扩展只会在您主动使用提示词优化功能时才会发送请求
-- 您可以随时在扩展设置中更改或删除API密钥，控制是否允许调用这些服务
-- 所有API调用都使用您自己提供的API密钥，您完全控制费用和使用情况
+- The extension only sends requests when you actively use the prompt optimization feature
+- You can change or delete your API keys in the extension settings at any time to control whether these services can be called
+- All API calls use the API keys you provide yourself, so you have full control over costs and usage
 
-## 最小权限原则
+## Principle of Least Privilege
 
-我们遵循最小权限原则，只请求应用程序核心功能所必需的权限。这个扩展只需要：
+We follow the principle of least privilege and only request the permissions necessary for the application's core functionality. This extension only needs:
 
-1. `storage` 权限 - 用于本地存储您的设置和API密钥
-2. 特定API域名的访问权限 - 用于直接从您的浏览器调用AI服务
+1. The `storage` permission - for storing your settings and API keys locally
+2. Access to specific API domains - for calling AI services directly from your browser
 
-## 我们不请求的权限
+## Permissions We Do Not Request
 
-为了保护您的隐私，我们特意不请求以下权限：
+To protect your privacy, we deliberately do not request the following permissions:
 
-- **浏览历史** (`history`) - 我们不访问您的浏览历史
-- **所有网站的访问权限** (`<all_urls>` 作为权限) - 我们不需要访问您浏览的网页内容
-- **活动标签页** (`activeTab`) - 我们不需要访问您当前浏览的页面内容
-- **上下文菜单** (`contextMenus`) - 我们不添加右键菜单项
-- **后台运行权限** (`background` 作为持续运行的后台) - 我们的扩展不会在后台持续运行
-- **网络请求拦截** (`webRequest`) - 我们不拦截或修改您的网络请求
-- **Cookie访问** (`cookies`) - 我们不读取或修改您的Cookie
+- **Browsing history** (`history`) - We do not access your browsing history
+- **Access to all websites** (`<all_urls>` as a permission) - We do not need to access the content of the web pages you browse
+- **Active tab** (`activeTab`) - We do not need to access the content of the page you are currently viewing
+- **Context menus** (`contextMenus`) - We do not add right-click menu items
+- **Background running permission** (`background` as a persistently running background) - Our extension does not run persistently in the background
+- **Network request interception** (`webRequest`) - We do not intercept or modify your network requests
+- **Cookie access** (`cookies`) - We do not read or modify your cookies
 
-## 纯客户端架构
+## Pure Client-Side Architecture
 
-提示词优化器采用纯客户端架构，这意味着：
+Prompt Optimizer uses a pure client-side architecture, which means:
 
-1. 所有数据存储和处理都在您的本地浏览器中完成
-2. 没有自有服务器收集或处理您的数据
-3. API调用直接从您的浏览器发送到AI服务提供商
-4. 您的API密钥和设置仅存储在您的设备上
+1. All data storage and processing is done in your local browser
+2. No proprietary servers collect or process your data
+3. API calls are sent directly from your browser to AI service providers
+4. Your API keys and settings are stored only on your device
 
-## 权限使用透明度
+## Permission Usage Transparency
 
-我们承诺：
+We promise to:
 
-- 仅请求提供核心功能所必需的权限
-- 明确解释每项权限的用途
-- 不滥用任何授予的权限
-- 保持代码开源，确保透明度
+- Only request the permissions necessary to provide the core functionality
+- Clearly explain the purpose of each permission
+- Not abuse any granted permission
+- Keep the code open source to ensure transparency
 
-如果您对我们的权限使用有任何疑问，请通过GitHub Issues联系我们：https://github.com/linshenkx/prompt-optimizer/issues 
+If you have any questions about our use of permissions, please contact us through GitHub Issues: https://github.com/linshenkx/prompt-optimizer/issues

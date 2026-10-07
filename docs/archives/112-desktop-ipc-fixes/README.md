@@ -1,31 +1,31 @@
-# 112-Desktop IPC修复
+# 112-Desktop IPC Fixes
 
-## 📋 概述
+## 📋 Overview
 
-解决Desktop版本中的IPC相关问题，包括语言切换功能异常、IPC调用链不完整等问题。
+Resolves IPC-related problems in the Desktop version, including a malfunctioning language switch and an incomplete IPC call chain.
 
-## 🎯 主要问题
+## 🎯 Main Problems
 
-### 1. 语言切换按钮显示异常
-- **问题**: 显示"Object Promise"而不是正确的语言名称
-- **原因**: 异步接口被当作同步值使用
-- **解决**: 统一异步接口设计，完善IPC调用链
+### 1. Language switch button displays incorrectly
+- **Problem**: It shows "Object Promise" instead of the correct language name
+- **Cause**: An async interface was used as if it returned a synchronous value
+- **Solution**: Unify the async interface design and complete the IPC call chain
 
-### 2. IPC架构不完整
-- **问题**: 代理类方法缺失，IPC链路不完整
-- **原因**: 接口定义与实现不一致
-- **解决**: 建立完整的IPC开发流程和检查清单
+### 2. Incomplete IPC architecture
+- **Problem**: Proxy class methods were missing and the IPC chain was incomplete
+- **Cause**: Interface definitions were inconsistent with implementations
+- **Solution**: Establish a complete IPC development process and checklist
 
-## 📁 文档结构
+## 📁 Document Structure
 
-- **language-switch-fix.md** - 语言切换功能修复详情
-- **ipc-architecture-analysis.md** - IPC架构分析和最佳实践
-- **desktop-development-experience.md** - Desktop开发经验总结
+- **language-switch-fix.md** - Details of the language switch fix
+- **ipc-architecture-analysis.md** - IPC architecture analysis and best practices
+- **desktop-development-experience.md** - Summary of Desktop development lessons
 
-## 🔗 相关文档
+## 🔗 Related Documents
 
-- [115-IPC序列化修复](../115-ipc-serialization-fixes/) - Vue响应式对象序列化问题的解决方案
+- [115-IPC Serialization Fixes](../115-ipc-serialization-fixes/) - Solution to the Vue reactive object serialization problem
 
-## 💡 核心价值
+## 💡 Core Value
 
-本目录专注于Desktop环境下的IPC架构问题，为建立完整的跨进程通信机制提供了经验和最佳实践。这些经验为后续的序列化优化（115）奠定了基础。
+This directory focuses on IPC architecture problems in the Desktop environment, and provides experience and best practices for building a complete cross-process communication mechanism. These lessons laid the groundwork for the later serialization optimization (115).

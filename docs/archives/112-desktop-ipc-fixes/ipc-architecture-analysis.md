@@ -1,34 +1,34 @@
-# IPC架构分析与开发经验
+# IPC Architecture Analysis and Development Lessons
 
-## 📝 背景
+## 📝 Background
 
-在Desktop版本开发中遇到的IPC架构问题分析和解决经验。
+Analysis of the IPC architecture problems encountered while developing the Desktop version, and the lessons from resolving them.
 
-## 🔍 架构差异分析
+## 🔍 Architecture Difference Analysis
 
-### 1. Web环境 vs Desktop环境
+### 1. Web environment vs Desktop environment
 
-**Web环境（单进程）**：
+**Web environment (single process)**:
 ```
-Vue组件 → 直接调用 → 服务实例
-```
-
-**Desktop环境（多进程）**：
-```
-Vue组件 → ElectronProxy → IPC → Main进程 → 服务实例
+Vue component → direct call → service instance
 ```
 
-### 2. 常见问题模式
+**Desktop environment (multi-process)**:
+```
+Vue component → ElectronProxy → IPC → Main process → service instance
+```
 
-#### 问题1：接口契约缺失
+### 2. Common Problem Patterns
+
+#### Problem 1: Missing interface contract
 ```typescript
-// ❌ 接口定义不完整
+// ❌ Incomplete interface definition
 interface ITemplateManager {
   getTemplate(id: string): Promise<Template>;
-  // 缺少语言相关方法
+  // Missing language-related methods
 }
 
-// ✅ 完整的接口定义
+// ✅ Complete interface definition
 interface ITemplateManager {
   getTemplate(id: string): Promise<Template>;
   getCurrentBuiltinTemplateLanguage(): Promise<BuiltinTemplateLanguage>;
@@ -36,17 +36,17 @@ interface ITemplateManager {
 }
 ```
 
-#### 问题2：代理实现不完整
+#### Problem 2: Incomplete proxy implementation
 ```typescript
-// ❌ 代理类缺少方法
+// ❌ Proxy class is missing methods
 class ElectronTemplateManagerProxy implements ITemplateManager {
   async getTemplate(id: string): Promise<Template> {
     return this.electronAPI.getTemplate(id);
   }
-  // 缺少其他方法的实现
+  // Implementations of the other methods are missing
 }
 
-// ✅ 完整的代理实现
+// ✅ Complete proxy implementation
 class ElectronTemplateManagerProxy implements ITemplateManager {
   async getTemplate(id: string): Promise<Template> {
     return this.electronAPI.getTemplate(id);
@@ -58,103 +58,103 @@ class ElectronTemplateManagerProxy implements ITemplateManager {
 }
 ```
 
-#### 问题3：IPC链路不完整
+#### Problem 3: Incomplete IPC chain
 ```javascript
-// preload.js - 缺少方法暴露
+// preload.js - missing method exposure
 window.electronAPI = {
   template: {
     getTemplate: (id) => ipcRenderer.invoke('template-getTemplate', id),
-    // 缺少语言相关方法
+    // Missing language-related methods
   }
 }
 
-// main.js - 缺少处理器
+// main.js - missing handler
 ipcMain.handle('template-getTemplate', async (event, id) => {
-  // 处理逻辑
+  // Handling logic
 });
-// 缺少语言相关处理器
+// Missing language-related handlers
 ```
 
-## 🛠️ 修复策略
+## 🛠️ Fix Strategy
 
-### 1. 接口优先设计
+### 1. Interface-first design
 ```typescript
-// 步骤1：定义完整接口
+// Step 1: Define the complete interface
 export interface ITemplateManager {
-  // 所有需要的方法
+  // All required methods
 }
 
-// 步骤2：Web环境实现
+// Step 2: Web environment implementation
 export class TemplateManager implements ITemplateManager {
-  // 完整实现
+  // Complete implementation
 }
 
-// 步骤3：Electron代理实现
+// Step 3: Electron proxy implementation
 export class ElectronTemplateManagerProxy implements ITemplateManager {
-  // 完整代理实现
+  // Complete proxy implementation
 }
 ```
 
-### 2. IPC链路完整性检查
+### 2. IPC chain completeness check
 ```
-Vue组件调用 → 检查代理方法 → 检查preload暴露 → 检查main处理器 → 检查服务方法
+Vue component call → check proxy method → check preload exposure → check main handler → check service method
 ```
 
-### 3. 错误处理原则
+### 3. Error handling principles
 ```typescript
-// ❌ 错误掩盖
+// ❌ Masking errors
 async someMethod() {
   try {
     return await this.service.method();
   } catch (error) {
-    return null; // 掩盖了错误
+    return null; // Masks the error
   }
 }
 
-// ✅ 错误传播
+// ✅ Propagating errors
 async someMethod() {
-  return await this.service.method(); // 让错误自然传播
+  return await this.service.method(); // Let errors propagate naturally
 }
 ```
 
-## 🎯 开发检查清单
+## 🎯 Development Checklist
 
-### IPC功能开发检查
-- [ ] 接口定义是否完整？
-- [ ] Web环境实现是否完整？
-- [ ] Electron代理实现是否完整？
-- [ ] preload.js是否暴露了所有方法？
-- [ ] main.js是否有对应的处理器？
-- [ ] 错误处理是否正确？
-- [ ] 两种环境是否都测试过？
+### IPC feature development checks
+- [ ] Is the interface definition complete?
+- [ ] Is the Web environment implementation complete?
+- [ ] Is the Electron proxy implementation complete?
+- [ ] Does preload.js expose all methods?
+- [ ] Does main.js have the corresponding handlers?
+- [ ] Is error handling correct?
+- [ ] Has it been tested in both environments?
 
-### 架构违规检查
-- [ ] preload.js是否只做转发，没有业务逻辑？
-- [ ] 是否所有方法都是异步的？
-- [ ] 是否使用了统一的错误处理格式？
-- [ ] 是否有直接的跨进程调用？
+### Architecture violation checks
+- [ ] Does preload.js only forward calls, with no business logic?
+- [ ] Are all methods asynchronous?
+- [ ] Is a unified error handling format used?
+- [ ] Are there any direct cross-process calls?
 
-## 💡 最佳实践
+## 💡 Best Practices
 
-### 1. 渐进式开发
-1. 先在Web环境实现和测试
-2. 定义完整的接口
-3. 实现Electron代理
-4. 完善IPC链路
-5. 在Desktop环境测试
+### 1. Incremental development
+1. Implement and test in the Web environment first
+2. Define the complete interface
+3. Implement the Electron proxy
+4. Complete the IPC chain
+5. Test in the Desktop environment
 
-### 2. 调试技巧
+### 2. Debugging tips
 ```javascript
-// 在每个环节添加日志
+// Add logging at every stage
 console.log('[Vue] Calling method:', methodName);
 console.log('[Proxy] Forwarding to IPC:', methodName);
 console.log('[Main] Handling IPC:', methodName);
 console.log('[Service] Executing:', methodName);
 ```
 
-### 3. 类型安全
+### 3. Type safety
 ```typescript
-// 使用严格的类型检查
+// Use strict type checking
 interface ElectronAPI {
   template: {
     [K in keyof ITemplateManager]: ITemplateManager[K];
@@ -162,11 +162,11 @@ interface ElectronAPI {
 }
 ```
 
-## 🔗 相关经验
+## 🔗 Related Lessons
 
-这些架构分析为后续的开发提供了基础：
-- 建立了完整的IPC开发流程
-- 形成了接口优先的设计原则
-- 建立了完整的开发和调试检查清单
+This architecture analysis provides a foundation for later development:
+- Established a complete IPC development process
+- Formed an interface-first design principle
+- Established a complete development and debugging checklist
 
-这些经验在后续的序列化优化（115）中得到了进一步应用。
+These lessons were applied further in the later serialization optimization (115).
