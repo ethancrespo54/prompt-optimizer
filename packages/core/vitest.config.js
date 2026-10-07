@@ -3,7 +3,7 @@ import { loadEnv } from 'vite'
 import path from 'path'
 
 export default defineConfig(({ mode }) => {
-  // 加载环境变量
+  // Load environment variables
   process.env = { ...process.env, ...loadEnv(mode, process.cwd()) }
   
   return {
@@ -13,10 +13,10 @@ export default defineConfig(({ mode }) => {
       globals: true,
       environment: 'node',
       setupFiles: ['./tests/setup.js'],
-      // 设置测试超时时间
-      testTimeout: 30000, // 默认30秒
-      hookTimeout: 30000, // 钩子超时30秒
-      // 环境变量配置
+      // Set the test timeout
+      testTimeout: 30000, // Default 30 seconds
+      hookTimeout: 30000, // Hook timeout 30 seconds
+      // Environment variable configuration
       env: {
         ...process.env
       }
