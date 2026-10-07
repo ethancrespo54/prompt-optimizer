@@ -88,7 +88,6 @@
             </svg>
         </template>
     </ActionButtonUI>
-    <LanguageSwitchDropdown />
     <!-- 自动更新组件 - 仅在Electron环境中显示 -->
     <UpdaterIcon />
 </template>
@@ -122,7 +121,6 @@
  */
 import ActionButtonUI from '../ActionButton.vue'
 import ThemeToggleUI from '../ThemeToggleUI.vue'
-import LanguageSwitchDropdown from '../LanguageSwitchDropdown.vue'
 import UpdaterIcon from '../UpdaterIcon.vue'
 
 // ========================

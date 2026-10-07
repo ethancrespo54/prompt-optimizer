@@ -84,25 +84,18 @@ describe('TemplateLanguageService', () => {
       );
     });
 
-    it('should toggle between languages', async () => {
-      // Start with detected language (en-US in test environment)
+    it('should keep English when toggling (only language supported)', async () => {
       expect(await service.getCurrentLanguage()).toBe('en-US');
 
-      // Toggle to Chinese
-      const newLang1 = await service.toggleLanguage();
-      expect(newLang1).toBe('zh-CN');
-      expect(await service.getCurrentLanguage()).toBe('zh-CN');
-
-      // Toggle back to English
-      const newLang2 = await service.toggleLanguage();
-      expect(newLang2).toBe('en-US');
+      const newLang = await service.toggleLanguage();
+      expect(newLang).toBe('en-US');
       expect(await service.getCurrentLanguage()).toBe('en-US');
     });
   });
 
   describe('utility methods', () => {
     it('should validate languages correctly', async () => {
-      expect(await service.isValidLanguage('zh-CN')).toBe(true);
+      expect(await service.isValidLanguage('zh-CN')).toBe(false);
       expect(await service.isValidLanguage('en-US')).toBe(true);
       expect(await service.isValidLanguage('fr-FR')).toBe(false);
       expect(await service.isValidLanguage('')).toBe(false);
@@ -110,8 +103,7 @@ describe('TemplateLanguageService', () => {
   });
 
   describe('browser language detection', () => {
-    it('should detect Chinese browser language', async () => {
-      // Mock navigator.language
+    it('should default to English for Chinese browser language', async () => {
       Object.defineProperty(navigator, 'language', {
         value: 'zh-CN',
         configurable: true
@@ -122,7 +114,7 @@ describe('TemplateLanguageService', () => {
       const newService = new TemplateLanguageService(newPreferenceService);
       await newService.initialize();
 
-      expect(await newService.getCurrentLanguage()).toBe('zh-CN');
+      expect(await newService.getCurrentLanguage()).toBe('en-US');
     });
 
     it('should detect English browser language', async () => {

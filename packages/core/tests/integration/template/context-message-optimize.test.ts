@@ -173,7 +173,7 @@ describe('Context Message Optimize Templates - Real API Tests', () => {
     const preferenceService = new PreferenceService(storage);
     const languageService = createTemplateLanguageService(preferenceService);
     await languageService.initialize();
-    await languageService.setLanguage('zh-CN');
+    await languageService.setLanguage('en-US');
 
     templateManager = createTemplateManager(storage, languageService);
     historyManager = createHistoryManager(storage, modelManager);

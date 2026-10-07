@@ -102,11 +102,11 @@ export default {
    - 添加到 `SUPPORTED_LOCALES` 数组
    - 配置 fallback 规则
    - 添加到 `messages` 对象
-4. 在 `packages/ui/src/components/LanguageSwitchDropdown.vue` 中添加新语言选项
+4. Add a language switch component (the previous `LanguageSwitchDropdown.vue` was removed)
 5. 测试所有页面在新语言下的显示效果
 
 ## 当前支持的语言
 
-- **简体中文 (zh-CN)**: 默认语言，适用于中国大陆用户
-- **繁體中文 (zh-TW)**: 适用于台湾、香港等地区用户，基于简体中文翻译并适配港台用语习惯
-- **English (en-US)**: 英语，适用于国际用户 
+- **English (en-US)**: the only supported language (default)
+
+The Chinese locales (zh-CN, zh-TW) and the language switcher were removed. To add a language again, re-create a locale file and a language switch component. 

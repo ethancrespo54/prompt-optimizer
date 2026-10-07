@@ -88,7 +88,6 @@
                 :image-sub-mode="routeImageSubMode"
                 @select="handleTemplateSelected"
                 @close="handleTemplateManagerClosed"
-                @language-changed="handleTemplateLanguageChanged"
             />
             <HistoryDrawerUI
                 v-if="isReady"
@@ -1917,20 +1916,6 @@ const openTemplateManager = (templateType?: TemplateType) => {
 
 // 🔧 Step D: 已删除死代码 - handleBasicSubModeChange/handleProSubModeChange/handleImageSubModeChange
 // 这些函数已被 AppCoreNav 的 router.push 导航替代（2024-01-06）
-
-// 处理模板语言变化
-const handleTemplateLanguageChanged = (_newLanguage: string) => {
-    // Basic 工作区：若存在则直接刷新迭代模板选择（同时也会广播 refresh 事件）
-    if (basicModeWorkspaceRef.value?.promptPanelRef?.refreshIterateTemplateSelect) {
-        basicModeWorkspaceRef.value.promptPanelRef.refreshIterateTemplateSelect();
-    }
-
-    if (typeof window !== "undefined") {
-        window.dispatchEvent(new Event("basic-workspace-refresh-templates"));
-        window.dispatchEvent(new Event("basic-workspace-refresh-iterate-select"));
-        window.dispatchEvent(new Event("image-workspace-refresh-iterate-select"));
-    }
-};
 
 // 向子组件提供统一的 openTemplateManager 接口
 provide("openTemplateManager", openTemplateManager);

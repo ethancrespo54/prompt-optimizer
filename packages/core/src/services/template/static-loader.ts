@@ -21,7 +21,7 @@ export type TemplateType =
   | 'context-user-optimize'
   | 'context-iterate'
   | 'evaluation';
-export type Language = 'zh' | 'en';
+export type Language = 'en';
 
 export interface StaticTemplateCollection {
   all: Record<string, Template>;
@@ -44,15 +44,12 @@ export class StaticLoader {
    */
   private mapLanguage(language: string): Language {
     switch (language) {
-      case 'zh-CN':
-      case 'zh':
-        return 'zh';
       case 'en-US':
       case 'en':
         return 'en';
       default:
-        console.warn(`Unknown language: ${language}, defaulting to zh`);
-        return 'zh';
+        console.warn(`Unknown language: ${language}, defaulting to en`);
+        return 'en';
     }
   }
 
@@ -68,18 +65,18 @@ export class StaticLoader {
       console.log(`🔄 静态导入开始加载模板...`);
       
       const all: Record<string, Template> = {};
-      const byLanguage: Record<Language, Record<string, Template>> = { zh: {}, en: {} };
+      const byLanguage: Record<Language, Record<string, Template>> = { en: {} };
       const byType: Record<TemplateType, Record<Language, Record<string, Template>>> = {
-        'optimize': { zh: {}, en: {} },
-        'user-optimize': { zh: {}, en: {} },
-        'text2imageOptimize': { zh: {}, en: {} },
-        'image2imageOptimize': { zh: {}, en: {} },
-        'imageIterate': { zh: {}, en: {} },
-        'iterate': { zh: {}, en: {} },
-        'conversation-message-optimize': { zh: {}, en: {} },
-        'context-user-optimize': { zh: {}, en: {} },
-        'context-iterate': { zh: {}, en: {} },
-        'evaluation': { zh: {}, en: {} }
+        'optimize': { en: {} },
+        'user-optimize': { en: {} },
+        'text2imageOptimize': { en: {} },
+        'image2imageOptimize': { en: {} },
+        'imageIterate': { en: {} },
+        'iterate': { en: {} },
+        'conversation-message-optimize': { en: {} },
+        'context-user-optimize': { en: {} },
+        'context-iterate': { en: {} },
+        'evaluation': { en: {} }
       };
 
       // 处理每个模板
@@ -144,18 +141,17 @@ export class StaticLoader {
       
       console.log(`✅ 成功加载 ${Object.keys(all).length} 个模板`, {
         '总数': Object.keys(all).length,
-        '中文': Object.keys(byLanguage.zh).length,
         '英文': Object.keys(byLanguage.en).length,
-        optimize: Object.keys(byType.optimize.zh).length + Object.keys(byType.optimize.en).length,
-        'user-optimize': Object.keys(byType['user-optimize'].zh).length + Object.keys(byType['user-optimize'].en).length,
-        text2imageOptimize: Object.keys(byType.text2imageOptimize.zh).length + Object.keys(byType.text2imageOptimize.en).length,
-        image2imageOptimize: Object.keys(byType.image2imageOptimize.zh).length + Object.keys(byType.image2imageOptimize.en).length,
-        imageIterate: Object.keys(byType.imageIterate.zh).length + Object.keys(byType.imageIterate.en).length,
-        iterate: Object.keys(byType.iterate.zh).length + Object.keys(byType.iterate.en).length,
-        'conversation-message-optimize': Object.keys(byType['conversation-message-optimize'].zh).length + Object.keys(byType['conversation-message-optimize'].en).length,
-        'context-user-optimize': Object.keys(byType['context-user-optimize'].zh).length + Object.keys(byType['context-user-optimize'].en).length,
-        'context-iterate': Object.keys(byType['context-iterate'].zh).length + Object.keys(byType['context-iterate'].en).length,
-        evaluation: Object.keys(byType.evaluation.zh).length + Object.keys(byType.evaluation.en).length
+        optimize: Object.keys(byType.optimize.en).length,
+        'user-optimize': Object.keys(byType['user-optimize'].en).length,
+        text2imageOptimize: Object.keys(byType.text2imageOptimize.en).length,
+        image2imageOptimize: Object.keys(byType.image2imageOptimize.en).length,
+        imageIterate: Object.keys(byType.imageIterate.en).length,
+        iterate: Object.keys(byType.iterate.en).length,
+        'conversation-message-optimize': Object.keys(byType['conversation-message-optimize'].en).length,
+        'context-user-optimize': Object.keys(byType['context-user-optimize'].en).length,
+        'context-iterate': Object.keys(byType['context-iterate'].en).length,
+        evaluation: Object.keys(byType.evaluation.en).length
       });
 
       StaticLoader.templateCache = result;
@@ -182,7 +178,7 @@ export class StaticLoader {
   /**
    * 根据类型和语言获取模板
    */
-  public getTemplatesByType(type: TemplateType, language: string = 'zh'): Record<string, Template> {
+  public getTemplatesByType(type: TemplateType, language: string = 'en'): Record<string, Template> {
     const mappedLanguage = this.mapLanguage(language);
     const collection = this.loadTemplates();
     return collection.byType[type][mappedLanguage];
@@ -197,10 +193,10 @@ export class StaticLoader {
   }
 
   /**
-   * 获取默认中文模板集合
+   * Get the default template set (English)
    */
   public getDefaultTemplates(): Record<string, Template> {
-    return this.loadTemplatesByLanguage('zh');
+    return this.loadTemplatesByLanguage('en');
   }
 
   /**
@@ -219,7 +215,6 @@ export class StaticLoader {
       isSupported: this.isSupported(),
       totalTemplates: Object.keys(collection.all).length,
       byLanguage: {
-        zh: Object.keys(collection.byLanguage.zh).length,
         en: Object.keys(collection.byLanguage.en).length
       }
     };

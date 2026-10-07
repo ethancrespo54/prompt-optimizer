@@ -1,7 +1,7 @@
 /**
- * 语言服务适配器
+ * Language service adapter
  *
- * 提供简单的语言偏好管理，通过环境变量配置
+ * English is the only supported built-in template language
  */
 
 import { BuiltinTemplateLanguage, ITemplateLanguageService } from '@prompt-optimizer/core';
@@ -10,18 +10,9 @@ export class SimpleLanguageService implements ITemplateLanguageService {
   private currentLanguage: BuiltinTemplateLanguage;
   private initialized = false;
 
-  constructor(defaultLanguage: string = 'zh-CN') {
-    // 映射语言代码到 Core 模块支持的格式
-    const languageMap: Record<string, BuiltinTemplateLanguage> = {
-      'zh': 'zh-CN',
-      'zh-CN': 'zh-CN',
-      'chinese': 'zh-CN',
-      'en': 'en-US',
-      'en-US': 'en-US',
-      'english': 'en-US'
-    };
-
-    this.currentLanguage = languageMap[defaultLanguage as keyof typeof languageMap] || 'zh-CN';
+  constructor(_defaultLanguage: string = 'en-US') {
+    // English is the only supported language; any requested value resolves to it
+    this.currentLanguage = 'en-US';
   }
 
   async initialize(): Promise<void> {
@@ -40,9 +31,7 @@ export class SimpleLanguageService implements ITemplateLanguageService {
   }
 
   async toggleLanguage(): Promise<BuiltinTemplateLanguage> {
-    const newLanguage = this.currentLanguage === 'zh-CN' ? 'en-US' : 'zh-CN';
-    await this.setLanguage(newLanguage);
-    return newLanguage;
+    return this.currentLanguage;
   }
 
   async isValidLanguage(language: string): Promise<boolean> {
@@ -51,13 +40,11 @@ export class SimpleLanguageService implements ITemplateLanguageService {
   }
 
   async getSupportedLanguages(): Promise<BuiltinTemplateLanguage[]> {
-    return ['zh-CN', 'en-US'];
+    return ['en-US'];
   }
 
   getLanguageDisplayName(language: BuiltinTemplateLanguage): string {
     switch (language) {
-      case 'zh-CN':
-        return '中文';
       case 'en-US':
         return 'English';
       default:
@@ -71,5 +58,5 @@ export class SimpleLanguageService implements ITemplateLanguageService {
 }
 
 export function createSimpleLanguageService(defaultLanguage?: string): SimpleLanguageService {
-  return new SimpleLanguageService(defaultLanguage || 'zh-CN');
+  return new SimpleLanguageService(defaultLanguage || 'en-US');
 }

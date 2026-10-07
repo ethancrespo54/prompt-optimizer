@@ -268,11 +268,9 @@ export class TemplateManager implements ITemplateManager {
     switch (language) {
       case 'en-US':
         return this.staticLoader.getDefaultTemplatesEn();
-      case 'zh-CN':
-        return this.staticLoader.getDefaultTemplates();
       default:
-        console.warn(`Unsupported language: ${language}, falling back to Chinese templates`);
-        return this.staticLoader.getDefaultTemplates();
+        console.warn(`Unsupported language: ${language}, falling back to English templates`);
+        return this.staticLoader.getDefaultTemplatesEn();
     }
   }
 

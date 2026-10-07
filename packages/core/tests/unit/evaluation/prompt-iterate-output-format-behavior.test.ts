@@ -35,14 +35,13 @@ class StubTemplateLanguageService implements ITemplateLanguageService {
     this.lang = language
   }
   async toggleLanguage() {
-    this.lang = this.lang === 'zh-CN' ? 'en-US' : 'zh-CN'
     return this.lang
   }
   async isValidLanguage(language: string) {
-    return language === 'zh-CN' || language === 'en-US'
+    return language === 'en-US'
   }
   async getSupportedLanguages() {
-    return ['zh-CN', 'en-US'] as BuiltinTemplateLanguage[]
+    return ['en-US'] as BuiltinTemplateLanguage[]
   }
   getLanguageDisplayName(language: BuiltinTemplateLanguage) {
     return language
@@ -127,8 +126,8 @@ class RuleBasedEvaluationLLM implements ILLMService {
     const text = messages.map((m) => m.content).join('\n\n')
 
     const hasDisambiguationRule =
-      text.includes('用户反馈解释规则（重要）') &&
-      text.includes('最终输出') &&
+      text.includes('How to Interpret User Feedback (Important)') &&
+      text.includes('FINAL OUTPUT FORMAT') &&
       text.includes('OutputFormat') &&
       text.includes('Profile/Skills/Rules')
 
@@ -187,7 +186,7 @@ describe('Prompt-iterate ambiguous feedback behavior (contract)', () => {
   it('interprets "要简化输出结构" as final output format and avoids deleting prompt sections', async () => {
     const templateManager = new TemplateManager(
       new MemoryStorageProvider(),
-      new StubTemplateLanguageService('zh-CN')
+      new StubTemplateLanguageService('en-US')
     )
 
     const modelKey = 'test-model'
@@ -232,7 +231,7 @@ describe('Prompt-iterate ambiguous feedback behavior (contract)', () => {
     const result = await service.evaluate(request)
 
     const promptText = llm.lastMessages.map((m) => m.content).join('\n\n')
-    expect(promptText).toContain('用户反馈解释规则（重要）')
+    expect(promptText).toContain('How to Interpret User Feedback (Important)')
     expect(promptText).toContain('OutputFormat')
     expect(promptText).toContain('Profile/Skills/Rules')
     expect(promptText).toContain('要简化输出结构')

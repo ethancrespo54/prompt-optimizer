@@ -24,13 +24,13 @@ class MemoryStorage implements IStorageProvider {
 }
 
 class StubLang implements ITemplateLanguageService {
-  private lang: BuiltinTemplateLanguage = 'zh-CN'
+  private lang: BuiltinTemplateLanguage = 'en-US'
   async initialize() {}
   async getCurrentLanguage() { return this.lang }
   async setLanguage(l: BuiltinTemplateLanguage) { this.lang = l }
-  async toggleLanguage() { this.lang = this.lang === 'zh-CN' ? 'en-US' : 'zh-CN'; return this.lang }
-  async isValidLanguage(language: string) { return language === 'zh-CN' || language === 'en-US' }
-  async getSupportedLanguages() { return ['zh-CN','en-US'] as BuiltinTemplateLanguage[] }
+  async toggleLanguage() { return this.lang }
+  async isValidLanguage(language: string) { return language === 'en-US' }
+  async getSupportedLanguages() { return ['en-US'] as BuiltinTemplateLanguage[] }
   getLanguageDisplayName(l: BuiltinTemplateLanguage) { return l }
   isInitialized() { return true }
 }

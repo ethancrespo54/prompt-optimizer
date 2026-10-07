@@ -1,6 +1,5 @@
 /**
- * 变量提取模板导出
+ * Variable extraction template export
  */
 
-export { template as variableExtractionTemplate } from './extraction';
 export { template as variableExtractionTemplateEn } from './extraction_en';

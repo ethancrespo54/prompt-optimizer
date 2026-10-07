@@ -79,8 +79,6 @@ export { default as TestAreaPanel } from "./components/TestAreaPanel.vue";
 export { default as TestInputSection } from "./components/TestInputSection.vue";
 export { default as TestControlBar } from "./components/TestControlBar.vue";
 export { default as TestResultSection } from "./components/TestResultSection.vue";
-export { default as LanguageSwitchDropdown } from "./components/LanguageSwitchDropdown.vue";
-export { default as BuiltinTemplateLanguageSwitchUi } from "./components/BuiltinTemplateLanguageSwitch.vue";
 export { default as DataManagerUI } from "./components/DataManager.vue";
 export { default as OptimizationModeSelectorUI } from "./components/OptimizationModeSelector.vue";
 export { default as FunctionModeSelector } from "./components/FunctionModeSelector.vue";

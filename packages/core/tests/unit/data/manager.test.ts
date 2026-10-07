@@ -63,7 +63,7 @@ describe('DataManager', () => {
       importTemplate: vi.fn().mockResolvedValue(undefined),
       changeBuiltinTemplateLanguage: vi.fn().mockResolvedValue(undefined),
       getCurrentBuiltinTemplateLanguage: vi.fn().mockReturnValue('en-US'),
-      getSupportedBuiltinTemplateLanguages: vi.fn().mockReturnValue(['en-US', 'zh-CN']),
+      getSupportedBuiltinTemplateLanguages: vi.fn().mockReturnValue(['en-US']),
       reloadBuiltinTemplates: vi.fn().mockResolvedValue(undefined),
       listTemplatesByType: vi.fn().mockReturnValue([]),
       addTemplate: vi.fn().mockResolvedValue(undefined),

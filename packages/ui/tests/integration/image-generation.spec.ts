@@ -21,7 +21,7 @@ vi.mock('vue-i18n', async (importOriginal) => {
       global: {
         t,
         te: (_key: string) => true,
-        locale: ref('zh-CN'),
+        locale: ref('en-US'),
       },
     }),
   }

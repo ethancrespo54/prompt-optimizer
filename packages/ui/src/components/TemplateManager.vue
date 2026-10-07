@@ -23,7 +23,6 @@
             </svg>
           </template>
         </NButton>
-        <BuiltinTemplateLanguageSwitch @language-changed="handleLanguageChanged" />
       </NSpace>
     </template>
 
@@ -645,9 +644,7 @@ import {
 import { TemplateProcessor, type Template, type MessageTemplate, type ITemplateManager, TemplateLanguageService } from '@prompt-optimizer/core'
 import { useToast } from '../composables/ui/useToast'
 import MarkdownRenderer from './MarkdownRenderer.vue'
-import BuiltinTemplateLanguageSwitch from './BuiltinTemplateLanguageSwitch.vue'
 import { syntaxGuideContent } from '../docs/syntax-guide'
-import { i18n } from '../plugins/i18n'
 import { useBasicSystemSession } from '../stores/session/useBasicSystemSession'
 import { useBasicUserSession } from '../stores/session/useBasicUserSession'
 import { useProMultiMessageSession } from '../stores/session/useProMultiMessageSession'
@@ -688,7 +685,7 @@ const props = defineProps<{
   imageSubMode?: 'text2image' | 'image2image'
 }>()
 
-const emit = defineEmits(['close', 'select', 'update:show', 'languageChanged'])
+const emit = defineEmits(['close', 'select', 'update:show'])
 const toast = useToast()
 
 // Session Stores（单一真源：持久化选择存储在各子模式 session store 中）
@@ -1280,17 +1277,7 @@ const filteredTemplates = computed(() => {
   })
 })
 
-// 获取当前语言的语法指南内容
-const syntaxGuideMarkdown = computed(() => {
-  const lang = i18n.global.locale.value as keyof typeof syntaxGuideContent
-  return syntaxGuideContent[lang] || syntaxGuideContent['zh-CN']
-})
-
-// 处理内置模板语言变化（仅刷新列表，不隐式修改选择）
-const handleLanguageChanged = async (newLanguage: string) => {
-  await loadTemplates()
-  emit('languageChanged', newLanguage)
-}
+const syntaxGuideMarkdown = computed(() => syntaxGuideContent['en-US'])
 
 // 监听 props.templateType 变化，更新当前分类
 watch(() => props.templateType, () => {

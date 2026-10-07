@@ -109,19 +109,13 @@ let storageProvider; // 全局存储提供器引用，用于退出时保存数�
 // 我们在主进程中自行弹出菜单，并用该 locale 来决定菜单文案。
 let uiLocale = null;
 
-const SUPPORTED_UI_LOCALES = new Set(['zh-CN', 'zh-TW', 'en-US']);
+const SUPPORTED_UI_LOCALES = new Set(['en-US']);
 
 function normalizeUiLocale(locale) {
   if (typeof locale !== 'string' || !locale) return null;
   if (SUPPORTED_UI_LOCALES.has(locale)) return locale;
 
-  const lower = locale.toLowerCase();
-  if (lower.startsWith('zh')) {
-    // Covers: zh-TW / zh-HK / zh-Hant, etc.
-    if (lower.includes('tw') || lower.includes('hk') || lower.includes('hant')) return 'zh-TW';
-    return 'zh-CN';
-  }
-  if (lower.startsWith('en')) return 'en-US';
+  if (locale.toLowerCase().startsWith('en')) return 'en-US';
   return null;
 }
 
@@ -138,22 +132,6 @@ function getCurrentUiLocale() {
 }
 
 const CONTEXT_MENU_LABELS = {
-  'zh-CN': {
-    undo: '撤销',
-    redo: '重做',
-    cut: '剪切',
-    copy: '复制',
-    paste: '粘贴',
-    selectAll: '全选',
-  },
-  'zh-TW': {
-    undo: '復原',
-    redo: '重做',
-    cut: '剪下',
-    copy: '複製',
-    paste: '貼上',
-    selectAll: '全選',
-  },
   'en-US': {
     undo: 'Undo',
     redo: 'Redo',

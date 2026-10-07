@@ -30,10 +30,8 @@ export class ElectronTemplateLanguageServiceProxy implements ITemplateLanguageSe
   }
 
   async toggleLanguage(): Promise<BuiltinTemplateLanguage> {
-    const currentLanguage = await this.getCurrentLanguage();
-    const newLanguage = currentLanguage === 'zh-CN' ? 'en-US' : 'zh-CN';
-    await this.setLanguage(newLanguage);
-    return newLanguage;
+    // Only English is supported, so toggling is a no-op
+    return this.getCurrentLanguage();
   }
 
   async isValidLanguage(language: string): Promise<boolean> {
@@ -47,8 +45,6 @@ export class ElectronTemplateLanguageServiceProxy implements ITemplateLanguageSe
 
   getLanguageDisplayName(language: BuiltinTemplateLanguage): string {
     switch (language) {
-      case 'zh-CN':
-        return '中文';
       case 'en-US':
         return 'English';
       default:

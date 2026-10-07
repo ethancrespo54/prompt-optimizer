@@ -6,19 +6,15 @@
 import { vi } from 'vitest'
 import { config } from '@vue/test-utils'
 import { createI18n } from 'vue-i18n'
-import zhCN from '../src/i18n/locales/zh-CN'
-import zhTW from '../src/i18n/locales/zh-TW'
 import enUS from '../src/i18n/locales/en-US'
 import { setupErrorDetection } from './utils/error-detection'
 
 // 创建测试用的 i18n 实例
 const i18n = createI18n({
   legacy: false,
-  locale: 'zh-CN',
+  locale: 'en-US',
   fallbackLocale: 'en-US',
   messages: {
-    'zh-CN': zhCN,
-    'zh-TW': zhTW,
     'en-US': enUS,
   }
 })

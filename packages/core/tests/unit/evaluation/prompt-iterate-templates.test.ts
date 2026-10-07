@@ -23,14 +23,13 @@ class StubTemplateLanguageService implements ITemplateLanguageService {
     this.lang = language
   }
   async toggleLanguage() {
-    this.lang = this.lang === 'zh-CN' ? 'en-US' : 'zh-CN'
     return this.lang
   }
   async isValidLanguage(language: string) {
-    return language === 'zh-CN' || language === 'en-US'
+    return language === 'en-US'
   }
   async getSupportedLanguages() {
-    return ['zh-CN', 'en-US'] as BuiltinTemplateLanguage[]
+    return ['en-US'] as BuiltinTemplateLanguage[]
   }
   getLanguageDisplayName(language: BuiltinTemplateLanguage) {
     return language
@@ -60,29 +59,6 @@ const PROMPT_ITERATE_TEMPLATE_IDS = [
 ] as const
 
 describe('Prompt-iterate evaluation templates', () => {
-  it('zh-CN built-ins contain explicit user-feedback interpretation rules', async () => {
-    const tm = new TemplateManager(
-      new MemoryStorageProvider(),
-      new StubTemplateLanguageService('zh-CN')
-    )
-
-    for (const id of PROMPT_ITERATE_TEMPLATE_IDS) {
-      const template = await tm.getTemplate(id)
-      const system = getFirstMessageContent(template, 'system')
-      const user = getFirstMessageContent(template, 'user')
-
-      expect(system).toContain('用户反馈解释规则（重要）')
-      // Some templates phrase it as "assistant 最终输出"; keep the check semantic.
-      expect(system).toContain('最终输出')
-      expect(system).toContain('输出/格式/示例')
-
-      // Ensure the user-side hint exists too (models often key off headings).
-      expect(user).toContain('用户反馈（优先关注')
-      expect(user).toContain('默认指')
-      expect(user).toContain('最终输出格式')
-    }
-  })
-
   it('en-US built-ins contain explicit user-feedback interpretation rules', async () => {
     const tm = new TemplateManager(
       new MemoryStorageProvider(),

@@ -39,8 +39,8 @@ const STORAGE_KEY = 'global-settings/v1'
 
 const createDefaultState = (): GlobalSettingsState => ({
   selectedThemeId: 'auto',
-  preferredLanguage: 'zh-CN',
-  builtinTemplateLanguage: 'zh-CN',
+  preferredLanguage: 'en-US',
+  builtinTemplateLanguage: 'en-US',
   functionMode: 'basic',
   basicSubMode: 'system',
   proSubMode: 'variable',

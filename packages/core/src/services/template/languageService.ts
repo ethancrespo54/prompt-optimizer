@@ -6,7 +6,7 @@ import { TemplateValidationError } from './errors';
 /**
  * Supported built-in template languages
  */
-export type BuiltinTemplateLanguage = 'zh-CN' | 'en-US';
+export type BuiltinTemplateLanguage = 'en-US';
 
 /**
  * Template language service interface
@@ -26,7 +26,7 @@ export interface ITemplateLanguageService {
  * Simplified built-in template language service
  */
 export class TemplateLanguageService implements ITemplateLanguageService {
-  private readonly SUPPORTED_LANGUAGES: BuiltinTemplateLanguage[] = ['zh-CN', 'en-US'];
+  private readonly SUPPORTED_LANGUAGES: BuiltinTemplateLanguage[] = ['en-US'];
   private readonly DEFAULT_LANGUAGE: BuiltinTemplateLanguage = 'en-US';
 
   private currentLanguage: BuiltinTemplateLanguage = this.DEFAULT_LANGUAGE;
@@ -51,15 +51,7 @@ export class TemplateLanguageService implements ITemplateLanguageService {
       if (savedLanguage && await this.isValidLanguage(savedLanguage)) {
         this.currentLanguage = savedLanguage as BuiltinTemplateLanguage;
       } else {
-        let detectedLanguage: BuiltinTemplateLanguage = this.DEFAULT_LANGUAGE;
-
-        // Auto-detect only in browser-like environments where `navigator` is available.
-        if (typeof navigator !== 'undefined' && navigator.language) {
-          const isChineseBrowser = navigator.language.startsWith('zh');
-          detectedLanguage = isChineseBrowser ? 'zh-CN' : 'en-US';
-        }
-
-        this.currentLanguage = detectedLanguage;
+        this.currentLanguage = this.DEFAULT_LANGUAGE;
         await this.preferenceService.set(UI_SETTINGS_KEYS.BUILTIN_TEMPLATE_LANGUAGE, this.currentLanguage);
       }
       
@@ -91,12 +83,10 @@ export class TemplateLanguageService implements ITemplateLanguageService {
   }
 
   /**
-   * Toggle between Chinese and English
+   * Only English is supported, so toggling is a no-op that returns the current language
    */
   async toggleLanguage(): Promise<BuiltinTemplateLanguage> {
-    const newLanguage = this.currentLanguage === 'zh-CN' ? 'en-US' : 'zh-CN';
-    await this.setLanguage(newLanguage);
-    return newLanguage;
+    return this.currentLanguage;
   }
 
   /**
@@ -110,7 +100,7 @@ export class TemplateLanguageService implements ITemplateLanguageService {
    * Get supported languages list
    */
   async getSupportedLanguages(): Promise<BuiltinTemplateLanguage[]> {
-    return ['zh-CN', 'en-US'];
+    return [...this.SUPPORTED_LANGUAGES];
   }
 
   /**
@@ -118,8 +108,6 @@ export class TemplateLanguageService implements ITemplateLanguageService {
    */
   getLanguageDisplayName(language: BuiltinTemplateLanguage): string {
     switch (language) {
-      case 'zh-CN':
-        return '中文';
       case 'en-US':
         return 'English';
       default:
@@ -136,9 +124,9 @@ export class TemplateLanguageService implements ITemplateLanguageService {
 }
 
 /**
- * 创建模板语言服务实例的工厂函数
- * @param preferenceService 偏好设置服务实例
- * @returns 模板语言服务实例
+ * Factory for the template language service
+ * @param preferenceService Preference service instance
+ * @returns Template language service instance
  */
 export function createTemplateLanguageService(
   preferenceService: IPreferenceService

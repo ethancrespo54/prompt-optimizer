@@ -25,12 +25,11 @@ describe('TemplateManager with Mocked LanguageService', () => {
     vi.spyOn(languageService, 'initialize').mockResolvedValue(undefined);
     vi.spyOn(languageService, 'getCurrentLanguage').mockReturnValue('en-US');
     vi.spyOn(languageService, 'setLanguage').mockResolvedValue(undefined);
-    vi.spyOn(languageService, 'getSupportedLanguages').mockReturnValue(['en-US', 'zh-CN']);
+    vi.spyOn(languageService, 'getSupportedLanguages').mockReturnValue(['en-US']);
     
     templateManager = new TemplateManager(storageProvider, languageService);
     
     // Spy on static loader methods to verify which templates are loaded
-    vi.spyOn(staticLoader, 'getDefaultTemplates').mockReturnValue({ 'test-zh': { id: 'test-zh', name: '测试模板', content: '你好', isBuiltin: true, metadata: { templateType: 'optimize', version: '1.0', lastModified: 0 } } });
     vi.spyOn(staticLoader, 'getDefaultTemplatesEn').mockReturnValue({ 'test-en': { id: 'test-en', name: 'Test Template', content: 'Hello', isBuiltin: true, metadata: { templateType: 'optimize', version: '1.0', lastModified: 0 } } });
     
     // Manually inject the mocked staticLoader into the private field for testing purposes
@@ -41,25 +40,9 @@ describe('TemplateManager with Mocked LanguageService', () => {
   it('should load English templates by default in a test environment', async () => {
     const templates = await templateManager.listTemplates();
     const enTemplate = templates.find(t => t.id === 'test-en');
-    const zhTemplate = templates.find(t => t.id === 'test-zh');
 
     expect(enTemplate).toBeDefined();
-    expect(zhTemplate).toBeUndefined();
     expect(enTemplate?.content).toBe('Hello');
-    });
-
-  it('should switch to Chinese templates when language is explicitly changed', async () => {
-    // Change the language and reload
-    vi.spyOn(languageService, 'getCurrentLanguage').mockReturnValue('zh-CN');
-    await templateManager.changeBuiltinTemplateLanguage('zh-CN');
-    
-    const templates = await templateManager.listTemplates();
-    const enTemplate = templates.find(t => t.id === 'test-en');
-    const zhTemplate = templates.find(t => t.id === 'test-zh');
-
-    expect(zhTemplate).toBeDefined();
-    expect(enTemplate).toBeUndefined();
-    expect(zhTemplate?.content).toBe('你好');
     });
 
   it('should get current builtin template language from the language service', async () => {

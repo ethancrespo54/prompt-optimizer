@@ -126,7 +126,7 @@ vi.mock('vue-i18n', () => ({
       }
       return translations[key] || key
     },
-    locale: ref('zh-CN')
+    locale: ref('en-US')
   })
 }))
 
