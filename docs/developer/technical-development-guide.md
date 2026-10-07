@@ -1,277 +1,277 @@
-# 技术开发指南
+# Technical Development Guide
 
-> **注意:** 本文档整合了原有的开发指南和技术文档，提供完整的技术栈说明和开发规范。
+> **Note:** This document consolidates the original development guide and technical documentation, providing a complete tech stack description and development conventions.
 
-## 1. 项目技术架构
+## 1. Project Technical Architecture
 
-### 1.1 整体架构
-- Monorepo结构
-  - packages/core - 核心功能包
-  - packages/web - Web应用
-  - packages/extension - Chrome扩展
-  - packages/ui - 共享UI组件
-- 包间依赖管理
-  - 清晰的依赖关系
-  - 版本一致性
-  - 最小化重复代码
-- 工程化工具
+### 1.1 Overall Architecture
+- Monorepo structure
+  - packages/core - Core functionality package
+  - packages/web - Web application
+  - packages/extension - Chrome extension
+  - packages/ui - Shared UI components
+- Inter-package dependency management
+  - Clear dependency relationships
+  - Version consistency
+  - Minimized duplicate code
+- Engineering tools
   - pnpm workspace
-  - 多包管理
-  - 统一版本控制
+  - Multi-package management
+  - Unified version control
 
-### 1.2 技术栈概览
+### 1.2 Tech Stack Overview
 
-#### 1.2.1 核心包 (@prompt-optimizer/core)
+#### 1.2.1 Core Package (@prompt-optimizer/core)
 - TypeScript 5.3.x
-  - 类型系统
-  - 接口定义
-  - 模块化
-- 原生SDK集成
+  - Type system
+  - Interface definitions
+  - Modularization
+- Native SDK integration
   - OpenAI SDK ^4.83.0
   - Google Generative AI SDK ^0.21.0
-  - 模型管理
-  - 提示词处理
-  - 流式响应
-- 工具库
+  - Model management
+  - Prompt handling
+  - Streaming responses
+- Utility libraries
   - uuid ^11.0.5
   - zod ^3.22.4
-  - 错误处理
-  - 类型定义
+  - Error handling
+  - Type definitions
 
-#### 1.2.2 Web包 (@prompt-optimizer/web)
+#### 1.2.2 Web Package (@prompt-optimizer/web)
 - Vue 3.5.x
   - Composition API
   - Script Setup
-  - 响应式系统
-  - 组件生态
+  - Reactivity system
+  - Component ecosystem
 - Vite 6.0.x
-  - 快速开发服务器
-  - 优化的构建
-  - 插件系统
-  - HMR支持
+  - Fast development server
+  - Optimized builds
+  - Plugin system
+  - HMR support
 
-#### 1.2.3 UI框架和样式
+#### 1.2.3 UI Framework and Styling
 - TailwindCSS 3.4.x
-  - 实用优先
-  - 响应式设计
-  - 深色模式支持
-  - 动画系统
+  - Utility-first
+  - Responsive design
+  - Dark mode support
+  - Animation system
 - Vue Transitions
-  - 页面过渡动画
-  - 组件切换效果
-  - 列表动画
+  - Page transition animations
+  - Component switching effects
+  - List animations
 - Naive UI 2.42.x
-  - 企业级组件库
-  - 完整的TypeScript支持  
-  - 主题定制系统
-  - 响应式组件设计
+  - Enterprise-grade component library
+  - Full TypeScript support  
+  - Theme customization system
+  - Responsive component design
 
-#### 1.2.4 状态管理
+#### 1.2.4 State Management
 - Vue Reactivity
   - ref/reactive
   - computed
   - watch
   - watchEffect
-- Composables模式
-  - 状态逻辑复用
-  - 响应式组合
-  - 生命周期管理
-  - 副作用处理
+- Composables pattern
+  - Reuse of state logic
+  - Reactive composition
+  - Lifecycle management
+  - Side-effect handling
 - LocalStorage
-  - 配置持久化
-  - 历史记录存储
-  - 模板管理
-  - 加密存储
+  - Configuration persistence
+  - History storage
+  - Template management
+  - Encrypted storage
 
-#### 1.2.5 安全性
+#### 1.2.5 Security
 - WebCrypto API
-  - API密钥加密
-  - 安全存储
-  - 密钥轮换
-- XSS防护
-  - 输入验证
-  - 内容过滤
-  - 安全编码
-- CORS配置
-  - API访问控制
-  - 安全头部
-  - CSP策略
+  - API key encryption
+  - Secure storage
+  - Key rotation
+- XSS protection
+  - Input validation
+  - Content filtering
+  - Secure coding
+- CORS configuration
+  - API access control
+  - Security headers
+  - CSP policy
 
-#### 1.2.6 开发工具
+#### 1.2.6 Development Tools
 - TypeScript 5.3.x
-  - 类型检查
-  - 代码提示
-  - 接口定义
+  - Type checking
+  - Code hints
+  - Interface definitions
 - ESLint 8.56.x
-  - 代码规范
-  - 自动修复
-  - TypeScript支持
+  - Code conventions
+  - Auto-fix
+  - TypeScript support
 - Prettier 3.2.x
-  - 代码格式化
-  - 统一风格
-  - 编辑器集成
+  - Code formatting
+  - Consistent style
+  - Editor integration
 
-#### 1.2.7 测试框架
+#### 1.2.7 Testing Frameworks
 - Vitest 3.0.x
-  - 单元测试
-  - 集成测试
-  - 快照测试
-  - 覆盖率报告
+  - Unit tests
+  - Integration tests
+  - Snapshot tests
+  - Coverage reports
 - Vue Test Utils 2.4.x
-  - 组件测试
-  - 行为模拟
-  - 事件测试
+  - Component tests
+  - Behavior simulation
+  - Event tests
 - Playwright 1.41.x
-  - E2E测试
-  - 跨浏览器测试
-  - 视觉回归测试
+  - E2E tests
+  - Cross-browser tests
+  - Visual regression tests
 
-### 1.3 代码组织
-- 模块化设计
-  - 按功能划分模块
-  - 单一职责原则
-  - 关注点分离
-- 统一目录结构
-  - src/ - 源代码
-  - tests/ - 测试代码
-  - types/ - 类型定义
-  - config/ - 配置文件
+### 1.3 Code Organization
+- Modular design
+  - Divide modules by feature
+  - Single responsibility principle
+  - Separation of concerns
+- Unified directory structure
+  - src/ - Source code
+  - tests/ - Test code
+  - types/ - Type definitions
+  - config/ - Configuration files
 
-## 2. 核心包开发规范
+## 2. Core Package Development Conventions
 
-### 2.1 服务实现规范
-- 接口一致性
-  - 所有服务必须实现统一接口
-  - 方法命名保持一致
-  - 错误处理遵循统一模式
-  - 返回值类型一致
+### 2.1 Service Implementation Conventions
+- Interface consistency
+  - All services must implement a unified interface
+  - Keep method naming consistent
+  - Error handling follows a unified pattern
+  - Consistent return value types
 
-- 错误处理
-  - 使用统一的错误类型
-  - 错误信息应包含上下文
-  - 实现错误恢复机制
-  - 提供用户友好的错误信息
+- Error handling
+  - Use unified error types
+  - Error messages should include context
+  - Implement error recovery mechanisms
+  - Provide user-friendly error messages
 
-### 2.2 SDK集成规范
-- 原生SDK集成
-  - 直接使用官方SDK
-  - 避免不必要的抽象层
-  - 保持版本更新
-  - 遵循官方最佳实践
+### 2.2 SDK Integration Conventions
+- Native SDK integration
+  - Use the official SDK directly
+  - Avoid unnecessary abstraction layers
+  - Keep versions up to date
+  - Follow official best practices
 
-- 错误映射
-  - SDK特定错误映射到统一错误类型
-  - 保留原始错误信息
-  - 实现重试机制
-  - 提供降级方案
+- Error mapping
+  - Map SDK-specific errors to unified error types
+  - Preserve the original error information
+  - Implement a retry mechanism
+  - Provide a fallback plan
 
-### 2.3 类型定义规范
-- 类型安全性
-  - 使用精确的类型定义
-  - 避免any类型
-  - 使用联合类型表示可能的值
-  - 为复杂对象定义接口
+### 2.3 Type Definition Conventions
+- Type safety
+  - Use precise type definitions
+  - Avoid the any type
+  - Use union types to represent possible values
+  - Define interfaces for complex objects
 
-- 类型导出
-  - 在index.ts中集中导出类型
-  - 按模块组织类型定义
-  - 使用命名空间避免冲突
-  - 提供类型文档注释
+- Type exports
+  - Export types centrally in index.ts
+  - Organize type definitions by module
+  - Use namespaces to avoid conflicts
+  - Provide type documentation comments
 
-### 2.4 测试规范
-- 单元测试
-  - 测试覆盖率目标>80%
-  - 测试边界条件
-  - 模拟外部依赖
-  - 验证错误处理
+### 2.4 Testing Conventions
+- Unit tests
+  - Test coverage target >80%
+  - Test boundary conditions
+  - Mock external dependencies
+  - Verify error handling
 
-- 集成测试
-  - 测试服务间交互
-  - 验证端到端流程
-  - 测试性能和并发
-  - 模拟真实环境
+- Integration tests
+  - Test interactions between services
+  - Verify end-to-end flows
+  - Test performance and concurrency
+  - Simulate a real environment
 
-## 3. 前端开发规范
+## 3. Frontend Development Conventions
 
-### 3.1 项目架构
-- 推荐目录结构
+### 3.1 Project Architecture
+- Recommended directory structure
   ```
   src/
-  ├── components/    # UI组件
-  ├── composables/   # 组合式函数
-  ├── views/         # 页面组件
-  ├── services/      # 服务层
-  ├── config/        # 配置文件
-  ├── assets/        # 静态资源
-  ├── utils/         # 工具函数
-  ├── types/         # 类型定义
-  ├── App.vue        # 根组件
-  └── main.ts        # 入口文件
+  ├── components/    # UI components
+  ├── composables/   # Composable functions
+  ├── views/         # Page components
+  ├── services/      # Service layer
+  ├── config/        # Configuration files
+  ├── assets/        # Static assets
+  ├── utils/         # Utility functions
+  ├── types/         # Type definitions
+  ├── App.vue        # Root component
+  └── main.ts        # Entry file
   ```
 
-- 命名规范
-  - 组件文件：PascalCase.vue
-  - 工具函数文件：camelCase.ts
-  - 类型定义文件：camelCase.types.ts
-  - 组合式函数：useXxx.ts
+- Naming conventions
+  - Component files: PascalCase.vue
+  - Utility function files: camelCase.ts
+  - Type definition files: camelCase.types.ts
+  - Composables: useXxx.ts
 
-### 3.2 服务使用规范
-- 核心服务集成
-  - 使用统一的服务访问模式
-  - 实现服务单例模式
-  - 处理服务初始化
-  - 管理服务状态
+### 3.2 Service Usage Conventions
+- Core service integration
+  - Use a unified service access pattern
+  - Implement the service singleton pattern
+  - Handle service initialization
+  - Manage service state
 
-- 错误处理
-  - 使用统一的错误处理机制
-  - 提供用户友好的错误提示
-  - 实现错误恢复
-  - 记录错误日志
+- Error handling
+  - Use a unified error handling mechanism
+  - Provide user-friendly error messages
+  - Implement error recovery
+  - Log errors
 
-### 3.3 组件开发规范
-- Vue组件模板
-  - 使用<script setup>语法
-  - 明确定义props和emits
-  - 使用TypeScript类型
-  - 遵循单一职责原则
+### 3.3 Component Development Conventions
+- Vue component template
+  - Use the <script setup> syntax
+  - Define props and emits explicitly
+  - Use TypeScript types
+  - Follow the single responsibility principle
 
-- 组件设计原则
-  - 组件应该是可复用的
-  - 组件应该是可测试的
-  - 组件应该是可维护的
-  - 组件应该是可扩展的
+- Component design principles
+  - Components should be reusable
+  - Components should be testable
+  - Components should be maintainable
+  - Components should be extensible
 
-### 3.4 类型系统
-- Vue组件类型
-  - 为props定义明确类型
-  - 为emits定义事件类型
-  - 为ref和reactive定义类型
-  - 使用泛型增强类型安全
+### 3.4 Type System
+- Vue component types
+  - Define explicit types for props
+  - Define event types for emits
+  - Define types for ref and reactive
+  - Use generics to enhance type safety
 
-- 通用工具类型
-  - 创建可复用的工具类型
-  - 使用TypeScript内置工具类型
-  - 为复杂数据结构定义类型
-  - 避免类型断言
+- Common utility types
+  - Create reusable utility types
+  - Use TypeScript's built-in utility types
+  - Define types for complex data structures
+  - Avoid type assertions
 
-### 3.5 状态管理
-- Composables模式
-  - 按功能模块组织composables
-  - 使用组合式API风格
-  - 实现状态共享和复用
-  - 处理异步操作和副作用
+### 3.5 State Management
+- Composables pattern
+  - Organize composables by feature module
+  - Use the composition API style
+  - Implement state sharing and reuse
+  - Handle async operations and side effects
 
-- 响应式状态管理
-  - 使用ref/reactive管理局部状态
-  - 使用provide/inject实现依赖注入
-  - 通过composables实现状态逻辑复用
-  - 管理组件生命周期和清理
+- Reactive state management
+  - Use ref/reactive to manage local state
+  - Use provide/inject for dependency injection
+  - Reuse state logic through composables
+  - Manage component lifecycle and cleanup
 
-### 3.6 TypeScript和ESLint配置指导
+### 3.6 TypeScript and ESLint Configuration Guidance
 
-#### 3.6.1 TypeScript配置最佳实践
+#### 3.6.1 TypeScript Configuration Best Practices
 
-**项目级tsconfig.json配置**
+**Project-level tsconfig.json configuration**
 ```json
 {
   "compilerOptions": {
@@ -293,22 +293,22 @@
 }
 ```
 
-**Vue组件类型定义**
+**Vue component type definitions**
 ```typescript
-// 组件Props类型定义
+// Component Props type definition
 interface ComponentProps {
   title: string
   items: Array<{ id: string, name: string }>
   onSelect?: (item: any) => void
 }
 
-// 组件Emits类型定义  
+// Component Emits type definition  
 const emit = defineEmits<{
   select: [item: any]
   update: [value: string]
 }>()
 
-// 响应式数据类型
+// Reactive data types
 const formData = ref<{
   username: string
   modelConfig: ModelConfig | null
@@ -318,9 +318,9 @@ const formData = ref<{
 })
 ```
 
-**服务接口类型安全**
+**Type-safe service interfaces**
 ```typescript
-// 服务依赖注入类型
+// Service dependency injection types
 interface Services {
   modelManager: IModelManager
   templateManager: ITemplateManager
@@ -333,9 +333,9 @@ if (!services?.value) {
 }
 ```
 
-#### 3.6.2 ESLint配置指导
+#### 3.6.2 ESLint Configuration Guidance
 
-**基础ESLint配置**
+**Basic ESLint configuration**
 ```json
 {
   "root": true,
@@ -360,7 +360,7 @@ if (!services?.value) {
 }
 ```
 
-**Vue文件特定规则**
+**Vue file-specific rules**
 ```json
 {
   "rules": {
@@ -374,9 +374,9 @@ if (!services?.value) {
 }
 ```
 
-#### 3.6.3 开发环境集成
+#### 3.6.3 Development Environment Integration
 
-**VS Code配置 (.vscode/settings.json)**
+**VS Code configuration (.vscode/settings.json)**
 ```json
 {
   "editor.codeActionsOnSave": {
@@ -393,44 +393,44 @@ if (!services?.value) {
 }
 ```
 
-### 3.7 性能优化
-- 动态导入
-  - 使用路由懒加载
-  - 组件按需加载
-  - 第三方库按需导入
-  - 代码分割
+### 3.7 Performance Optimization
+- Dynamic imports
+  - Use route lazy loading
+  - Load components on demand
+  - Import third-party libraries on demand
+  - Code splitting
 
-- 渲染优化
-  - 使用虚拟列表
-  - 避免不必要的渲染
-  - 使用计算属性缓存
-  - 优化大型列表
+- Rendering optimization
+  - Use virtual lists
+  - Avoid unnecessary rendering
+  - Use computed property caching
+  - Optimize large lists
 
-### 3.8 Naive UI使用指南
+### 3.8 Naive UI Usage Guide
 
-#### 3.8.1 组件库特性
-- **企业级设计**
-  - 专业的视觉设计语言
-  - 一致的交互体验
-  - 完整的组件生态
+#### 3.8.1 Component Library Features
+- **Enterprise-grade design**
+  - Professional visual design language
+  - Consistent interaction experience
+  - Complete component ecosystem
 
-- **TypeScript支持**
-  - 完整的类型定义
-  - 智能代码提示
-  - 类型安全的属性传递
+- **TypeScript support**
+  - Complete type definitions
+  - Intelligent code hints
+  - Type-safe property passing
 
-- **主题系统**
-  - 内置多种主题（light、dark、blue、green、purple）
-  - 支持主题定制和动态切换
-  - CSS变量支持
+- **Theme system**
+  - Multiple built-in themes (light, dark, blue, green, purple)
+  - Supports theme customization and dynamic switching
+  - CSS variable support
 
-#### 3.8.2 配置指南
+#### 3.8.2 Configuration Guide
 
-1. **基础配置**
+1. **Basic configuration**
    ```vue
    <template>
      <NConfigProvider :theme="naiveTheme" :theme-overrides="themeOverrides">
-       <!-- 应用内容 -->
+       <!-- Application content -->
      </NConfigProvider>
    </template>
    
@@ -441,7 +441,7 @@ if (!services?.value) {
    </script>
    ```
 
-2. **主题配置**
+2. **Theme configuration**
    ```typescript
    // config/naive-theme.ts
    export const themeConfig = {
@@ -453,14 +453,14 @@ if (!services?.value) {
    }
    ```
 
-3. **组件使用**
+3. **Component usage**
    ```vue
    <template>
      <NButton type="primary" @click="handleClick">
-       按钮
+       Button
      </NButton>
-     <NCard title="卡片标题">
-       <p>卡片内容</p>
+     <NCard title="Card Title">
+       <p>Card content</p>
      </NCard>
    </template>
    
@@ -469,91 +469,91 @@ if (!services?.value) {
    </script>
    ```
 
-#### 3.8.3 主题配置详细说明
+#### 3.8.3 Theme Configuration Details
 
-系统提供5种完整主题配置，每种主题都包含完整的颜色体系和组件样式定制：
+The system provides 5 complete theme configurations, each including a complete color system and component style customization:
 
-**1. 日间模式 (light)**
-- 基础主题：lightTheme
-- 主色调：#0ea5e9 (天蓝色)
-- 适用场景：默认日间使用，清晰简洁
+**1. Light Mode (light)**
+- Base theme: lightTheme
+- Primary color: #0ea5e9 (sky blue)
+- Use case: Default daytime use, clean and simple
 
-**2. 夜间模式 (dark)**
-- 基础主题：darkTheme  
-- 主色调：#64748b (石板灰)
-- 适用场景：低光环境，护眼模式
+**2. Dark Mode (dark)**
+- Base theme: darkTheme  
+- Primary color: #64748b (slate gray)
+- Use case: Low-light environments, eye-friendly mode
 
-**3. 蓝色模式 (blue)**
-- 基础主题：lightTheme + 自定义背景
-- 主色调：#0ea5e9 (天蓝色)
-- 特色：蓝色调背景色系 (#f0f9ff body, #e0f2fe card)
-- 适用场景：商务专业风格
+**3. Blue Mode (blue)**
+- Base theme: lightTheme + custom background
+- Primary color: #0ea5e9 (sky blue)
+- Feature: Blue-toned background palette (#f0f9ff body, #e0f2fe card)
+- Use case: Professional business style
 
-**4. 绿色模式 (green)**
-- 基础主题：darkTheme + 完整绿色配色
-- 主色调：#14b8a6 (青绿色)
-- 特色：深色基调配绿色主题 (#0f1e1a body, #1a2e25 card)
-- 完整配置：包含滚动条、图标、边框等所有UI元素
+**4. Green Mode (green)**
+- Base theme: darkTheme + complete green color scheme
+- Primary color: #14b8a6 (teal green)
+- Feature: Dark base with a green theme (#0f1e1a body, #1a2e25 card)
+- Complete configuration: Includes scrollbars, icons, borders, and all other UI elements
 
-**5. 暗紫模式 (purple)**
-- 基础主题：darkTheme + 紫色配色
-- 主色调：#a855f7 (紫色)
-- 特色：深色基调配紫色主题 (#1a0f2e body, #251a35 card)
-- 适用场景：创意设计，个性化界面
+**5. Purple Mode (purple)**
+- Base theme: darkTheme + purple color scheme
+- Primary color: #a855f7 (purple)
+- Feature: Dark base with a purple theme (#1a0f2e body, #251a35 card)
+- Use case: Creative design, personalized interface
 
-#### 3.8.4 常用组件使用模式
+#### 3.8.4 Common Component Usage Patterns
 
-**1. 表单组件**
+**1. Form components**
 ```vue
 <template>
   <NForm ref="formRef" :model="formModel" :rules="formRules">
-    <NFormItem label="用户名" path="username">
-      <NInput v-model:value="formModel.username" placeholder="请输入用户名" />
+    <NFormItem label="Username" path="username">
+      <NInput v-model:value="formModel.username" placeholder="Please enter a username" />
     </NFormItem>
-    <NFormItem label="模型选择" path="model">
+    <NFormItem label="Model Selection" path="model">
       <NSelect 
         v-model:value="formModel.model" 
         :options="modelOptions"
-        placeholder="请选择模型"
+        placeholder="Please select a model"
       />
     </NFormItem>
     <NFormItem>
       <NButton type="primary" @click="handleSubmit">
-        提交
+        Submit
       </NButton>
     </NFormItem>
   </NForm>
 </template>
 ```
 
-**2. 布局组件**
+**2. Layout components**
 ```vue
 <template>
-  <!-- 弹性布局 - 推荐用于现代布局 -->
+  <!-- Flex layout - recommended for modern layouts -->
   <NFlex vertical :size="16">
     <NFlex justify="space-between" align="center">
-      <NH3>标题</NH3>
-      <NButton type="primary">操作</NButton>
+      <NH3>Title</NH3>
+      <NButton type="primary">Action</NButton>
     </NFlex>
     
-    <!-- 卡片容器 -->
-    <NCard title="内容卡片" hoverable>
+    <!-- Card container -->
+    <NCard title="Content Card" hoverable>
       <NFlex :size="12">
-        <NTag type="info">标签1</NTag>
-        <NTag type="success">标签2</NTag>
+        <NTag type="info">Tag 1</NTag>
+        <NTag type="success">Tag 2</NTag>
       </NFlex>
     </NCard>
   </NFlex>
 
-  <!-- 传统间距布局 -->
+  <!-- Traditional spacing layout -->
   <NSpace vertical :size="16">
     <NSpace justify="space-between" align="center">
-      <NText strong>列表标题</NText>
-      <NButton quaternary>更多</NButton>
+      <NText strong>List Title</NText>
+      <NButton quaternary>More</NButton>
     </NSpace>
   </NSpace>
 
-  <!-- 网格布局 -->
+  <!-- Grid layout -->
   <NGrid :cols="3" :x-gap="16" :y-gap="16">
     <NGridItem v-for="item in items" :key="item.id">
       <NCard>{{ item.content }}</NCard>
@@ -562,7 +562,7 @@ if (!services?.value) {
 </template>
 ```
 
-**3. 反馈组件**
+**3. Feedback components**
 ```vue
 <script setup>
 import { useMessage, useNotification } from 'naive-ui'
@@ -571,20 +571,20 @@ const message = useMessage()
 const notification = useNotification()
 
 const showToast = () => {
-  message.success('操作成功')
+  message.success('Operation successful')
 }
 
 const showNotification = () => {
   notification.info({
-    title: '通知标题',
-    content: '通知内容',
+    title: 'Notification Title',
+    content: 'Notification content',
     duration: 3000
   })
 }
 </script>
 ```
 
-**4. 变量管理组件使用模式**
+**4. Variable management component usage pattern**
 ```vue
 <script setup>
 import { useVariableManager } from '@prompt-optimizer/ui'
@@ -602,219 +602,219 @@ const {
   replaceVariables
 } = useVariableManager(services, { autoSync: true })
 
-// 使用变量替换
+// Use variable replacement
 const processedContent = computed(() => {
   return replaceVariables(originalContent.value, allVariables.value)
 })
 </script>
 ```
 
-#### 3.8.5 最佳实践
+#### 3.8.5 Best Practices
 
-- **按需导入**：只导入使用的组件，减少包体积
-- **主题一致性**：统一使用主题系统，避免硬编码颜色
-- **响应式设计**：优先使用NFlex而不是NSpace，获得更好的响应式支持
-- **类型安全**：充分利用TypeScript类型定义
-- **组件组合**：合理使用NCard + NFlex + NSpace组合实现复杂布局
-- **主题切换**：通过switchTheme()方法实现动态主题切换
+- **Import on demand**: Import only the components you use to reduce bundle size
+- **Theme consistency**: Use the theme system uniformly and avoid hard-coded colors
+- **Responsive design**: Prefer NFlex over NSpace for better responsive support
+- **Type safety**: Make full use of TypeScript type definitions
+- **Component composition**: Use combinations of NCard + NFlex + NSpace appropriately for complex layouts
+- **Theme switching**: Switch themes dynamically with the switchTheme() method
 
-### 3.9 测试规范
-- 组件测试
-  - 测试组件渲染
-  - 测试用户交互
-  - 测试props和emits
-  - 测试边界条件
+### 3.9 Testing Conventions
+- Component tests
+  - Test component rendering
+  - Test user interaction
+  - Test props and emits
+  - Test boundary conditions
 
-- 服务测试
-  - 模拟外部依赖
-  - 测试异步操作
-  - 测试错误处理
-  - 验证状态变化
+- Service tests
+  - Mock external dependencies
+  - Test async operations
+  - Test error handling
+  - Verify state changes
 
-## 4. 应用流程
+## 4. Application Flows
 
-### 4.1 核心服务初始化
+### 4.1 Core Service Initialization
 
-1. **核心服务加载顺序**
-   - 导入核心服务（modelManager, templateManager, historyManager）
-   - 加载模型配置
-   - 加载模板配置
-   - 加载历史记录
+1. **Core service loading order**
+   - Import core services (modelManager, templateManager, historyManager)
+   - Load model configuration
+   - Load template configuration
+   - Load history
 
-2. **服务实例创建流程**
-   - 创建LLM服务实例
-   - 创建提示词服务实例
-   - 注册事件处理器
-   - 初始化服务状态
+2. **Service instance creation flow**
+   - Create the LLM service instance
+   - Create the prompt service instance
+   - Register event handlers
+   - Initialize service state
 
-### 4.2 Web应用初始化
+### 4.2 Web Application Initialization
 
-1. **应用配置加载**
-   - 环境变量加载
-   - 主题设置初始化
-   - Vue应用配置
+1. **Application configuration loading**
+   - Load environment variables
+   - Initialize theme settings
+   - Vue application configuration
 
-2. **服务状态同步**
-   - 模型状态初始化
-   - 模板数据加载
-   - 历史记录同步
+2. **Service state synchronization**
+   - Initialize model state
+   - Load template data
+   - Sync history
 
-### 4.3 提示词优化流程
+### 4.3 Prompt Optimization Flow
 
-1. **用户输入阶段**
-   - 输入验证流程
-   - 错误处理机制
-   - 输入清理和预处理
+1. **User input stage**
+   - Input validation flow
+   - Error handling mechanism
+   - Input cleanup and preprocessing
 
-2. **优化处理阶段**
-   - 使用原生SDK处理请求
-   - 调用LLM服务进行优化
-   - 流式响应处理
-   - 错误处理与重试
+2. **Optimization processing stage**
+   - Handle requests using the native SDK
+   - Call the LLM service for optimization
+   - Streaming response handling
+   - Error handling and retry
 
-3. **结果处理阶段**
-   - 流式响应UI更新
-   - 结果存储到历史记录
-   - 错误恢复和降级处理
+3. **Result processing stage**
+   - Streaming response UI updates
+   - Store results in history
+   - Error recovery and fallback handling
 
-### 4.4 模型管理流程
+### 4.4 Model Management Flow
 
-1. **模型配置管理**
-   - 模型配置更新: 用户可以更新模型的名称、基础URL、API密钥、可用模型列表、默认模型以及是否启用。
-   - **高级LLM参数 (`llmParams`)**:
-     - `ModelConfig` 接口包含一个 `llmParams?: Record<string, any>;` 字段。
-     - 此字段允许用户为每个模型配置提供一个灵活的键值对映射，用于指定特定于该LLM提供商SDK的参数。
-     - 用户可以添加其LLM SDK支持的任何参数。
-     - **示例**:
-       - **OpenAI/OpenAI兼容API (如 DeepSeek, Zhipu):**
+1. **Model configuration management**
+   - Model configuration updates: Users can update a model's name, base URL, API key, list of available models, default model, and whether it is enabled.
+   - **Advanced LLM parameters (`llmParams`)**:
+     - The `ModelConfig` interface includes an `llmParams?: Record<string, any>;` field.
+     - This field lets users provide, for each model configuration, a flexible key-value mapping for specifying parameters specific to that LLM provider's SDK.
+     - Users can add any parameter supported by their LLM SDK.
+     - **Examples**:
+       - **OpenAI/OpenAI-compatible APIs (such as DeepSeek, Zhipu):**
          ```json
          "llmParams": {
            "temperature": 0.7,
            "max_tokens": 4096,
-           "timeout": 60000, // 用于OpenAI客户端的请求超时 (毫秒)
+           "timeout": 60000, // Request timeout for the OpenAI client (milliseconds)
            "top_p": 0.9,
            "frequency_penalty": 0.5
-           // ... 其他OpenAI支持的参数
+           // ... other parameters supported by OpenAI
          }
          ```
        - **Gemini:**
          ```json
          "llmParams": {
            "temperature": 0.8,
-           "maxOutputTokens": 2048, // 注意: Gemini使用maxOutputTokens
+           "maxOutputTokens": 2048, // Note: Gemini uses maxOutputTokens
            "topP": 0.95,
            "topK": 40
-           // ... 其他Gemini支持的参数
+           // ... other parameters supported by Gemini
          }
          ```
-     - **`LLMService` 如何处理 `llmParams`**:
-       - 对于OpenAI兼容的API, `timeout` 值（如果提供）用于配置OpenAI JavaScript SDK客户端实例的超时设置。其余参数（如 `temperature`, `max_tokens`, `top_p` 等）会直接传递给 `chat.completions.create()` 方法。
-       - 对于Gemini, `temperature`, `maxOutputTokens`, `topP`, `topK` 等参数会包含在传递给 `model.startChat()` 的 `generationConfig` 对象中。
-       - 未被服务明确处理的参数（即非 `timeout` for OpenAI, 或非已知Gemini参数）通常会被安全地传递给相应SDK的请求中，如果SDK支持它们。
-   - 连接测试: 验证API密钥和基础URL是否正确，以及模型是否可用。
-   - 配置验证: 确保所有必填字段都已填写，并且格式正确。`llmParams` 字段（如果提供）必须是一个对象。
-   - 错误处理: 在配置不正确或连接失败时提供明确的错误信息。
+     - **How `LLMService` handles `llmParams`**:
+       - For OpenAI-compatible APIs, the `timeout` value (if provided) is used to configure the timeout setting of the OpenAI JavaScript SDK client instance. The remaining parameters (such as `temperature`, `max_tokens`, `top_p`, etc.) are passed directly to the `chat.completions.create()` method.
+       - For Gemini, parameters such as `temperature`, `maxOutputTokens`, `topP`, and `topK` are included in the `generationConfig` object passed to `model.startChat()`.
+       - Parameters not explicitly handled by the service (i.e. anything other than `timeout` for OpenAI, or other than known Gemini parameters) are generally passed safely into the request of the corresponding SDK, if the SDK supports them.
+   - Connection test: Verify that the API key and base URL are correct and that the model is available.
+   - Configuration validation: Ensure that all required fields are filled in and correctly formatted. The `llmParams` field (if provided) must be an object.
+   - Error handling: Provide clear error messages when the configuration is incorrect or the connection fails.
 
-2. **API密钥管理**
-   - 密钥设置与加密
-   - 密钥验证
-   - 安全存储
-   - 错误处理
+2. **API key management**
+   - Key setting and encryption
+   - Key validation
+   - Secure storage
+   - Error handling
 
-### 4.5 模板管理流程
+### 4.5 Template Management Flow
 
-1. **模板操作流程**
-   - 模板保存
-   - 模板验证
-   - 模板分类管理
-   - 错误处理
+1. **Template operation flow**
+   - Save templates
+   - Validate templates
+   - Template category management
+   - Error handling
 
-2. **模板应用流程**
-   - 模板获取
-   - 模板应用
-   - 数据验证
-   - 错误处理
+2. **Template application flow**
+   - Get templates
+   - Apply templates
+   - Data validation
+   - Error handling
 
-### 4.6 历史记录管理
+### 4.6 History Management
 
-1. **记录保存流程**
-   - 添加记录
-   - 数据同步
-   - 自动清理
-   - 错误处理
+1. **Record saving flow**
+   - Add records
+   - Data synchronization
+   - Automatic cleanup
+   - Error handling
 
-2. **记录操作流程**
-   - 获取记录
-   - 过滤记录
-   - 删除记录
-   - 错误处理
+2. **Record operation flow**
+   - Get records
+   - Filter records
+   - Delete records
+   - Error handling
 
-### 4.7 错误处理流程
+### 4.7 Error Handling Flow
 
-1. **API错误处理策略**
-   - 可重试错误识别
-   - 退避重试机制
-   - 错误上报
-   - 用户通知
-   - 降级处理
+1. **API error handling strategy**
+   - Identification of retryable errors
+   - Backoff retry mechanism
+   - Error reporting
+   - User notification
+   - Fallback handling
 
-2. **验证错误处理**
-   - 字段验证
-   - UI更新
-   - 焦点处理
-   - 错误提示
+2. **Validation error handling**
+   - Field validation
+   - UI updates
+   - Focus handling
+   - Error messages
 
-3. **全局错误处理**
-   - 错误分类
-   - 错误恢复
-   - 错误上报
-   - 用户反馈
+3. **Global error handling**
+   - Error classification
+   - Error recovery
+   - Error reporting
+   - User feedback
 
-## 5. 代码审查清单
+## 5. Code Review Checklist
 
-### 5.1 通用审查项
-- 代码质量
-  - [ ] 遵循约定的代码风格
-  - [ ] 没有未使用的变量或导入
-  - [ ] 适当的注释和文档
-  - [ ] 避免重复代码
-- 安全性
-  - [ ] 输入验证
-  - [ ] 敏感信息保护
-  - [ ] API密钥安全存储
-  - [ ] 防止XSS攻击
-- 性能
-  - [ ] 避免不必要的计算
-  - [ ] 大型数据集的性能处理
-  - [ ] 缓存计算结果
+### 5.1 General Review Items
+- Code quality
+  - [ ] Follows the agreed code style
+  - [ ] No unused variables or imports
+  - [ ] Appropriate comments and documentation
+  - [ ] Avoids duplicate code
+- Security
+  - [ ] Input validation
+  - [ ] Protection of sensitive information
+  - [ ] Secure storage of API keys
+  - [ ] Prevents XSS attacks
+- Performance
+  - [ ] Avoids unnecessary computation
+  - [ ] Performance handling for large datasets
+  - [ ] Caches computed results
 
-### 5.2 前端审查项
-- 组件设计
-  - [ ] 组件职责单一
-  - [ ] 属性和事件定义清晰
-  - [ ] 状态管理合理
-  - [ ] 错误处理完善
+### 5.2 Frontend Review Items
+- Component design
+  - [ ] Components have a single responsibility
+  - [ ] Props and events are clearly defined
+  - [ ] State management is reasonable
+  - [ ] Error handling is thorough
 - UI/UX
-  - [ ] 响应式设计
-  - [ ] 无障碍性支持
-  - [ ] 良好的错误反馈
-  - [ ] 加载状态处理
+  - [ ] Responsive design
+  - [ ] Accessibility support
+  - [ ] Good error feedback
+  - [ ] Loading state handling
 
-### 5.3 核心包审查项
-- API设计
-  - [ ] 接口一致性
-  - [ ] 错误处理标准化
-  - [ ] 类型定义完整
-  - [ ] 文档注释
-- 服务实现
-  - [ ] 单一职责原则
-  - [ ] 适当的抽象级别
-  - [ ] 测试覆盖率
-  - [ ] 错误恢复机制
+### 5.3 Core Package Review Items
+- API design
+  - [ ] Interface consistency
+  - [ ] Standardized error handling
+  - [ ] Complete type definitions
+  - [ ] Documentation comments
+- Service implementation
+  - [ ] Single responsibility principle
+  - [ ] Appropriate level of abstraction
+  - [ ] Test coverage
+  - [ ] Error recovery mechanism
 
-## 6. 开发环境要求
+## 6. Development Environment Requirements
 
-### 6.1 开发环境
+### 6.1 Development Environment
 - Node.js >= 18.0.0
 - pnpm >= 8.15.0
 - VS Code
@@ -825,41 +825,41 @@ const processedContent = computed(() => {
   - GitLens
   - Tailwind CSS IntelliSense
 
-### 6.2 浏览器支持
+### 6.2 Browser Support
 - Chrome >= 90
 - Firefox >= 90
 - Safari >= 14
 - Edge >= 90
-- 移动端浏览器
+- Mobile browsers
   - iOS Safari >= 14
   - Android Chrome >= 90
 
-## 跨域问题处理
+## Handling Cross-Origin Issues
 
-### ⚠️ 代理功能已移除
+### ⚠️ The Proxy Feature Has Been Removed
 
-由于安全原因(SSRF漏洞风险，详见 [GitHub Issue #169](https://github.com/linshenkx/prompt-optimizer/issues/169))，我们已在v1.x版本中**完全移除**了Vercel和Docker内置代理功能。
+For security reasons (SSRF vulnerability risk; see [GitHub Issue #169](https://github.com/linshenkx/prompt-optimizer/issues/169) for details), we have **completely removed** the built-in Vercel and Docker proxy features in v1.x.
 
-### 推荐解决方案
+### Recommended Solutions
 
-如遇跨域问题，请使用以下方案：
+If you run into cross-origin issues, use the following options:
 
-1. **桌面版应用**(推荐)
-   - 无跨域限制
-   - 本地运行，更安全
-   - 支持所有LLM API
+1. **Desktop application** (recommended)
+   - No cross-origin restrictions
+   - Runs locally, more secure
+   - Supports all LLM APIs
 
-2. **自建反向代理**
-   - 使用Nginx、Caddy等工具
-   - 完全控制安全策略
-   - 可参考 `docs/archives/122-docker-api-proxy/` 中的历史实现
+2. **Self-hosted reverse proxy**
+   - Use tools such as Nginx or Caddy
+   - Full control over the security policy
+   - See the historical implementation in `docs/archives/122-docker-api-proxy/`
 
-3. **LLM提供商自有代理**
-   - 某些提供商提供CORS友好的端点
-   - 查阅对应提供商文档
+3. **The LLM provider's own proxy**
+   - Some providers offer CORS-friendly endpoints
+   - Consult the corresponding provider's documentation
 
-### 历史说明
+### Historical Notes
 
-早期版本(v0.x)曾提供内置代理端点(`/api/proxy`, `/api/stream`)，但因安全审计发现SSRF风险已移除。历史实现可查看 `docs/archives/122-docker-api-proxy/implementation.md`
+Early versions (v0.x) provided built-in proxy endpoints (`/api/proxy`, `/api/stream`), but they were removed after a security audit found SSRF risks. The historical implementation can be found in `docs/archives/122-docker-api-proxy/implementation.md`
 
-最后更新：2025-01-21
+Last updated: 2025-01-21

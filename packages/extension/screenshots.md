@@ -1,124 +1,124 @@
-# 提示词优化器 - 截图准备指南
+# Prompt Optimizer - Screenshot Preparation Guide
 
-本文档提供了为Chrome应用商店准备截图的详细说明和建议。高质量的截图能够有效展示插件功能，吸引更多用户。
+This document provides detailed instructions and suggestions for preparing screenshots for the Chrome Web Store. High-quality screenshots effectively showcase the extension's features and attract more users.
 
-## 截图要求
+## Screenshot Requirements
 
-Chrome应用商店对截图有以下要求：
-- 分辨率：1280x800像素或640x400像素
-- 格式：PNG或JPEG
-- 数量：至少1张，最多5张
-- 文件大小：每张不超过2MB
+The Chrome Web Store has the following requirements for screenshots:
+- Resolution: 1280x800 pixels or 640x400 pixels
+- Format: PNG or JPEG
+- Quantity: At least 1, at most 5
+- File size: No more than 2MB each
 
-## 推荐截图场景
+## Recommended Screenshot Scenarios
 
-为全面展示提示词优化器的功能，建议准备以下场景的截图：
+To fully showcase the features of Prompt Optimizer, we recommend preparing screenshots of the following scenarios:
 
-### 1. 主界面截图
+### 1. Main Interface Screenshot
 
-**描述**：展示扩展的主弹出窗口，显示整洁的界面设计。
+**Description**: Show the main popup window of the extension with a clean interface design.
 
-**准备方法**：
-1. 点击浏览器工具栏中的扩展图标
-2. 确保界面干净，显示输入框和主要功能按钮
-3. 截取整个弹出窗口
+**How to prepare**:
+1. Click the extension icon in the browser toolbar
+2. Make sure the interface is clean and shows the input box and main function buttons
+3. Capture the entire popup window
 
-**要点**：
-- 确保UI界面清晰可见
-- 保持简洁美观的设计
-- 避免显示任何敏感信息
+**Key points**:
+- Make sure the UI is clearly visible
+- Keep the design clean and attractive
+- Avoid showing any sensitive information
 
-### 2. 右键菜单使用场景
+### 2. Right-Click Menu Usage Scenario
 
-**描述**：展示用户在网页上选中文本，通过右键菜单使用插件优化提示词。
+**Description**: Show a user selecting text on a web page and using the extension through the right-click menu to optimize a prompt.
 
-**准备方法**：
-1. 在任意网页（如ChatGPT）选中一段文本
-2. 右键点击，展开上下文菜单
-3. 确保"提示词优化器"选项可见
-4. 截取包含右键菜单的页面区域
+**How to prepare**:
+1. Select a piece of text on any web page (such as ChatGPT)
+2. Right-click to open the context menu
+3. Make sure the "Prompt Optimizer" option is visible
+4. Capture the page area that contains the right-click menu
 
-**要点**：
-- 选择有代表性的文本内容
-- 确保右键菜单清晰可见
-- 避免选择含个人隐私的内容
+**Key points**:
+- Choose representative text content
+- Make sure the right-click menu is clearly visible
+- Avoid choosing content that contains personal privacy
 
-### 3. 优化结果展示
+### 3. Optimization Result Display
 
-**描述**：展示提示词优化前后的对比效果。
+**Description**: Show the comparison before and after prompt optimization.
 
-**准备方法**：
-1. 在输入框中输入一个简单的提示词
-2. 点击优化按钮
-3. 等待优化结果显示
-4. 截取显示原始提示词和优化后提示词的界面
+**How to prepare**:
+1. Enter a simple prompt in the input box
+2. Click the optimize button
+3. Wait for the optimization result to appear
+4. Capture the interface that shows the original prompt and the optimized prompt
 
-**要点**：
-- 选择有代表性的提示词示例
-- 确保优化效果明显
-- 使用简洁的示例，避免过长的文本
+**Key points**:
+- Choose a representative prompt example
+- Make sure the optimization effect is obvious
+- Use a concise example and avoid overly long text
 
-### 4. 多模型设置界面
+### 4. Multi-Model Settings Interface
 
-**描述**：展示插件支持多种AI模型的设置界面。
+**Description**: Show the settings interface where the extension supports multiple AI models.
 
-**准备方法**：
-1. 进入插件设置页面
-2. 导航到模型设置选项卡
-3. 确保界面显示多个支持的模型选项
-4. 截取设置界面
+**How to prepare**:
+1. Go to the extension settings page
+2. Navigate to the model settings tab
+3. Make sure the interface shows multiple supported model options
+4. Capture the settings interface
 
-**要点**：
-- 不要显示真实的API密钥
-- 确保界面整洁有序
-- 突出多模型支持特性
+**Key points**:
+- Do not show real API keys
+- Make sure the interface is tidy and orderly
+- Highlight the multi-model support feature
 
-### 5. 使用场景示例
+### 5. Usage Scenario Example
 
-**描述**：展示插件在实际应用场景中的使用效果。
+**Description**: Show the extension's effect in a real-world usage scenario.
 
-**准备方法**：
-1. 在实际应用场景（如AI绘图网站）中使用插件
-2. 展示优化前后的提示词及生成效果
-3. 截取包含上下文的界面
+**How to prepare**:
+1. Use the extension in a real scenario (such as an AI image generation website)
+2. Show the prompt before and after optimization and the generated result
+3. Capture the interface with its context
 
-**要点**：
-- 选择有吸引力的应用场景
-- 确保效果对比明显
-- 避免显示个人账号信息
+**Key points**:
+- Choose an attractive usage scenario
+- Make sure the before/after comparison is obvious
+- Avoid showing personal account information
 
-## 截图处理建议
+## Screenshot Processing Suggestions
 
-1. **尺寸调整**：
-   - 确保最终图片符合1280x800或640x400像素
-   - 保持16:10的宽高比
-   - 如需调整尺寸，使用专业图像处理软件避免失真
+1. **Resize**:
+   - Make sure the final image is 1280x800 or 640x400 pixels
+   - Keep a 16:10 aspect ratio
+   - If you need to resize, use professional image-processing software to avoid distortion
 
-2. **视觉优化**：
-   - 适当调整亮度和对比度，确保清晰可读
-   - 考虑添加简单的标注或高亮重点功能区域
-   - 保持一致的视觉风格
+2. **Visual optimization**:
+   - Adjust brightness and contrast appropriately to ensure readability
+   - Consider adding simple annotations or highlights to the key feature areas
+   - Keep a consistent visual style
 
-3. **文件命名**：
-   - 使用描述性文件名（如`main-interface.png`、`right-click-menu.png`等）
-   - 按顺序编号（如`01-main.png`、`02-context.png`等）
+3. **File naming**:
+   - Use descriptive file names (such as `main-interface.png`, `right-click-menu.png`, etc.)
+   - Number them in order (such as `01-main.png`, `02-context.png`, etc.)
 
-## 注意事项
+## Notes
 
-1. 不要在截图中显示敏感信息（如API密钥、个人邮箱等）
-2. 避免过度编辑或添加不实际存在的功能
-3. 确保截图真实反映插件功能
-4. 考虑不同屏幕尺寸和分辨率的用户体验
-5. 避免使用过多文字说明，让界面直观地传达功能
+1. Do not show sensitive information in screenshots (such as API keys or personal email addresses)
+2. Avoid over-editing or adding features that do not actually exist
+3. Make sure the screenshots truthfully reflect the extension's features
+4. Consider the user experience on different screen sizes and resolutions
+5. Avoid using too much explanatory text; let the interface convey the features intuitively
 
-## 截图示例
+## Screenshot Examples
 
-以下是推荐的截图内容安排：
+The following is the recommended arrangement of screenshot content:
 
-1. **首张截图**：主界面 - 展示整体布局和设计风格
-2. **第二张**：右键菜单使用场景 - 展示如何在任意网页使用
-3. **第三张**：优化效果对比 - 展示核心功能效果
-4. **第四张**：多模型支持 - 展示技术亮点
-5. **第五张**：实际应用示例 - 展示实用价值
+1. **First screenshot**: Main interface - shows the overall layout and design style
+2. **Second**: Right-click menu usage scenario - shows how to use it on any web page
+3. **Third**: Optimization result comparison - shows the core feature in action
+4. **Fourth**: Multi-model support - shows the technical highlights
+5. **Fifth**: Real application example - shows the practical value
 
-按照这个顺序，能够全面且有逻辑地向潜在用户展示插件的价值和功能。 
+Following this order lets you present the extension's value and features to potential users comprehensively and logically.

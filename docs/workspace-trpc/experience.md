@@ -1,54 +1,54 @@
-# 开发经验记录
+# Development Experience Log
 
-记录开发过程中的重要经验和最佳实践。
+Record important lessons and best practices from the development process.
 
-## 🔧 构建与依赖管理 (Monorepo & Vite)
+## 🔧 Build and Dependency Management (Monorepo & Vite)
 
-**经验**: 在 pnpm workspace (monorepo) 中，当一个包（如`@core`）需要同时服务于前端（Vite构建的`@ui`包）和后端（Node.js/Electron）时，处理导出和依赖关系需要特别小心，以避免构建冲突。
+**Lesson**: In a pnpm workspace (monorepo), when one package (such as `@core`) needs to serve both the frontend (the Vite-built `@ui` package) and the backend (Node.js/Electron), exports and dependencies must be handled carefully to avoid build conflicts.
 
-**场景**:
-- 一个`@core`包，其中一部分代码（如tRPC路由）仅用于后端，另一部分是通用代码。
-- 一个`@ui`包（使用Vite构建），依赖`@core`包。
-- 一个`@desktop`包（使用Electron），也依赖`@core`包，并需要使用其仅后端的代码。
+**Scenario**:
+- A `@core` package, where some of the code (such as tRPC routers) is backend-only and the rest is shared code.
+- A `@ui` package (built with Vite) that depends on the `@core` package.
+- A `@desktop` package (using Electron) that also depends on the `@core` package and needs to use its backend-only code.
 
-**问题**:
-1. 如果`@core`包在其主入口 (`index.ts`) 导出了仅后端的代码，会导致前端应用打包进不必要的服务器依赖（如`@trpc/server`）。
-2. 如果为了解决问题1，使用`package.json`的`exports`映射为后端代码创建单独入口，可能会破坏Vite的依赖解析机制，导致`@ui`包构建失败。
-3. 如果在`@ui`的Vite配置中将`@core`包设为`external`，会增加最终应用的配置复杂性，使其无法"开箱即用"。
+**Problems**:
+1. If the `@core` package exports backend-only code from its main entry (`index.ts`), the frontend app ends up bundling unnecessary server dependencies (such as `@trpc/server`).
+2. If, to solve problem 1, a separate entry for the backend code is created via the `exports` map in `package.json`, it may break Vite's dependency resolution and cause the `@ui` package build to fail.
+3. If the `@core` package is marked `external` in `@ui`'s Vite config, it adds configuration complexity to the final application and prevents it from working "out of the box".
 
-**最佳实践 / 解决方案**:
-1.  **组件库自包含 (Batteries Included)**: 在 `@ui` 包的 `vite.config.ts` 中，**移除**内部依赖（如 `@core`）的 `external` 配置。让UI库成为一个完整的、内置所有必要依赖的自包含产品。
-2.  **核心包多入口构建**: 在 `@core` 包中，使用 `tsup` 等工具配置**多入口点**构建。一个入口是提供给前端和大部分后端的公共API (`index.ts`)，另一个是仅用于特定后端的专门文件（如 `router.ts`）。
-3.  **分离导出与实现 (公共API vs 内部路径)**:
-    - **不要**在 `package.json` 中为仅后端的代码创建复杂的 `exports` 映射。保持主 `exports` 干净、简单，只指向公共API。
-    - 在需要使用仅后端代码的地方（如 `desktop/main.js`），直接通过**相对文件路径**从 `dist` 目录中 `require` 编译后的文件。
+**Best practice / solution**:
+1.  **Self-contained component library (Batteries Included)**: In the `vite.config.ts` of the `@ui` package, **remove** the `external` configuration for internal dependencies (such as `@core`). Make the UI library a complete, self-contained product that bundles all necessary dependencies.
+2.  **Multi-entry build for the core package**: In the `@core` package, use a tool such as `tsup` to configure a **multi-entry** build. One entry is the public API for the frontend and most of the backend (`index.ts`), and the other is a dedicated file used only by specific backends (such as `router.ts`).
+3.  **Separate exports from implementation (public API vs internal paths)**:
+    - **Do not** create a complicated `exports` map in `package.json` for backend-only code. Keep the main `exports` clean and simple, pointing only to the public API.
+    - Where backend-only code is needed (such as `desktop/main.js`), `require` the compiled file directly from the `dist` directory through a **relative file path**.
 
-**代码示例**:
+**Code examples**:
 - `packages/core/package.json` (scripts):
   `"build": "tsup src/index.ts src/services/trpc/router.ts --format cjs,esm --dts"`
 - `packages/desktop/main.js` (import):
   `const { createAppRouter } = require('@prompt-optimizer/core/dist/services/trpc/router.cjs');`
 
-**结论**: 这种"公共API + 内部路径"的策略，优雅地解决了前后端对同一个包的不同需求，保证了Vite构建的顺利进行，也维持了后端功能的可用性。
+**Conclusion**: This "public API + internal path" strategy elegantly addresses the different needs of the frontend and backend for the same package, keeps the Vite build running smoothly, and keeps the backend functionality available.
 
-**核心原则**: 必须同时满足现代前端构建工具（如Vite）和后端环境（Node.js）的模块解析规则。核心是遵守Node.js的`exports`封装性，并以此为基础解决Vite的兼容问题。
+**Core principle**: The module resolution rules of both modern frontend build tools (such as Vite) and the backend environment (Node.js) must be satisfied at the same time. The key is to respect Node.js `exports` encapsulation and build on that to solve Vite compatibility issues.
 
-**遇到的问题演进**:
-1.  **前端加载后端代码**: `@core`包的`index.ts`导出了仅服务器端的代码，导致浏览器报错。
-2.  **Vite构建失败**: 为解决问题1，尝试使用`exports`为后端代码创建单独入口，但这种多入口配置导致Vite无法解析依赖。
-3.  **Node.js路径未导出 (ERR_PACKAGE_PATH_NOT_EXPORTED)**: 为解决问题2，尝试让后端直接引用内部文件路径，但这违反了Node.js的模块封装规则，因为`exports`字段存在时，所有访问必须经过它的允许。
+**How the problems evolved**:
+1.  **Frontend loading backend code**: The `index.ts` of the `@core` package exported server-only code, causing errors in the browser.
+2.  **Vite build failure**: To solve problem 1, a separate entry for the backend code was created with `exports`, but this multi-entry configuration prevented Vite from resolving dependencies.
+3.  **Node.js path not exported (ERR_PACKAGE_PATH_NOT_EXPORTED)**: To solve problem 2, the backend was made to reference the internal file path directly, but this violates Node.js module encapsulation rules, because when the `exports` field exists, all access must go through what it allows.
 
-**最终的最佳实践 (The Standard Way)**:
-1.  **组件库自包含 (Batteries Included)**:
-    - 在 `@ui` 包的 `vite.config.ts` 中，**移除**内部依赖（如 `@core`）的 `external` 配置。让UI库成为一个完整的、内置所有必要依赖的自包含产品。这是解决问题的起点。
-2.  **在核心包中明确声明所有导出**:
-    - 在 `@core` 包的 `package.json` 中，使用 `exports` 字段**明确声明所有**需要被外部访问的路径，无论是给前端还是后端使用。
-    - 使用 `tsup` 等工具进行多入口点构建，确保 `exports` 中声明的每个路径都有对应的编译产物。
-3.  **所有消费者都使用标准路径**:
-    - 无论是前端还是后端，都应该通过 `exports` 中声明的标准路径来导入模块 (e.g., `'@prompt-optimizer/core'` 或 `'@prompt-optimizer/core/trpc-router'`)。
-    - **禁止**任何包从另一个包的内部文件路径（如 `dist/...`）进行导入。
+**The final best practice (The Standard Way)**:
+1.  **Self-contained component library (Batteries Included)**:
+    - In the `vite.config.ts` of the `@ui` package, **remove** the `external` configuration for internal dependencies (such as `@core`). Make the UI library a complete, self-contained product that bundles all necessary dependencies. This is the starting point for solving the problem.
+2.  **Explicitly declare all exports in the core package**:
+    - In the `package.json` of the `@core` package, use the `exports` field to **explicitly declare all** paths that need to be accessed externally, whether for the frontend or the backend.
+    - Use a tool such as `tsup` to perform a multi-entry build, ensuring that every path declared in `exports` has a corresponding build artifact.
+3.  **All consumers use standard paths**:
+    - Both the frontend and the backend should import modules through the standard paths declared in `exports` (e.g., `'@prompt-optimizer/core'` or `'@prompt-optimizer/core/trpc-router'`).
+    - **Forbid** any package from importing from another package's internal file paths (such as `dist/...`).
 
-**代码示例 (最终正确配置)**:
+**Code examples (final correct configuration)**:
 - `packages/core/package.json`:
   ```json
   "exports": {
@@ -62,69 +62,69 @@
 - `packages/desktop/main.js`:
   `const { createAppRouter } = require('@prompt-optimizer/core/trpc-router');`
 
-**结论**: 这个标准化的解决方案保证了 `@core` 包的强封装性，同时为不同环境的消费者提供了清晰、稳定、唯一的访问接口。如果在此基础上Vite仍然构建失败，那么下一步应该去调整Vite自身的配置（如 `resolve.alias` 或 `optimizeDeps.exclude`），而不是破坏包的封装规则。
+**Conclusion**: This standardized solution guarantees the strong encapsulation of the `@core` package while giving consumers in different environments a clear, stable, and unique access interface. If the Vite build still fails on this basis, the next step should be to adjust Vite's own configuration (such as `resolve.alias` or `optimizeDeps.exclude`) rather than breaking the package's encapsulation rules.
 
-## 🔧 技术经验
+## 🔧 Technical Lessons
 
-### 架构设计
-- [经验描述] - [适用场景] - [记录日期]
+### Architecture Design
+- [Lesson description] - [Applicable scenario] - [Date recorded]
 
-### 错误处理
-- [错误类型] - [解决方案] - [预防措施] - [记录日期]
+### Error Handling
+- [Error type] - [Solution] - [Prevention measures] - [Date recorded]
 
-### 性能优化
-- [优化点] - [优化方法] - [效果] - [记录日期]
+### Performance Optimization
+- [Optimization point] - [Optimization method] - [Effect] - [Date recorded]
 
-### 测试实践
-- [测试类型] - [最佳实践] - [工具推荐] - [记录日期]
+### Testing Practices
+- [Test type] - [Best practice] - [Recommended tools] - [Date recorded]
 
-## 🛠️ 工具配置
+## 🛠️ Tool Configuration
 
-### 开发工具
-- [工具名称] - [配置要点] - [使用技巧] - [记录日期]
+### Development Tools
+- [Tool name] - [Configuration highlights] - [Usage tips] - [Date recorded]
 
-### 调试技巧
-- [问题类型] - [调试方法] - [工具使用] - [记录日期]
+### Debugging Tips
+- [Problem type] - [Debugging method] - [Tool usage] - [Date recorded]
 
-## 📚 学习资源
+## 📚 Learning Resources
 
-### 有用文档
-- [文档标题] - [链接] - [要点总结] - [记录日期]
+### Useful Documents
+- [Document title] - [Link] - [Key points summary] - [Date recorded]
 
-### 代码示例
-- [功能描述] - [代码片段或文件位置] - [使用场景] - [记录日期]
+### Code Examples
+- [Feature description] - [Code snippet or file location] - [Usage scenario] - [Date recorded]
 
-## 🚫 避坑指南
+## 🚫 Pitfall Guide
 
-### 常见错误
-- [错误描述] - [原因分析] - [避免方法] - [记录日期]
+### Common Mistakes
+- [Mistake description] - [Cause analysis] - [How to avoid] - [Date recorded]
 
-### 设计陷阱
-- [设计问题] - [问题后果] - [正确做法] - [记录日期]
+### Design Traps
+- [Design problem] - [Consequence] - [Correct approach] - [Date recorded]
 
-## 🔄 流程改进
+## 🔄 Process Improvements
 
-### 工作流优化
-- **经验**: 在Monorepo中设计开发命令时，要避免并行进程操作同一目录导致的"赛跑条件"。
-- **场景**: 使用`concurrently`并行执行多个任务，其中一个任务是Vite开发服务器(`vite dev`)，另一个是其依赖库的监视构建任务(`vite build --watch`)。
-- **问题**: `vite dev`在启动时需要读取依赖库（如`@ui`）的构建产物（如`dist/style.css`），而`vite build --watch`在同一时间可能正在清理或重写该`dist`目录，导致文件读取失败，引发样式丢失等问题。
-- **最佳实践**:
-    1.  **信任Vite开发服务器**：在开发环境下，应该最大限度地利用Vite开发服务器的内置能力。它能够直接处理对工作区内其他包（workspace-local packages）的依赖，并从它们的**源文件**（`src`）进行实时编译和热更新。
-    2.  **避免预构建和监视**：因此，在启动主应用的开发服务器时，**不应该**同时运行其依赖库的`build --watch`任务。
-    3.  **简化并行命令**: 开发命令应只包含主应用的开发服务器（如`vite dev`）和其他必要的后端服务（如`electron .`）。让单个Vite实例全权负责所有前端代码的编译。
-- **示例 (package.json)**:
-  - **错误示范**: `concurrently "pnpm -F @ui watch" "pnpm -F @web dev"`
-  - **正确示范**: `concurrently "pnpm -F @web dev" "pnpm -F @desktop dev"` (假设web负责所有UI，desktop是后端)
-- **记录日期**: 2024-07-28
+### Workflow Optimization
+- **Lesson**: When designing development commands in a monorepo, avoid "race conditions" caused by parallel processes operating on the same directory.
+- **Scenario**: Using `concurrently` to run multiple tasks in parallel, where one task is the Vite dev server (`vite dev`) and another is the watch build task of its dependency library (`vite build --watch`).
+- **Problem**: At startup, `vite dev` needs to read the build artifacts of the dependency library (such as `@ui`), e.g. `dist/style.css`, while `vite build --watch` may be cleaning or rewriting that `dist` directory at the same time, causing file read failures and problems such as missing styles.
+- **Best practice**:
+    1.  **Trust the Vite dev server**: In development, make maximum use of the Vite dev server's built-in capabilities. It can directly handle dependencies on other workspace-local packages and compile and hot-update them live from their **source files** (`src`).
+    2.  **Avoid prebuilding and watching**: Therefore, when starting the main app's dev server, **do not** also run the `build --watch` task of its dependency libraries.
+    3.  **Simplify parallel commands**: The dev command should only include the main app's dev server (such as `vite dev`) and other necessary backend services (such as `electron .`). Let a single Vite instance be fully responsible for compiling all frontend code.
+- **Example (package.json)**:
+  - **Bad example**: `concurrently "pnpm -F @ui watch" "pnpm -F @web dev"`
+  - **Good example**: `concurrently "pnpm -F @web dev" "pnpm -F @desktop dev"` (assuming web is responsible for all UI and desktop is the backend)
+- **Date recorded**: 2024-07-28
 
-### 文档管理
-- [管理经验] - [工具使用] - [效率提升] - [记录日期]
+### Documentation Management
+- [Management lesson] - [Tool usage] - [Efficiency gain] - [Date recorded]
 
 ---
 
-## 📝 使用说明
+## 📝 Usage Instructions
 
-1. **及时记录** - 遇到重要经验立即记录
-2. **分类整理** - 按照上述分类组织内容
-3. **定期回顾** - 每周回顾一次，提取可复用经验
-4. **归档整理** - 任务完成时将相关经验归档到archives
+1. **Record promptly** - Record important lessons as soon as you encounter them
+2. **Organize by category** - Organize content according to the categories above
+3. **Review regularly** - Review once a week and extract reusable lessons
+4. **Archive** - Archive related lessons to archives when a task is completed

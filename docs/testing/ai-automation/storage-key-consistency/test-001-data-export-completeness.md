@@ -1,112 +1,112 @@
-# 测试001：数据导出完整性验证
+# Test 001: Data Export Completeness Verification
 
-## 📋 测试信息
-- **测试ID：** TEST-001
-- **测试类型：** 功能测试
-- **优先级：** 高
-- **预计执行时间：** 5分钟
+## 📋 Test Information
+- **Test ID:** TEST-001
+- **Test type:** Functional test
+- **Priority:** High
+- **Estimated execution time:** 5 minutes
 
-## 🎯 测试目标
-验证修复存储键一致性问题后，所有用户设置都能正确导出到JSON文件中。
+## 🎯 Test Goal
+Verify that after fixing the storage key consistency problem, all user settings can be exported correctly into the JSON file.
 
-## 📝 测试前提条件
-1. 应用已启动并完成初始化
-2. 用户可以访问设置和数据管理功能
-3. 浏览器支持文件下载功能
+## 📝 Test Prerequisites
+1. The application has started and completed initialization
+2. The user can access the settings and data management features
+3. The browser supports file downloads
 
-## 🧪 测试步骤
+## 🧪 Test Steps
 
-### 步骤1：设置用户偏好
+### Step 1: Set User Preferences
 ```javascript
-// 1.1 切换主题设置
-browser_click(element="主题切换按钮", ref="theme-toggle");
+// 1.1 Switch the theme setting
+browser_click(element="Theme toggle button", ref="theme-toggle");
 browser_wait_for(time=1);
 browser_snapshot();
 
-// 1.2 切换界面语言
-browser_click(element="语言切换按钮", ref="language-toggle");
+// 1.2 Switch the interface language
+browser_click(element="Language toggle button", ref="language-toggle");
 browser_wait_for(time=1);
 browser_snapshot();
 
-// 1.3 切换内置模板语言
-browser_click(element="内置模板语言切换按钮", ref="builtin-lang-toggle");
+// 1.3 Switch the built-in template language
+browser_click(element="Built-in template language toggle button", ref="builtin-lang-toggle");
 browser_wait_for(time=1);
 browser_snapshot();
 ```
 
-### 步骤2：配置模型选择
+### Step 2: Configure Model Selection
 ```javascript
-// 2.1 打开模型管理
-browser_click(element="模型管理按钮", ref="model-manager");
+// 2.1 Open model management
+browser_click(element="Model Manager button", ref="model-manager");
 browser_wait_for(time=2);
 browser_snapshot();
 
-// 2.2 选择优化模型
-browser_click(element="优化模型选择", ref="optimize-model-select");
+// 2.2 Select the optimization model
+browser_click(element="Optimization model select", ref="optimize-model-select");
 browser_wait_for(time=1);
-browser_click(element="Gemini模型选项", ref="gemini-option");
+browser_click(element="Gemini model option", ref="gemini-option");
 browser_wait_for(time=1);
 
-// 2.3 选择测试模型
-browser_click(element="测试模型选择", ref="test-model-select");
+// 2.3 Select the test model
+browser_click(element="Test model select", ref="test-model-select");
 browser_wait_for(time=1);
-browser_click(element="SiliconFlow模型选项", ref="siliconflow-option");
+browser_click(element="SiliconFlow model option", ref="siliconflow-option");
 browser_wait_for(time=1);
 
 browser_press_key("Escape");
 browser_wait_for(time=1);
 ```
 
-### 步骤3：配置模板选择
+### Step 3: Configure Template Selection
 ```javascript
-// 3.1 打开模板管理
-browser_click(element="模板管理按钮", ref="template-manager");
+// 3.1 Open template management
+browser_click(element="Template management button", ref="template-manager");
 browser_wait_for(time=2);
 browser_snapshot();
 
-// 3.2 选择系统优化模板
-browser_click(element="系统优化模板选择", ref="system-optimize-template");
+// 3.2 Select the system optimization template
+browser_click(element="System optimization template select", ref="system-optimize-template");
 browser_wait_for(time=1);
 
-// 3.3 选择迭代模板
-browser_click(element="迭代模板选择", ref="iterate-template");
+// 3.3 Select the iteration template
+browser_click(element="Iteration template select", ref="iterate-template");
 browser_wait_for(time=1);
 
 browser_press_key("Escape");
 browser_wait_for(time=1);
 ```
 
-### 步骤4：导出数据
+### Step 4: Export Data
 ```javascript
-// 4.1 打开数据管理
-browser_click(element="数据管理按钮", ref="data-manager");
+// 4.1 Open data management
+browser_click(element="Data management button", ref="data-manager");
 browser_wait_for(time=1);
 browser_snapshot();
 
-// 4.2 执行数据导出
-browser_click(element="导出数据按钮", ref="export-button");
+// 4.2 Perform the data export
+browser_click(element="Export data button", ref="export-button");
 browser_wait_for(time=3);
 browser_snapshot();
 ```
 
-## ✅ 验证点
+## ✅ Verification Points
 
-### 主要验证点
-- [ ] **导出成功** - 文件成功下载，无错误提示
-- [ ] **JSON格式正确** - 导出文件是有效的JSON格式
-- [ ] **包含所有设置项** - userSettings包含8个预期的设置项
+### Main Verification Points
+- [ ] **Export succeeds** - The file is downloaded successfully with no error prompts
+- [ ] **JSON format is correct** - The exported file is valid JSON
+- [ ] **Contains all setting items** - userSettings contains the 8 expected setting items
 
-### 详细验证点
-- [ ] `app:settings:ui:theme-id` - 主题设置正确导出
-- [ ] `app:settings:ui:preferred-language` - 语言设置正确导出
-- [ ] `app:settings:ui:builtin-template-language` - 内置模板语言设置正确导出
-- [ ] `app:selected-optimize-model` - 优化模型选择正确导出
-- [ ] `app:selected-test-model` - 测试模型选择正确导出
-- [ ] `app:selected-optimize-template` - 系统优化模板选择正确导出
-- [ ] `app:selected-user-optimize-template` - 用户优化模板选择正确导出（如果设置过）
-- [ ] `app:selected-iterate-template` - 迭代模板选择正确导出
+### Detailed Verification Points
+- [ ] `app:settings:ui:theme-id` - The theme setting is exported correctly
+- [ ] `app:settings:ui:preferred-language` - The language setting is exported correctly
+- [ ] `app:settings:ui:builtin-template-language` - The built-in template language setting is exported correctly
+- [ ] `app:selected-optimize-model` - The optimization model selection is exported correctly
+- [ ] `app:selected-test-model` - The test model selection is exported correctly
+- [ ] `app:selected-optimize-template` - The system optimization template selection is exported correctly
+- [ ] `app:selected-user-optimize-template` - The user optimization template selection is exported correctly (if set)
+- [ ] `app:selected-iterate-template` - The iteration template selection is exported correctly
 
-### 预期JSON结构
+### Expected JSON Structure
 ```json
 {
   "version": 1,
@@ -127,37 +127,37 @@ browser_snapshot();
 }
 ```
 
-## 🚨 失败处理
+## 🚨 Failure Handling
 
-### 如果导出的userSettings少于7个项目：
-1. 检查控制台是否有错误信息
-2. 验证各个设置是否真的被保存
-3. 检查存储键名是否正确
-4. 记录缺失的具体设置项
+### If the exported userSettings has fewer than 7 items:
+1. Check the console for error messages
+2. Verify that each setting was actually saved
+3. Check whether the storage key names are correct
+4. Record the specific missing setting items
 
-### 如果键名格式不正确：
-1. 检查是否还有组件使用旧的短键名
-2. 验证常量定义是否正确导入
-3. 检查是否有缓存问题
+### If the key name format is incorrect:
+1. Check whether any components still use the old short key names
+2. Verify that the constant definitions are imported correctly
+3. Check for caching problems
 
-## 📊 测试结果
+## 📊 Test Results
 
-### 执行信息
-- **执行时间：** [待填写]
-- **执行环境：** [Web/Desktop]
-- **浏览器版本：** [待填写]
+### Execution Information
+- **Execution time:** [To be filled in]
+- **Execution environment:** [Web/Desktop]
+- **Browser version:** [To be filled in]
 
-### 结果记录
-- **测试状态：** [通过/失败/部分通过]
-- **导出的设置项数量：** [实际数量]/8
-- **发现的问题：** [问题描述]
+### Result Record
+- **Test status:** [Pass/Fail/Partial pass]
+- **Number of exported setting items:** [Actual count]/8
+- **Problems found:** [Problem description]
 
-### 导出的实际JSON
+### Actual Exported JSON
 ```json
-[粘贴实际导出的JSON内容]
+[Paste the actual exported JSON content]
 ```
 
-## 🔄 后续行动
-- [ ] 如果测试失败，创建bug报告
-- [ ] 如果测试通过，更新测试状态
-- [ ] 记录任何改进建议
+## 🔄 Follow-Up Actions
+- [ ] If the test fails, create a bug report
+- [ ] If the test passes, update the test status
+- [ ] Record any improvement suggestions

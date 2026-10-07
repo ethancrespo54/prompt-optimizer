@@ -1,23 +1,23 @@
-# 测试002：旧版本数据导入兼容性验证
+# Test 002: Old Version Data Import Compatibility Verification
 
-## 📋 测试信息
-- **测试ID：** TEST-002
-- **测试类型：** 兼容性测试
-- **优先级：** 中
-- **预计执行时间：** 3分钟
+## 📋 Test Information
+- **Test ID:** TEST-002
+- **Test type:** Compatibility test
+- **Priority:** Medium
+- **Estimated execution time:** 3 minutes
 
-## 🎯 测试目标
-验证应用能正确导入使用旧版本短键名的数据文件，并自动转换为新的完整键名格式。
+## 🎯 Test Goal
+Verify that the application can correctly import data files that use old version short key names, and automatically convert them to the new full key name format.
 
-## 📝 测试前提条件
-1. 应用已启动并完成初始化
-2. 用户可以访问数据管理功能
-3. 准备好包含旧版本键名的测试数据文件
+## 📝 Test Prerequisites
+1. The application has started and completed initialization
+2. The user can access the data management feature
+3. A test data file containing old version key names is prepared
 
-## 🧪 测试数据准备
+## 🧪 Test Data Preparation
 
-### 创建测试数据文件
-创建名为 `legacy-test-data.json` 的文件，内容如下：
+### Create the Test Data File
+Create a file named `legacy-test-data.json` with the following content:
 
 ```json
 {
@@ -64,132 +64,132 @@
 }
 ```
 
-## 🧪 测试步骤
+## 🧪 Test Steps
 
-### 步骤1：清空当前数据（可选）
+### Step 1: Clear Current Data (Optional)
 ```javascript
-// 1.1 打开数据管理
-browser_click(element="数据管理按钮", ref="data-manager");
+// 1.1 Open data management
+browser_click(element="Data management button", ref="data-manager");
 browser_wait_for(time=1);
 browser_snapshot();
 
-// 1.2 如果需要，可以先清空现有数据
-// 这一步是可选的，取决于测试需求
+// 1.2 If needed, you can first clear the existing data
+// This step is optional, depending on the test needs
 ```
 
-### 步骤2：导入旧版本数据
+### Step 2: Import Old Version Data
 ```javascript
-// 2.1 选择导入功能
-browser_click(element="导入数据区域", ref="import-area");
+// 2.1 Select the import feature
+browser_click(element="Import data area", ref="import-area");
 browser_wait_for(time=1);
 
-// 2.2 上传测试文件
-// 注意：这里需要实际的文件上传操作
-// 具体实现取决于UI的文件上传方式
+// 2.2 Upload the test file
+// Note: an actual file upload operation is needed here
+// The specific implementation depends on how the UI uploads files
 browser_file_upload(paths=["./legacy-test-data.json"]);
 browser_wait_for(time=2);
 
-// 2.3 确认导入
-browser_click(element="确认导入按钮", ref="confirm-import");
+// 2.3 Confirm the import
+browser_click(element="Confirm import button", ref="confirm-import");
 browser_wait_for(time=3);
 browser_snapshot();
 ```
 
-### 步骤3：验证导入结果
+### Step 3: Verify the Import Result
 ```javascript
-// 3.1 检查导入成功提示
+// 3.1 Check the import success prompt
 browser_snapshot();
 
-// 3.2 关闭数据管理对话框
+// 3.2 Close the data management dialog
 browser_press_key("Escape");
 browser_wait_for(time=1);
 
-// 3.3 验证设置是否生效
-// 检查主题是否变为dark
-// 检查语言是否变为en-US
+// 3.3 Verify that the settings take effect
+// Check whether the theme changed to dark
+// Check whether the language changed to en-US
 browser_snapshot();
 ```
 
-### 步骤4：验证键名转换
+### Step 4: Verify the Key Name Conversion
 ```javascript
-// 4.1 重新导出数据验证转换结果
-browser_click(element="数据管理按钮", ref="data-manager");
+// 4.1 Re-export the data to verify the conversion result
+browser_click(element="Data management button", ref="data-manager");
 browser_wait_for(time=1);
 
-browser_click(element="导出数据按钮", ref="export-button");
+browser_click(element="Export data button", ref="export-button");
 browser_wait_for(time=3);
 browser_snapshot();
 ```
 
-## ✅ 验证点
+## ✅ Verification Points
 
-### 导入过程验证
-- [ ] **导入成功** - 显示导入成功提示，无错误信息
-- [ ] **控制台日志** - 显示键名转换信息
-- [ ] **设置生效** - 导入的设置在UI中正确显示
+### Import Process Verification
+- [ ] **Import succeeds** - An import success prompt is displayed with no error messages
+- [ ] **Console logs** - Key name conversion information is shown
+- [ ] **Settings take effect** - The imported settings are displayed correctly in the UI
 
-### 键名转换验证
+### Key Name Conversion Verification
 - [ ] `theme-id` → `app:settings:ui:theme-id`
 - [ ] `preferred-language` → `app:settings:ui:preferred-language`
 - [ ] `builtin-template-language` → `app:settings:ui:builtin-template-language`
-- [ ] 新格式键名保持不变
+- [ ] New-format key names remain unchanged
 
-### 功能验证
-- [ ] **主题设置** - 界面主题变为导入的dark主题
-- [ ] **语言设置** - 界面语言变为导入的en-US
-- [ ] **模板语言** - 内置模板语言变为导入的zh-CN
-- [ ] **模型选择** - 优化和测试模型选择正确
-- [ ] **模板选择** - 模板选择设置正确
+### Functional Verification
+- [ ] **Theme setting** - The interface theme changes to the imported dark theme
+- [ ] **Language setting** - The interface language changes to the imported en-US
+- [ ] **Template language** - The built-in template language changes to the imported zh-CN
+- [ ] **Model selection** - The optimization and test model selections are correct
+- [ ] **Template selection** - The template selection settings are correct
 
-### 重新导出验证
-- [ ] **新格式键名** - 重新导出的数据使用完整的新格式键名
-- [ ] **数据完整性** - 所有导入的数据都正确保存
-- [ ] **向前兼容** - 新导出的数据格式符合最新标准
+### Re-Export Verification
+- [ ] **New-format key names** - The re-exported data uses the full new-format key names
+- [ ] **Data integrity** - All imported data is saved correctly
+- [ ] **Forward compatibility** - The newly exported data format conforms to the latest standard
 
-## 🚨 失败处理
+## 🚨 Failure Handling
 
-### 如果导入失败：
-1. 检查文件格式是否正确
-2. 查看控制台错误信息
-3. 验证文件上传功能是否正常
-4. 检查数据验证逻辑
+### If the import fails:
+1. Check whether the file format is correct
+2. View the console error messages
+3. Verify whether the file upload feature works normally
+4. Check the data validation logic
 
-### 如果键名转换失败：
-1. 检查LEGACY_KEY_MAPPING配置
-2. 验证normalizeSettingKey函数
-3. 查看控制台是否有转换日志
-4. 检查isValidSettingKey验证逻辑
+### If the key name conversion fails:
+1. Check the LEGACY_KEY_MAPPING configuration
+2. Verify the normalizeSettingKey function
+3. Check whether there are conversion logs in the console
+4. Check the isValidSettingKey validation logic
 
-### 如果设置不生效：
-1. 检查导入后的存储内容
-2. 验证各组件的设置读取逻辑
-3. 检查是否需要页面刷新
-4. 验证响应式更新机制
+### If the settings do not take effect:
+1. Check the stored content after import
+2. Verify the setting reading logic of each component
+3. Check whether a page refresh is needed
+4. Verify the reactive update mechanism
 
-## 📊 测试结果
+## 📊 Test Results
 
-### 执行信息
-- **执行时间：** [待填写]
-- **执行环境：** [Web/Desktop]
-- **浏览器版本：** [待填写]
+### Execution Information
+- **Execution time:** [To be filled in]
+- **Execution environment:** [Web/Desktop]
+- **Browser version:** [To be filled in]
 
-### 结果记录
-- **测试状态：** [通过/失败/部分通过]
-- **键名转换数量：** [成功转换数量]/3
-- **设置生效情况：** [描述]
+### Result Record
+- **Test status:** [Pass/Fail/Partial pass]
+- **Number of key names converted:** [Number successfully converted]/3
+- **Settings effect:** [Description]
 
-### 控制台日志记录
+### Console Log Record
 ```
-[记录相关的控制台输出，特别是键名转换信息]
+[Record the relevant console output, especially the key name conversion information]
 ```
 
-### 重新导出的JSON
+### Re-Exported JSON
 ```json
-[粘贴重新导出的JSON内容，验证键名格式]
+[Paste the re-exported JSON content to verify the key name format]
 ```
 
-## 🔄 后续行动
-- [ ] 如果测试失败，分析失败原因
-- [ ] 如果测试通过，验证其他旧版本数据格式
-- [ ] 更新兼容性文档
-- [ ] 考虑添加更多边界情况测试
+## 🔄 Follow-Up Actions
+- [ ] If the test fails, analyze the cause of the failure
+- [ ] If the test passes, verify other old version data formats
+- [ ] Update the compatibility documentation
+- [ ] Consider adding more edge case tests

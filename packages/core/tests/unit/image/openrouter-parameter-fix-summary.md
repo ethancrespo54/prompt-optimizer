@@ -1,21 +1,21 @@
-# OpenRouter 适配器参数修正总结
+# OpenRouter Adapter Parameter Fix Summary
 
-## 问题识别
+## Problem Identification
 
-通过仔细分析 OpenRouter 文档，发现之前的参数配置不正确：
+After carefully analyzing the OpenRouter documentation, we found that the earlier parameter configuration was incorrect:
 
-### ❌ 错误的参数
-- `max_tokens: 1000` - 用于文本生成，不适用于图像生成
-- `temperature: 0.7` - 用于文本生成，不适用于图像生成
-- `outputMimeType: 'image/png'` - OpenRouter不支持此参数
+### ❌ Incorrect parameters
+- `max_tokens: 1000` - Used for text generation, not applicable to image generation
+- `temperature: 0.7` - Used for text generation, not applicable to image generation
+- `outputMimeType: 'image/png'` - OpenRouter does not support this parameter
 
-### ✅ 正确的参数
-根据文档，OpenRouter图像生成只需要：
-- `modalities: ["image", "text"]` - 必需参数，指定输出模式
+### ✅ Correct parameters
+According to the documentation, OpenRouter image generation only requires:
+- `modalities: ["image", "text"]` - Required parameter that specifies the output modalities
 
-## 修正内容
+## Fixes
 
-### 1. 适配器参数定义
+### 1. Adapter parameter definitions
 ```typescript
 parameterDefinitions: [
   {
@@ -29,51 +29,51 @@ parameterDefinitions: [
 ]
 ```
 
-### 2. 默认参数值
+### 2. Default parameter values
 ```typescript
 defaultParameterValues: {
   modalities: ['image', 'text']
 }
 ```
 
-### 3. API请求格式
+### 3. API request format
 ```typescript
 const payload = {
   model: config.modelId,
   messages: [...],
-  // modalities 是唯一必需的图像生成参数
+  // modalities is the only required image generation parameter
   modalities: ['image', 'text']
 }
 ```
 
-### 4. 默认配置更新
+### 4. Default configuration update
 ```typescript
 'image-openrouter-gemini': buildConfig(
   'image-openrouter-gemini',
   'OpenRouter Gemini 2.5 Flash Image',
-  'openrouter',  // ✅ 修正Provider
+  'openrouter',  // ✅ Fixed Provider
   'google/gemini-2.5-flash-image-preview',
   !!OPENROUTER_API_KEY,
   {
     apiKey: OPENROUTER_API_KEY,
     baseURL: 'https://openrouter.ai/api/v1'
   },
-  {} // ✅ 不需要额外参数
+  {} // ✅ No extra parameters needed
 )
 ```
 
-## 测试验证
+## Test Verification
 
-- ✅ **15个单元测试**全部通过
-- ✅ **5个默认配置测试**全部通过
-- ✅ **类型检查**无错误
-- ✅ **API测试结构**支持条件执行
+- ✅ **15 unit tests** all pass
+- ✅ **5 default configuration tests** all pass
+- ✅ **Type check** has no errors
+- ✅ **API test structure** supports conditional execution
 
-## 关键改进
+## Key Improvements
 
-1. **参数简化**: 移除了不相关的文本生成参数
-2. **文档准确**: 严格按照OpenRouter官方文档实现
-3. **配置修正**: 修复了Provider ID错误
-4. **测试更新**: 更新测试以匹配新的参数结构
+1. **Simplified parameters**: Removed unrelated text generation parameters
+2. **Accurate documentation**: Implemented strictly according to the official OpenRouter documentation
+3. **Configuration fix**: Fixed the Provider ID error
+4. **Test updates**: Updated the tests to match the new parameter structure
 
-现在OpenRouter适配器完全符合官方API规范！
+OpenRouter adapter now fully complies with the official API specification!

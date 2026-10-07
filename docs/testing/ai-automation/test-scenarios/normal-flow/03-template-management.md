@@ -238,7 +238,7 @@ Optimization requirements:
 ### Step 10: Test Built-in Template Language Switching
 
 **AI execution guidance:**
-- Find the language toggle button in the template management interface (usually shows "中文" or "EN")
+- Find the language toggle button in the template management interface (usually shows "ZH" or "EN")
 - Use `browser_click` to click the language toggle button
 - Observe changes in the built-in template names
 - Verify that the template content language changes accordingly

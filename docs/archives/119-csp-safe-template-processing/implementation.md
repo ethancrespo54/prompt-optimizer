@@ -1,20 +1,20 @@
-# CSP安全模板处理 - 实现细节
+# CSP-safe Template Processing - Implementation Details
 
-## 🔧 核心实现
+## 🔧 Core Implementation
 
-### 1. CSP安全处理器实现
+### 1. CSP-safe Processor Implementation
 
-#### 基本变量替换
+#### Basic Variable Substitution
 ```typescript
 static processContent(content: string, context: TemplateContext): string {
   let result = content;
   
-  // 使用正则表达式替换所有{{variable}}模式
+  // Use a regular expression to replace all {{variable}} patterns
   result = result.replace(/\{\{([^}]+)\}\}/g, (match, variableName) => {
     const trimmedName = variableName.trim();
     const value = context[trimmedName];
     
-    // 返回值或空字符串（避免undefined）
+    // Return the value or an empty string (avoid undefined)
     return value !== undefined ? String(value) : '';
   });
   
@@ -22,40 +22,40 @@ static processContent(content: string, context: TemplateContext): string {
 }
 ```
 
-#### 环境检测逻辑
+#### Environment Detection Logic
 ```typescript
 static isExtensionEnvironment(): boolean {
   try {
-    // 1. 排除Node.js环境
+    // 1. Exclude the Node.js environment
     if (typeof window === 'undefined') {
       return false;
     }
     
-    // 2. 排除Electron环境（多重检测）
+    // 2. Exclude the Electron environment (multiple checks)
     if (typeof window !== 'undefined') {
       try {
         if (typeof (window as any).require !== 'undefined' || 
             typeof (window as any).electronAPI !== 'undefined' ||
             typeof (window as any).electron !== 'undefined') {
-          return false; // Electron环境
+          return false; // Electron environment
         }
         
         if (typeof navigator !== 'undefined' && 
             navigator.userAgent && 
             navigator.userAgent.includes('Electron')) {
-          return false; // Electron环境
+          return false; // Electron environment
         }
       } catch (e) {
-        // 检测失败时继续，不影响其他平台
+        // Continue when detection fails, without affecting other platforms
       }
     }
     
-    // 3. 检查Chrome扩展API
+    // 3. Check the Chrome extension API
     if (typeof chrome !== 'undefined' && 
         typeof chrome.runtime !== 'undefined' && 
         typeof chrome.runtime.getManifest === 'function') {
       
-      // 4. 验证manifest有效性
+      // 4. Validate that the manifest is valid
       try {
         const manifest = chrome.runtime.getManifest();
         return !!(manifest && typeof manifest.manifest_version !== 'undefined');
@@ -66,22 +66,22 @@ static isExtensionEnvironment(): boolean {
     
     return false;
   } catch (error) {
-    // 任何错误都返回false，确保其他平台正常工作
+    // Any error returns false, ensuring other platforms keep working
     return false;
   }
 }
 ```
 
-### 2. 主处理器集成
+### 2. Main Processor Integration
 
-#### 自动环境切换
+#### Automatic Environment Switching
 ```typescript
 // Advanced template: use template technology for variable substitution
 if (Array.isArray(template.content)) {
-  // 检查是否在浏览器扩展环境中
+  // Check whether we are in a browser extension environment
   if (CSPSafeTemplateProcessor.isExtensionEnvironment()) {
     return template.content.map(msg => {
-      // 验证模板内容
+      // Validate the template content
       CSPSafeTemplateProcessor.validateTemplate(msg.content);
       
       return {
@@ -90,7 +90,7 @@ if (Array.isArray(template.content)) {
       };
     });
   } else {
-    // 使用完整Handlebars功能
+    // Use the full Handlebars features
     return template.content.map(msg => ({
       role: msg.role,
       content: Handlebars.compile(msg.content, { noEscape: true })(context)
@@ -99,22 +99,22 @@ if (Array.isArray(template.content)) {
 }
 ```
 
-## 🧪 测试实现
+## 🧪 Test Implementation
 
-### 1. 环境检测测试
+### 1. Environment Detection Tests
 
-#### Node.js环境测试
+#### Node.js Environment Test
 ```typescript
 it('should return false in Node.js environment (no window)', () => {
-  // 不设置window对象，模拟Node.js环境
+  // Do not set the window object, to simulate the Node.js environment
   expect(CSPSafeTemplateProcessor.isExtensionEnvironment()).toBe(false);
 });
 ```
 
-#### 浏览器扩展环境测试
+#### Browser Extension Environment Test
 ```typescript
 it('should return true for valid browser extension', () => {
-  // 模拟浏览器环境
+  // Simulate the browser environment
   (global as any).window = {};
   (global as any).navigator = { userAgent: 'Chrome' };
   
@@ -128,7 +128,7 @@ it('should return true for valid browser extension', () => {
 });
 ```
 
-#### Electron环境排除测试
+#### Electron Environment Exclusion Test
 ```typescript
 it('should return false when window.require exists (Electron)', () => {
   (global as any).window = { require: vi.fn() };
@@ -143,9 +143,9 @@ it('should return false when window.require exists (Electron)', () => {
 });
 ```
 
-### 2. 变量替换测试
+### 2. Variable Substitution Tests
 
-#### 基本功能测试
+#### Basic Functionality Test
 ```typescript
 it('should replace simple variables', () => {
   const content = 'Hello {{name}}!';
@@ -156,7 +156,7 @@ it('should replace simple variables', () => {
 });
 ```
 
-#### 预定义变量测试
+#### Predefined Variable Test
 ```typescript
 it('should handle predefined template variables', () => {
   const content = 'Original: {{originalPrompt}}, Last: {{lastOptimizedPrompt}}, Input: {{iterateInput}}';
@@ -171,62 +171,62 @@ it('should handle predefined template variables', () => {
 });
 ```
 
-## 🔍 关键技术点
+## 🔍 Key Technical Points
 
-### 1. 正则表达式设计
-- **模式**: `/\{\{([^}]+)\}\}/g`
-- **特点**: 匹配双大括号内的任意非右括号字符
-- **优势**: 简单高效，支持空格处理
+### 1. Regular Expression Design
+- **Pattern**: `/\{\{([^}]+)\}\}/g`
+- **Feature**: matches any non-closing-brace characters inside double braces
+- **Advantage**: simple and efficient, supports whitespace handling
 
-### 2. 错误处理策略
-- **原则**: 任何检测错误都不影响其他平台功能
-- **实现**: 多层try-catch保护
-- **效果**: 确保向后兼容和稳定性
+### 2. Error Handling Strategy
+- **Principle**: no detection error affects other platforms' functionality
+- **Implementation**: multi-layer try-catch protection
+- **Effect**: ensures backward compatibility and stability
 
-### 3. 类型安全
-- **接口**: 复用现有`TemplateContext`接口
-- **转换**: `String(value)`确保类型安全
-- **默认值**: 未定义变量返回空字符串
+### 3. Type Safety
+- **Interface**: reuses the existing `TemplateContext` interface
+- **Conversion**: `String(value)` ensures type safety
+- **Default value**: undefined variables return an empty string
 
-### 4. 性能优化
-- **缓存**: 环境检测结果可考虑缓存（未实现）
-- **正则**: 使用全局匹配提高效率
-- **内存**: 避免创建不必要的对象
+### 4. Performance Optimization
+- **Caching**: the environment detection result could be cached (not implemented)
+- **Regex**: use global matching to improve efficiency
+- **Memory**: avoid creating unnecessary objects
 
-## 📊 性能对比
+## 📊 Performance Comparison
 
-| 功能 | Handlebars | CSP安全处理器 | 性能差异 |
+| Feature | Handlebars | CSP-safe processor | Performance difference |
 |------|------------|---------------|----------|
-| 基本变量替换 | ✅ | ✅ | CSP更快 |
-| 条件语句 | ✅ | ❌ | - |
-| 循环语句 | ✅ | ❌ | - |
-| 部分模板 | ✅ | ❌ | - |
-| 内存占用 | 较高 | 较低 | CSP更优 |
-| 启动时间 | 较慢 | 较快 | CSP更优 |
+| Basic variable substitution | ✅ | ✅ | CSP is faster |
+| Conditionals | ✅ | ❌ | - |
+| Loops | ✅ | ❌ | - |
+| Partials | ✅ | ❌ | - |
+| Memory usage | Higher | Lower | CSP is better |
+| Startup time | Slower | Faster | CSP is better |
 
-## 🚀 扩展性设计
+## 🚀 Extensibility Design
 
-### 1. 新增变量支持
+### 1. Adding Variable Support
 ```typescript
-// 在TemplateContext中添加新字段即可自动支持
+// Just add a new field to TemplateContext and it is supported automatically
 export interface TemplateContext {
-  // 现有字段...
+  // Existing fields...
   
-  // 新增字段 - 自动支持
+  // New field - supported automatically
   userLanguage?: string;
   modelName?: string;
   timestamp?: string;
 }
 ```
 
-### 2. 功能扩展点
-- **自定义函数**: 可在正则替换中添加函数调用支持
-- **条件简化**: 可添加简单的条件替换逻辑
-- **格式化**: 可添加基本的值格式化功能
+### 2. Extension Points
+- **Custom functions**: function call support can be added to the regex replacement
+- **Simplified conditionals**: simple conditional replacement logic can be added
+- **Formatting**: basic value formatting can be added
 
-### 3. 配置化支持
+### 3. Configuration Support
 ```typescript
-// 未来可考虑的配置选项
+// Configuration options that could be considered in the future
 interface CSPProcessorConfig {
   enableWarnings: boolean;
   customVariablePattern?: RegExp;
@@ -234,15 +234,15 @@ interface CSPProcessorConfig {
 }
 ```
 
-## 🔧 调试支持
+## 🔧 Debugging Support
 
-### 1. 警告机制
+### 1. Warning Mechanism
 ```typescript
 static validateTemplate(content: string): void {
   const unsupportedPatterns = [
-    /\{\{#if\s/,     // 条件语句
-    /\{\{#each\s/,   // 循环语句
-    // ... 其他模式
+    /\{\{#if\s/,     // conditionals
+    /\{\{#each\s/,   // loops
+    // ... other patterns
   ];
 
   for (const pattern of unsupportedPatterns) {
@@ -254,52 +254,52 @@ static validateTemplate(content: string): void {
 }
 ```
 
-### 2. 调试信息
-- **环境检测**: 可添加详细的检测日志
-- **变量替换**: 可记录替换过程
-- **错误追踪**: 详细的错误上下文信息
+### 2. Debug Information
+- **Environment detection**: detailed detection logs can be added
+- **Variable substitution**: the substitution process can be logged
+- **Error tracking**: detailed error context information
 
 ---
 
-**💡 实现要点**: 
-1. 安全第一 - 任何错误都不影响其他平台
-2. 简单有效 - 专注核心功能，避免过度设计
-3. 扩展友好 - 为未来功能扩展预留空间
+**💡 Key implementation points**: 
+1. Safety first - no error affects other platforms
+2. Simple and effective - focus on core functionality and avoid over-engineering
+3. Extension friendly - leave room for future feature expansion
 
-## 🔄 最终实现演进（2025-08-29）
+## 🔄 Final Implementation Evolution (2025-08-29)
 
-### 从复杂实现到简单实现的转变
+### The Shift from a Complex to a Simple Implementation
 
-**原实现特点**:
-- 环境检测逻辑复杂（多重验证、异常处理）
-- 双处理器架构（CSP vs Handlebars）
-- 分支处理逻辑（if-else环境判断）
+**Characteristics of the original implementation**:
+- Complex environment detection logic (multiple validations, exception handling)
+- Dual-processor architecture (CSP vs Handlebars)
+- Branching logic (if-else environment checks)
 
-**最终实现**:
+**Final implementation**:
 ```typescript
-// 极简实现 - 统一使用Mustache
+// Minimal implementation - use Mustache uniformly
 static processTemplate(template: Template, context: TemplateContext): Message[] {
   return template.content.map(msg => ({
     role: msg.role,
-    content: Mustache.render(msg.content, context)  // 单一处理路径
+    content: Mustache.render(msg.content, context)  // single processing path
   }));
 }
 ```
 
-**简化效果**:
-- 📉 **代码行数**: 从200+行环境检测简化为1行模板处理
-- 🔧 **维护复杂度**: 消除所有环境特定逻辑
-- 🎯 **性能提升**: 无分支判断，直接处理
-- 🛡️ **错误减少**: 统一处理路径，减少出错点
+**Simplification results**:
+- 📉 **Lines of code**: from 200+ lines of environment detection down to 1 line of template processing
+- 🔧 **Maintenance complexity**: all environment-specific logic eliminated
+- 🎯 **Performance gain**: no branching, direct processing
+- 🛡️ **Fewer errors**: a unified processing path reduces failure points
 
-**架构演进启示**:
-1. **实现复杂度**往往反映了**技术选型问题**
-2. **最好的代码**是**不需要写的代码**
-3. **架构简化**比**功能完善**更重要
+**Architectural evolution insights**:
+1. **Implementation complexity** often reflects a **technology selection problem**
+2. **The best code** is **code you do not need to write**
+3. **Architecture simplification** matters more than **feature completeness**
 
-**对未来开发的指导**:
-- 复杂的兼容性实现通常暗示需要重新评估技术栈
-- 环境差异处理应该是例外，而非常规
-- 统一的解决方案总是比分化的解决方案更优
+**Guidance for future development**:
+- Complex compatibility implementations usually suggest the technology stack needs to be reevaluated
+- Handling environment differences should be the exception, not the norm
+- A unified solution is always better than a divergent one
 
-这次迁移将复杂的环境适配实现转变为简单的统一实现，是**Less is More**设计理念的完美体现。
+This migration turns a complex environment adaptation implementation into a simple unified one, a perfect embodiment of the **Less is More** design philosophy.

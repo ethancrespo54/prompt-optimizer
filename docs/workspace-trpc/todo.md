@@ -1,73 +1,73 @@
-# 待办事项
+# To-Do List
 
-管理当前和未来的开发任务。
+Manage current and future development tasks.
 
-## 🔥 紧急任务
+## 🔥 Urgent Tasks
 
-### 本周必须完成
-- [ ] [任务描述] - [截止日期] - [负责人]
-- [ ] [任务描述] - [截止日期] - [负责人]
+### Must Be Completed This Week
+- [ ] [Task description] - [Deadline] - [Owner]
+- [ ] [Task description] - [Deadline] - [Owner]
 
-### 今日重点
-- [ ] [任务描述] - [预计时间]
-- [ ] [任务描述] - [预计时间]
+### Today's Focus
+- [ ] [Task description] - [Estimated time]
+- [ ] [Task description] - [Estimated time]
 
-## ⭐ 重要任务
+## ⭐ Important Tasks
 
-### 功能开发
-- [ ] [功能名称] - [优先级] - [预计工期]
-- [ ] [功能名称] - [优先级] - [预计工期]
+### Feature Development
+- [ ] [Feature name] - [Priority] - [Estimated duration]
+- [ ] [Feature name] - [Priority] - [Estimated duration]
 
-### 技术债务
-- [ ] [技术债务描述] - [影响程度] - [预计工期]
-- [ ] [技术债务描述] - [影响程度] - [预计工期]
-- [ ] **重构UI层状态持久化架构** - 影响范围：桌面端，目前UI偏好设置无法保存 - 预计工期：3天
-  - **目标**：将UI层对 `useStorage` 的直接依赖，替换为对一个更高阶的 `PreferenceService` 的依赖。
-  - **实施**：
-    - 1. 创建 `PreferenceService` 及其接口。
-    - 2. 在Web端，该服务内部使用 `useStorage` 实现。
-    - 3. 在Electron端，创建 `ElectronPreferenceServiceProxy`，通过IPC与主进程通信，由主进程负责读写JSON配置文件。
-    - 4. 将 `useTemplateManager`, `ThemeToggleUI`, `LanguageSwitch` 等模块对 `useStorage` 的调用，全部替换为对新服务的调用。
+### Technical Debt
+- [ ] [Technical debt description] - [Impact level] - [Estimated duration]
+- [ ] [Technical debt description] - [Impact level] - [Estimated duration]
+- [ ] **Refactor the UI-layer state persistence architecture** - Scope: desktop; UI preferences currently cannot be saved - Estimated duration: 3 days
+  - **Goal**: Replace the UI layer's direct dependency on `useStorage` with a dependency on a higher-level `PreferenceService`.
+  - **Implementation**:
+    - 1. Create `PreferenceService` and its interface.
+    - 2. On the web, the service uses `useStorage` internally.
+    - 3. On Electron, create `ElectronPreferenceServiceProxy`, which communicates with the main process over IPC; the main process is responsible for reading and writing the JSON config file.
+    - 4. Replace all calls to `useStorage` in modules such as `useTemplateManager`, `ThemeToggleUI`, and `LanguageSwitch` with calls to the new service.
 
-### 文档更新
-- [ ] [文档名称] - [更新内容] - [预计时间]
-- [ ] [文档名称] - [更新内容] - [预计时间]
+### Documentation Updates
+- [ ] [Document name] - [Update content] - [Estimated time]
+- [ ] [Document name] - [Update content] - [Estimated time]
 
-## 📋 一般任务
+## 📋 General Tasks
 
-### 优化改进
-- [ ] [优化项目] - [预期效果]
-- [ ] [优化项目] - [预期效果]
+### Optimization and Improvements
+- [ ] [Optimization item] - [Expected effect]
+- [ ] [Optimization item] - [Expected effect]
 
-### 学习研究
-- [ ] [学习内容] - [学习目标]
-- [ ] [学习内容] - [学习目标]
+### Learning and Research
+- [ ] [Learning content] - [Learning goal]
+- [ ] [Learning content] - [Learning goal]
 
-### 工具配置
-- [ ] [工具名称] - [配置目标]
-- [ ] [工具名称] - [配置目标]
+### Tool Configuration
+- [ ] [Tool name] - [Configuration goal]
+- [ ] [Tool name] - [Configuration goal]
 
-## ✅ 已完成
+## ✅ Completed
 
-### 本周完成
-- [x] [任务描述] - [完成日期] - [备注]
-- [x] [任务描述] - [完成日期] - [备注]
+### Completed This Week
+- [x] [Task description] - [Completion date] - [Notes]
+- [x] [Task description] - [Completion date] - [Notes]
 
-## 🗓️ 未来计划
+## 🗓️ Future Plans
 
-### 下周计划
-- [计划内容] - [预期目标]
-- [计划内容] - [预期目标]
+### Next Week's Plan
+- [Plan content] - [Expected goal]
+- [Plan content] - [Expected goal]
 
-### 本月目标
-- [月度目标] - [关键里程碑]
-- [月度目标] - [关键里程碑]
+### This Month's Goals
+- [Monthly goal] - [Key milestone]
+- [Monthly goal] - [Key milestone]
 
 ---
 
-## 📝 使用说明
+## 📝 Usage Instructions
 
-1. **优先级管理** - 按紧急程度分类任务
-2. **时间估算** - 为每个任务估算所需时间
-3. **定期更新** - 每日更新进度，每周回顾调整
-4. **完成标记** - 及时标记完成的任务并记录备注
+1. **Priority management** - Categorize tasks by urgency
+2. **Time estimation** - Estimate the time required for each task
+3. **Regular updates** - Update progress daily and review and adjust weekly
+4. **Completion marking** - Mark completed tasks promptly and record notes

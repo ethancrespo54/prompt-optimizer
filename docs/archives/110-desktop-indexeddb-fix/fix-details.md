@@ -1,162 +1,162 @@
-# Desktop模块修复计划
+# Desktop Module Fix Plan
 
-## 问题分析
+## Problem Analysis
 
-### 🚨 关键问题（会导致应用无法启动）
+### 🚨 Critical Issues (the app cannot start)
 
-1. **缺少必要依赖**
-   - dotenv: main.js第8行require('dotenv')，但package.json中未声明
-   - @prompt-optimizer/core: main.js第27行require('@prompt-optimizer/core')，但package.json中未声明
+1. **Missing required dependencies**
+   - dotenv: main.js line 8 has require('dotenv'), but it is not declared in package.json
+   - @prompt-optimizer/core: main.js line 27 has require('@prompt-optimizer/core'), but it is not declared in package.json
 
-2. **构建配置不一致**
-   - build-desktop.bat使用electron-version=33.0.0
-   - package.json使用electron ^37.1.0
-   - 构建工具：build-desktop.bat使用@electron/packager，package.json使用electron-builder
+2. **Inconsistent build configuration**
+   - build-desktop.bat uses electron-version=33.0.0
+   - package.json uses electron ^37.1.0
+   - Build tools: build-desktop.bat uses @electron/packager, while package.json uses electron-builder
 
-3. **缺少资源文件**
-   - package.json中electron-builder配置引用icon.ico，但文件不存在
+3. **Missing resource files**
+   - The electron-builder config in package.json references icon.ico, but the file does not exist
 
-### ⚠️ 次要问题（影响功能和兼容性）
+### ⚠️ Secondary Issues (affect functionality and compatibility)
 
-4. **跨平台兼容性问题**
-   - build:web脚本使用robocopy（仅Windows）
-   - 路径使用双反斜杠转义可能在某些环境下有问题
+4. **Cross-platform compatibility issues**
+   - The build:web script uses robocopy (Windows only)
+   - Paths escaped with double backslashes may cause problems in some environments
 
-5. **构建路径问题**
-   - build-desktop.bat引用../desktop-standalone，但实际结构可能不匹配
+5. **Build path issues**
+   - build-desktop.bat references ../desktop-standalone, but the actual structure may not match
 
-## 修复计划
+## Fix Plan
 
-### 阶段1：修复关键依赖问题
-- [x] 1.1 更新package.json添加缺少的依赖
-  - 添加了dotenv: ^16.0.0
-  - 添加了@prompt-optimizer/core: workspace:*
-- [x] 1.2 验证依赖版本兼容性
-  - 依赖安装成功，无版本冲突
+### Phase 1: Fix critical dependency issues
+- [x] 1.1 Update package.json to add the missing dependencies
+  - Added dotenv: ^16.0.0
+  - Added @prompt-optimizer/core: workspace:*
+- [x] 1.2 Verify dependency version compatibility
+  - Dependencies installed successfully with no version conflicts
 
-### 阶段2：统一构建配置
-- [x] 2.1 选择electron-builder作为主要构建工具
-- [x] 2.2 更新构建脚本
-  - 改进build:web脚本使用跨平台Node.js方法替代robocopy
-  - 添加build:cross-platform脚本使用Node.js构建脚本
-- [x] 2.3 移除icon配置要求
+### Phase 2: Unify build configuration
+- [x] 2.1 Choose electron-builder as the primary build tool
+- [x] 2.2 Update build scripts
+  - Improved the build:web script to use a cross-platform Node.js approach instead of robocopy
+  - Added a build:cross-platform script that uses a Node.js build script
+- [x] 2.3 Remove the icon configuration requirement
 
-### 阶段3：修复API调用错误
-- [x] 3.1 修复ModelManager API调用
-  - 将getModels()改为getAllModels()
-  - 修复addModel()参数传递问题
+### Phase 3: Fix API call errors
+- [x] 3.1 Fix ModelManager API calls
+  - Changed getModels() to getAllModels()
+  - Fixed the addModel() argument passing
 
-### 阶段4：改进构建脚本
-- [x] 4.1 创建跨平台构建脚本build.js
-- [x] 4.2 使用Node.js fs.cpSync替代robocopy
+### Phase 4: Improve build scripts
+- [x] 4.1 Create the cross-platform build script build.js
+- [x] 4.2 Use Node.js fs.cpSync instead of robocopy
 
-### 阶段5：测试验证
-- [x] 5.1 测试开发模式启动 ✅
-  - 应用成功启动，无API错误
-  - 服务初始化正常
-  - 模板加载成功
-- [ ] 5.2 测试生产构建
-- [ ] 5.3 验证IPC通信正常
+### Phase 5: Test and verify
+- [x] 5.1 Test starting in development mode ✅
+  - The app started successfully with no API errors
+  - Services initialized normally
+  - Templates loaded successfully
+- [ ] 5.2 Test the production build
+- [ ] 5.3 Verify IPC communication works
 
-## 执行时间
-- 开始时间：2025-01-01
-- 预计完成：2025-01-01
-- 状态：🔄 进行中
+## Timeline
+- Start date: 2025-01-01
+- Expected completion: 2025-01-01
+- Status: 🔄 In progress
 
-## 修复详情
+## Fix Details
 
-### 已完成的修复
+### Completed Fixes
 
-#### 1. 依赖问题修复
+#### 1. Dependency fix
 ```json
 // packages/desktop/package.json
 "dependencies": {
   "node-fetch": "^2.7.0",
-  "dotenv": "^16.0.0",           // 新增
-  "@prompt-optimizer/core": "workspace:*"  // 新增
+  "dotenv": "^16.0.0",           // added
+  "@prompt-optimizer/core": "workspace:*"  // added
 }
 ```
 
-#### 2. API调用修复
+#### 2. API call fix
 ```javascript
 // packages/desktop/main.js
-// 修复前：
+// Before the fix:
 const result = await modelManager.getModels();
 
-// 修复后：
+// After the fix:
 const result = await modelManager.getAllModels();
 
-// 修复addModel参数传递：
+// Fix the addModel argument passing:
 const { key, ...config } = model;
 await modelManager.addModel(key, config);
 ```
 
-#### 3. 构建脚本改进
-- 创建了跨平台构建脚本 `build.js`
-- 改进了 `build:web` 脚本使用Node.js方法替代Windows专用的robocopy
-- 移除了electron-builder配置中的icon要求
+#### 3. Build script improvements
+- Created the cross-platform build script `build.js`
+- Improved the `build:web` script to use Node.js methods instead of the Windows-only robocopy
+- Removed the icon requirement from the electron-builder config
 
-#### 4. 测试结果
-- ✅ 依赖安装成功
-- ✅ 开发模式启动成功
-- ✅ 服务初始化正常
-- ✅ 模板加载成功（7个模板）
-- ✅ 环境变量正确加载
+#### 4. Test results
+- ✅ Dependencies installed successfully
+- ✅ Development mode started successfully
+- ✅ Services initialized normally
+- ✅ Templates loaded successfully (7 templates)
+- ✅ Environment variables loaded correctly
 
-### 🚨 重要发现：架构问题
+### 🚨 Important Finding: Architecture Problem
 
-#### 问题：为什么desktop模式下仍能看到IndexedDB？
-**根本原因**：useAppInitializer.ts中的架构设计错误
+#### Question: why is IndexedDB still visible in desktop mode?
+**Root cause**: an architectural design error in useAppInitializer.ts
 
 ```typescript
-// 错误的实现（修复前）
+// Wrong implementation (before the fix)
 if (isRunningInElectron()) {
-  storageProvider = StorageFactory.create('memory'); // ❌ 渲染进程不应该有存储
-  dataManager = createDataManager(..., storageProvider); // ❌ 使用了渲染进程存储
-  const languageService = createTemplateLanguageService(storageProvider); // ❌ 重复创建服务
+  storageProvider = StorageFactory.create('memory'); // ❌ the renderer process should not have storage
+  dataManager = createDataManager(..., storageProvider); // ❌ uses renderer-process storage
+  const languageService = createTemplateLanguageService(storageProvider); // ❌ duplicate service creation
 }
 ```
 
-**问题分析**：
-1. 渲染进程创建了独立的memory storage，与主进程隔离
-2. 某些组件可能绕过代理服务，直接使用web版本的IndexedDB
-3. 数据来源混乱：主进程memory storage vs 渲染进程storage vs IndexedDB
+**Analysis**:
+1. The renderer process created its own memory storage, isolated from the main process
+2. Some components might bypass the proxy services and use the web version's IndexedDB directly
+3. Confused data sources: main-process memory storage vs renderer-process storage vs IndexedDB
 
-#### 修复：正确的Electron架构
+#### Fix: the correct Electron architecture
 ```typescript
-// 正确的实现（修复后）
+// Correct implementation (after the fix)
 if (isRunningInElectron()) {
-  storageProvider = null; // ✅ 渲染进程不使用本地存储
-  // 只创建代理服务，所有操作通过IPC
+  storageProvider = null; // ✅ the renderer process uses no local storage
+  // Only create proxy services; all operations go through IPC
   modelManager = new ElectronModelManagerProxy();
-  // ...其他代理服务
+  // ...other proxy services
 }
 ```
 
-**正确架构**：
-- 主进程：唯一的数据源，使用memory storage
-- 渲染进程：只有代理类，所有操作通过IPC
-- 无本地存储：渲染进程不应该有任何存储实例
+**Correct architecture**:
+- Main process: the single source of data, using memory storage
+- Renderer process: only proxy classes; all operations go through IPC
+- No local storage: the renderer process should not have any storage instance
 
-### 🔧 关键修复：模块级存储创建问题
+### 🔧 Key Fix: Module-level Storage Creation
 
-#### 发现的根本问题
-在`packages/core/src/services/prompt/factory.ts`中发现模块级别的存储创建：
+#### Root problem found
+Module-level storage creation was found in `packages/core/src/services/prompt/factory.ts`:
 
 ```typescript
-// 问题代码（已修复）
-const storageProvider = StorageFactory.createDefault(); // ❌ 模块加载时就创建IndexedDB
+// Problem code (fixed)
+const storageProvider = StorageFactory.createDefault(); // ❌ creates IndexedDB at module load time
 ```
 
-**影响**：无论在什么环境下，只要导入这个模块就会创建IndexedDB存储！
+**Impact**: in any environment, merely importing this module creates IndexedDB storage!
 
-#### 修复内容
-1. **移除模块级存储创建**：修改factory.ts，不再在模块加载时创建存储
-2. **重构工厂函数**：改为接收依赖注入的方式
-3. **移除重复函数定义**：清理service.ts中的重复工厂函数
+#### What was fixed
+1. **Removed module-level storage creation**: changed factory.ts so it no longer creates storage at module load time
+2. **Refactored the factory function**: it now receives its dependencies via injection
+3. **Removed duplicate function definitions**: cleaned up the duplicate factory function in service.ts
 
 ```typescript
-// 修复后的代码
+// Code after the fix
 export function createPromptService(
   modelManager: IModelManager,
   llmService: ILLMService,
@@ -167,54 +167,54 @@ export function createPromptService(
 }
 ```
 
-### 🎯 最终修复：彻底删除createDefault()
+### 🎯 Final Fix: Completely Remove createDefault()
 
-#### 根本解决方案
-按照用户建议，**彻底删除了StorageFactory.createDefault()方法**：
+#### Root solution
+Following the user's suggestion, the **StorageFactory.createDefault() method was removed entirely**:
 
 ```typescript
-// 删除的问题方法
+// The removed problem method
 static createDefault(): IStorageProvider {
-  // 这个方法会自动创建IndexedDB，无论在什么环境下
+  // This method automatically creates IndexedDB, regardless of environment
 }
 ```
 
-#### 修复内容
-1. **删除createDefault()方法**：从StorageFactory中完全移除
-2. **修复TemplateLanguageService**：构造函数改为必须传入storage参数
-3. **更新测试文件**：移除所有对createDefault()的测试
-4. **清理相关代码**：移除defaultInstance相关的代码
+#### What was fixed
+1. **Removed the createDefault() method**: deleted completely from StorageFactory
+2. **Fixed TemplateLanguageService**: the constructor now requires the storage parameter
+3. **Updated test files**: removed all tests of createDefault()
+4. **Cleaned up related code**: removed code related to defaultInstance
 
-#### 架构改进
-- **强制明确性**：所有地方都必须明确指定存储类型
-- **避免意外创建**：防止在不合适的环境下自动创建IndexedDB
-- **提高代码质量**：让依赖关系更加明确和可控
+#### Architecture improvements
+- **Enforced explicitness**: the storage type must be specified explicitly everywhere
+- **Avoid accidental creation**: prevent IndexedDB from being created automatically in unsuitable environments
+- **Better code quality**: make dependencies more explicit and controllable
 
-### ✅ 修复验证
-- [x] 修复Electron架构问题
-- [x] 修复模块级存储创建问题
-- [x] 彻底删除createDefault()方法
-- [x] 修复TemplateLanguageService依赖注入
-- [x] 更新测试文件
-- [x] 测试修复后的应用启动 ✅
-- [x] 验证主进程使用memory storage ✅
-- [x] 验证无IndexedDB创建 ✅
-- [x] 最终用户验证IndexedDB状态 ✅
+### ✅ Fix Verification
+- [x] Fixed the Electron architecture problem
+- [x] Fixed the module-level storage creation problem
+- [x] Completely removed the createDefault() method
+- [x] Fixed TemplateLanguageService dependency injection
+- [x] Updated test files
+- [x] Tested app startup after the fix ✅
+- [x] Verified the main process uses memory storage ✅
+- [x] Verified no IndexedDB is created ✅
+- [x] Final user verification of IndexedDB state ✅
 
-### 🧹 代码清理
-- [x] 移除DexieStorageProvider中的过度防御代码
-- [x] 简化useAppInitializer中的调试信息
-- [x] 删除不必要的listTemplatesByTypeAsync方法
-- [x] 删除无用的getCurrentDefault()方法
+### 🧹 Code Cleanup
+- [x] Removed the over-defensive code in DexieStorageProvider
+- [x] Simplified the debug output in useAppInitializer
+- [x] Deleted the unnecessary listTemplatesByTypeAsync method
+- [x] Deleted the unused getCurrentDefault() method
 
-### 📋 最终状态
-**任务状态**：✅ 完成
-**问题根源**：历史遗留的IndexedDB数据 + 模块级存储创建
-**解决方案**：删除createDefault()方法 + 手动清理IndexedDB
-**验证结果**：Desktop应用正常运行，无IndexedDB创建
+### 📋 Final Status
+**Task status**: ✅ Completed
+**Root cause**: legacy IndexedDB data + module-level storage creation
+**Solution**: remove the createDefault() method + manually clean up IndexedDB
+**Verification result**: the Desktop app runs normally, with no IndexedDB created
 
-### 🎯 核心收获
-1. **架构原则**：强制明确性比便利性更重要
-2. **问题定位**：历史遗留数据可能掩盖真正的修复效果
-3. **过度工程**：修复过程中要避免不必要的复杂化
-4. **代码清理**：及时清理无用代码，保持代码库整洁 
+### 🎯 Key Takeaways
+1. **Architecture principle**: enforced explicitness matters more than convenience
+2. **Problem diagnosis**: legacy data can mask the real effect of a fix
+3. **Over-engineering**: avoid unnecessary complication during a fix
+4. **Code cleanup**: remove dead code promptly to keep the codebase tidy

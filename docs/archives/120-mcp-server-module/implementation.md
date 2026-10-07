@@ -1,9 +1,9 @@
-# MCP Server 模块技术实现详解
+# MCP Server Module Technical Implementation Details
 
-## 🔧 架构设计
+## 🔧 Architecture Design
 
-### 整体架构
-MCP Server 模块采用了分层架构设计，确保了与 Core 模块的解耦：
+### Overall Architecture
+The MCP Server module uses a layered architecture design that keeps it decoupled from the Core module:
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
@@ -45,45 +45,45 @@ MCP Server 模块采用了分层架构设计，确保了与 Core 模块的解耦
           └────────────────────────────────────────────────┘
 ```
 
-### 模块结构
+### Module Structure
 ```
 packages/mcp-server/
-├── package.json                 # 项目配置和依赖
-├── tsconfig.json               # TypeScript 配置
+├── package.json                 # project configuration and dependencies
+├── tsconfig.json               # TypeScript configuration
 ├── src/
-│   ├── index.ts                # 主入口点（仅导出）
-│   ├── start.ts                # 启动入口点
-│   ├── config/                 # 配置管理
-│   │   ├── environment.ts      # 环境变量管理
-│   │   ├── models.ts           # 默认模型配置
-│   │   └── templates.ts        # 默认模板配置
-│   ├── tools/                  # MCP Tools 实现
-│   │   ├── index.ts            # Tools 导出
-│   │   ├── optimize-user-prompt.ts      # 用户提示词优化
-│   │   ├── optimize-system-prompt.ts    # 系统提示词优化
-│   │   └── iterate-prompt.ts            # 提示词迭代优化
-│   ├── adapters/               # 服务适配层
-│   │   ├── core-services.ts    # Core 服务初始化和管理
-│   │   ├── parameter-adapter.ts # 参数格式转换
-│   │   └── error-handler.ts    # 错误处理适配
-│   └── utils/                  # 工具函数
-│       └── logging.ts          # 日志工具
-├── examples/                   # 使用示例
-│   ├── stdio-client.js         # stdio 客户端示例
-│   └── http-client.js          # HTTP 客户端示例
-├── docs/                       # 文档
-│   └── README.md               # 使用说明
-└── tests/                      # 测试文件
-    ├── tools.test.ts           # Tools 测试
-    └── integration.test.ts     # 集成测试
+│   ├── index.ts                # main entry point (exports only)
+│   ├── start.ts                # startup entry point
+│   ├── config/                 # configuration management
+│   │   ├── environment.ts      # environment variable management
+│   │   ├── models.ts           # default model configuration
+│   │   └── templates.ts        # default template configuration
+│   ├── tools/                  # MCP Tools implementation
+│   │   ├── index.ts            # Tools exports
+│   │   ├── optimize-user-prompt.ts      # user prompt optimization
+│   │   ├── optimize-system-prompt.ts    # system prompt optimization
+│   │   └── iterate-prompt.ts            # iterative prompt optimization
+│   ├── adapters/               # service adapter layer
+│   │   ├── core-services.ts    # Core service initialization and management
+│   │   ├── parameter-adapter.ts # parameter format conversion
+│   │   └── error-handler.ts    # error handling adapter
+│   └── utils/                  # utility functions
+│       └── logging.ts          # logging utility
+├── examples/                   # usage examples
+│   ├── stdio-client.js         # stdio client example
+│   └── http-client.js          # HTTP client example
+├── docs/                       # documentation
+│   └── README.md               # usage instructions
+└── tests/                      # test files
+    ├── tools.test.ts           # Tools tests
+    └── integration.test.ts     # integration tests
 ```
 
-## 🐛 问题诊断与解决
+## 🐛 Problem Diagnosis and Resolution
 
-### 环境变量加载时机问题
-**问题描述**: Core 包的 `defaultModels` 在模块导入时就初始化，无法读取到后来通过 dotenv 加载的环境变量。
+### Environment Variable Loading Timing Problem
+**Problem description**: The Core package's `defaultModels` is initialized when the module is imported, so it cannot read environment variables that are loaded later through dotenv.
 
-**解决方案**: 创建预加载脚本 (`preload-env.js`)，在 Node.js 启动时预加载环境变量：
+**Solution**: Create a preload script (`preload-env.js`) that preloads environment variables when Node.js starts:
 
 ```javascript
 // preload-env.js
@@ -94,24 +94,24 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// 按优先级加载环境变量
+// Load environment variables by priority
 const paths = [
   resolve(process.cwd(), '.env.local'),
   resolve(process.cwd(), '../.env.local'),
   resolve(__dirname, '../../.env.local'),
-  // ... 更多路径
+  // ... more paths
 ];
 
 paths.forEach(path => {
   try {
     config({ path });
   } catch (error) {
-    // 忽略文件不存在的错误
+    // Ignore file-not-found errors
   }
 });
 ```
 
-使用 `-r` 参数预加载:
+Preload with the `-r` flag:
 ```json
 {
   "scripts": {
@@ -120,27 +120,27 @@ paths.forEach(path => {
 }
 ```
 
-### 构建时产生后台进程问题
-**问题描述**: 在 `src/index.ts` 文件末尾有立即执行的代码，当 `tsup` 构建时会意外启动服务器并占用端口。
+### Background Process Spawned During the Build
+**Problem description**: There is code at the end of the `src/index.ts` file that runs immediately, which would unexpectedly start the server and occupy the port when `tsup` builds.
 
-**解决方案**: 文件分离策略
+**Solution**: File separation strategy
 
-1. `src/index.ts` - 只导出函数，不执行：
+1. `src/index.ts` - only exports functions, does not execute:
 ```typescript
-// 导出 main 函数供外部调用
+// Export the main function for external callers
 export { main };
 ```
 
-2. `src/start.ts` - 专门用于启动：
+2. `src/start.ts` - dedicated to startup:
 ```typescript
 #!/usr/bin/env node
 import { main } from './index.js';
 
-// 启动服务器
+// Start the server
 main().catch(console.error);
 ```
 
-3. 更新构建配置：
+3. Update the build configuration:
 ```json
 {
   "scripts": {
@@ -150,42 +150,42 @@ main().catch(console.error);
 }
 ```
 
-## 📝 实施步骤
+## 📝 Implementation Steps
 
-1. 项目结构设计与初始化
-2. Core 服务管理器实现
-3. 参数适配层实现
-4. 默认配置管理
-5. MCP Tools 实现
-6. 错误处理与转换
-7. MCP Server 实例创建
-8. 多传输方式支持
-9. 测试与文档
+1. Project structure design and initialization
+2. Core service manager implementation
+3. Parameter adapter layer implementation
+4. Default configuration management
+5. MCP Tools implementation
+6. Error handling and conversion
+7. MCP Server instance creation
+8. Multi-transport support
+9. Testing and documentation
 
-## 🔍 调试过程
+## 🔍 Debugging Process
 
-在开发过程中，我们使用了以下调试方法：
+During development, we used the following debugging methods:
 
-1. **MCP Inspector 调试**: 使用官方调试工具进行协议级别测试
-2. **日志驱动调试**: 详细记录每个环节状态，快速定位问题
-3. **分层测试策略**: 先测试 Core 服务再测试 MCP 包装，快速定位问题
+1. **MCP Inspector debugging**: use the official debugging tool for protocol-level testing
+2. **Log-driven debugging**: log the state of every step in detail to locate problems quickly
+3. **Layered testing strategy**: test the Core services first and then the MCP wrapper, to locate problems quickly
 
-## 🧪 测试验证
+## 🧪 Test Verification
 
-### 构建测试
-- ✅ CJS/ESM 双格式输出
-- ✅ TypeScript 类型定义生成
-- ✅ 构建时无副作用（不启动服务器）
+### Build Tests
+- ✅ CJS/ESM dual-format output
+- ✅ TypeScript type definition generation
+- ✅ No side effects during the build (the server is not started)
 
-### 功能测试
-- ✅ 环境变量正确加载
-- ✅ 模型自动选择和配置
-- ✅ 模板加载和管理
-- ✅ MCP 工具注册和调用
-- ✅ HTTP/stdio 双传输支持
+### Functional Tests
+- ✅ Environment variables load correctly
+- ✅ Automatic model selection and configuration
+- ✅ Template loading and management
+- ✅ MCP tool registration and invocation
+- ✅ HTTP/stdio dual transport support
 
-### 兼容性测试
+### Compatibility Tests
 - ✅ Windows 10/11
 - ✅ Node.js 18+
-- ✅ MCP Inspector 集成
-- ✅ Claude Desktop 兼容
+- ✅ MCP Inspector integration
+- ✅ Claude Desktop compatibility

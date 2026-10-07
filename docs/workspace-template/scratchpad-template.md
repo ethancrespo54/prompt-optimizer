@@ -1,62 +1,62 @@
-# 开发草稿本
+# Development Scratchpad
 
-记录当前开发任务的进展和思考。
+Record the progress and thoughts of the current development tasks.
 
-## 当前任务
+## Current Task
 
-### [任务名称] - [开始日期]
-**目标**: [具体目标描述]
-**状态**: 进行中
+### [Task name] - [Start date]
+**Goal**: [Specific goal description]
+**Status**: In progress
 
-#### 计划步骤
-[ ] 1. 需求分析
-[ ] 2. 技术方案设计  
-[ ] 3. 功能实现
-[ ] 4. 测试验证
-[ ] 5. 文档更新
+#### Planned Steps
+[ ] 1. Requirements analysis
+[ ] 2. Technical design  
+[ ] 3. Feature implementation
+[ ] 4. Testing and verification
+[ ] 5. Documentation update
 
-#### 进展记录
-- [日期] [具体进展描述]
-- [日期] [遇到的问题和解决方案]
+#### Progress Log
+- [Date] [Description of specific progress]
+- [Date] [Problems encountered and solutions]
 
-#### 重要发现
-- [记录重要的技术发现或经验]
-
----
-
-## 历史任务
-
-### [已完成任务名称] - [完成日期] ✅
-**总结**: [简要总结]
-**经验**: [重要经验提取]
+#### Important Findings
+- [Record important technical findings or lessons]
 
 ---
 
-## 待办事项
+## Historical Tasks
 
-### 紧急
-- [ ] [紧急任务1]
-- [ ] [紧急任务2]
-
-### 重要
-- [ ] [重要任务1]
-- [ ] [重要任务2]
-
-### 一般
-- [ ] [一般任务1]
-- [ ] [一般任务2]
+### [Completed task name] - [Completion date] ✅
+**Summary**: [Brief summary]
+**Lessons**: [Key lessons extracted]
 
 ---
 
-## 问题记录
+## To-Do Items
 
-### 未解决
-- [问题描述] - [发现日期]
+### Urgent
+- [ ] [Urgent task 1]
+- [ ] [Urgent task 2]
 
-### 已解决
-- [问题描述] - [解决方案] - [解决日期]
+### Important
+- [ ] [Important task 1]
+- [ ] [Important task 2]
+
+### General
+- [ ] [General task 1]
+- [ ] [General task 2]
 
 ---
 
-## 备注
-[其他需要记录的信息]
+## Issue Log
+
+### Unresolved
+- [Issue description] - [Date discovered]
+
+### Resolved
+- [Issue description] - [Solution] - [Date resolved]
+
+---
+
+## Notes
+[Other information to record]

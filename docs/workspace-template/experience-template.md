@@ -1,58 +1,58 @@
-# 开发经验记录
+# Development Experience Log
 
-记录开发过程中的重要经验和最佳实践。
+Record important lessons and best practices from the development process.
 
-## 🔧 技术经验
+## 🔧 Technical Lessons
 
-### 架构设计
-- [经验描述] - [适用场景] - [记录日期]
+### Architecture Design
+- [Lesson description] - [Applicable scenario] - [Date recorded]
 
-### 错误处理
-- [错误类型] - [解决方案] - [预防措施] - [记录日期]
+### Error Handling
+- [Error type] - [Solution] - [Prevention measures] - [Date recorded]
 
-### 性能优化
-- [优化点] - [优化方法] - [效果] - [记录日期]
+### Performance Optimization
+- [Optimization point] - [Optimization method] - [Effect] - [Date recorded]
 
-### 测试实践
-- [测试类型] - [最佳实践] - [工具推荐] - [记录日期]
+### Testing Practices
+- [Test type] - [Best practice] - [Recommended tools] - [Date recorded]
 
-## 🛠️ 工具配置
+## 🛠️ Tool Configuration
 
-### 开发工具
-- [工具名称] - [配置要点] - [使用技巧] - [记录日期]
+### Development Tools
+- [Tool name] - [Configuration highlights] - [Usage tips] - [Date recorded]
 
-### 调试技巧
-- [问题类型] - [调试方法] - [工具使用] - [记录日期]
+### Debugging Tips
+- [Problem type] - [Debugging method] - [Tool usage] - [Date recorded]
 
-## 📚 学习资源
+## 📚 Learning Resources
 
-### 有用文档
-- [文档标题] - [链接] - [要点总结] - [记录日期]
+### Useful Documents
+- [Document title] - [Link] - [Key points summary] - [Date recorded]
 
-### 代码示例
-- [功能描述] - [代码片段或文件位置] - [使用场景] - [记录日期]
+### Code Examples
+- [Feature description] - [Code snippet or file location] - [Usage scenario] - [Date recorded]
 
-## 🚫 避坑指南
+## 🚫 Pitfall Guide
 
-### 常见错误
-- [错误描述] - [原因分析] - [避免方法] - [记录日期]
+### Common Mistakes
+- [Mistake description] - [Cause analysis] - [How to avoid] - [Date recorded]
 
-### 设计陷阱
-- [设计问题] - [问题后果] - [正确做法] - [记录日期]
+### Design Traps
+- [Design problem] - [Consequence] - [Correct approach] - [Date recorded]
 
-## 🔄 流程改进
+## 🔄 Process Improvements
 
-### 工作流优化
-- [改进点] - [改进方法] - [效果评估] - [记录日期]
+### Workflow Optimization
+- [Improvement point] - [Improvement method] - [Effect evaluation] - [Date recorded]
 
-### 文档管理
-- [管理经验] - [工具使用] - [效率提升] - [记录日期]
+### Documentation Management
+- [Management lesson] - [Tool usage] - [Efficiency gain] - [Date recorded]
 
 ---
 
-## 📝 使用说明
+## 📝 Usage Instructions
 
-1. **及时记录** - 遇到重要经验立即记录
-2. **分类整理** - 按照上述分类组织内容
-3. **定期回顾** - 每周回顾一次，提取可复用经验
-4. **归档整理** - 任务完成时将相关经验归档到archives
+1. **Record promptly** - Record important lessons as soon as you encounter them
+2. **Organize by category** - Organize content according to the categories above
+3. **Review regularly** - Review once a week and extract reusable lessons
+4. **Archive** - Archive related lessons to archives when a task is completed

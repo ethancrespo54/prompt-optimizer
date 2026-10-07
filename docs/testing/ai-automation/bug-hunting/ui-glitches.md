@@ -1,349 +1,349 @@
-# UI显示故障Bug发现测试
+# UI Display Glitch Bug-Hunting Tests
 
-## 📖 测试概述
-专门用于发现UI显示相关的bug，包括布局问题、样式异常、响应式问题等视觉和交互缺陷。
+## 📖 Test Overview
+Specifically used to discover UI-display-related bugs, including layout problems, abnormal styles, responsive problems, and other visual and interaction defects.
 
-## 🎯 测试目标
-- 发现UI布局和显示bug
-- 测试响应式设计问题
-- 验证主题和样式一致性
-- 发现交互反馈问题
+## 🎯 Test Goals
+- Discover UI layout and display bugs
+- Test responsive design problems
+- Verify theme and style consistency
+- Discover interaction feedback problems
 
-## 🔍 Bug发现重点
-- 元素重叠和错位
-- 文本溢出和截断
-- 样式不一致
-- 响应式布局问题
-- 动画和过渡异常
+## 🔍 Bug-Hunting Focus
+- Overlapping and misplaced elements
+- Text overflow and truncation
+- Inconsistent styles
+- Responsive layout problems
+- Abnormal animations and transitions
 
 ---
 
-## 🧪 Bug发现场景
+## 🧪 Bug-Hunting Scenarios
 
-### 场景1：极端窗口尺寸测试
+### Scenario 1: Extreme Window Size Test
 
-**测试目的：** 发现极端窗口尺寸下的UI布局bug
+**Test purpose:** Discover UI layout bugs under extreme window sizes
 
-**AI执行指导：**
+**AI execution guidance:**
 ```javascript
-// 测试极小窗口
-browser_resize(320, 240); // 极小尺寸
+// Test an extremely small window
+browser_resize(320, 240); // Extremely small size
 browser_snapshot();
 
-// 输入内容测试布局
-browser_type(element="原始提示词输入框", ref="e54", text="极小窗口测试内容");
+// Enter content to test the layout
+browser_type(element="Original prompt input box", ref="e54", text="Extremely small window test content");
 browser_snapshot();
 
-// 打开各种弹窗测试
-browser_click(element="模型管理按钮", ref="e21");
+// Open various popups for testing
+browser_click(element="Model Manager button", ref="e21");
 browser_snapshot();
 browser_press_key("Escape");
 
-// 测试极大窗口
-browser_resize(3840, 2160); // 4K尺寸
+// Test an extremely large window
+browser_resize(3840, 2160); // 4K size
 browser_snapshot();
 
-// 测试极窄窗口
-browser_resize(200, 800); // 极窄
+// Test an extremely narrow window
+browser_resize(200, 800); // Extremely narrow
 browser_snapshot();
 
-// 测试极宽窗口
-browser_resize(2000, 400); // 极宽
+// Test an extremely wide window
+browser_resize(2000, 400); // Extremely wide
 browser_snapshot();
 ```
 
-**预期发现的问题：**
-- 元素重叠或错位
-- 按钮被截断或隐藏
-- 文本溢出容器
-- 滚动条异常
-- 布局完全破坏
+**Expected problems to discover:**
+- Elements overlap or are misplaced
+- Buttons are truncated or hidden
+- Text overflows its container
+- Abnormal scrollbars
+- The layout is completely broken
 
-**验证点：**
-- [ ] 所有元素可见且可访问
-- [ ] 文本正确换行或截断
-- [ ] 按钮功能正常
-- [ ] 滚动行为正确
-- [ ] 布局保持合理
+**Verification points:**
+- [ ] All elements are visible and accessible
+- [ ] Text wraps or truncates correctly
+- [ ] Buttons work normally
+- [ ] Scrolling behavior is correct
+- [ ] The layout stays reasonable
 
 ---
 
-### 场景2：长文本显示测试
+### Scenario 2: Long Text Display Test
 
-**测试目的：** 发现长文本处理的UI显示问题
+**Test purpose:** Discover UI display problems in long text handling
 
-**AI执行指导：**
+**AI execution guidance:**
 ```javascript
-// 测试超长单词
+// Test a very long word
 const longWord = "a".repeat(100);
-browser_type(element="原始提示词输入框", ref="e54", text=longWord);
+browser_type(element="Original prompt input box", ref="e54", text=longWord);
 browser_snapshot();
 
-// 测试超长句子
-const longSentence = "这是一个非常长的句子，用来测试文本换行和显示效果。".repeat(20);
-browser_type(element="原始提示词输入框", ref="e54", text=longSentence);
+// Test a very long sentence
+const longSentence = "This is a very long sentence used to test text wrapping and display. ".repeat(20);
+browser_type(element="Original prompt input box", ref="e54", text=longSentence);
 browser_snapshot();
 
-// 测试混合长文本
+// Test mixed long text
 const mixedText = `
-标题：${longWord}
-内容：${longSentence}
-结尾：${"测试".repeat(50)}
+Title: ${longWord}
+Content: ${longSentence}
+Ending: ${"test".repeat(50)}
 `;
-browser_type(element="原始提示词输入框", ref="e54", text=mixedText);
+browser_type(element="Original prompt input box", ref="e54", text=mixedText);
 browser_snapshot();
 
-// 开始优化看结果显示
-browser_click(element="开始优化按钮", ref="e78");
+// Start optimization to see how the result is displayed
+browser_click(element="Start optimization button", ref="e78");
 browser_wait_for(time=10);
 browser_snapshot();
 ```
 
-**预期发现的问题：**
-- 长单词不换行导致溢出
-- 文本截断位置不当
-- 滚动条显示异常
-- 容器高度计算错误
-- 文本选择问题
+**Expected problems to discover:**
+- A long word does not wrap and causes overflow
+- Improper text truncation position
+- Abnormal scrollbar display
+- Container height calculation errors
+- Text selection problems
 
-**验证点：**
-- [ ] 长文本正确换行
-- [ ] 容器尺寸自适应
-- [ ] 滚动功能正常
-- [ ] 文本选择正常
-- [ ] 显示性能良好
+**Verification points:**
+- [ ] Long text wraps correctly
+- [ ] Container size adapts
+- [ ] Scrolling works normally
+- [ ] Text selection is normal
+- [ ] Display performance is good
 
 ---
 
-### 场景3：主题切换一致性测试
+### Scenario 3: Theme Switching Consistency Test
 
-**测试目的：** 发现主题切换时的样式不一致问题
+**Test purpose:** Discover style inconsistency problems when switching themes
 
-**AI执行指导：**
+**AI execution guidance:**
 ```javascript
-// 在日间模式下操作
-browser_click(element="主题切换按钮", ref="e10");
+// Operate in Light Mode
+browser_click(element="Theme toggle button", ref="e10");
 browser_snapshot();
 
-// 打开各种界面元素
-browser_click(element="模型管理按钮", ref="e21");
-browser_snapshot();
-browser_press_key("Escape");
-
-browser_click(element="模板管理按钮", ref="e15");
+// Open various interface elements
+browser_click(element="Model Manager button", ref="e21");
 browser_snapshot();
 browser_press_key("Escape");
 
-// 切换到夜间模式
-browser_click(element="主题切换按钮", ref="e10");
-browser_snapshot();
-
-// 重新打开界面元素检查一致性
-browser_click(element="模型管理按钮", ref="e21");
+browser_click(element="Template management button", ref="e15");
 browser_snapshot();
 browser_press_key("Escape");
 
-browser_click(element="模板管理按钮", ref="e15");
+// Switch to Dark Mode
+browser_click(element="Theme toggle button", ref="e10");
+browser_snapshot();
+
+// Reopen interface elements to check consistency
+browser_click(element="Model Manager button", ref="e21");
 browser_snapshot();
 browser_press_key("Escape");
 
-// 快速切换主题
+browser_click(element="Template management button", ref="e15");
+browser_snapshot();
+browser_press_key("Escape");
+
+// Rapidly switch themes
 for (let i = 0; i < 5; i++) {
-    browser_click(element="主题切换按钮", ref="e10");
+    browser_click(element="Theme toggle button", ref="e10");
     browser_wait_for(time=0.5);
 }
 browser_snapshot();
 ```
 
-**预期发现的问题：**
-- 部分元素主题不切换
-- 颜色对比度不足
-- 主题切换动画异常
-- 某些组件样式残留
-- 文本可读性问题
+**Expected problems to discover:**
+- Some elements do not switch theme
+- Insufficient color contrast
+- Abnormal theme switching animation
+- Style residue in some components
+- Text readability problems
 
-**验证点：**
-- [ ] 所有元素主题一致
-- [ ] 颜色对比度充足
-- [ ] 切换动画流畅
-- [ ] 无样式残留
-- [ ] 文本清晰可读
+**Verification points:**
+- [ ] All elements have a consistent theme
+- [ ] Color contrast is sufficient
+- [ ] The switching animation is smooth
+- [ ] No style residue
+- [ ] Text is clear and readable
 
 ---
 
-### 场景4：动态内容加载显示测试
+### Scenario 4: Dynamic Content Loading Display Test
 
-**测试目的：** 发现动态内容加载时的UI显示问题
+**Test purpose:** Discover UI display problems when dynamic content loads
 
-**AI执行指导：**
+**AI execution guidance:**
 ```javascript
-// 测试优化过程中的动态显示
-browser_type(element="原始提示词输入框", ref="e54", text="动态内容测试");
-browser_click(element="开始优化按钮", ref="e78");
+// Test dynamic display during optimization
+browser_type(element="Original prompt input box", ref="e54", text="Dynamic content test");
+browser_click(element="Start optimization button", ref="e78");
 
-// 在加载过程中快速截图
+// Take quick snapshots during loading
 for (let i = 0; i < 10; i++) {
     browser_wait_for(time=1);
     browser_snapshot();
 }
 
-// 测试历史记录动态加载
-browser_click(element="历史记录按钮", ref="e18");
+// Test dynamic loading of history
+browser_click(element="History button", ref="e18");
 browser_snapshot();
 
-// 在历史记录中快速操作
-browser_click(element="重用按钮", ref="reuse_button"); // 假设的重用按钮
+// Operate quickly in history
+browser_click(element="Reuse button", ref="reuse_button"); // Hypothetical reuse button
 browser_snapshot();
 browser_press_key("Escape");
 
-// 测试模板管理动态内容
-browser_click(element="模板管理按钮", ref="e15");
+// Test dynamic content of template management
+browser_click(element="Template management button", ref="e15");
 browser_snapshot();
 
-// 添加新模板测试动态更新
-browser_click(element="添加模板按钮", ref="add_template_button");
+// Add a new template to test dynamic updates
+browser_click(element="Add template button", ref="add_template_button");
 browser_snapshot();
 ```
 
-**预期发现的问题：**
-- 加载状态显示不一致
-- 内容闪烁或跳动
-- 占位符样式异常
-- 动态高度计算错误
-- 滚动位置丢失
+**Expected problems to discover:**
+- Inconsistent loading state display
+- Content flickers or jumps
+- Abnormal placeholder styles
+- Dynamic height calculation errors
+- Scroll position is lost
 
-**验证点：**
-- [ ] 加载状态清晰一致
-- [ ] 内容平滑过渡
-- [ ] 占位符样式正确
-- [ ] 高度计算准确
-- [ ] 滚动位置保持
+**Verification points:**
+- [ ] The loading state is clear and consistent
+- [ ] Content transitions smoothly
+- [ ] Placeholder styles are correct
+- [ ] Height calculation is accurate
+- [ ] Scroll position is preserved
 
 ---
 
-### 场景5：交互状态反馈测试
+### Scenario 5: Interaction State Feedback Test
 
-**测试目的：** 发现交互反馈的UI显示问题
+**Test purpose:** Discover UI display problems in interaction feedback
 
-**AI执行指导：**
+**AI execution guidance:**
 ```javascript
-// 测试悬停状态
+// Test hover state
 const buttons = [
-    "e78", // 开始优化按钮
-    "e21", // 模型管理按钮
-    "e15", // 模板管理按钮
-    "e18", // 历史记录按钮
+    "e78", // Start optimization button
+    "e21", // Model Manager button
+    "e15", // Template management button
+    "e18", // History button
 ];
 
 for (const buttonRef of buttons) {
-    browser_hover(element="按钮", ref=buttonRef);
+    browser_hover(element="Button", ref=buttonRef);
     browser_snapshot();
     browser_wait_for(time=1);
 }
 
-// 测试点击状态
+// Test click state
 for (const buttonRef of buttons) {
-    browser_click(element="按钮", ref=buttonRef);
+    browser_click(element="Button", ref=buttonRef);
     browser_snapshot();
-    browser_press_key("Escape"); // 关闭可能的弹窗
+    browser_press_key("Escape"); // Close possible popups
 }
 
-// 测试焦点状态
-browser_click(element="原始提示词输入框", ref="e54");
+// Test focus state
+browser_click(element="Original prompt input box", ref="e54");
 browser_snapshot();
 
-// Tab键导航测试
+// Tab key navigation test
 for (let i = 0; i < 10; i++) {
     browser_press_key("Tab");
     browser_snapshot();
 }
 ```
 
-**预期发现的问题：**
-- 悬停效果不明显
-- 点击反馈缺失
-- 焦点指示不清晰
-- 状态切换不流畅
-- 可访问性问题
+**Expected problems to discover:**
+- Hover effects are not obvious
+- Click feedback is missing
+- The focus indicator is unclear
+- State transitions are not smooth
+- Accessibility problems
 
-**验证点：**
-- [ ] 悬停效果明显
-- [ ] 点击反馈及时
-- [ ] 焦点指示清晰
-- [ ] 状态切换流畅
-- [ ] 可访问性良好
+**Verification points:**
+- [ ] Hover effects are obvious
+- [ ] Click feedback is timely
+- [ ] The focus indicator is clear
+- [ ] State transitions are smooth
+- [ ] Accessibility is good
 
 ---
 
-### 场景6：多语言显示测试
+### Scenario 6: Multi-Language Display Test
 
-**测试目的：** 发现多语言切换的UI显示问题
+**Test purpose:** Discover UI display problems when switching languages
 
-**AI执行指导：**
+**AI execution guidance:**
 ```javascript
-// 在中文模式下操作
-browser_type(element="原始提示词输入框", ref="e54", text="中文测试内容，包含各种标点符号！@#￥%……&*（）");
+// Operate in Chinese mode
+browser_type(element="Original prompt input box", ref="e54", text="CJK test content with various punctuation: ！＠＃￥％……＆＊（）テスト");
 browser_snapshot();
 
-// 打开各种弹窗
-browser_click(element="模型管理按钮", ref="e21");
-browser_snapshot();
-browser_press_key("Escape");
-
-// 切换到英文
-browser_click(element="语言切换按钮", ref="e30");
-browser_snapshot();
-
-// 检查英文模式下的显示
-browser_click(element="模型管理按钮", ref="e21");
+// Open various popups
+browser_click(element="Model Manager button", ref="e21");
 browser_snapshot();
 browser_press_key("Escape");
 
-// 输入英文内容
-browser_type(element="原始提示词输入框", ref="e54", text="English test content with various symbols !@#$%^&*()");
+// Switch to English
+browser_click(element="Language toggle button", ref="e30");
 browser_snapshot();
 
-// 快速切换语言
+// Check the display in English mode
+browser_click(element="Model Manager button", ref="e21");
+browser_snapshot();
+browser_press_key("Escape");
+
+// Enter English content
+browser_type(element="Original prompt input box", ref="e54", text="English test content with various symbols !@#$%^&*()");
+browser_snapshot();
+
+// Rapidly switch languages
 for (let i = 0; i < 3; i++) {
-    browser_click(element="语言切换按钮", ref="e30");
+    browser_click(element="Language toggle button", ref="e30");
     browser_wait_for(time=1);
     browser_snapshot();
 }
 ```
 
-**预期发现的问题：**
-- 文本溢出或截断
-- 字体显示异常
-- 布局适应不当
-- 翻译不完整
-- 语言切换延迟
+**Expected problems to discover:**
+- Text overflow or truncation
+- Abnormal font display
+- Improper layout adaptation
+- Incomplete translation
+- Delayed language switching
 
-**验证点：**
-- [ ] 文本正确显示
-- [ ] 字体渲染正常
-- [ ] 布局自适应良好
-- [ ] 翻译完整准确
-- [ ] 切换响应及时
+**Verification points:**
+- [ ] Text is displayed correctly
+- [ ] Font rendering is normal
+- [ ] The layout adapts well
+- [ ] Translation is complete and accurate
+- [ ] Switching responds promptly
 
 ---
 
-### 场景7：边界元素显示测试
+### Scenario 7: Boundary Element Display Test
 
-**测试目的：** 发现边界和边缘元素的显示问题
+**Test purpose:** Discover display problems of boundary and edge elements
 
-**AI执行指导：**
+**AI execution guidance:**
 ```javascript
-// 测试页面边缘元素
+// Test page edge elements
 browser_resize(1200, 800);
 
-// 滚动到页面各个边缘
-browser_press_key("Home"); // 页面顶部
+// Scroll to each edge of the page
+browser_press_key("Home"); // Top of the page
 browser_snapshot();
 
-browser_press_key("End"); // 页面底部
+browser_press_key("End"); // Bottom of the page
 browser_snapshot();
 
-// 测试水平滚动（如果有）
+// Test horizontal scrolling (if any)
 browser_press_key("Ctrl+Home");
 browser_press_key("ArrowLeft");
 browser_snapshot();
@@ -351,109 +351,109 @@ browser_snapshot();
 browser_press_key("ArrowRight");
 browser_snapshot();
 
-// 测试元素边界
-browser_click(element="原始提示词输入框", ref="e54");
-browser_type(element="原始提示词输入框", ref="e54", text="边界测试" + "\n".repeat(20));
+// Test element boundaries
+browser_click(element="Original prompt input box", ref="e54");
+browser_type(element="Original prompt input box", ref="e54", text="Boundary test" + "\n".repeat(20));
 browser_snapshot();
 
-// 测试弹窗边界
-browser_click(element="模板管理按钮", ref="e15");
+// Test popup boundaries
+browser_click(element="Template management button", ref="e15");
 browser_snapshot();
 
-// 在弹窗中滚动
+// Scroll within the popup
 browser_press_key("PageDown");
 browser_snapshot();
 browser_press_key("PageUp");
 browser_snapshot();
 ```
 
-**预期发现的问题：**
-- 元素被页面边缘截断
-- 滚动条显示异常
-- 弹窗超出屏幕范围
-- 边界阴影或边框缺失
-- 内容无法完全访问
+**Expected problems to discover:**
+- Elements are truncated by the page edge
+- Abnormal scrollbar display
+- Popups exceed the screen range
+- Missing boundary shadows or borders
+- Content cannot be fully accessed
 
-**验证点：**
-- [ ] 所有元素完全可见
-- [ ] 滚动条正常工作
-- [ ] 弹窗位置合理
-- [ ] 边界样式正确
-- [ ] 内容完全可访问
-
----
-
-## 🐛 UI显示Bug模式
-
-### 布局相关Bug
-- 元素重叠或错位
-- 响应式布局失效
-- 容器尺寸计算错误
-- 滚动行为异常
-
-### 样式相关Bug
-- 主题不一致
-- 颜色对比度不足
-- 字体渲染问题
-- 动画效果异常
-
-### 交互相关Bug
-- 悬停效果缺失
-- 焦点指示不清
-- 点击反馈延迟
-- 状态切换异常
-
-### 内容显示Bug
-- 文本溢出或截断
-- 长内容处理不当
-- 多语言显示问题
-- 特殊字符异常
+**Verification points:**
+- [ ] All elements are fully visible
+- [ ] Scrollbars work normally
+- [ ] Popup position is reasonable
+- [ ] Boundary styles are correct
+- [ ] Content is fully accessible
 
 ---
 
-## 📊 UI Bug报告模板
+## 🐛 UI Display Bug Patterns
+
+### Layout-Related Bugs
+- Overlapping or misplaced elements
+- Responsive layout failure
+- Container size calculation errors
+- Abnormal scrolling behavior
+
+### Style-Related Bugs
+- Inconsistent themes
+- Insufficient color contrast
+- Font rendering problems
+- Abnormal animation effects
+
+### Interaction-Related Bugs
+- Missing hover effects
+- Unclear focus indicators
+- Delayed click feedback
+- Abnormal state transitions
+
+### Content Display Bugs
+- Text overflow or truncation
+- Improper handling of long content
+- Multi-language display problems
+- Abnormal special characters
+
+---
+
+## 📊 UI Bug Report Template
 
 ```markdown
-# UI显示Bug报告
+# UI Display Bug Report
 
-## Bug信息
-- **发现时间：** [时间]
-- **UI场景：** [具体UI场景]
-- **严重程度：** 高/中/低
-- **Bug类型：** 布局/样式/交互/内容显示
+## Bug Information
+- **Discovery time:** [Time]
+- **UI scenario:** [Specific UI scenario]
+- **Severity:** High/Medium/Low
+- **Bug type:** Layout/Style/Interaction/Content display
 
-## 环境信息
-- **浏览器：** [浏览器版本]
-- **屏幕分辨率：** [分辨率]
-- **窗口尺寸：** [窗口大小]
-- **缩放比例：** [缩放设置]
+## Environment Information
+- **Browser:** [Browser version]
+- **Screen resolution:** [Resolution]
+- **Window size:** [Window size]
+- **Zoom level:** [Zoom setting]
 
-## Bug描述
-[详细描述UI显示问题]
+## Bug Description
+[Detailed description of the UI display problem]
 
-## 复现步骤
-1. [具体操作步骤]
-2. [触发条件]
-3. [观察结果]
+## Reproduction Steps
+1. [Specific operation steps]
+2. [Trigger conditions]
+3. [Observed result]
 
-## 预期显示
-[UI应该如何正确显示]
+## Expected Display
+[How the UI should be displayed correctly]
 
-## 实际显示
-[实际的显示效果]
+## Actual Display
+[The actual display effect]
 
-## 视觉证据
-- **截图：** [bug截图文件]
-- **对比图：** [正确显示的对比]
-- **录屏：** [动态bug的录屏]
+## Visual Evidence
+- **Screenshot:** [Bug screenshot file]
+- **Comparison image:** [Comparison with the correct display]
+- **Screen recording:** [Screen recording of dynamic bugs]
 
-## 影响评估
-- **用户体验：** [对用户体验的影响]
-- **功能影响：** [是否影响功能使用]
-- **兼容性：** [是否影响多平台兼容]
+## Impact Assessment
+- **User experience:** [Impact on user experience]
+- **Functional impact:** [Whether feature usage is affected]
+- **Compatibility:** [Whether multi-platform compatibility is affected]
 
-## 修复建议
-- **CSS修复：** [样式修复建议]
-- **布局调整：** [布局改进建议]
-- **响应式优化：** [响应式改进]
+## Fix Suggestions
+- **CSS fix:** [Style fix suggestion]
+- **Layout adjustment:** [Layout improvement suggestion]
+- **Responsive optimization:** [Responsive improvement]
 ```

@@ -1,83 +1,83 @@
-# 项目通用经验指南
+# General Project Experience Guide
 
-本指南收录项目开发中的通用经验与最佳实践，快速解决常见问题，提升开发效率。
+This guide collects general lessons and best practices from project development, to quickly solve common problems and improve development efficiency.
 
-> **注意**: 功能特定的经验已归档到 `docs/archives/` 对应目录中。
+> **Note**: Feature-specific lessons have been archived in the corresponding directories under `docs/archives/`.
 
-## 📚 已归档的专项经验
+## 📚 Archived Topic-Specific Lessons
 
-- **模态框组件经验** → [106-template-management/modal-experience.md](../archives/106-template-management/modal-experience.md)
-- **布局系统经验** → [108-layout-system/experience.md](../archives/108-layout-system/experience.md)
-- **主题系统经验** → [109-theme-system/experience.md](../archives/109-theme-system/experience.md)
-- **Composable架构经验** → [102-web-architecture-refactor/experience.md](../archives/102-web-architecture-refactor/experience.md)
-- **大型架构重构经验** → [117-import-export-architecture-refactor/experience.md](../archives/117-import-export-architecture-refactor/experience.md)
-- **版本更新系统经验** → [118-desktop-auto-update-system/experience.md](../archives/118-desktop-auto-update-system/experience.md)
-- **MCP Server 模块开发经验** → [120-mcp-server-module/experience.md](../archives/120-mcp-server-module/experience.md)
-- **Docker API代理经验** → [122-docker-api-proxy/experience.md](../archives/122-docker-api-proxy/experience.md)
-- **高级功能完整实现经验** → [123-advanced-features-implementation/experience.md](../archives/123-advanced-features-implementation/experience.md)
+- **Modal component lessons** → [106-template-management/modal-experience.md](../archives/106-template-management/modal-experience.md)
+- **Layout system lessons** → [108-layout-system/experience.md](../archives/108-layout-system/experience.md)
+- **Theme system lessons** → [109-theme-system/experience.md](../archives/109-theme-system/experience.md)
+- **Composable architecture lessons** → [102-web-architecture-refactor/experience.md](../archives/102-web-architecture-refactor/experience.md)
+- **Large-scale architecture refactoring lessons** → [117-import-export-architecture-refactor/experience.md](../archives/117-import-export-architecture-refactor/experience.md)
+- **Version update system lessons** → [118-desktop-auto-update-system/experience.md](../archives/118-desktop-auto-update-system/experience.md)
+- **MCP Server module development lessons** → [120-mcp-server-module/experience.md](../archives/120-mcp-server-module/experience.md)
+- **Docker API proxy lessons** → [122-docker-api-proxy/experience.md](../archives/122-docker-api-proxy/experience.md)
+- **Complete advanced feature implementation lessons** → [123-advanced-features-implementation/experience.md](../archives/123-advanced-features-implementation/experience.md)
 
-## 🔧 通用开发规范
+## 🔧 General Development Conventions
 
-### API 集成
+### API Integration
 ```typescript
-// 统一 OpenAI 兼容格式
+// Unified OpenAI-compatible format
 const config = {
   baseURL: "https://api.provider.com/v1",
   models: ["model-name"],
-  apiKey: import.meta.env.VITE_API_KEY // 必须使用 Vite 环境变量
+  apiKey: import.meta.env.VITE_API_KEY // Must use Vite environment variables
 };
 ```
 
-**核心原则**：
-- 业务逻辑与API配置分离
-- 只传递用户明确配置的参数，不设默认值
-- 敏感信息通过环境变量管理
+**Core principles**:
+- Separate business logic from API configuration
+- Only pass parameters the user explicitly configured; set no default values
+- Manage sensitive information through environment variables
 
-### 错误处理
+### Error Handling
 ```typescript
 try {
   await apiCall();
 } catch (error) {
-  console.error('[Service Error]', error); // 开发日志
-  throw new Error('操作失败，请稍后重试'); // 用户友好提示
+  console.error('[Service Error]', error); // Development log
+  throw new Error('Operation failed, please try again later'); // User-friendly message
 }
 ```
 
-### 测试规范
+### Testing Conventions
 ```javascript
-describe("功能测试", () => {
+describe("Feature tests", () => {
   beforeEach(() => {
-    testId = `test-${Date.now()}`; // 唯一标识避免冲突
+    testId = `test-${Date.now()}`; // Unique identifier to avoid conflicts
   });
   
-  // LLM参数测试：每个参数独立测试
+  // LLM parameter tests: test each parameter independently
   it("should handle temperature parameter", async () => {
     await modelManager.updateModel(configKey, {
-      llmParams: { temperature: 0.7 } // 只测试一个参数
+      llmParams: { temperature: 0.7 } // Test only one parameter
     });
   });
 });
 ```
 
-**要点**：
-- 使用动态唯一标识符
-- 每个LLM参数创建独立测试
-- 覆盖异常场景
-- 正确清理测试状态
+**Key points**:
+- Use dynamic unique identifiers
+- Create an independent test for each LLM parameter
+- Cover exception scenarios
+- Clean up test state correctly
 
-### Vue 开发最佳实践
+### Vue Development Best Practices
 
-#### 多根组件的属性继承
-**问题**：当一个Vue组件有多个根节点时，它无法自动继承父组件传递的非prop属性（如 `class`），并会产生警告。
+#### Attribute Inheritance for Multi-Root Components
+**Problem**: When a Vue component has multiple root nodes, it cannot automatically inherit non-prop attributes (such as `class`) passed from the parent, and a warning is produced.
 
-**方案**：
-1. 在 `<script setup>` 中使用 `defineOptions({ inheritAttrs: false })` 禁用默认的属性继承行为
-2. 在模板中，将 `v-bind="$attrs"` 手动绑定到你希望接收这些属性的**特定**根节点上
+**Solution**:
+1. Use `defineOptions({ inheritAttrs: false })` in `<script setup>` to disable the default attribute inheritance behavior
+2. In the template, manually bind `v-bind="$attrs"` to the **specific** root node you want to receive these attributes
 
-**示例**:
+**Example**:
 ```
 <template>
-  <!-- $attrs 会将 class, id 等属性应用到此组件 -->
+  <!-- $attrs applies class, id, and other attributes to this component -->
   <OutputDisplayCore v-bind="$attrs" ... />
   <OutputDisplayFullscreen ... />
 </template>
@@ -89,48 +89,48 @@ defineOptions({
 </script>
 ```
 
-#### 深层组件事件传播机制
-**问题**：当全局状态变化需要通知多层级嵌套的组件时，事件传播可能中断，导致深层组件无法及时更新。
+#### Event Propagation Mechanism for Deeply Nested Components
+**Problem**: When a global state change needs to notify components nested across multiple levels, event propagation may be interrupted, so deep components cannot update in time.
 
-**典型场景**：
-- 语言切换后，主界面组件更新正常，但Modal内部的组件显示旧状态
-- 组件层级差异：`App.vue → ComponentA`（直接引用）vs `App.vue → ComponentB → ComponentC`（间接引用）
+**Typical scenarios**:
+- After switching languages, the main UI components update correctly, but components inside a Modal show the old state
+- Component hierarchy difference: `App.vue → ComponentA` (direct reference) vs `App.vue → ComponentB → ComponentC` (indirect reference)
 
-**核心原因**：
-1. **v-if条件渲染**：组件被销毁后ref失效，无法调用组件方法
-2. **事件传播断点**：事件只传播到直接子组件，不会自动向下传播到深层组件
-3. **组件生命周期差异**：不同层级的组件可能处于不同的生命周期阶段
+**Root causes**:
+1. **v-if conditional rendering**: Once a component is destroyed, its ref becomes invalid and the component's methods cannot be called
+2. **Event propagation breakpoints**: Events only propagate to direct child components and do not automatically propagate down to deep components
+3. **Component lifecycle differences**: Components at different levels may be in different lifecycle stages
 
-**解决方案**：
-1. **使用v-show替代v-if**：确保组件实例始终存在，ref保持有效
+**Solutions**:
+1. **Use v-show instead of v-if**: Ensure the component instance always exists so the ref stays valid
    ```vue
-   <!-- ❌ 问题方案：组件会被销毁 -->
+   <!-- ❌ Problematic approach: the component gets destroyed -->
    <Modal v-if="showModal">
      <TemplateSelect ref="templateRef" />
    </Modal>
    
-   <!-- ✅ 推荐方案：组件始终渲染 -->
+   <!-- ✅ Recommended approach: the component is always rendered -->
    <Modal v-show="showModal">
      <TemplateSelect ref="templateRef" />
    </Modal>
    ```
 
-2. **建立完整事件传播链**：从事件源到所有消费组件
+2. **Establish a complete event propagation chain**: From the event source to all consuming components
    ```javascript
-   // 父组件：建立事件传播
+   // Parent component: establish event propagation
    const handleGlobalStateChange = (newState) => {
-     // 刷新直接子组件
+     // Refresh the direct child component
      if (directChildRef.value?.refresh) {
        directChildRef.value.refresh()
      }
      
-     // 刷新深层组件（通过中间组件的暴露方法）
+     // Refresh the deep component (through a method exposed by the intermediate component)
      if (intermediateRef.value?.refreshDeepChild) {
        intermediateRef.value.refreshDeepChild()
      }
    }
    
-   // 中间组件：暴露深层组件的刷新方法
+   // Intermediate component: expose the refresh method of the deep component
    const deepChildRef = ref()
    
    const refreshDeepChild = () => {
@@ -144,11 +144,11 @@ defineOptions({
    })
    ```
 
-3. **统一刷新接口**：所有相关组件都暴露相同的刷新方法
+3. **Unified refresh interface**: All related components expose the same refresh method
    ```javascript
-   // 每个需要响应全局状态变化的组件都实现refresh方法
+   // Every component that needs to respond to global state changes implements a refresh method
    const refresh = () => {
-     // 重新加载数据或更新状态
+     // Reload data or update state
    }
    
    defineExpose({
@@ -156,61 +156,61 @@ defineOptions({
    })
    ```
 
-**最佳实践**：
-- **架构设计**：在设计阶段考虑事件传播的完整路径
-- **接口一致性**：定义标准的组件刷新接口（如`refresh()`方法）
-- **文档记录**：为复杂的事件传播链建立清晰的架构图
-- **测试验证**：确保在所有使用场景下事件都能正确传播
+**Best practices**:
+- **Architecture design**: Consider the complete path of event propagation during the design phase
+- **Interface consistency**: Define a standard component refresh interface (such as a `refresh()` method)
+- **Documentation**: Create a clear architecture diagram for complex event propagation chains
+- **Test verification**: Ensure events propagate correctly in all usage scenarios
 
-**适用场景**：
-- 全局主题切换
-- 语言切换
-- 用户权限变更
-- 模板/配置更新
+**Applicable scenarios**:
+- Global theme switching
+- Language switching
+- User permission changes
+- Template/configuration updates
 
-> **详细案例**：参见 [106-template-management/event-propagation-fix.md](../archives/106-template-management/event-propagation-fix.md)
+> **Detailed case**: See [106-template-management/event-propagation-fix.md](../archives/106-template-management/event-propagation-fix.md)
 
-## ⚡ 快速问题排查
+## ⚡ Quick Troubleshooting
 
-### 布局问题
-1. 检查 Flex 约束链是否完整
-2. 确认 `min-h-0` 是否添加
-3. 验证父容器是否为 `display: flex`
+### Layout Issues
+1. Check whether the Flex constraint chain is complete
+2. Confirm that `min-h-0` has been added
+3. Verify that the parent container is `display: flex`
 
-### 滚动问题
-1. 检查是否有中间层错误的 `overflow` 属性
-2. 确认高度约束是否从顶层正确传递
-3. 验证滚动容器是否有正确的 `overflow-y: auto`
+### Scrolling Issues
+1. Check for an incorrect `overflow` property on an intermediate layer
+2. Confirm that the height constraint is passed down correctly from the top level
+3. Verify that the scroll container has the correct `overflow-y: auto`
 
-### 组件状态同步问题
-1. **深层组件未更新**：
-   - 检查是否使用了 `v-if` 导致组件被销毁
-   - 确认事件传播链是否完整（父→中间→目标组件）
-   - 验证目标组件是否暴露了刷新方法
+### Component State Synchronization Issues
+1. **Deep component not updating**:
+   - Check whether `v-if` is destroying the component
+   - Confirm that the event propagation chain is complete (parent → intermediate → target component)
+   - Verify that the target component exposes a refresh method
 
-2. **Modal内组件状态异常**：
-   - 检查Modal是否使用 `v-show` 而非 `v-if`
-   - 确认组件ref在Modal关闭时是否仍然有效
-   - 验证全局状态变化事件是否传播到Modal内部
+2. **Abnormal component state inside a Modal**:
+   - Check whether the Modal uses `v-show` rather than `v-if`
+   - Confirm that the component ref is still valid when the Modal is closed
+   - Verify that global state change events propagate into the Modal
 
-3. **组件ref调用失败**：
-   - 确认组件是否已完成挂载（`nextTick`）
-   - 检查条件渲染是否导致组件不存在
-   - 验证ref绑定的组件是否暴露了对应方法
+3. **Component ref call fails**:
+   - Confirm that the component has finished mounting (`nextTick`)
+   - Check whether conditional rendering causes the component not to exist
+   - Verify that the component bound to the ref exposes the corresponding method
 
-### API调用问题
-1. 检查环境变量是否正确设置（`VITE_` 前缀）
-2. 确认参数是否过度设置默认值
-3. 验证错误处理是否用户友好
+### API Call Issues
+1. Check that environment variables are set correctly (`VITE_` prefix)
+2. Confirm that default values are not being over-applied to parameters
+3. Verify that error handling is user-friendly
 
-### 测试失败
-1. 检查测试ID是否唯一
-2. 确认测试后是否正确清理状态
-3. 验证LLM参数测试是否独立
+### Test Failures
+1. Check that test IDs are unique
+2. Confirm that state is cleaned up correctly after tests
+3. Verify that LLM parameter tests are independent
 
-## 🔄 版本管理
+## 🔄 Version Management
 
-### 版本同步
+### Version Sync
 ```json
 // package.json
 {
@@ -219,204 +219,204 @@ defineOptions({
   }
 }
 ```
-**关键**：使用 `version` 钩子而非 `postversion`，确保同步文件包含在版本提交中。
+**Key point**: Use the `version` hook rather than `postversion`, to ensure synced files are included in the version commit.
 
-### 模板管理
-- **内置模板**：不可修改，不可导出
-- **用户模板**：可修改，导入时生成新ID
-- **导入规则**：跳过与内置模板ID重复的模板
+### Template Management
+- **Built-in templates**: Cannot be modified or exported
+- **User templates**: Can be modified; a new ID is generated on import
+- **Import rule**: Skip templates whose ID duplicates that of a built-in template
 
-## 🚨 关键Bug修复模式
+## 🚨 Key Bug-Fix Patterns
 
-### 参数透明化
+### Parameter Transparency
 ```typescript
-// ❌ 错误：自动设置默认值
+// ❌ Wrong: automatically setting default values
 if (!config.temperature) config.temperature = 0.7;
 
-// ✅ 正确：只使用用户配置的参数
+// ✅ Correct: only use parameters configured by the user
 const requestConfig = {
   model: modelConfig.defaultModel,
   messages: formattedMessages,
-  ...userLlmParams // 只传递用户明确配置的参数
+  ...userLlmParams // Only pass parameters the user explicitly configured
 };
 ```
 
-### 数据导入安全验证
+### Safe Validation of Imported Data
 ```
-// 白名单验证 + 类型检查
+// Whitelist validation + type checking
 for (const [key, value] of Object.entries(importData)) {
   if (!ALLOWED_KEYS.includes(key)) {
-    console.warn(`跳过未知配置: ${key}`);
+    console.warn(`Skipping unknown configuration: ${key}`);
     continue;
   }
   if (typeof value !== 'string') {
-    console.warn(`跳过无效类型 ${key}: ${typeof value}`);
+    console.warn(`Skipping invalid type ${key}: ${typeof value}`);
     continue;
   }
   await storage.setItem(key, value);
 }
 ```
 
-### 国际化(i18n)键值同步
-**问题**：`[intlify] Not found 'key' in 'locale' messages` 错误，通常由中英文语言包键值不同步引起。
+### Internationalization (i18n) Key Synchronization
+**Problem**: The `[intlify] Not found 'key' in 'locale' messages` error, usually caused by keys being out of sync between the language packs.
 
-**方案**：创建自动化脚本比较两个语言文件，列出差异。
+**Solution**: Create an automated script that compares the two language files and lists the differences.
 
-## 📝 文档更新规范
+## 📝 Documentation Update Conventions
 
-遇到新问题或找到更好解决方案时，应及时更新此文档：
-1. 在对应章节添加新经验
-2. 更新代码示例
-3. 记录修复时间和问题背景
-4. 保持文档简洁性，避免过度详细的过程描述
+When you encounter a new problem or find a better solution, update this document promptly:
+1. Add the new lesson in the corresponding section
+2. Update code examples
+3. Record the fix date and the problem background
+4. Keep the document concise and avoid overly detailed process descriptions
 
 ---
 
-**记住**：好的经验文档应该能让团队成员快速找到解决方案，而不是重新踩坑。
+**Remember**: A good lessons-learned document should let team members quickly find a solution rather than stepping into the same pit again.
 
-## 🎯 Vue Composables 设计经验
+## 🎯 Vue Composables Design Lessons
 
-### 单例模式的重要性
-**问题场景**：多个组件使用同一个composable时，如果每次调用都创建新实例，会导致状态不同步。
+### The Importance of the Singleton Pattern
+**Problem scenario**: When multiple components use the same composable, if each call creates a new instance, state will go out of sync.
 
-**错误实现**：
+**Wrong implementation**:
 ```typescript
 export function useUpdater() {
-  const state = reactive({...})  // 每次调用都创建新实例
+  const state = reactive({...})  // Creates a new instance on every call
   return { state, ... }
 }
 ```
 
-**正确实现**：
+**Correct implementation**:
 ```
 let globalUpdaterInstance: any = null
 
 export function useUpdater() {
   if (globalUpdaterInstance) {
-    return globalUpdaterInstance  // 返回已有实例
+    return globalUpdaterInstance  // Return the existing instance
   }
 
   const state = reactive({...})
   const instance = { state, ... }
-  globalUpdaterInstance = instance  // 缓存实例
+  globalUpdaterInstance = instance  // Cache the instance
   return instance
 }
 ```
 
-**判断标准**：如果多个组件需要访问同一份状态，就应该使用单例模式。
+**Criterion**: If multiple components need to access the same state, use the singleton pattern.
 
-**常见需要单例的场景**：
-- 全局状态管理（如更新状态、用户设置）
-- 模态框状态
-- 通知系统
+**Common scenarios that need a singleton**:
+- Global state management (such as update status, user settings)
+- Modal state
+- Notification system
 
-### 调试策略
-- **日志驱动调试**: 通过详细日志确认每个环节的状态
-- **分层验证**: 先验证数据层，再验证UI层
-- **避免过度工程**: 不要为了解决问题而添加复杂的补丁
+### Debugging Strategy
+- **Log-driven debugging**: Confirm the state at each step through detailed logs
+- **Layered verification**: Verify the data layer first, then the UI layer
+- **Avoid over-engineering**: Don't add complex patches just to solve a problem
 
-## 🏗️ 架构重构通用经验
+## 🏗️ General Lessons from Architecture Refactoring
 
-### 大型重构策略
-**渐进式重构原则**：
-1. **接口优先** - 先设计接口，再实现功能
-2. **分阶段执行** - 保持功能连续性，避免破坏性变更
-3. **测试保护** - 每个阶段都要有测试覆盖
-4. **文档同步** - 重构的同时更新文档
+### Large-Scale Refactoring Strategy
+**Principles of incremental refactoring**:
+1. **Interface first** - Design the interface first, then implement the functionality
+2. **Phased execution** - Maintain functional continuity and avoid breaking changes
+3. **Test protection** - Every phase must have test coverage
+4. **Documentation in sync** - Update documentation while refactoring
 
-### 分布式架构设计
-**核心原则**：
-- 单一职责：每个服务只负责自己的数据
-- 接口统一：所有服务实现相同接口
-- 松耦合：服务间通过接口交互
-- 可扩展：新增服务只需实现接口
+### Distributed Architecture Design
+**Core principles**:
+- Single responsibility: each service is only responsible for its own data
+- Unified interface: all services implement the same interface
+- Loose coupling: services interact through interfaces
+- Extensible: a new service only needs to implement the interface
 
-### 存储抽象设计
-**避免抽象泄漏**：
-- 在服务层封装存储细节
-- 使用逻辑键名对外暴露
-- 建立清晰的抽象边界
-- 文档化存储键的双重用途
+### Storage Abstraction Design
+**Avoid abstraction leaks**:
+- Encapsulate storage details in the service layer
+- Expose logical key names externally
+- Establish clear abstraction boundaries
+- Document the dual purpose of storage keys
 
-### AI自动化测试
-**MCP工具应用**：
-- 使用浏览器自动化验证真实用户场景
-- 建立可重复执行的测试用例
-- 验证架构一致性和数据完整性
-- 提高测试覆盖率和可靠性
+### AI Automated Testing
+**Applying MCP tools**:
+- Use browser automation to verify real user scenarios
+- Establish repeatable test cases
+- Verify architectural consistency and data integrity
+- Improve test coverage and reliability
 
-> 详细经验参考：[117-import-export-architecture-refactor](../archives/117-import-export-architecture-refactor/)
+> For detailed lessons, see: [117-import-export-architecture-refactor](../archives/117-import-export-architecture-refactor/)
 
-## Node.js 应用开发经验
+## Node.js Application Development Lessons
 
-### 环境变量管理
-- **加载时机至关重要**: 环境变量必须在任何模块导入之前加载到 `process.env`
-- **Node.js 的 `-r` 参数**: 是在模块系统初始化前预加载脚本的最可靠方法
-- **路径解析**: 考虑不同的工作目录和部署场景，支持多路径查找
+### Environment Variable Management
+- **Load timing is critical**: Environment variables must be loaded into `process.env` before any module is imported
+- **Node.js `-r` flag**: The most reliable way to preload a script before the module system initializes
+- **Path resolution**: Consider different working directories and deployment scenarios, and support multi-path lookup
 
-### 构建工具使用
-- **入口文件分离**: 入口文件只导出，不执行任何有副作用的代码
-- **启动文件独立**: 使用单独的启动文件负责执行主逻辑
-- **避免构建副作用**: 确保构建过程不执行任何有副作用的代码
+### Using Build Tools
+- **Separate the entry file**: The entry file should only export and not execute any code with side effects
+- **Independent startup file**: Use a separate startup file responsible for running the main logic
+- **Avoid build side effects**: Ensure the build process does not execute any code with side effects
 
-### Windows 兼容性
-- **避免复杂进程管理**: 不使用复杂的进程管理工具如 concurrently
-- **分离构建和启动**: 采用分离的构建和启动流程
-- **简单npm脚本**: 使用简单的 npm scripts 替代复杂的命令组合
+### Windows Compatibility
+- **Avoid complex process management**: Don't use complex process management tools like concurrently
+- **Separate build and start**: Use separate build and start flows
+- **Simple npm scripts**: Use simple npm scripts instead of complex command combinations
 
-## 架构设计经验
+## Architecture Design Lessons
 
-### 适配器模式
-- **解耦**: 通过适配器模式实现不同系统间的解耦
-- **可扩展性**: 适配器模式便于添加新的适配器支持更多功能
-- **可维护性**: 每个适配器职责单一，便于维护
+### Adapter Pattern
+- **Decoupling**: Use the adapter pattern to decouple different systems
+- **Extensibility**: The adapter pattern makes it easy to add new adapters to support more features
+- **Maintainability**: Each adapter has a single responsibility, making it easy to maintain
 
-### 无状态设计
-- **简化部署**: 无状态设计简化了部署流程
-- **提高可靠性**: 避免了状态不一致的问题
-- **便于测试**: 每次测试都是全新的环境
+### Stateless Design
+- **Simplified deployment**: Stateless design simplifies the deployment process
+- **Improved reliability**: Avoids state inconsistency problems
+- **Easy to test**: Each test runs in a fresh environment
 
-相关归档:
-- [120-mcp-server-module](../archives/120-mcp-server-module/) - MCP Server 模块开发
+Related archives:
+- [120-mcp-server-module](../archives/120-mcp-server-module/) - MCP Server module development
 
-## 🖥️ Node.js 环境开发经验
+## 🖥️ Node.js Environment Development Lessons
 
-### 环境变量加载时机
-**问题**：Node.js 环境变量必须在模块导入前加载，否则模块初始化时读取不到
+### Environment Variable Load Timing
+**Problem**: Node.js environment variables must be loaded before modules are imported, otherwise they can't be read when modules initialize
 ```bash
-# ✅ 正确：使用 -r 参数预加载
+# ✅ Correct: preload using the -r flag
 node -r ./preload-env.js dist/index.js
 
-# ❌ 错误：模块导入后加载环境变量
-node dist/index.js  # 此时环境变量可能未加载
+# ❌ Wrong: loading environment variables after modules are imported
+node dist/index.js  # Environment variables may not be loaded at this point
 ```
 
-**解决方案**：
-1. 创建预加载脚本支持多路径查找
-2. 在启动脚本中统一处理环境变量加载
-3. 支持静默加载，避免找不到配置文件时的错误
+**Solutions**:
+1. Create a preload script that supports multi-path lookup
+2. Handle environment variable loading uniformly in the startup script
+3. Support silent loading to avoid errors when the configuration file is not found
 
-### 构建时副作用控制
-**问题**：构建工具（如 tsup）执行模块级代码时会导致服务器意外启动
+### Controlling Build-Time Side Effects
+**Problem**: When a build tool (such as tsup) executes module-level code, it can cause the server to start unexpectedly
 ```typescript
-// ❌ 错误：入口文件直接执行
+// ❌ Wrong: the entry file executes directly
 import { startServer } from './server'
-startServer() // 构建时会执行
+startServer() // Gets executed at build time
 
-// ✅ 正确：分离导出和执行
+// ✅ Correct: separate exporting from execution
 export { startServer } from './server'
-// 使用单独的启动文件执行主逻辑
+// Use a separate startup file to run the main logic
 ```
 
-### Windows 进程管理
-**问题**：Windows 下 concurrently 等进程管理工具信号处理有问题
+### Windows Process Management
+**Problem**: On Windows, process management tools such as concurrently have signal handling problems
 ```json
-// ❌ 避免：复杂的进程管理
+// ❌ Avoid: complex process management
 "scripts": {
   "dev": "concurrently \"npm run build:watch\" \"npm run start\""
 }
 
-// ✅ 推荐：简单的分离脚本
+// ✅ Recommended: simple separate scripts
 "scripts": {
   "build": "tsup",
   "start": "node dist/index.js",
@@ -424,9 +424,9 @@ export { startServer } from './server'
 }
 ```
 
-## 📝 使用说明
+## 📝 Usage Instructions
 
-1. **查找经验**：先查看已归档的专项经验，再查看通用规范
-2. **应用实践**：根据具体场景选择合适的解决方案
-3. **持续更新**：发现新的通用经验及时补充到本文档
-4. **避免重复**：功能特定的经验应归档到对应的archives目录
+1. **Finding lessons**: First check the archived topic-specific lessons, then the general conventions
+2. **Applying practices**: Choose the appropriate solution for the specific scenario
+3. **Continuous updates**: Add new general lessons to this document as you discover them
+4. **Avoid duplication**: Feature-specific lessons should be archived in the corresponding archives directory

@@ -1,397 +1,397 @@
-# 网络故障错误处理测试
+# Network Failure Error Handling Tests
 
-## 📖 测试概述
-测试应用在各种网络故障情况下的错误处理能力，发现网络异常处理相关的bug。
+## 📖 Test Overview
+Test the application's error handling ability under various network failure situations, and discover bugs related to network anomaly handling.
 
-## 🎯 测试目标
-- 验证网络错误处理机制
-- 测试重试和恢复逻辑
-- 发现用户体验问题
-- 验证错误提示的准确性
+## 🎯 Test Goals
+- Verify the network error handling mechanism
+- Test retry and recovery logic
+- Discover user experience problems
+- Verify the accuracy of error messages
 
-## 🔍 Bug发现重点
-- 网络错误处理不当
-- 用户提示不明确
-- 重试机制失效
-- 状态管理混乱
-- 数据丢失风险
+## 🔍 Bug-Hunting Focus
+- Improper network error handling
+- Unclear user prompts
+- Retry mechanism failure
+- State management confusion
+- Data loss risk
 
 ---
 
-## 🧪 测试场景
+## 🧪 Test Scenarios
 
-### 场景1：API调用超时测试
+### Scenario 1: API Call Timeout Test
 
-**测试目的：** 发现API超时处理的bug
+**Test purpose:** Discover bugs in API timeout handling
 
-**AI执行指导：**
+**AI execution guidance:**
 ```javascript
-// 准备测试数据
-browser_type(element="原始提示词输入框", ref="e54", text="网络超时测试内容");
+// Prepare test data
+browser_type(element="Original prompt input box", ref="e54", text="Network timeout test content");
 
-// 开始优化（可能会超时）
-browser_click(element="开始优化按钮", ref="e78");
+// Start optimization (may time out)
+browser_click(element="Start optimization button", ref="e78");
 
-// 等待较长时间观察超时处理
-browser_wait_for(time=60); // 等待1分钟
+// Wait a long time to observe timeout handling
+browser_wait_for(time=60); // Wait 1 minute
 
-// 检查错误处理
+// Check error handling
 browser_snapshot();
 
-// 测试重试功能
-browser_click(element="开始优化按钮", ref="e78");
+// Test the retry feature
+browser_click(element="Start optimization button", ref="e78");
 browser_wait_for(time=30);
 browser_snapshot();
 ```
 
-**预期发现的问题：**
-- 超时后无错误提示
-- 按钮状态未恢复
-- 加载状态持续显示
-- 重试功能失效
-- 用户无法知道发生了什么
+**Expected problems to discover:**
+- No error message after timeout
+- Button state is not restored
+- The loading state keeps showing
+- The retry feature fails
+- The user cannot tell what happened
 
-**验证点：**
-- [ ] 超时后有明确错误提示
-- [ ] 按钮状态正确恢复
-- [ ] 加载状态正确清除
-- [ ] 提供重试选项
-- [ ] 错误信息用户友好
+**Verification points:**
+- [ ] There is a clear error message after timeout
+- [ ] The button state is restored correctly
+- [ ] The loading state is cleared correctly
+- [ ] A retry option is provided
+- [ ] The error message is user-friendly
 
 ---
 
-### 场景2：网络连接中断测试
+### Scenario 2: Network Connection Interruption Test
 
-**测试目的：** 发现网络中断时的处理问题
+**Test purpose:** Discover handling problems when the network is interrupted
 
-**AI执行指导：**
+**AI execution guidance:**
 ```javascript
-// 开始优化操作
-browser_type(element="原始提示词输入框", ref="e54", text="网络中断测试");
-browser_click(element="开始优化按钮", ref="e78");
+// Start the optimization operation
+browser_type(element="Original prompt input box", ref="e54", text="Network interruption test");
+browser_click(element="Start optimization button", ref="e78");
 
-// 等待请求发送后模拟网络中断
+// Wait for the request to be sent, then simulate a network interruption
 browser_wait_for(time=2);
 
-// 检查网络中断时的状态
+// Check the state during the network interruption
 browser_snapshot();
 
-// 等待网络错误处理
+// Wait for network error handling
 browser_wait_for(time=30);
 browser_snapshot();
 
-// 模拟网络恢复，测试重连
-browser_click(element="开始优化按钮", ref="e78");
+// Simulate network recovery and test reconnection
+browser_click(element="Start optimization button", ref="e78");
 browser_wait_for(time=10);
 browser_snapshot();
 ```
 
-**预期发现的问题：**
-- 网络中断检测延迟
-- 错误提示不准确
-- 自动重连失效
-- 数据状态不一致
-- 用户操作被阻塞
+**Expected problems to discover:**
+- Delayed detection of network interruption
+- Inaccurate error messages
+- Automatic reconnection fails
+- Inconsistent data state
+- User operations are blocked
 
-**验证点：**
-- [ ] 快速检测到网络中断
-- [ ] 错误提示准确明确
-- [ ] 自动重连机制工作
-- [ ] 数据状态保持一致
-- [ ] 用户可以手动重试
+**Verification points:**
+- [ ] The network interruption is detected quickly
+- [ ] The error message is accurate and clear
+- [ ] The automatic reconnection mechanism works
+- [ ] The data state stays consistent
+- [ ] The user can retry manually
 
 ---
 
-### 场景3：API密钥无效测试
+### Scenario 3: Invalid API Key Test
 
-**测试目的：** 发现API认证错误的处理问题
+**Test purpose:** Discover handling problems for API authentication errors
 
-**AI执行指导：**
+**AI execution guidance:**
 ```javascript
-// 先打开模型管理
-browser_click(element="模型管理按钮", ref="e21");
+// First open model management
+browser_click(element="Model Manager button", ref="e21");
 browser_wait_for(time=2);
 
-// 输入无效的API密钥（如果可以修改）
-// 这里需要根据实际界面调整
-browser_type(element="API密钥输入框", ref="api_key_input", text="invalid_api_key_test");
+// Enter an invalid API key (if it can be modified)
+// This needs to be adjusted according to the actual interface
+browser_type(element="API key input box", ref="api_key_input", text="invalid_api_key_test");
 
-// 保存配置
-browser_click(element="保存按钮", ref="save_button");
+// Save the configuration
+browser_click(element="Save button", ref="save_button");
 browser_wait_for(time=2);
 
-// 关闭模型管理
+// Close model management
 browser_press_key("Escape");
 
-// 尝试进行优化
-browser_type(element="原始提示词输入框", ref="e54", text="API密钥无效测试");
-browser_click(element="开始优化按钮", ref="e78");
+// Try to perform optimization
+browser_type(element="Original prompt input box", ref="e54", text="Invalid API key test");
+browser_click(element="Start optimization button", ref="e78");
 
-// 等待错误处理
+// Wait for error handling
 browser_wait_for(time=10);
 browser_snapshot();
 ```
 
-**预期发现的问题：**
-- 认证错误提示不明确
-- 错误处理延迟
-- 用户不知道如何解决
-- 错误状态持续显示
-- 配置入口不明显
+**Expected problems to discover:**
+- Unclear authentication error message
+- Delayed error handling
+- The user does not know how to resolve it
+- The error state keeps showing
+- The configuration entry point is not obvious
 
-**验证点：**
-- [ ] 认证错误提示明确
-- [ ] 快速检测到认证问题
-- [ ] 提供解决方案指导
-- [ ] 错误状态正确清除
-- [ ] 配置入口易于访问
+**Verification points:**
+- [ ] The authentication error message is clear
+- [ ] The authentication problem is detected quickly
+- [ ] Guidance for resolution is provided
+- [ ] The error state is cleared correctly
+- [ ] The configuration entry point is easy to access
 
 ---
 
-### 场景4：服务器错误响应测试
+### Scenario 4: Server Error Response Test
 
-**测试目的：** 发现服务器错误处理的问题
+**Test purpose:** Discover problems in server error handling
 
-**AI执行指导：**
+**AI execution guidance:**
 ```javascript
-// 准备测试数据
-browser_type(element="原始提示词输入框", ref="e54", text="服务器错误测试内容");
+// Prepare test data
+browser_type(element="Original prompt input box", ref="e54", text="Server error test content");
 
-// 开始优化
-browser_click(element="开始优化按钮", ref="e78");
+// Start optimization
+browser_click(element="Start optimization button", ref="e78");
 
-// 等待可能的服务器错误
+// Wait for a possible server error
 browser_wait_for(time=20);
 browser_snapshot();
 
-// 检查错误处理后的状态
+// Check the state after error handling
 browser_wait_for(time=10);
 browser_snapshot();
 
-// 测试错误恢复
-browser_click(element="开始优化按钮", ref="e78");
+// Test error recovery
+browser_click(element="Start optimization button", ref="e78");
 browser_wait_for(time=15);
 browser_snapshot();
 ```
 
-**预期发现的问题：**
-- 服务器错误码处理不当
-- 错误信息技术性太强
-- 重试策略不合理
-- 错误日志记录不足
-- 用户体验差
+**Expected problems to discover:**
+- Improper handling of server error codes
+- Error messages that are too technical
+- Unreasonable retry strategy
+- Insufficient error logging
+- Poor user experience
 
-**验证点：**
-- [ ] 服务器错误正确处理
-- [ ] 错误信息用户友好
-- [ ] 重试策略合理
-- [ ] 错误日志完整
-- [ ] 用户体验良好
+**Verification points:**
+- [ ] Server errors are handled correctly
+- [ ] The error message is user-friendly
+- [ ] The retry strategy is reasonable
+- [ ] The error log is complete
+- [ ] The user experience is good
 
 ---
 
-### 场景5：部分网络故障测试
+### Scenario 5: Partial Network Failure Test
 
-**测试目的：** 发现部分网络功能异常时的处理问题
+**Test purpose:** Discover handling problems when some network features are abnormal
 
-**AI执行指导：**
+**AI execution guidance:**
 ```javascript
-// 测试在网络不稳定情况下的多功能操作
-browser_type(element="原始提示词输入框", ref="e54", text="部分网络故障测试");
+// Test multi-feature operations under an unstable network
+browser_type(element="Original prompt input box", ref="e54", text="Partial network failure test");
 
-// 同时尝试多个网络操作
-browser_click(element="开始优化按钮", ref="e78");
-browser_click(element="历史记录按钮", ref="e18");
-browser_click(element="模板管理按钮", ref="e15");
+// Try multiple network operations at the same time
+browser_click(element="Start optimization button", ref="e78");
+browser_click(element="History button", ref="e18");
+browser_click(element="Template management button", ref="e15");
 
-// 等待各种网络请求的处理
+// Wait for the various network requests to be processed
 browser_wait_for(time=15);
 browser_snapshot();
 
-// 检查各功能的状态
-browser_press_key("Escape"); // 关闭可能的弹窗
+// Check the state of each feature
+browser_press_key("Escape"); // Close possible popups
 browser_press_key("Escape");
 browser_snapshot();
 
-// 测试功能恢复
-browser_click(element="开始优化按钮", ref="e78");
+// Test feature recovery
+browser_click(element="Start optimization button", ref="e78");
 browser_wait_for(time=10);
 browser_snapshot();
 ```
 
-**预期发现的问题：**
-- 部分功能失效影响全局
-- 错误状态传播
-- 功能间相互干扰
-- 恢复机制不完整
-- 状态不一致
+**Expected problems to discover:**
+- A partial feature failure affects everything globally
+- Error state propagation
+- Features interfere with each other
+- The recovery mechanism is incomplete
+- Inconsistent state
 
-**验证点：**
-- [ ] 部分故障不影响其他功能
-- [ ] 错误状态隔离良好
-- [ ] 功能间独立运行
-- [ ] 恢复机制完整
-- [ ] 状态保持一致
+**Verification points:**
+- [ ] A partial failure does not affect other features
+- [ ] Error state is well isolated
+- [ ] Features run independently
+- [ ] The recovery mechanism is complete
+- [ ] State stays consistent
 
 ---
 
-### 场景6：网络慢速连接测试
+### Scenario 6: Slow Network Connection Test
 
-**测试目的：** 发现慢速网络下的用户体验问题
+**Test purpose:** Discover user experience problems on a slow network
 
-**AI执行指导：**
+**AI execution guidance:**
 ```javascript
-// 在慢速网络下测试用户体验
-browser_type(element="原始提示词输入框", ref="e54", text="慢速网络测试内容");
+// Test the user experience on a slow network
+browser_type(element="Original prompt input box", ref="e54", text="Slow network test content");
 
-// 开始优化
-browser_click(element="开始优化按钮", ref="e78");
+// Start optimization
+browser_click(element="Start optimization button", ref="e78");
 
-// 在等待过程中测试用户交互
+// Test user interaction while waiting
 browser_wait_for(time=5);
 
-// 尝试取消操作
+// Try to cancel the operation
 browser_press_key("Escape");
 browser_snapshot();
 
-// 尝试其他操作
-browser_click(element="历史记录按钮", ref="e18");
+// Try other operations
+browser_click(element="History button", ref="e18");
 browser_snapshot();
 
-// 等待原始请求完成
+// Wait for the original request to complete
 browser_wait_for(time=30);
 browser_snapshot();
 ```
 
-**预期发现的问题：**
-- 缺少进度指示
-- 无法取消长时间操作
-- 用户不知道操作状态
-- 界面假死现象
-- 超时设置不合理
+**Expected problems to discover:**
+- Missing progress indication
+- Long-running operations cannot be canceled
+- The user does not know the operation state
+- The interface appears frozen
+- Unreasonable timeout settings
 
-**验证点：**
-- [ ] 有清晰的进度指示
-- [ ] 可以取消长时间操作
-- [ ] 操作状态明确显示
-- [ ] 界面保持响应
-- [ ] 超时设置合理
+**Verification points:**
+- [ ] There is a clear progress indication
+- [ ] Long-running operations can be canceled
+- [ ] The operation state is clearly displayed
+- [ ] The interface stays responsive
+- [ ] The timeout settings are reasonable
 
 ---
 
-### 场景7：网络错误恢复测试
+### Scenario 7: Network Error Recovery Test
 
-**测试目的：** 发现网络错误恢复机制的问题
+**Test purpose:** Discover problems in the network error recovery mechanism
 
-**AI执行指导：**
+**AI execution guidance:**
 ```javascript
-// 模拟网络错误后的恢复流程
-browser_type(element="原始提示词输入框", ref="e54", text="网络恢复测试");
+// Simulate the recovery flow after a network error
+browser_type(element="Original prompt input box", ref="e54", text="Network recovery test");
 
-// 第一次尝试（可能失败）
-browser_click(element="开始优化按钮", ref="e78");
+// First attempt (may fail)
+browser_click(element="Start optimization button", ref="e78");
 browser_wait_for(time=10);
 browser_snapshot();
 
-// 等待错误处理
+// Wait for error handling
 browser_wait_for(time=5);
 
-// 第二次尝试（测试重试）
-browser_click(element="开始优化按钮", ref="e78");
+// Second attempt (test retry)
+browser_click(element="Start optimization button", ref="e78");
 browser_wait_for(time=10);
 browser_snapshot();
 
-// 第三次尝试（测试持续恢复）
-browser_click(element="开始优化按钮", ref="e78");
+// Third attempt (test continuous recovery)
+browser_click(element="Start optimization button", ref="e78");
 browser_wait_for(time=15);
 browser_snapshot();
 
-// 检查最终状态
+// Check the final state
 browser_wait_for(time=5);
 browser_snapshot();
 ```
 
-**预期发现的问题：**
-- 重试次数限制不合理
-- 恢复策略不智能
-- 错误状态残留
-- 用户指导不足
-- 数据一致性问题
+**Expected problems to discover:**
+- Unreasonable retry count limit
+- The recovery strategy is not smart
+- Residual error state
+- Insufficient user guidance
+- Data consistency problems
 
-**验证点：**
-- [ ] 重试次数合理
-- [ ] 恢复策略智能
-- [ ] 错误状态正确清除
-- [ ] 用户指导充分
-- [ ] 数据保持一致
-
----
-
-## 🐛 网络错误Bug模式
-
-### 错误检测Bug
-- 网络错误检测延迟
-- 错误类型识别不准确
-- 错误状态判断错误
-- 超时设置不合理
-
-### 错误处理Bug
-- 错误信息不明确
-- 错误恢复机制缺失
-- 重试策略不当
-- 用户指导不足
-
-### 状态管理Bug
-- 错误状态残留
-- 状态更新不及时
-- 状态不一致
-- 状态传播错误
-
-### 用户体验Bug
-- 缺少进度指示
-- 无法取消操作
-- 错误提示技术性强
-- 恢复路径不明确
+**Verification points:**
+- [ ] The retry count is reasonable
+- [ ] The recovery strategy is smart
+- [ ] The error state is cleared correctly
+- [ ] User guidance is sufficient
+- [ ] Data stays consistent
 
 ---
 
-## 📊 网络错误测试报告模板
+## 🐛 Network Error Bug Patterns
+
+### Error Detection Bugs
+- Delayed network error detection
+- Inaccurate error type identification
+- Wrong error state judgment
+- Unreasonable timeout settings
+
+### Error Handling Bugs
+- Unclear error messages
+- Missing error recovery mechanism
+- Improper retry strategy
+- Insufficient user guidance
+
+### State Management Bugs
+- Residual error state
+- Untimely state updates
+- Inconsistent state
+- Wrong state propagation
+
+### User Experience Bugs
+- Missing progress indication
+- Operations cannot be canceled
+- Error messages that are too technical
+- Unclear recovery path
+
+---
+
+## 📊 Network Error Test Report Template
 
 ```markdown
-# 网络错误处理Bug报告
+# Network Error Handling Bug Report
 
-## Bug信息
-- **发现时间：** [时间]
-- **网络场景：** [具体网络故障类型]
-- **严重程度：** 高/中/低
-- **Bug类型：** 错误检测/错误处理/状态管理/用户体验
+## Bug Information
+- **Discovery time:** [Time]
+- **Network scenario:** [Specific type of network failure]
+- **Severity:** High/Medium/Low
+- **Bug type:** Error detection/Error handling/State management/User experience
 
-## 网络故障描述
-[详细描述网络故障的类型和条件]
+## Network Failure Description
+[Detailed description of the type and conditions of the network failure]
 
-## 复现步骤
-1. [模拟网络故障]
-2. [执行操作]
-3. [观察错误处理]
+## Reproduction Steps
+1. [Simulate the network failure]
+2. [Perform the operation]
+3. [Observe the error handling]
 
-## 预期行为
-[网络错误应该如何正确处理]
+## Expected Behavior
+[How the network error should be handled correctly]
 
-## 实际行为
-[实际的错误处理表现]
+## Actual Behavior
+[The actual error handling behavior]
 
-## 用户影响
-- **操作中断：** [是否影响用户操作]
-- **数据丢失：** [是否有数据丢失风险]
-- **体验影响：** [对用户体验的影响]
+## User Impact
+- **Operation interruption:** [Whether user operations are affected]
+- **Data loss:** [Whether there is a risk of data loss]
+- **Experience impact:** [Impact on user experience]
 
-## 改进建议
-- **错误检测：** [检测机制改进]
-- **错误处理：** [处理逻辑改进]
-- **用户提示：** [提示信息改进]
-- **恢复机制：** [恢复策略改进]
+## Improvement Suggestions
+- **Error detection:** [Improvement of the detection mechanism]
+- **Error handling:** [Improvement of the handling logic]
+- **User prompts:** [Improvement of the prompt messages]
+- **Recovery mechanism:** [Improvement of the recovery strategy]
 ```
 
 ---
 
-**注意：** 网络故障测试需要在受控环境中进行，可能需要网络模拟工具来创建各种故障场景。
+**Note:** Network failure tests need to be conducted in a controlled environment, and may require network simulation tools to create various failure scenarios.

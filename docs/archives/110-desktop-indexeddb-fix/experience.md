@@ -1,21 +1,21 @@
-# "Desktop IndexedDB修复"任务经验总结
+# "Desktop IndexedDB Fix" Task: Lessons Learned
 
-## 核心经验
+## Core Lessons
 
-### 架构设计
-- **强制明确性优于便利性**: 本次任务的核心是删除了`createDefault()`这类便利方法。这强制开发者在创建服务时必须明确指定存储类型，从而避免了在Electron等不适宜的环境下意外创建IndexedDB。这是一个重要的架构原则，可以防止隐蔽的、由环境带来的副作用。
-- **避免模块级副作用**: 我们发现，在`factory.ts`等模块的顶层作用域创建实例（如存储提供者）是一个巨大的隐患。模块在被导入时不应该执行任何具有副作用的实质性操作。所有实例化都应通过明确的函数调用和依赖注入来完成。
+### Architecture Design
+- **Enforced explicitness over convenience**: The core of this task was deleting convenience methods such as `createDefault()`. This forces developers to specify the storage type explicitly when creating a service, which prevents IndexedDB from being created accidentally in environments such as Electron where it does not belong. This is an important architectural principle that guards against hidden, environment-induced side effects.
+- **Avoid module-level side effects**: We found that creating instances (such as storage providers) in the top-level scope of modules like `factory.ts` is a major hazard. A module should not perform any substantive side-effecting work when it is imported. All instantiation should happen through explicit function calls and dependency injection.
 
-### 调试与排查
-- **警惕历史遗留数据**: 这是一个关键教训。即使代码已经修复，残留在浏览器中的IndexedDB数据也可能导致应用行为异常，从而掩盖修复的真实效果。在处理与持久化数据相关的问题时，必须将"清理历史数据"作为验证步骤的一部分。
-- **避免过度修复**: 在排查问题的初期，我们曾在代码中添加了一些复杂的环境检查和警告逻辑。虽然初衷是好的，但这增加了代码的复杂度。最终，通过更根本的架构修复（删除`createDefault`），这些复杂的逻辑变得多余。这提醒我们，在修复后要及时审视并清理过程中添加的临时代码或过度防御性代码。
+### Debugging and Troubleshooting
+- **Beware of legacy data**: This is a key lesson. Even after the code is fixed, IndexedDB data left in the browser can cause abnormal app behavior and mask the real effect of the fix. When dealing with problems related to persisted data, "clean up historical data" must be part of the verification steps.
+- **Avoid over-fixing**: Early in the investigation we added some complex environment checks and warning logic to the code. The intent was good, but it increased code complexity. Once the more fundamental architectural fix (deleting `createDefault`) was in place, that logic became redundant. This is a reminder to review and clean up temporary or overly defensive code added during troubleshooting once the fix is done.
 
-## 具体避坑指南
+## Specific Pitfall Guide
 
-- **问题**: 在Electron渲染进程中不应出现IndexedDB。
-- **后果**: 违反了桌面端的核心架构（数据应由主进程统一管理），可能导致数据不一致和意外的磁盘I/O。
-- **正确做法**: 渲染进程应完全通过IPC代理与主进程通信来操作数据，不应直接创建任何存储实例。所有存储相关的逻辑都应被封装在主进程中。
+- **Problem**: IndexedDB should not appear in the Electron renderer process.
+- **Consequence**: It violates the core desktop architecture (data should be managed centrally by the main process) and can cause data inconsistency and unexpected disk I/O.
+- **Correct approach**: The renderer process should operate on data entirely by communicating with the main process through IPC proxies, and should not create any storage instance directly. All storage-related logic should be encapsulated in the main process.
 
-- **问题**: 便利的工厂方法（如`createDefault()`）可能隐藏环境依赖。
-- **后果**: 导致模块在不同环境下行为不一致，增加了调试难度。
-- **正确做法**: 移除此类隐式创建实例的方法。强制使用依赖注入，让所有依赖关系都变得明确、可控和易于测试。 
+- **Problem**: Convenient factory methods (such as `createDefault()`) can hide environment dependencies.
+- **Consequence**: Modules behave inconsistently across environments, making debugging harder.
+- **Correct approach**: Remove methods that create instances implicitly. Enforce dependency injection so that all dependencies are explicit, controllable, and easy to test.

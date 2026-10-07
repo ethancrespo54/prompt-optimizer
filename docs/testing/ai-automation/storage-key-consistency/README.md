@@ -1,67 +1,67 @@
-# 存储键一致性测试
+# Storage Key Consistency Tests
 
-## 📋 测试目的
+## 📋 Test Purpose
 
-验证应用中所有存储键的使用都遵循统一的常量定义，避免魔法值导致的数据导出不完整、键名不一致等问题。
+Verify that all storage key usage in the application follows the unified constant definitions, avoiding problems such as incomplete data export and inconsistent key names caused by magic values.
 
-## 🎯 测试背景
+## 🎯 Test Background
 
-在修复用户设置导出不完整问题时，发现了多个存储键一致性问题：
+While fixing the incomplete user settings export problem, several storage key consistency problems were found:
 
-### 发现的问题
-1. **主题设置键名不匹配** - ThemeToggleUI.vue使用 `'theme-id'` 而不是 `'app:settings:ui:theme-id'`
-2. **内置模板语言键名不匹配** - TemplateLanguageService使用 `'builtin-template-language'` 而不是 `'app:settings:ui:builtin-template-language'`
-3. **核心服务使用魔法值** - ModelManager、TemplateManager、HistoryManager直接使用字符串字面量
+### Problems Found
+1. **Theme setting key name mismatch** - ThemeToggleUI.vue used `'theme-id'` instead of `'app:settings:ui:theme-id'`
+2. **Built-in template language key name mismatch** - TemplateLanguageService used `'builtin-template-language'` instead of `'app:settings:ui:builtin-template-language'`
+3. **Core services used magic values** - ModelManager, TemplateManager, and HistoryManager used string literals directly
 
-### 修复措施
-1. 创建统一的存储键常量文件
-2. 更新所有组件和服务使用常量
-3. 建立AI自动化测试确保一致性
+### Fixes
+1. Create a unified storage key constants file
+2. Update all components and services to use the constants
+3. Establish AI automated tests to ensure consistency
 
-## 🧪 测试场景
+## 🧪 Test Scenarios
 
-### 场景1：数据导出完整性验证
-**测试目的：** 验证所有用户设置都能正确导出
+### Scenario 1: Data Export Completeness Verification
+**Test purpose:** Verify that all user settings can be exported correctly
 
-**AI执行指导：**
+**AI execution guidance:**
 ```javascript
-// 1. 设置各种用户偏好
-browser_click(element="主题切换按钮", ref="theme-toggle");
+// 1. Set various user preferences
+browser_click(element="Theme toggle button", ref="theme-toggle");
 browser_wait_for(time=1);
 
-browser_click(element="语言切换按钮", ref="language-toggle");
+browser_click(element="Language toggle button", ref="language-toggle");
 browser_wait_for(time=1);
 
-browser_click(element="内置模板语言切换按钮", ref="builtin-lang-toggle");
+browser_click(element="Built-in template language toggle button", ref="builtin-lang-toggle");
 browser_wait_for(time=1);
 
-// 2. 选择不同的模型
-browser_click(element="模型管理按钮", ref="model-manager");
+// 2. Select different models
+browser_click(element="Model Manager button", ref="model-manager");
 browser_wait_for(time=2);
-// 选择优化模型和测试模型
+// Select the optimization model and the test model
 browser_press_key("Escape");
 
-// 3. 导出数据
-browser_click(element="数据管理按钮", ref="data-manager");
+// 3. Export data
+browser_click(element="Data management button", ref="data-manager");
 browser_wait_for(time=1);
-browser_click(element="导出数据按钮", ref="export-button");
+browser_click(element="Export data button", ref="export-button");
 browser_wait_for(time=3);
 ```
 
-**验证点：**
-- [ ] 导出的JSON包含所有8个用户设置项
-- [ ] 主题设置正确导出 (`app:settings:ui:theme-id`)
-- [ ] 语言设置正确导出 (`app:settings:ui:preferred-language`)
-- [ ] 内置模板语言设置正确导出 (`app:settings:ui:builtin-template-language`)
-- [ ] 模型选择设置正确导出
-- [ ] 模板选择设置正确导出
+**Verification points:**
+- [ ] The exported JSON contains all 8 user setting items
+- [ ] The theme setting is exported correctly (`app:settings:ui:theme-id`)
+- [ ] The language setting is exported correctly (`app:settings:ui:preferred-language`)
+- [ ] The built-in template language setting is exported correctly (`app:settings:ui:builtin-template-language`)
+- [ ] The model selection settings are exported correctly
+- [ ] The template selection settings are exported correctly
 
-### 场景2：数据导入兼容性验证
-**测试目的：** 验证旧版本数据格式的向后兼容性
+### Scenario 2: Data Import Compatibility Verification
+**Test purpose:** Verify backward compatibility with the old version data format
 
-**AI执行指导：**
+**AI execution guidance:**
 ```javascript
-// 1. 准备旧格式测试数据
+// 1. Prepare old-format test data
 const legacyData = {
   "version": 1,
   "data": {
@@ -74,71 +74,71 @@ const legacyData = {
   }
 };
 
-// 2. 导入测试数据
-browser_click(element="数据管理按钮", ref="data-manager");
+// 2. Import the test data
+browser_click(element="Data management button", ref="data-manager");
 browser_wait_for(time=1);
-// 上传测试文件
-browser_click(element="导入数据按钮", ref="import-button");
+// Upload the test file
+browser_click(element="Import data button", ref="import-button");
 browser_wait_for(time=2);
 
-// 3. 验证导入后的设置
+// 3. Verify the settings after import
 browser_snapshot();
 ```
 
-**验证点：**
-- [ ] 旧版本键名能正确转换为新版本键名
-- [ ] 导入后设置生效（主题、语言等）
-- [ ] 控制台显示键名转换信息
-- [ ] 重新导出数据使用新的键名格式
+**Verification points:**
+- [ ] Old version key names are correctly converted to new version key names
+- [ ] The settings take effect after import (theme, language, etc.)
+- [ ] The console shows key name conversion information
+- [ ] Re-exported data uses the new key name format
 
-### 场景3：存储键常量使用验证
-**测试目的：** 通过代码检查验证所有存储操作都使用常量
+### Scenario 3: Storage Key Constant Usage Verification
+**Test purpose:** Verify through code inspection that all storage operations use constants
 
-**AI执行指导：**
+**AI execution guidance:**
 ```javascript
-// 这是一个代码审查测试，需要检查源代码
-// 1. 检查UI组件是否使用常量
-// 2. 检查核心服务是否使用常量
-// 3. 检查测试文件是否使用常量
+// This is a code review test that requires inspecting the source code
+// 1. Check whether UI components use constants
+// 2. Check whether core services use constants
+// 3. Check whether test files use constants
 ```
 
-**验证点：**
-- [ ] ThemeToggleUI.vue使用 `UI_SETTINGS_KEYS.THEME_ID`
-- [ ] LanguageSwitch.vue使用 `UI_SETTINGS_KEYS.PREFERRED_LANGUAGE`
-- [ ] TemplateLanguageService使用正确的完整键名
-- [ ] ModelManager使用 `CORE_SERVICE_KEYS.MODELS`
-- [ ] TemplateManager使用 `CORE_SERVICE_KEYS.USER_TEMPLATES`
-- [ ] HistoryManager使用 `CORE_SERVICE_KEYS.PROMPT_HISTORY`
+**Verification points:**
+- [ ] ThemeToggleUI.vue uses `UI_SETTINGS_KEYS.THEME_ID`
+- [ ] LanguageSwitch.vue uses `UI_SETTINGS_KEYS.PREFERRED_LANGUAGE`
+- [ ] TemplateLanguageService uses the correct full key name
+- [ ] ModelManager uses `CORE_SERVICE_KEYS.MODELS`
+- [ ] TemplateManager uses `CORE_SERVICE_KEYS.USER_TEMPLATES`
+- [ ] HistoryManager uses `CORE_SERVICE_KEYS.PROMPT_HISTORY`
 
-## 📊 测试结果记录
+## 📊 Test Result Record
 
-### 测试执行记录
-- **执行时间：** [待填写]
-- **测试环境：** [Web/Desktop]
-- **执行结果：** [通过/失败]
+### Test Execution Record
+- **Execution time:** [To be filled in]
+- **Test environment:** [Web/Desktop]
+- **Execution result:** [Pass/Fail]
 
-### 发现的问题
-1. [问题描述]
-2. [问题描述]
+### Problems Found
+1. [Problem description]
+2. [Problem description]
 
-### 修复建议
-1. [修复建议]
-2. [修复建议]
+### Fix Suggestions
+1. [Fix suggestion]
+2. [Fix suggestion]
 
-## 🔄 持续监控
+## 🔄 Continuous Monitoring
 
-### 自动化检查点
-1. **构建时检查** - 确保所有存储键都使用常量定义
-2. **测试覆盖** - 验证存储键常量的完整性
-3. **代码审查** - 禁止直接使用字符串字面量作为存储键
+### Automated Checkpoints
+1. **Build-time check** - Ensure all storage keys use constant definitions
+2. **Test coverage** - Verify the completeness of the storage key constants
+3. **Code review** - Prohibit using string literals directly as storage keys
 
-### 预防措施
-1. **ESLint规则** - 检测魔法字符串的使用
-2. **TypeScript类型** - 强制使用存储键类型
-3. **文档更新** - 维护存储键使用指南
+### Preventive Measures
+1. **ESLint rules** - Detect the use of magic strings
+2. **TypeScript types** - Enforce the use of storage key types
+3. **Documentation updates** - Maintain the storage key usage guide
 
-## 📝 相关文档
+## 📝 Related Documents
 
-- [存储键常量定义](../../../../packages/ui/src/constants/storage-keys.ts)
-- [核心服务存储键](../../../../packages/core/src/constants/storage-keys.ts)
-- [数据管理器实现](../../../../packages/core/src/services/data/manager.ts)
+- [Storage key constant definitions](../../../../packages/ui/src/constants/storage-keys.ts)
+- [Core service storage keys](../../../../packages/core/src/constants/storage-keys.ts)
+- [Data manager implementation](../../../../packages/core/src/services/data/manager.ts)

@@ -1,169 +1,169 @@
-# MCP Server 模块开发经验总结
+# MCP Server Module Development Lessons Learned
 
-## 🎯 核心经验
+## 🎯 Core Lessons
 
-### 零侵入性设计原则
-在开发 MCP Server 模块时，我们采用了零侵入性设计原则，完全不修改 Core 模块代码，通过适配层实现功能集成。这种设计方式带来了以下好处：
+### Zero-intrusion Design Principle
+When developing the MCP Server module, we adopted a zero-intrusion design principle: no Core module code is modified at all, and functionality is integrated through an adapter layer. This design brings the following benefits:
 
-1. **保持架构清洁**：避免了对核心模块的修改，保持了代码的纯净性
-2. **降低维护成本**：核心模块的更新不会影响到 MCP Server 模块
-3. **提高可测试性**：可以独立测试 MCP Server 模块和 Core 模块
+1. **Keeps the architecture clean**: avoids modifying the core module and keeps its code pure
+2. **Lowers maintenance cost**: updates to the core module do not affect the MCP Server module
+3. **Improves testability**: the MCP Server module and the Core module can be tested independently
 
-**实现要点**：
-- **绝对不修改 Core 模块代码**：所有适配都在 MCP server 层完成
-- **使用现有接口**：严格按照 Core 模块的现有 API 进行调用
-- **完整服务初始化**：必须初始化所有 Core 服务依赖
+**Implementation points**:
+- **Never modify Core module code**: all adaptation is done in the MCP server layer
+- **Use existing interfaces**: call strictly according to the Core module's existing API
+- **Complete service initialization**: all Core service dependencies must be initialized
 
-### Core 模块服务化架构匹配
-Core 模块的服务化架构与 MCP 协议高度匹配，这为零侵入性设计提供了良好的基础：
-- 所有核心功能都通过服务接口暴露
-- 服务间依赖关系清晰，便于适配层管理
-- 参数和返回值格式规范，便于协议转换
+### The Core Module's Service Architecture Matches Well
+The Core module's service-oriented architecture closely matches the MCP protocol, which provides a good foundation for the zero-intrusion design:
+- All core functionality is exposed through service interfaces
+- Dependencies between services are clear, making them easy for the adapter layer to manage
+- Parameter and return value formats are well specified, making protocol conversion easy
 
-### 分层架构设计
-采用分层架构设计，将 MCP 协议层、传输层和服务适配层分离，使得各层职责清晰，便于维护和扩展。
+### Layered Architecture Design
+Using a layered architecture that separates the MCP protocol layer, the transport layer and the service adapter layer gives each layer clear responsibilities and makes maintenance and extension easy.
 
-## 🛠️ 技术实现经验
+## 🛠️ Technical Implementation Lessons
 
-### 环境变量加载时机问题
-在 Node.js 应用中，环境变量的加载时机非常重要。我们遇到的问题是 Core 模块在导入时就初始化了配置，而此时环境变量还未加载。
+### Environment Variable Loading Timing Problem
+In Node.js applications, the timing of environment variable loading is very important. The problem we ran into was that the Core module initializes its configuration when it is imported, at which point the environment variables have not been loaded yet.
 
-**问题现象**：
-- Node.js 环境变量必须在模块导入前加载，否则模块初始化时读取不到
-- Core 模块在导入时就会读取环境变量进行配置初始化
+**Symptoms**:
+- Node.js environment variables must be loaded before modules are imported, otherwise they cannot be read during module initialization
+- The Core module reads environment variables to initialize its configuration as soon as it is imported
 
-**解决方案**：
-1. 使用 Node.js 的 `-r` 参数在模块系统初始化前预加载环境变量
-2. 创建预加载脚本（preload-env.js）支持多路径查找，适应不同部署场景
-3. 统一配置在项目根目录，便于管理
-4. 支持静默加载，避免找不到配置文件时的错误
+**Solution**:
+1. Use Node.js's `-r` flag to preload environment variables before the module system initializes
+2. Create a preload script (preload-env.js) that supports multi-path lookup to suit different deployment scenarios
+3. Keep configuration in the project root directory for easier management
+4. Support silent loading to avoid errors when the configuration file cannot be found
 
-**实现细节**：
+**Implementation details**:
 ```bash
 node -r ./preload-env.js dist/index.js
 ```
 
-### 构建时副作用控制
-在使用 tsup 构建工具时，需要注意入口文件的副作用问题。
+### Build-time Side Effect Control
+When using the tsup build tool, pay attention to side effects in the entry file.
 
-**问题现象**：
-- 构建工具（如 tsup）执行模块级代码时会导致服务器意外启动
-- 构建过程中占用端口，影响开发体验
+**Symptoms**:
+- Build tools (such as tsup) executing module-level code cause the server to start unexpectedly
+- The port is occupied during the build, hurting the development experience
 
-**最佳实践**：
-1. 入口文件只导出，不执行任何有副作用的代码
-2. 使用单独的启动文件负责执行主逻辑
-3. 避免在模块顶层调用有副作用的函数
-4. 分离构建入口和启动入口
+**Best practices**:
+1. The entry file only exports and does not execute any code with side effects
+2. Use a separate startup file to run the main logic
+3. Avoid calling functions with side effects at module top level
+4. Separate the build entry from the startup entry
 
-### Windows 进程管理兼容性
-在 Windows 环境下开发时，需要注意进程管理的特殊问题。
+### Windows Process Management Compatibility
+When developing on Windows, pay attention to process management quirks.
 
-**问题现象**：
-- Windows 下 concurrently 等进程管理工具信号处理有问题
-- Ctrl+C 无法正确终止子进程
-- 复杂的进程管理导致开发体验差
+**Symptoms**:
+- Process management tools such as concurrently have signal handling problems on Windows
+- Ctrl+C cannot terminate child processes correctly
+- Complex process management leads to a poor development experience
 
-**解决方案**：
-1. 避免使用复杂的进程管理工具如 concurrently
-2. 分离构建和启动流程，使用简单的 npm scripts
-3. 使用简单的 npm scripts 替代复杂的命令组合
-4. 在 Windows 环境下优先考虑简单的解决方案
+**Solution**:
+1. Avoid complex process management tools such as concurrently
+2. Separate the build and startup flows and use simple npm scripts
+3. Use simple npm scripts instead of complex command combinations
+4. Prefer simple solutions on Windows
 
-### MCP 协议调试技巧
-在开发 MCP Server 时，调试是一个重要环节。
+### MCP Protocol Debugging Tips
+Debugging is an important part of developing an MCP Server.
 
-**调试工具**：
-1. **MCP Inspector**：使用官方调试工具进行协议级别测试
-2. **分层测试策略**：先测试 Core 服务再测试 MCP 包装，快速定位问题
-3. **日志驱动调试**：详细记录每个环节状态，快速定位问题
+**Debugging tools**:
+1. **MCP Inspector**: use the official debugging tool for protocol-level testing
+2. **Layered testing strategy**: test the Core services first and then the MCP wrapper, to locate problems quickly
+3. **Log-driven debugging**: log the state of every step in detail to locate problems quickly
 
-**测试方法**：
-- 使用自定义 MCP Inspector 测试工具验证功能
-- 中英文输入测试确保国际化支持
-- 自定义参数测试验证参数适配正确性
+**Testing methods**:
+- Use a custom MCP Inspector test tool to verify functionality
+- Test with Chinese and English input to ensure internationalization support
+- Test with custom parameters to verify that parameter adaptation is correct
 
-## 🚫 避坑指南
+## 🚫 Pitfall Guide
 
-### 环境变量加载时机陷阱
-**问题**：环境变量在模块导入后才加载，导致配置无法正确初始化
-**原因**：Node.js 模块系统在导入时就会执行模块代码，此时环境变量可能还未加载
-**解决方案**：使用 Node.js 的 `-r` 参数预加载环境变量脚本
-**避免方法**：在项目启动脚本中统一处理环境变量加载
+### Environment Variable Loading Timing Trap
+**Problem**: Environment variables are loaded after the modules are imported, so configuration cannot be initialized correctly
+**Cause**: The Node.js module system executes module code at import time, when environment variables may not be loaded yet
+**Solution**: Use Node.js's `-r` flag to preload the environment variable script
+**How to avoid**: Handle environment variable loading uniformly in the project startup script
 
-### 构建时副作用陷阱
-**问题**：构建过程中意外执行了服务器启动代码，占用端口
-**原因**：构建工具会执行模块级代码来分析依赖关系
-**解决方案**：分离构建入口和启动入口，确保构建过程无副作用
-**避免方法**：入口文件只做导出，不执行任何有副作用的操作
+### Build-time Side Effect Trap
+**Problem**: Server startup code was unexpectedly executed during the build, occupying the port
+**Cause**: Build tools execute module-level code to analyze dependencies
+**Solution**: Separate the build entry from the startup entry to make sure the build has no side effects
+**How to avoid**: The entry file only exports and performs no operations with side effects
 
-### Windows 信号处理陷阱
-**问题**：在 Windows 下使用 concurrently 等工具时信号处理有问题，无法正确终止进程
-**原因**：Windows 的信号处理机制与 Unix 系统不同
-**解决方案**：避免使用复杂的进程管理工具，采用简单的 npm scripts
-**避免方法**：在 Windows 环境下优先选择简单的解决方案
+### Windows Signal Handling Trap
+**Problem**: Tools such as concurrently have signal handling problems on Windows and cannot terminate processes correctly
+**Cause**: Windows' signal handling mechanism differs from Unix systems
+**Solution**: Avoid complex process management tools and use simple npm scripts
+**How to avoid**: Prefer simple solutions on Windows
 
-### 存储层环境差异陷阱
-**问题**：不同环境下存储层配置不一致
-**原因**：浏览器环境和 Node.js 环境的存储机制不同
-**解决方案**：使用 StorageFactory 适配不同环境，配置时选择正确的 Provider
-**避免方法**：在项目初期就明确存储策略，避免后期大规模修改
+### Storage Layer Environment Difference Trap
+**Problem**: Storage layer configuration is inconsistent across environments
+**Cause**: The storage mechanisms of the browser and Node.js environments differ
+**Solution**: Use StorageFactory to adapt to different environments and choose the correct Provider when configuring
+**How to avoid**: Settle the storage strategy early in the project to avoid large-scale changes later
 
-## 🔄 架构设计经验
+## 🔄 Architecture Design Lessons
 
-### 适配器模式的深度应用
-在 MCP Server 模块中，我们大量使用了适配器模式，将 MCP 协议的接口转换为 Core 模块的接口。这种设计模式的优势包括：
+### Deep Application of the Adapter Pattern
+In the MCP Server module we used the adapter pattern extensively to convert the MCP protocol's interfaces into the Core module's interfaces. The advantages of this design pattern include:
 
-1. **解耦**：MCP 协议层和 Core 服务层完全解耦
-2. **可扩展性**：可以轻松添加新的适配器支持更多功能
-3. **可维护性**：每个适配器职责单一，便于维护
+1. **Decoupling**: the MCP protocol layer is completely decoupled from the Core service layer
+2. **Extensibility**: new adapters can easily be added to support more functionality
+3. **Maintainability**: each adapter has a single responsibility, which makes maintenance easy
 
-**实现复杂度考虑**：
-- **服务管理**：需要管理完整的 Core 服务栈
-- **参数转换**：MCP 简单参数 → Core 复杂参数格式
-- **配置管理**：默认模型、模板的配置和验证
-- **错误处理**：Core 错误 → MCP 协议错误的转换
+**Implementation complexity considerations**:
+- **Service management**: the complete Core service stack must be managed
+- **Parameter conversion**: simple MCP parameters → complex Core parameter formats
+- **Configuration management**: configuration and validation of default models and templates
+- **Error handling**: converting Core errors → MCP protocol errors
 
-### 无状态设计的价值
-MCP Server 采用了无状态设计，使用内存存储，无持久化，每次重启都是全新状态。这种设计的优势：
+### The Value of a Stateless Design
+The MCP Server uses a stateless design with in-memory storage and no persistence, so every restart starts from a fresh state. The advantages of this design:
 
-1. **简化部署**：无需考虑数据持久化和状态管理
-2. **提高可靠性**：避免了状态不一致的问题
-3. **便于测试**：每次测试都是全新的环境
-4. **专业工具定位**：符合工具类应用的使用模式
+1. **Simplified deployment**: no need to consider data persistence and state management
+2. **Improved reliability**: avoids state inconsistency problems
+3. **Easy to test**: every test runs in a fresh environment
+4. **Fits its positioning as a professional tool**: matches the usage pattern of tool-type applications
 
-### 独立模块设计原则
-保持依赖关系清洁，避免循环依赖：
-- 只依赖 Core 模块，避免 UI 层污染
-- 按功能分层组织，便于维护和扩展
-- 统一错误转换层，提供一致的用户体验
+### Independent Module Design Principle
+Keep dependencies clean and avoid circular dependencies:
+- Depend only on the Core module and avoid UI layer pollution
+- Organize layers by function for easy maintenance and extension
+- A unified error conversion layer provides a consistent user experience
 
-## 📚 学习资源与工具配置
+## 📚 Learning Resources and Tool Configuration
 
-### 有用文档
-- **MCP 官方文档**：https://modelcontextprotocol.io - 协议规范和最佳实践
-- **MCP TypeScript SDK**：https://github.com/modelcontextprotocol/typescript-sdk - 完整的 API 文档和示例
+### Useful Documentation
+- **MCP official documentation**: https://modelcontextprotocol.io - protocol specification and best practices
+- **MCP TypeScript SDK**: https://github.com/modelcontextprotocol/typescript-sdk - complete API documentation and examples
 
-### 开发工具配置
-- **MCP TypeScript SDK**：使用 registerTool/registerResource 方法，支持 Zod 验证
-- **tsup 构建工具**：配置 ESM/CJS 双格式输出，与 Core 模块保持一致
-- **环境变量预加载**：创建 preload-env.js 脚本，支持多路径查找和静默加载
+### Development Tool Configuration
+- **MCP TypeScript SDK**: uses the registerTool/registerResource methods and supports Zod validation
+- **tsup build tool**: configured for ESM/CJS dual-format output, consistent with the Core module
+- **Environment variable preloading**: create the preload-env.js script, supporting multi-path lookup and silent loading
 
-### 代码实现模式
-- **MCP Tools 实现模式**：使用 registerTool + Zod 验证
-- **存储层适配**：StorageFactory.create('memory') - 内存存储配置
-- **参数适配模式**：MCP 简单参数 → Core 复杂参数的转换
+### Code Implementation Patterns
+- **MCP Tools implementation pattern**: use registerTool + Zod validation
+- **Storage layer adaptation**: StorageFactory.create('memory') - in-memory storage configuration
+- **Parameter adaptation pattern**: converting simple MCP parameters → complex Core parameters
 
-## 🎯 关键决策记录
+## 🎯 Key Decision Records
 
-### 技术选型决策
-- **MCP SDK**：选择官方 TypeScript SDK，原因：类型安全、完整功能支持
-- **存储方案**：选择 MemoryStorageProvider，原因：适合工具类应用，无持久化需求
-- **传输方式**：支持 stdio + HTTP 双模式，原因：灵活部署，满足不同使用场景
-- **验证库**：选择 Zod，原因：项目已使用，与 MCP SDK 完美匹配
+### Technology Selection Decisions
+- **MCP SDK**: chose the official TypeScript SDK, because of type safety and complete feature support
+- **Storage solution**: chose MemoryStorageProvider, because it suits tool-type applications with no persistence requirement
+- **Transport**: supports both stdio + HTTP, for flexible deployment that meets different usage scenarios
+- **Validation library**: chose Zod, because the project already uses it and it matches the MCP SDK perfectly
 
-### 架构决策
-- **依赖关系**：只依赖 Core 模块，原因：保持架构清洁，避免 UI 层污染
-- **模块结构**：按功能分层组织，原因：便于维护和扩展
-- **错误处理**：统一错误转换层，原因：提供一致的用户体验
-- **零侵入性原则**：完全不修改 Core 代码，原因：保持核心模块纯净性
+### Architecture Decisions
+- **Dependencies**: depend only on the Core module, to keep the architecture clean and avoid UI layer pollution
+- **Module structure**: organized by functional layers, for easy maintenance and extension
+- **Error handling**: a unified error conversion layer, to provide a consistent user experience
+- **Zero-intrusion principle**: do not modify any Core code, to keep the core module pure

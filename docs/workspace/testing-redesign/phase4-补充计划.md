@@ -1,32 +1,32 @@
-# Phase 4 测试用例补充计划
+# Phase 4 Supplementary Test Case Plan
 
-## 当前状态
+## Current Status
 
-**已完成** (2026-01-09):
-- ✅ VCR 基础设施（录制/回放）
-- ✅ UI 错误检测门禁（Vitest + Playwright）
-- ✅ 基础冒烟测试（6 个集成测试 + 3 个 Store 单元测试 + 1 个 E2E 冒烟）
-- ✅ 门禁验证通过（257 个测试，执行时间 < 1 分钟）
+**Completed** (2026-01-09):
+- ✅ VCR infrastructure (record/replay)
+- ✅ UI error detection gate (Vitest + Playwright)
+- ✅ Basic smoke tests (6 integration tests + 3 Store unit tests + 1 E2E smoke test)
+- ✅ Gate verification passed (257 tests, execution time < 1 minute)
 
-**待补充**:
-- ⏳ 完整工作流测试（端到端场景）
-- ⏳ LLM 服务集成测试（多提供商、流式响应）
-- ⏳ Session Store 集成测试（模式切换、并发保护）
-- ⏳ 图像生成+历史收藏测试
+**To be added**:
+- ⏳ Complete workflow tests (end-to-end scenarios)
+- ⏳ LLM service integration tests (multi-provider, streaming responses)
+- ⏳ Session Store integration tests (mode switching, concurrency protection)
+- ⏳ Image generation + history/favorites tests
 
 ---
 
-## 优先级分析
+## Priority Analysis
 
-### 🔴 P0 - 高优先级（核心功能，必须补充）
+### 🔴 P0 - High Priority (core features, must be added)
 
-#### 1. LLM 服务集成测试
-**重要性**: ⭐⭐⭐⭐⭐
-- **原因**: LLM 是核心依赖，直接影响所有优化和测试功能
-- **风险**: 多提供商切换、流式响应异常、错误重试失败
-- **已有基础**: VCR 系统已完成，可快速录制 fixtures
+#### 1. LLM Service Integration Tests
+**Importance**: ⭐⭐⭐⭐⭐
+- **Reason**: The LLM is a core dependency and directly affects all optimization and testing features
+- **Risks**: Multi-provider switching, streaming response anomalies, retry failures
+- **Existing foundation**: The VCR system is done, so fixtures can be recorded quickly
 
-**测试用例**:
+**Test cases**:
 ```typescript
 // packages/core/tests/integration/llm-service.spec.ts
 describe('LLM Service Integration', () => {
@@ -56,28 +56,28 @@ describe('LLM Service Integration', () => {
 })
 ```
 
-**预估时间**: 2-3 天
+**Estimated time**: 2-3 days
 
 ---
 
-#### 2. Basic-System/User 完整工作流测试
-**重要性**: ⭐⭐⭐⭐⭐
-- **原因**: Basic 模式是最常用功能，需要端到端验证
-- **风险**: 优化结果丢失、测试结果不同步、迭代逻辑错误
-- **已有基础**: 冒烟测试已通过，需扩展为完整场景
+#### 2. Basic-System/User Complete Workflow Tests
+**Importance**: ⭐⭐⭐⭐⭐
+- **Reason**: Basic mode is the most commonly used feature and needs end-to-end verification
+- **Risks**: Lost optimization results, out-of-sync test results, iteration logic errors
+- **Existing foundation**: Smoke tests have passed and need to be extended into complete scenarios
 
-**测试用例**:
+**Test cases**:
 ```typescript
 // packages/ui/tests/integration/basic-complete-workflow.spec.ts
 describe('Basic-System Complete Workflow', () => {
   test('End-to-end: optimize → test → iterate', async () => {
-    // 1. 输入 prompt
-    // 2. 点击优化，等待 LLM 响应
-    // 3. 验证优化结果显示
-    // 4. 测试原始和优化后的 prompt
-    // 5. 验证测试结果对比
-    // 6. 迭代优化
-    // 7. 验证迭代历史记录
+    // 1. Enter a prompt
+    // 2. Click optimize and wait for the LLM response
+    // 3. Verify the optimization result is displayed
+    // 4. Test the original and optimized prompts
+    // 5. Verify the test result comparison
+    // 6. Iterate on the optimization
+    // 7. Verify the iteration history records
   })
 
   test('State persistence after page reload', async () => {})
@@ -90,19 +90,19 @@ describe('Basic-User Complete Workflow', () => {
 })
 ```
 
-**预估时间**: 2-3 天
+**Estimated time**: 2-3 days
 
 ---
 
-### 🟡 P1 - 中优先级（增强测试覆盖）
+### 🟡 P1 - Medium Priority (enhance test coverage)
 
-#### 3. Session Store 集成测试
-**重要性**: ⭐⭐⭐⭐
-- **原因**: Store 是状态管理核心，模式切换时易出错
-- **风险**: 跨模式状态污染、持久化数据丢失
-- **已有基础**: 3 个 Store 单元测试已完成
+#### 3. Session Store Integration Tests
+**Importance**: ⭐⭐⭐⭐
+- **Reason**: The Store is the core of state management and is error-prone during mode switching
+- **Risks**: Cross-mode state contamination, loss of persisted data
+- **Existing foundation**: 3 Store unit tests are done
 
-**测试用例**:
+**Test cases**:
 ```typescript
 // packages/ui/tests/integration/session-store-switching.spec.ts
 describe('Session Store Mode Switching', () => {
@@ -119,17 +119,17 @@ describe('Session Store Persistence', () => {
 })
 ```
 
-**预估时间**: 1-2 天
+**Estimated time**: 1-2 days
 
 ---
 
-#### 4. Context 模式完整工作流
-**重要性**: ⭐⭐⭐⭐
-- **原因**: Context 模式涉及多轮对话和变量管理，复杂度高
-- **风险**: 变量替换错误、对话历史丢失、链映射错误
-- **已有基础**: 4 个冒烟测试已通过
+#### 4. Context Mode Complete Workflow
+**Importance**: ⭐⭐⭐⭐
+- **Reason**: Context mode involves multi-turn conversation and variable management, so its complexity is high
+- **Risks**: Variable replacement errors, lost conversation history, chain mapping errors
+- **Existing foundation**: 4 smoke tests have passed
 
-**测试用例**:
+**Test cases**:
 ```typescript
 // packages/ui/tests/integration/context-complete-workflow.spec.ts
 describe('Context-System Multi-turn Conversation', () => {
@@ -145,19 +145,19 @@ describe('Context-User Variable Management', () => {
 })
 ```
 
-**预估时间**: 2-3 天
+**Estimated time**: 2-3 days
 
 ---
 
-### 🟢 P2 - 低优先级（可选增强）
+### 🟢 P2 - Low Priority (optional enhancements)
 
-#### 5. 图像生成+历史收藏
-**重要性**: ⭐⭐⭐
-- **原因**: 图像功能相对独立，现有冒烟测试已覆盖核心逻辑
-- **风险**: ImageStorage 大文件处理、IndexedDB 限制
-- **已有基础**: Image 生成逻辑冒烟测试已完成
+#### 5. Image Generation + History/Favorites
+**Importance**: ⭐⭐⭐
+- **Reason**: The image features are relatively independent, and the existing smoke tests already cover the core logic
+- **Risks**: ImageStorage large-file handling, IndexedDB limits
+- **Existing foundation**: Image generation logic smoke tests are done
 
-**测试用例**:
+**Test cases**:
 ```typescript
 // packages/core/tests/unit/services/image-storage.spec.ts
 describe('ImageStorageService', () => {
@@ -174,91 +174,91 @@ describe('Image History & Favorites', () => {
 })
 ```
 
-**预估时间**: 2-3 天
+**Estimated time**: 2-3 days
 
 ---
 
-## 补充策略
+## Supplementation Strategy
 
-### 🎯 渐进式补充（推荐）
+### 🎯 Incremental Supplementation (Recommended)
 
-**Week 1** (高优先级):
-- Day 1-3: LLM 服务集成测试（P0）
-- Day 4-6: Basic 完整工作流测试（P0）
+**Week 1** (high priority):
+- Day 1-3: LLM service integration tests (P0)
+- Day 4-6: Basic complete workflow tests (P0)
 
-**Week 2** (中优先级):
-- Day 7-8: Session Store 集成测试（P1）
-- Day 9-11: Context 完整工作流测试（P1）
+**Week 2** (medium priority):
+- Day 7-8: Session Store integration tests (P1)
+- Day 9-11: Context complete workflow tests (P1)
 
-**Week 3+** (可选):
-- Day 12-14: 图像生成+历史收藏测试（P2）
-- 后续: 持续优化和增强
+**Week 3+** (optional):
+- Day 12-14: Image generation + history/favorites tests (P2)
+- Afterwards: continuous optimization and enhancement
 
-### ⚡ 快速补充（最小可行）
+### ⚡ Quick Supplementation (Minimum Viable)
 
-仅补充 P0 高优先级测试：
-- LLM 服务集成测试（2-3 天）
-- Basic 完整工作流测试（2-3 天）
+Only add the P0 high-priority tests:
+- LLM service integration tests (2-3 days)
+- Basic complete workflow tests (2-3 days)
 
-**理由**:
-- 当前 257 个测试已覆盖核心冒烟场景
-- P0 测试补充后，核心功能测试覆盖率可达 80%+
-- P1/P2 测试可按需渐进补充
+**Reasons**:
+- The current 257 tests already cover the core smoke scenarios
+- After the P0 tests are added, core feature test coverage can reach 80%+
+- P1/P2 tests can be added incrementally as needed
 
 ---
 
-## 执行建议
+## Execution Recommendations
 
-### ✅ 立即行动
+### ✅ Immediate Actions
 
-1. **先提交当前进度**
+1. **Commit the current progress first**
    ```bash
-   git commit -m "test: 建立测试基础设施（VCR + 错误门禁 + 冒烟测试）"
+   git commit -m "test: establish test infrastructure (VCR + error gate + smoke tests)"
    ```
 
-2. **创建 Phase 4 补充分支**
+2. **Create the Phase 4 supplementary branch**
    ```bash
    git checkout -b feat/phase4-test-coverage
    ```
 
-3. **按优先级逐个实现测试**
-   - 每完成一个测试套件，立即提交
-   - 保持门禁测试始终通过
+3. **Implement tests one by one by priority**
+   - Commit immediately after finishing each test suite
+   - Keep the gate tests passing at all times
 
-### 🚫 避免过度工程
+### 🚫 Avoid Over-Engineering
 
-- ❌ 不要追求 100% 覆盖率
-- ❌ 不要为边缘场景写过多测试
-- ✅ 专注于 P0 核心功能和高风险场景
-- ✅ 利用 VCR 减少真实 API 调用成本
-
----
-
-## 成功标准
-
-**最小可行标准** (MVP):
-- ✅ LLM 服务集成测试完成（多提供商 + 流式响应）
-- ✅ Basic 完整工作流测试完成（优化 + 测试 + 迭代）
-- ✅ 所有测试通过门禁
-- ✅ 无 flaky tests
-
-**理想标准** (Ideal):
-- ✅ MVP 标准
-- ✅ Session Store 集成测试完成
-- ✅ Context 完整工作流测试完成
-- ✅ 代码覆盖率 > 75%
+- ❌ Do not chase 100% coverage
+- ❌ Do not write too many tests for edge scenarios
+- ✅ Focus on P0 core features and high-risk scenarios
+- ✅ Use VCR to reduce the cost of real API calls
 
 ---
 
-## 下一步行动
+## Success Criteria
 
-1. ✅ **已完成**: 提交所有测试基础设施文件
-2. ✅ **已完成**: 验证门禁测试通过
-3. ⏳ **进行中**: 创建 Phase 4 补充计划（本文档）
-4. 🔜 **待执行**: 实现 LLM 服务集成测试（P0）
-5. 🔜 **待执行**: 实现 Basic 完整工作流测试（P0）
+**Minimum viable criteria** (MVP):
+- ✅ LLM service integration tests complete (multi-provider + streaming responses)
+- ✅ Basic complete workflow tests complete (optimize + test + iterate)
+- ✅ All tests pass the gate
+- ✅ No flaky tests
+
+**Ideal criteria** (Ideal):
+- ✅ MVP criteria
+- ✅ Session Store integration tests complete
+- ✅ Context complete workflow tests complete
+- ✅ Code coverage > 75%
 
 ---
 
-**最后更新**: 2026-01-09
-**状态**: 补充计划已完成，待用户确认优先级
+## Next Actions
+
+1. ✅ **Done**: Commit all test infrastructure files
+2. ✅ **Done**: Verify the gate tests pass
+3. ⏳ **In progress**: Create the Phase 4 supplementary plan (this document)
+4. 🔜 **To do**: Implement the LLM service integration tests (P0)
+5. 🔜 **To do**: Implement the Basic complete workflow tests (P0)
+
+---
+
+**Last updated**: 2026-01-09
+**Status**: Supplementary plan complete, awaiting user confirmation of priorities

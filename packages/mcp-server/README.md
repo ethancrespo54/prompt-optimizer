@@ -1,168 +1,168 @@
-# 提示词优化器 MCP 服务器
+# Prompt Optimizer MCP Server
 
-为提示词优化器项目提供的 MCP (Model Context Protocol) 服务器。提供提示词优化工具，支持通过 HTTP 协议连接，可被任何 MCP 兼容客户端使用。
+An MCP (Model Context Protocol) server for the Prompt Optimizer project. It provides prompt optimization tools, supports connections over the HTTP protocol, and can be used by any MCP-compatible client.
 
-> **用户部署和使用指南**：请查看 [MCP 服务器用户指南](../../docs/user/mcp-server.md)
+> **User deployment and usage guide**: See the [MCP Server User Guide](../../docs/user/mcp-server.md)
 
-## 功能特性
+## Features
 
-- **optimize-user-prompt**: 优化用户提示词以提升 LLM 性能
-- **optimize-system-prompt**: 优化系统提示词以提升 LLM 性能
-- **iterate-prompt**: 基于特定需求迭代改进成熟的提示词
+- **optimize-user-prompt**: Optimize user prompts to improve LLM performance
+- **optimize-system-prompt**: Optimize system prompts to improve LLM performance
+- **iterate-prompt**: Iteratively improve a mature prompt based on specific requirements
 
-## 快速开始
+## Quick Start
 
-### 开发模式（推荐）
+### Development Mode (Recommended)
 
 ```bash
-# 安装依赖
+# Install dependencies
 pnpm install
 
-# 开发模式：自动监听文件变化，自动重新编译和重启服务器
+# Development mode: automatically watches file changes, recompiles, and restarts the server
 pnpm dev
 ```
 
-服务器将在 `http://localhost:3000/mcp` 启动，修改代码后自动重启。
+The server starts at `http://localhost:3000/mcp` and restarts automatically after code changes.
 
-### 生产模式
+### Production Mode
 
 ```bash
-# 1. 构建项目
+# 1. Build the project
 pnpm build
 
-# 2. 启动服务器
+# 2. Start the server
 pnpm start
 ```
 
-服务器将在 `http://localhost:3000/mcp` 启动。
+The server starts at `http://localhost:3000/mcp`.
 
-### 根目录快捷命令
+### Root Directory Shortcut Commands
 
-如果你在项目根目录，可以使用以下快捷命令：
+If you are in the project root directory, you can use the following shortcut commands:
 
 ```bash
-# 开发模式
+# Development mode
 pnpm mcp:dev
 
-# 构建项目
+# Build the project
 pnpm mcp:build
 
-# 启动服务器（默认已启用 debug 日志）
+# Start the server (debug logging is enabled by default)
 pnpm mcp:start
 
-# 如需调整日志级别
+# To adjust the log level
 MCP_LOG_LEVEL=info pnpm mcp:start
 
-# 运行测试
+# Run tests
 pnpm mcp:test
 ```
 
-## 开发配置
+## Development Configuration
 
-### 环境变量
+### Environment Variables
 
-开发时需要在项目根目录配置 `.env.local` 文件。详细的配置说明请参考 [用户指南](../../docs/user/mcp-server.md#环境变量配置)。
+For development you need to configure a `.env.local` file in the project root directory. For detailed configuration instructions, see the [User Guide](../../docs/user/mcp-server.md#environment-variable-configuration).
 
-开发环境最小配置示例：
+Minimal development environment configuration example:
 ```bash
-# 至少配置一个 API 密钥
+# Configure at least one API key
 VITE_OPENAI_API_KEY=your-openai-key
 MCP_DEFAULT_MODEL_PROVIDER=openai
 MCP_LOG_LEVEL=debug
 ```
 
-## 日志配置
+## Logging Configuration
 
-MCP 服务器默认启用 `debug` 级别日志，可通过 `MCP_LOG_LEVEL` 环境变量调整：
+The MCP server enables `debug` level logging by default. You can adjust it with the `MCP_LOG_LEVEL` environment variable:
 
 ```bash
-# 默认 debug 级别（显示所有日志）
+# Default debug level (shows all logs)
 pnpm start
 
-# 调整为 info 级别
+# Switch to info level
 MCP_LOG_LEVEL=info pnpm start
 
-# 调整为 warn 级别
+# Switch to warn level
 MCP_LOG_LEVEL=warn pnpm start
 
-# 调整为 error 级别
+# Switch to error level
 MCP_LOG_LEVEL=error pnpm start
 ```
 
-### 日志级别说明
+### Log Level Reference
 
-- `debug` - 调试信息（默认，开发时使用）
-- `info` - 一般信息（服务启动、配置等）
-- `warn` - 警告信息（非致命问题）
-- `error` - 错误信息（需要关注的问题）
+- `debug` - Debug information (default, used during development)
+- `info` - General information (service startup, configuration, etc.)
+- `warn` - Warning messages (non-fatal issues)
+- `error` - Error messages (issues that need attention)
 
 
 
-## 开发
+## Development
 
 ```bash
-# 开发模式（自动监听文件变化，自动重启服务器）
+# Development mode (automatically watches file changes and restarts the server)
 pnpm dev
 
-# 运行测试
+# Run tests
 pnpm test
 
-# 类型检查
+# Type check
 pnpm type-check
 
-# 代码检查
+# Lint
 pnpm lint
 ```
 
-## 测试与调试
+## Testing and Debugging
 
-### 使用 MCP Inspector 测试
+### Testing with MCP Inspector
 
-MCP Inspector 是官方提供的可视化测试工具，支持通过 Web UI 测试 MCP 服务器。
+MCP Inspector is the official visual testing tool and supports testing MCP servers through a Web UI.
 
-#### 使用 MCP Inspector 测试
+#### Testing with MCP Inspector
 
 ```bash
-# 1. 启动 MCP 服务器
+# 1. Start the MCP server
 pnpm start
 
-# 2. 在另一个终端启动 Inspector
+# 2. Start the Inspector in another terminal
 npx @modelcontextprotocol/inspector
 ```
 
-然后在 Inspector Web UI 中：
-1. 选择传输方式：`Streamable HTTP`
-2. 服务器 URL：`http://localhost:3000/mcp`
-3. 点击 "Connect" 连接服务器
-4. 测试可用的工具：`optimize-user-prompt`、`optimize-system-prompt`、`iterate-prompt`
+Then in the Inspector Web UI:
+1. Select the transport: `Streamable HTTP`
+2. Server URL: `http://localhost:3000/mcp`
+3. Click "Connect" to connect to the server
+4. Test the available tools: `optimize-user-prompt`, `optimize-system-prompt`, `iterate-prompt`
 
-#### 其他测试方法
+#### Other Testing Methods
 
-**重要提示**：MCP 协议不是简单的 REST API，不能直接用 curl 测试。
+**Important**: The MCP protocol is not a simple REST API and cannot be tested directly with curl.
 
-**推荐的测试方式**：
-1. **MCP Inspector**（官方工具）- 最佳选择
-2. **Claude Desktop** - 实际使用场景
-3. **自定义 MCP 客户端** - 使用 `@modelcontextprotocol/sdk`
+**Recommended testing methods**:
+1. **MCP Inspector** (official tool) - the best choice
+2. **Claude Desktop** - real-world usage scenario
+3. **Custom MCP client** - using `@modelcontextprotocol/sdk`
 
-**为什么不能用 curl**：
-- MCP 使用 JSON-RPC 2.0 协议
-- 需要特殊的握手和初始化过程
-- HTTP 传输使用流式连接，不是简单的请求-响应
+**Why curl cannot be used**:
+- MCP uses the JSON-RPC 2.0 protocol
+- It requires a special handshake and initialization process
+- HTTP transport uses a streaming connection, not a simple request-response
 
-## 📚 相关文档
+## 📚 Related Documentation
 
-- [MCP 服务器用户指南](../../docs/user/mcp-server.md) - 用户部署和使用指南
-- [MCP 服务器开发经验](../../docs/archives/120-mcp-server-module/experience.md) - 开发经验和最佳实践
-- [项目主页](../../README.md) - 项目概述和快速开始
+- [MCP Server User Guide](../../docs/user/mcp-server.md) - User deployment and usage guide
+- [MCP Server Development Experience](../../docs/archives/120-mcp-server-module/experience.md) - Development experience and best practices
+- [Project Home](../../README.md) - Project overview and quick start
 
-## 架构设计
+## Architecture
 
-此 MCP 服务器遵循零侵入设计原则：
-- 仅使用现有 Core 模块 API，无需修改
-- 采用内存存储实现无状态操作
-- 提供 MCP 和 Core 格式之间的参数适配
+This MCP server follows a zero-intrusion design principle:
+- Uses only the existing Core module APIs, with no modifications required
+- Uses in-memory storage for stateless operation
+- Provides parameter adaptation between MCP and Core formats
 
-## 许可证
+## License
 
 GNU Affero General Public License v3.0 (AGPL-3.0-only)

@@ -1,22 +1,22 @@
 # LLM API Fixtures
 
-此目录包含用于测试的预录制 LLM API 响应。
+This directory contains pre-recorded LLM API responses used for testing.
 
-## 目录结构
+## Directory Structure
 
 ```
 fixtures/
-├── llm/                     # LLM 服务响应
+├── llm/                     # LLM service responses
 │   ├── openai/             # OpenAI API fixtures
 │   ├── gemini/             # Gemini API fixtures
 │   └── deepseek/           # DeepSeek API fixtures
-├── prompt/                 # 提示词优化服务 fixtures
-└── image/                  # 图像生成服务 fixtures
+├── prompt/                 # Prompt optimization service fixtures
+└── image/                  # Image generation service fixtures
 ```
 
-## Fixture 格式
+## Fixture Format
 
-每个 fixture 文件都是 JSON 格式，包含：
+Each fixture file is in JSON format and contains:
 
 ```json
 {
@@ -29,11 +29,11 @@ fixtures/
   "response": {
     "type": "streaming",
     "chunks": [
-      { "content": "尊敬的", "timestamp": 0 },
-      { "content": "张经理", "timestamp": 50 }
+      { "content": "Dear", "timestamp": 0 },
+      { "content": " Manager Zhang", "timestamp": 50 }
     ],
     "finalResult": {
-      "content": "尊敬的张经理：...",
+      "content": "Dear Manager Zhang: ...",
       "usage": { "prompt_tokens": 10, "completion_tokens": 50 }
     }
   },
@@ -45,84 +45,84 @@ fixtures/
 }
 ```
 
-## 录制新 Fixtures
+## Recording New Fixtures
 
-### 方法 1: 自动录制（推荐）
+### Method 1: Automatic recording (recommended)
 
 ```bash
-# VCR 会自动检测缺失的 fixtures
-# 如果 fixture 不存在，自动调用真实 API 并保存
+# VCR automatically detects missing fixtures
+# If a fixture does not exist, it automatically calls the real API and saves the result
 pnpm test
 ```
 
-### 方法 2: 强制重新录制
+### Method 2: Force re-recording
 
 ```bash
-# 重新录制所有 fixtures
+# Re-record all fixtures
 VCR_MODE=record pnpm test
 
-# 重新录制特定测试
+# Re-record a specific test
 VCR_MODE=record pnpm test -- prompt-optimization
 ```
 
-### 方法 3: 禁用 VCR（始终使用真实 API）
+### Method 3: Disable VCR (always use the real API)
 
 ```bash
-# 警告：这会产生 API 费用
+# Warning: this will incur API costs
 VCR_MODE=off pnpm test
-# 或
+# or
 ENABLE_REAL_LLM=true pnpm test
 ```
 
-## 更新现有 Fixtures
+## Updating Existing Fixtures
 
-如果 API 响应格式发生变化，可以更新单个 fixture：
+If the API response format changes, you can update a single fixture:
 
 ```bash
-# 删除旧 fixture
+# Delete the old fixture
 rm packages/core/tests/fixtures/llm/openai/optimize-basic-system.json
 
-# 重新运行测试（自动录制）
+# Re-run the test (records automatically)
 pnpm test
 ```
 
-## 版本控制
+## Version Control
 
-✅ **应该提交**:
-- 生产环境的典型响应
-- 边界情况和错误场景
-- 不同模型的参数差异
+✅ **Should be committed**:
+- Typical responses from production
+- Edge cases and error scenarios
+- Parameter differences between models
 
-❌ **不应该提交**:
-- 敏感数据（API keys, 用户个人信息）
-- 临时调试 fixtures
-- 超过 10MB 的大型 fixtures
+❌ **Should not be committed**:
+- Sensitive data (API keys, users' personal information)
+- Temporary debugging fixtures
+- Large fixtures over 10MB
 
-## 最佳实践
+## Best Practices
 
-1. **使用真实数据**: Fixtures 应该基于真实 API 响应，而非手编
-2. **版本化管理**: 重大 API 变更时创建新版本目录（v2/, v3/）
-3. **定期审查**: 每季度检查 fixtures 是否仍然匹配当前 API
-4. **文档化**: 在文件名或注释中说明场景用途
+1. **Use real data**: Fixtures should be based on real API responses, not handwritten
+2. **Versioned management**: Create a new version directory (v2/, v3/) for major API changes
+3. **Review regularly**: Check every quarter that the fixtures still match the current API
+4. **Document**: Describe the scenario's purpose in the file name or in comments
 
-## 故障排查
+## Troubleshooting
 
-### Fixture 未生效
+### Fixture Not Taking Effect
 
-检查：
-1. 文件路径是否正确（scenarioName 匹配）
-2. JSON 格式是否有效
-3. VCR_MODE 是否为 'replay' 或 'auto'
+Check:
+1. Whether the file path is correct (scenarioName matches)
+2. Whether the JSON format is valid
+3. Whether VCR_MODE is 'replay' or 'auto'
 
-### 需要真实 API
+### Real API Needed
 
-设置环境变量：
+Set the environment variables:
 ```bash
 export VITE_OPENAI_API_KEY=sk-...
 export VITE_DEEPSEEK_API_KEY=sk-...
 ```
 
-然后运行：
+Then run:
 ```bash
 VCR_MODE=record pnpm test
 ```
