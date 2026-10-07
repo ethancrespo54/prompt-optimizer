@@ -1,120 +1,120 @@
-# Chrome扩展上架指南
+# Chrome Extension Publishing Guide
 
-本文档提供了将提示词优化器发布到Chrome网上应用商店的详细步骤。
+This document provides detailed steps for publishing Prompt Optimizer to the Chrome Web Store.
 
-## 准备工作
+## Preparation
 
-### 1. 开发者账号注册
+### 1. Developer Account Registration
 
-在上传扩展前，需要先注册Chrome网上应用商店开发者账号：
+Before uploading an extension, you need to register a Chrome Web Store developer account:
 
-1. 访问 [Chrome网上应用商店开发者控制台](https://chrome.google.com/webstore/devconsole)
-2. 使用Google账号登录
-3. 支付一次性的$5.00 USD开发者注册费
-4. 完成开发者资料设置
+1. Go to the [Chrome Web Store Developer Dashboard](https://chrome.google.com/webstore/devconsole)
+2. Sign in with a Google account
+3. Pay the one-time $5.00 USD developer registration fee
+4. Complete the developer profile setup
 
-### 2. 准备插件包
+### 2. Prepare the Extension Package
 
-1. 确保已完成构建：
+1. Make sure the build is complete:
    ```bash
    pnpm build:ext
    ```
 
-2. 打包扩展：
-   - 找到构建后的扩展目录（通常在`packages/extension/dist`）
-   - 将整个目录打包为ZIP文件
-   - 确保ZIP文件结构根目录直接包含manifest.json
+2. Package the extension:
+   - Find the built extension directory (usually in `packages/extension/dist`)
+   - Package the entire directory as a ZIP file
+   - Make sure the root of the ZIP file directly contains manifest.json
 
-### 3. 准备上架材料
+### 3. Prepare the Listing Materials
 
-根据`chrome.md`文件中列出的清单，确保准备好所有所需材料：
+According to the checklist in the `chrome.md` file, make sure all required materials are ready:
 
-- 所有尺寸的图标
-- 至少1张截图（1280x800或640x400像素）
-- 宣传图片（可选，1400x560像素）
-- 详细描述文本
-- 隐私政策页面
+- Icons in all sizes
+- At least 1 screenshot (1280x800 or 640x400 pixels)
+- Promotional image (optional, 1400x560 pixels)
+- Detailed description text
+- Privacy policy page
 
-## 上传流程
+## Upload Process
 
-1. 访问 [Chrome网上应用商店开发者控制台](https://chrome.google.com/webstore/devconsole)
-2. 点击"添加新项目"按钮
-3. 上传ZIP格式的扩展包
-4. 填写商品详情页信息：
-   - 语言：选择中文和英文
-   - 商品详情：复制`chrome.md`中的详细描述
-   - 类别：选择"生产力工具"和"写作工具"
-   - 上传图标、截图和宣传图片
-   - 填写隐私政策链接（可使用GitHub Pages或Vercel托管的隐私政策页面）
-5. 提交审核前，检查所有内容是否完整
+1. Go to the [Chrome Web Store Developer Dashboard](https://chrome.google.com/webstore/devconsole)
+2. Click the "Add new item" button
+3. Upload the extension package in ZIP format
+4. Fill in the store listing details:
+   - Language: Select English
+   - Description: Copy the detailed description from `chrome.md`
+   - Category: Select "Productivity" and "Writing Tools"
+   - Upload the icons, screenshots, and promotional images
+   - Fill in the privacy policy link (you can use a privacy policy page hosted on GitHub Pages or Vercel)
+5. Before submitting for review, check that everything is complete
 
-## 审核流程
+## Review Process
 
-Chrome网上应用商店的审核通常需要几天到两周时间，请耐心等待。
+The Chrome Web Store review usually takes from a few days to two weeks, so please be patient.
 
-### 常见审核问题及解决方案
+### Common Review Issues and Solutions
 
-1. **权限问题**：
-   - 确保manifest.json中只请求必要的权限
-   - 在描述中明确说明每个权限的用途
+1. **Permission issues**:
+   - Make sure manifest.json only requests the necessary permissions
+   - Clearly explain the purpose of each permission in the description
 
-2. **隐私政策问题**：
-   - 确保隐私政策完整详尽
-   - 明确说明如何处理用户数据
+2. **Privacy policy issues**:
+   - Make sure the privacy policy is complete and thorough
+   - Clearly explain how user data is handled
 
-3. **功能描述问题**：
-   - 确保描述准确，不夸大功能
-   - 所有截图需真实反映插件功能
+3. **Feature description issues**:
+   - Make sure the description is accurate and does not exaggerate features
+   - All screenshots must truthfully reflect the extension's features
 
-4. **安全问题**：
-   - 确保不存在恶意代码
-   - 避免使用不安全的API
+4. **Security issues**:
+   - Make sure there is no malicious code
+   - Avoid using insecure APIs
 
-## 发布后维护
+## Post-Publication Maintenance
 
-### 版本更新
+### Version Updates
 
-1. 增加manifest.json中的版本号
-2. 重新构建插件
-3. 打包新版本
-4. 在开发者控制台上传新版本
-5. 填写更新说明
-6. 提交审核
+1. Increase the version number in manifest.json
+2. Rebuild the extension
+3. Package the new version
+4. Upload the new version in the developer dashboard
+5. Fill in the release notes
+6. Submit for review
 
-### 用户反馈处理
+### Handling User Feedback
 
-1. 定期检查用户评价和反馈
-2. 及时回复用户问题
-3. 根据反馈改进插件功能
-4. 更新常见问题解答
+1. Regularly check user reviews and feedback
+2. Reply to user questions promptly
+3. Improve the extension based on feedback
+4. Update the FAQ
 
-## 宣传策略
+## Promotion Strategy
 
-1. **社交媒体宣传**：
-   - 在技术社区分享（如掘金、知乎、V2EX等）
-   - 制作简短演示视频
-   - 编写使用教程和案例
+1. **Social media promotion**:
+   - Share in tech communities (such as Juejin, Zhihu, V2EX, etc.)
+   - Create a short demo video
+   - Write usage tutorials and case studies
 
-2. **SEO优化**：
-   - 优化Chrome商店描述关键词
-   - 创建专门的落地页
-   - 编写相关博客文章
+2. **SEO optimization**:
+   - Optimize the keywords in the Chrome Web Store description
+   - Create a dedicated landing page
+   - Write related blog posts
 
-3. **用户激励**：
-   - 鼓励满意用户评价
-   - 提供反馈奖励机制
-   - 建立用户社区
+3. **User incentives**:
+   - Encourage satisfied users to leave reviews
+   - Provide a feedback reward mechanism
+   - Build a user community
 
-## 财务管理
+## Financial Management
 
-1. 设置Google商家账户（如适用）
-2. 设置税务信息
-3. 设置付款方式
-4. 了解应用内购买政策（如适用）
+1. Set up a Google merchant account (if applicable)
+2. Set up tax information
+3. Set up payment methods
+4. Learn about the in-app purchase policy (if applicable)
 
-## 资源链接
+## Resource Links
 
-- [Chrome开发者文档](https://developer.chrome.com/docs/webstore/)
-- [Chrome商店政策](https://developer.chrome.com/docs/webstore/program-policies/)
-- [Chrome扩展最佳实践](https://developer.chrome.com/docs/extensions/mv3/best_practices/)
-- [Google商家支持](https://support.google.com/chrome_webstore/) 
+- [Chrome Developer Documentation](https://developer.chrome.com/docs/webstore/)
+- [Chrome Web Store Policies](https://developer.chrome.com/docs/webstore/program-policies/)
+- [Chrome Extension Best Practices](https://developer.chrome.com/docs/extensions/mv3/best_practices/)
+- [Google Merchant Support](https://support.google.com/chrome_webstore/)

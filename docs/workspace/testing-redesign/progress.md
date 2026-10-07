@@ -116,7 +116,7 @@
 - ✅ All test infrastructure files are under version control
 - ✅ All gate tests pass, with execution time far below the target (< 10 minutes)
 - ✅ Zero flaky tests, good test stability
-- ✅ Created the Phase 4 supplementary plan document: `phase4-补充计划.md`
+- ✅ Created the Phase 4 supplementary plan document: `phase4-supplementary-plan.md`
 
 ---
 
@@ -131,7 +131,7 @@
 - [x] Create the detailed supplementary plan document
 
 **Output**:
-- `docs/workspace/testing-redesign/phase4-补充计划.md` - Detailed supplementary plan
+- `docs/workspace/testing-redesign/phase4-supplementary-plan.md` - Detailed supplementary plan
 
 **Priority breakdown**:
 - 🔴 P0 (high): LLM service integration tests, complete Basic workflow tests
