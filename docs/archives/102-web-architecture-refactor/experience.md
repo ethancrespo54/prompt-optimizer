@@ -1,101 +1,101 @@
-# Web架构重构经验总结
+# Web Architecture Refactor: Lessons Learned
 
-## 📋 概述
+## 📋 Overview
 
-Web架构重构过程中积累的核心经验，包括Vue Composable架构设计、响应式系统优化和依赖注入最佳实践。
+Core lessons accumulated during the web architecture refactor, including Vue Composable architecture design, reactivity system optimization, and dependency injection best practices.
 
-## 🎯 Vue Composable 架构重构：解决异步初始化问题
+## 🎯 Vue Composable Architecture Refactor: Solving the Async Initialization Problem
 
-### 问题背景
-在异步回调中调用Vue Composable函数会导致错误：`Uncaught (in promise) SyntaxError: Must be called at the top of a 'setup' function`。这违反了Vue Composition API的核心规则，需要重构架构。
+### Background
+Calling Vue Composable functions inside asynchronous callbacks causes the error: `Uncaught (in promise) SyntaxError: Must be called at the top of a 'setup' function`. This violates a core rule of the Vue Composition API and required an architectural refactor.
 
-### 核心解决方案：顶层声明，响应式连接，内部自治
+### Core solution: declare at the top level, connect reactively, stay autonomous internally
 ```typescript
-// ❌ 错误：在异步回调中调用Composable
+// ❌ Wrong: calling a Composable in an async callback
 onMounted(async () => {
   const services = await initServices();
-  const modelManager = useModelManager(); // 错误：不在setup顶层调用
+  const modelManager = useModelManager(); // Wrong: not called at the top level of setup
 });
 
-// ✅ 正确：顶层声明，响应式连接
-const { services } = useAppInitializer(); // 在顶层调用
-const modelManager = useModelManager(services); // 在顶层调用，传入services引用
+// ✅ Correct: declare at the top level, connect reactively
+const { services } = useAppInitializer(); // Called at the top level
+const modelManager = useModelManager(services); // Called at the top level, passing the services reference
 
-// 内部实现：响应式连接
+// Internal implementation: reactive connection
 export function useModelManager(services: Ref<AppServices | null>) {
-  // 状态定义...
+  // State definitions...
   
-  // 响应式连接：监听服务就绪
+  // Reactive connection: watch for services to become ready
   watch(services, (newServices) => {
     if (!newServices) return;
-    // 使用已就绪的服务...
+    // Use the ready services...
   }, { immediate: true });
   
-  return { /* 返回状态和方法 */ };
+  return { /* return state and methods */ };
 }
 ```
 
-### 架构设计要点
-1. **统一服务接口**：创建`AppServices`接口，统一管理所有核心服务
-2. **服务初始化器**：`useAppInitializer`负责创建和初始化所有服务
-3. **Composable参数模式**：所有Composable接收`services`引用作为参数
+### Key architecture design points
+1. **Unified service interface**: Create the `AppServices` interface to manage all core services in one place
+2. **Service initializer**: `useAppInitializer` is responsible for creating and initializing all services
+3. **Composable parameter pattern**: All Composables accept a `services` reference as a parameter
 
-### 关键经验
-1. **Vue响应式上下文**: Vue Composable必须在`<script setup>`顶层同步调用
-2. **响应式连接模式**: 使用`watch`监听服务就绪，而不是在回调中调用Composable
-3. **快速失败原则**: 在开发环境中，快速暴露问题比隐藏问题更有价值
-4. **统一架构**: 保持所有Composable的一致架构模式
-5. **类型系统挑战**: 复杂的类型系统可能导致接口不匹配问题
+### Key lessons
+1. **Vue reactive context**: Vue Composables must be called synchronously at the top level of `<script setup>`
+2. **Reactive connection pattern**: Use `watch` to observe service readiness rather than calling Composables inside callbacks
+3. **Fail-fast principle**: In a development environment, surfacing problems quickly is more valuable than hiding them
+4. **Unified architecture**: Keep a consistent architecture pattern across all Composables
+5. **Type system challenges**: Complex type systems can lead to interface mismatch problems
 
-## 🔄 Composable 重构：`reactive` vs `ref` 的深度实践
+## 🔄 Composable Refactor: A Deep Dive into `reactive` vs `ref`
 
-### 背景
-为解决 Vue 深层嵌套 `ref` 无法自动解包的问题，我们将多个核心 Composables 的返回值从包含多个 `ref` 的对象，重构为了单一的 `reactive` 对象。
+### Background
+To solve the problem that deeply nested `ref`s in Vue are not automatically unwrapped, we refactored the return values of several core Composables from an object containing multiple `ref`s into a single `reactive` object.
 
-### 核心挑战与解决方案
+### Core challenges and solutions
 
-#### 1. 依赖注入失败
-- **现象**: 组件无法通过 `inject` 获取服务实例
-- **根因**: 服务创建了但没有正确注册到依赖注入系统
-- **解决**: 确保服务完整的创建、注册、提供链条
+#### 1. Dependency injection failure
+- **Symptom**: Components could not obtain the service instance via `inject`
+- **Root cause**: The service was created but not correctly registered in the dependency injection system
+- **Solution**: Ensure the full chain of service creation, registration, and provisioning
 
-#### 2. 响应式接口不匹配
-- **现象**: `Cannot read properties of null (reading 'value')` 错误
-- **根因**: `reactive` 对象属性与期望 `ref` 的接口不匹配
-- **解决**: 使用 `toRef` 作为适配器
+#### 2. Reactive interface mismatch
+- **Symptom**: `Cannot read properties of null (reading 'value')` error
+- **Root cause**: Properties of the `reactive` object did not match the interface expecting a `ref`
+- **Solution**: Use `toRef` as an adapter
   ```typescript
-  // 为 reactive 对象的属性创建一个双向绑定的 ref
+  // Create a two-way bound ref for a property of the reactive object
   const selectedTemplateRef = toRef(optimizer, 'selectedTemplate');
   ```
 
-#### 3. 外部API健壮性
-- **现象**: API检测失败导致解析错误
-- **根因**: 未检查响应内容类型就尝试解析JSON
-- **解决**: 在解析前检查 `Content-Type` 响应头
+#### 3. Robustness of external APIs
+- **Symptom**: API detection failure caused parse errors
+- **Root cause**: JSON parsing was attempted without checking the response content type
+- **Solution**: Check the `Content-Type` response header before parsing
 
-### 总结
-- `reactive` 适用于管理**一组**相关状态，简化顶层 API
-- `ref` 依然是跨组件传递**单个**响应式变量的可靠方式
-- `toRef` 和 `toRefs` 是在 `reactive` 和 `ref` 之间适配的必备工具
-- 依赖注入和服务初始化流程的正确性是复杂应用稳定运行的基石
+### Summary
+- `reactive` is suited to managing **a group of** related state and simplifies the top-level API
+- `ref` remains a reliable way to pass a **single** reactive variable across components
+- `toRef` and `toRefs` are essential tools for adapting between `reactive` and `ref`
+- Correct dependency injection and service initialization flow is the cornerstone of a stable complex application
 
-## 💡 核心经验总结
+## 💡 Key Lessons Summary
 
-1. **Vue响应式上下文**: Vue Composable必须在`<script setup>`顶层同步调用
-2. **响应式连接模式**: 使用`watch`监听服务就绪，保持代码清晰和可维护
-3. **快速失败原则**: 在开发环境中，快速暴露问题比隐藏问题更有价值
-4. **统一架构**: 保持所有Composable的一致架构模式
-5. **类型系统**: 复杂的类型系统需要仔细处理接口匹配问题
-6. **响应式系统**: `reactive`和`ref`各有适用场景，`toRef`是重要的适配工具
+1. **Vue reactive context**: Vue Composables must be called synchronously at the top level of `<script setup>`
+2. **Reactive connection pattern**: Use `watch` to observe service readiness, keeping code clear and maintainable
+3. **Fail-fast principle**: In a development environment, surfacing problems quickly is more valuable than hiding them
+4. **Unified architecture**: Keep a consistent architecture pattern across all Composables
+5. **Type system**: Complex type systems require careful handling of interface matching
+6. **Reactivity system**: `reactive` and `ref` each have their own use cases, and `toRef` is an important adapter
 
-## 🔗 相关文档
+## 🔗 Related Documents
 
-- [Web架构重构概述](./README.md)
-- [Composable重构实施记录](./composables-refactor.md)
-- [架构设计原则](./design-principles.md)
+- [Web Architecture Refactor Overview](./README.md)
+- [Composable Refactor Implementation Record](./composables-refactor.md)
+- [Architecture Design Principles](./design-principles.md)
 
 ---
 
-**文档类型**: 经验总结  
-**适用范围**: Vue Composable架构开发  
-**最后更新**: 2025-07-01
+**Document type**: Lessons learned  
+**Scope**: Vue Composable architecture development  
+**Last updated**: 2025-07-01

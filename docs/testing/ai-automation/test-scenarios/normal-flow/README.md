@@ -1,67 +1,67 @@
-# 正常流程测试
+# Normal Flow Tests
 
-## 📖 概述
+## 📖 Overview
 
-正常流程测试验证应用的基本功能是否正常工作，这些测试作为回归测试的基准，确保核心功能的稳定性。
+Normal flow tests verify that the application's basic features work correctly. These tests serve as the baseline for regression testing and ensure the stability of core features.
 
-## 🎯 测试目标
+## 🎯 Test Goals
 
-- 验证主要功能路径的正确性
-- 确保用户基本操作流程可用
-- 作为回归测试的基准线
-- 快速发现核心功能问题
+- Verify the correctness of the main feature paths
+- Ensure basic user operation flows are usable
+- Serve as the baseline for regression tests
+- Quickly discover problems in core features
 
-## 📋 测试列表
+## 📋 Test List
 
-### 基础功能测试
-- **01-basic-setup.md** - 基础设置功能（主题、语言切换等）
-- **02-model-management.md** - 模型管理功能（API配置、测试等）
-- **03-template-management.md** - 模板管理功能（创建、编辑、删除等）
+### Basic Feature Tests
+- **01-basic-setup.md** - Basic setup features (theme, language switching, etc.)
+- **02-model-management.md** - Model management features (API configuration, testing, etc.)
+- **03-template-management.md** - Template management features (create, edit, delete, etc.)
 
-### 核心功能测试
-- **04-prompt-optimization.md** - 系统提示词优化功能（已更新 - 包含结果展示功能测试）✅
-- **04b-user-prompt-optimization.md** - 用户提示词优化功能（已更新 - 包含结果展示功能测试）✅
-- **05-history-management.md** - 历史记录管理功能
-- **06-data-management.md** - 数据管理功能（导入导出等）
-- **08-context-persistence.md** - 上下文管理与持久化（新增）⭐
-- **09-context-variables-and-preview.md** - 上下文变量与预览一致性（新增）⭐
-- **10-tools-management-and-advanced-context.md** - 工具管理与高级上下文（新增）⭐
-- **11-context-import-export.md** - 上下文集合导入导出（新增）⭐
- - **12-advanced-context-optimization-and-testing.md** - 全量高级优化与测试（变量/上下文/工具）⭐
+### Core Feature Tests
+- **04-prompt-optimization.md** - System prompt optimization (updated - includes result display feature tests) ✅
+- **04b-user-prompt-optimization.md** - User prompt optimization (updated - includes result display feature tests) ✅
+- **05-history-management.md** - History management features
+- **06-data-management.md** - Data management features (import/export, etc.)
+- **08-context-persistence.md** - Context management and persistence (new) ⭐
+- **09-context-variables-and-preview.md** - Context variables and preview consistency (new) ⭐
+- **10-tools-management-and-advanced-context.md** - Tools management and advanced context (new) ⭐
+- **11-context-import-export.md** - Context collection import/export (new) ⭐
+ - **12-advanced-context-optimization-and-testing.md** - Full advanced optimization and testing (variables/context/tools) ⭐
 
-### UI交互功能测试
-- **07-ui-interaction-features.md** - UI交互功能独立测试（新增）⭐
+### UI Interaction Feature Tests
+- **07-ui-interaction-features.md** - Standalone UI interaction feature tests (new) ⭐
 
-## 🤖 执行说明
+## 🤖 Execution Notes
 
-### 执行顺序
-建议按照编号顺序执行测试，因为后续测试可能依赖前面的配置：
+### Execution Order
+It is recommended to execute the tests in numbered order, because later tests may depend on earlier configuration:
 
-1. 基础设置 → 2. 模型管理 → 3. 模板管理 → 4. 系统提示词优化 → 4b. 用户提示词优化 → 5. 历史管理 → 6. 数据管理 → 7. UI交互功能
+1. Basic setup → 2. Model management → 3. Template management → 4. System prompt optimization → 4b. User prompt optimization → 5. History management → 6. Data management → 7. UI interaction features
 
-### 执行频率
-- **每日回归** - 执行核心功能测试（04-prompt-optimization.md + 04b-user-prompt-optimization.md，现已包含结果展示功能）
-- **版本发布前** - 执行全部正常流程测试
-- **功能修改后** - 执行相关功能的测试
-- **UI修改后** - 执行UI交互功能测试（07-ui-interaction-features.md）
+### Execution Frequency
+- **Daily regression** - Run the core feature tests (04-prompt-optimization.md + 04b-user-prompt-optimization.md, which now include result display features)
+- **Before a release** - Run all normal flow tests
+- **After feature changes** - Run the tests for the related features
+- **After UI changes** - Run the UI interaction feature tests (07-ui-interaction-features.md)
 
-### 成功标准
-- 所有操作步骤能够成功执行
-- 所有验证点检查通过
-- 没有出现错误提示或异常状态
-- 用户体验流畅自然
+### Success Criteria
+- All operation steps can be executed successfully
+- All verification points pass
+- No error messages or abnormal states appear
+- The user experience is smooth and natural
 
-## 📊 测试报告
+## 📊 Test Reports
 
-每次执行后应生成测试报告，包含：
-- 执行时间和环境信息
-- 各个测试的通过/失败状态
-- 发现的问题和改进建议
-- 性能指标（如响应时间）
+A test report should be generated after each run, including:
+- Execution time and environment information
+- Pass/fail status of each test
+- Problems found and improvement suggestions
+- Performance metrics (such as response time)
 
-## 🔄 维护说明
+## 🔄 Maintenance Notes
 
-- 当功能发生变化时，及时更新对应的测试文档
-- 定期检查测试的有效性和准确性
-- 根据发现的问题调整测试重点
-- 保持测试文档与实际功能的同步
+- Update the corresponding test documents promptly when features change
+- Periodically check the validity and accuracy of the tests
+- Adjust the testing focus based on discovered problems
+- Keep the test documents in sync with the actual features

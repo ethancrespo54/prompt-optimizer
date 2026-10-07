@@ -1,59 +1,59 @@
-# ImageModelEditModal 一体化界面改进方案
+# ImageModelEditModal Unified Interface Improvement Plan
 
-## 设计原则
+## Design Principles
 
-### 1. 保持一致性
-- 与文本模型管理界面的设计风格保持一致
-- 遵循相同的表单布局和交互模式
-- 统一的操作流程和用户体验
+### 1. Maintain Consistency
+- Keep the design style consistent with the text model management interface
+- Follow the same form layout and interaction patterns
+- A unified workflow and user experience
 
-### 2. 信息分组而非分步
-- 将相关配置项进行逻辑分组
-- 使用视觉分隔（分割线、卡片）而非步骤导航
-- 所有信息在一个滚动界面中呈现
+### 2. Group Information Rather Than Splitting It Into Steps
+- Logically group related configuration items
+- Use visual separation (dividers, cards) rather than step navigation
+- Present all information in a single scrollable interface
 
-### 3. 智能交互
-- 根据选择动态显示相关配置项
-- 提供实时验证和反馈
-- 支持快速测试和预览
+### 3. Smart Interaction
+- Dynamically show relevant configuration items based on the selection
+- Provide real-time validation and feedback
+- Support quick testing and preview
 
-## 新界面结构
+## New Interface Structure
 
 ```vue
 <template>
-  <NModal preset="card" :title="isEditing ? '编辑图像模型' : '添加图像模型'">
+  <NModal preset="card" :title="isEditing ? 'Edit Image Model' : 'Add Image Model'">
     <NScrollbar style="max-height: 75vh;">
-      <!-- 1. 基本信息区域 -->
+      <!-- 1. Basic information area -->
       <NSpace vertical :size="16">
-        <NFormItem label="模型名称" required>
-          <NInput v-model:value="formData.name" placeholder="为模型起一个容易识别的名称" />
+        <NFormItem label="Model Name" required>
+          <NInput v-model:value="formData.name" placeholder="Give the model an easily recognizable name" />
         </NFormItem>
 
-        <NFormItem label="启用状态">
-          <NCheckbox v-model:checked="formData.enabled">启用此模型</NCheckbox>
+        <NFormItem label="Enabled">
+          <NCheckbox v-model:checked="formData.enabled">Enable this model</NCheckbox>
         </NFormItem>
       </NSpace>
 
-      <!-- 2. 提供商配置区域 -->
+      <!-- 2. Provider configuration area -->
       <NDivider style="margin: 24px 0;" />
-      <NH4 style="margin: 0 0 16px 0;">提供商配置</NH4>
+      <NH4 style="margin: 0 0 16px 0;">Provider Configuration</NH4>
 
       <NSpace vertical :size="16">
-        <NFormItem label="图像提供商" required>
+        <NFormItem label="Image Provider" required>
           <NSelect
             v-model:value="formData.providerId"
             :options="providerOptions"
-            placeholder="选择图像生成服务提供商"
+            placeholder="Select an image generation service provider"
             @update:value="onProviderChange"
           />
         </NFormItem>
 
-        <!-- 提供商信息展示 -->
+        <!-- Provider information display -->
         <NAlert v-if="selectedProvider" type="info">
           {{ selectedProvider.description }}
         </NAlert>
 
-        <!-- 动态连接配置 -->
+        <!-- Dynamic connection configuration -->
         <div v-for="field in connectionFields" :key="field.name">
           <NFormItem :label="t(field.labelKey)" :required="field.required">
             <NInput
@@ -70,7 +70,7 @@
           </NFormItem>
         </div>
 
-        <!-- 连接测试 -->
+        <!-- Connection test -->
         <NSpace align="center">
           <NButton
             @click="testConnection"
@@ -79,7 +79,7 @@
             secondary
             type="info"
           >
-            测试连接
+            Test Connection
           </NButton>
           <NTag v-if="connectionStatus" :type="connectionStatus.type">
             {{ t(connectionStatus.messageKey) }}
@@ -87,18 +87,18 @@
         </NSpace>
       </NSpace>
 
-      <!-- 3. 模型选择区域 -->
+      <!-- 3. Model selection area -->
       <NDivider style="margin: 24px 0;" />
-      <NH4 style="margin: 0 0 16px 0;">模型配置</NH4>
+      <NH4 style="margin: 0 0 16px 0;">Model Configuration</NH4>
 
       <NSpace vertical :size="16">
-        <NFormItem label="图像模型" required>
+        <NFormItem label="Image Model" required>
           <NSpace align="center">
             <NSelect
               v-model:value="formData.modelId"
               :options="modelOptions"
               :loading="isLoadingModels"
-              placeholder="选择或输入模型名称"
+              placeholder="Select or enter a model name"
               style="flex: 1;"
               clearable
               filterable
@@ -112,34 +112,34 @@
               secondary
             >
               <template #icon>
-                <svg><!-- 刷新图标 --></svg>
+                <svg><!-- refresh icon --></svg>
               </template>
             </NButton>
           </NSpace>
         </NFormItem>
 
-        <!-- 模型状态信息 -->
+        <!-- Model status information -->
         <NAlert v-if="modelLoadingStatus" :type="modelLoadingStatus.type">
           {{ t(modelLoadingStatus.messageKey) }}
           <template v-if="modelLoadingStatus.count">
-            (共 {{ modelLoadingStatus.count }} 个模型)
+            ({{ modelLoadingStatus.count }} models in total)
           </template>
         </NAlert>
 
-        <!-- 选中模型的能力展示 -->
+        <!-- Capability display for the selected model -->
         <NCard v-if="selectedModel" size="small">
           <template #header>
             <NSpace align="center">
               <NIcon size="18"><LightBulbIcon /></NIcon>
-              <span>模型能力</span>
+              <span>Model Capabilities</span>
             </NSpace>
           </template>
 
           <NSpace wrap style="margin-bottom: 12px;">
-            <NTag v-if="selectedModel.capabilities?.text2image" type="success">文生图</NTag>
-            <NTag v-if="selectedModel.capabilities?.image2image" type="info">图生图</NTag>
-            <NTag v-if="selectedModel.capabilities?.multiImage" type="warning">多图像</NTag>
-            <NTag v-if="selectedModel.capabilities?.highResolution" type="primary">高分辨率</NTag>
+            <NTag v-if="selectedModel.capabilities?.text2image" type="success">Text-to-Image</NTag>
+            <NTag v-if="selectedModel.capabilities?.image2image" type="info">Image-to-Image</NTag>
+            <NTag v-if="selectedModel.capabilities?.multiImage" type="warning">Multi-Image</NTag>
+            <NTag v-if="selectedModel.capabilities?.highResolution" type="primary">High Resolution</NTag>
           </NSpace>
 
           <NText depth="2" style="font-size: 14px;">
@@ -148,33 +148,33 @@
         </NCard>
       </NSpace>
 
-      <!-- 4. 参数配置区域（可折叠） -->
+      <!-- 4. Parameter configuration area (collapsible) -->
       <NDivider style="margin: 24px 0;" />
       <NCollapse>
-        <NCollapseItem title="高级参数配置" name="advanced">
+        <NCollapseItem title="Advanced Parameter Configuration" name="advanced">
           <template #header-extra>
             <NText depth="3" style="font-size: 12px;">
-              可选，用于覆盖默认模型参数
+              Optional, used to override default model parameters
             </NText>
           </template>
 
           <NSpace vertical :size="16">
-            <!-- 参数快速添加 -->
+            <!-- Quick parameter add -->
             <NSpace align="center">
-              <NText strong>添加参数：</NText>
+              <NText strong>Add Parameter:</NText>
               <NSelect
                 v-model:value="selectedNewParamId"
                 :options="availableParameterOptions"
-                placeholder="选择预定义参数"
+                placeholder="Select a predefined parameter"
                 style="width: 200px;"
                 @update:value="handleQuickAddParam"
               />
               <NButton @click="addCustomParameter" dashed>
-                + 自定义参数
+                + Custom Parameter
               </NButton>
             </NSpace>
 
-            <!-- 已配置的参数列表 -->
+            <!-- List of configured parameters -->
             <div v-for="(value, paramName) in formData.paramOverrides" :key="paramName">
               <NFormItem :label="getParameterLabel(paramName)">
                 <template #label-extra>
@@ -183,7 +183,7 @@
                   </NButton>
                 </template>
 
-                <!-- 根据参数类型渲染不同输入组件 -->
+                <!-- Render different input components depending on parameter type -->
                 <NInputNumber
                   v-if="getParameterType(paramName) === 'number'"
                   v-model:value="formData.paramOverrides[paramName]"
@@ -222,12 +222,12 @@
       </NCollapse>
     </NScrollbar>
 
-    <!-- 操作按钮 -->
+    <!-- Action buttons -->
     <template #action>
       <NSpace justify="end">
-        <NButton @click="close">取消</NButton>
+        <NButton @click="close">Cancel</NButton>
         <NButton type="primary" @click="save" :loading="isSaving" :disabled="!canSave">
-          {{ isEditing ? '更新' : '保存' }}
+          {{ isEditing ? 'Update' : 'Save' }}
         </NButton>
       </NSpace>
     </template>
@@ -235,39 +235,39 @@
 </template>
 ```
 
-## 关键改进点
+## Key Improvements
 
-### 1. 结构优化
-- **去除步骤导航**：移除 `NSteps` 组件和步骤切换逻辑
-- **逻辑分组**：使用分割线和标题将相关配置分组
-- **单页展示**：所有配置项在一个可滚动页面中
+### 1. Structural Optimization
+- **Removed step navigation**: Removed the `NSteps` component and the step-switching logic
+- **Logical grouping**: Use dividers and headings to group related configuration
+- **Single-page display**: All configuration items on one scrollable page
 
-### 2. 交互优化
-- **智能显示**：根据提供商选择动态显示连接配置
-- **实时反馈**：连接测试、模型加载状态实时显示
-- **快速操作**：支持模型快速选择和参数快速添加
+### 2. Interaction Optimization
+- **Smart display**: Dynamically show the connection configuration based on the provider selection
+- **Real-time feedback**: Connection test and model loading status are shown in real time
+- **Quick actions**: Support quick model selection and quick parameter addition
 
-### 3. 用户体验提升
-- **可折叠区域**：高级参数使用折叠面板，减少界面复杂度
-- **智能默认**：提供合理的默认值和占位符
-- **操作提示**：关键操作提供清晰的提示和帮助信息
+### 3. User Experience Improvements
+- **Collapsible area**: Advanced parameters use a collapse panel to reduce interface complexity
+- **Smart defaults**: Provide sensible default values and placeholders
+- **Action hints**: Key actions come with clear hints and help information
 
-### 4. 一致性保证
-- **布局统一**：与文本模型管理界面保持一致的布局风格
-- **交互统一**：相同的操作逻辑和反馈机制
-- **样式统一**：使用相同的组件和样式系统
+### 4. Consistency Guarantees
+- **Unified layout**: A layout style consistent with the text model management interface
+- **Unified interaction**: The same operation logic and feedback mechanism
+- **Unified styling**: Use the same components and style system
 
-## 技术实现要点
+## Technical Implementation Points
 
-### 1. 响应式布局
+### 1. Reactive Layout
 ```typescript
-// 根据提供商选择动态计算连接字段
+// Dynamically compute connection fields based on the provider selection
 const connectionFields = computed(() => {
   if (!selectedProvider.value) return []
   return generateConnectionFields(selectedProvider.value.connectionSchema)
 })
 
-// 智能表单验证
+// Smart form validation
 const canSave = computed(() => {
   return formData.value.name &&
          formData.value.providerId &&
@@ -276,9 +276,9 @@ const canSave = computed(() => {
 })
 ```
 
-### 2. 动态表单生成
+### 2. Dynamic Form Generation
 ```typescript
-// 根据提供商 schema 动态生成表单字段
+// Dynamically generate form fields from the provider schema
 const generateConnectionFields = (schema: ConnectionSchema) => {
   const fields = []
   schema.required?.forEach(fieldName => {
@@ -290,14 +290,14 @@ const generateConnectionFields = (schema: ConnectionSchema) => {
       placeholder: t(`image.connection.${fieldName}Placeholder`)
     })
   })
-  // ... 处理可选字段
+  // ... handle optional fields
   return fields
 }
 ```
 
-### 3. 参数管理优化
+### 3. Parameter Management Optimization
 ```typescript
-// 参数快速添加
+// Quick parameter add
 const handleQuickAddParam = (paramId: string) => {
   if (!paramId || paramId === 'custom') return
 
@@ -307,28 +307,28 @@ const handleQuickAddParam = (paramId: string) => {
   }
 }
 
-// 自定义参数添加
+// Add a custom parameter
 const addCustomParameter = () => {
-  // 打开自定义参数输入对话框
+  // Open the custom parameter input dialog
   showCustomParamDialog.value = true
 }
 ```
 
-## 迁移计划
+## Migration Plan
 
-### 阶段1：界面重构
-1. 移除步骤导航相关代码
-2. 重新布局表单结构
-3. 实现动态字段显示逻辑
+### Phase 1: Interface Refactor
+1. Remove the step navigation code
+2. Re-lay out the form structure
+3. Implement the dynamic field display logic
 
-### 阶段2：交互优化
-1. 优化连接测试体验
-2. 改进模型选择和加载流程
-3. 完善参数配置界面
+### Phase 2: Interaction Optimization
+1. Optimize the connection test experience
+2. Improve the model selection and loading flow
+3. Refine the parameter configuration interface
 
-### 阶段3：体验细化
-1. 添加操作提示和帮助
-2. 优化错误处理和反馈
-3. 完善响应式布局
+### Phase 3: Experience Polish
+1. Add action hints and help
+2. Optimize error handling and feedback
+3. Refine the responsive layout
 
-这种一体化设计将显著提升用户体验，使图像模型配置变得更加高效和直观。
+This unified design will significantly improve the user experience and make image model configuration more efficient and intuitive.

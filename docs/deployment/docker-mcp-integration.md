@@ -1,94 +1,94 @@
-# Docker中的MCP服务器集成
+# MCP Server Integration in Docker
 
-## 概述
+## Overview
 
-现在Docker容器同时运行两个服务：
-1. **Web应用** (Nginx) - 端口80
-2. **MCP服务器** (Node.js) - 端口3000
+The Docker container now runs two services at the same time:
+1. **Web application** (Nginx) - port 80
+2. **MCP server** (Node.js) - port 3000
 
-使用Supervisor管理多个进程，确保服务的稳定运行。
+Supervisor manages the multiple processes to keep the services running reliably.
 
-## 架构图
+## Architecture Diagram
 
 ```
-Docker容器
-├── Nginx (端口80)
-│   ├── Web应用 (/)
-│   └── MCP代理 (/mcp -> localhost:3000)
-├── MCP服务器 (端口3000)
-└── Supervisor (进程管理)
+Docker container
+├── Nginx (port 80)
+│   ├── Web application (/)
+│   └── MCP proxy (/mcp -> localhost:3000)
+├── MCP server (port 3000)
+└── Supervisor (process management)
 ```
 
-## 端口映射
+## Port Mapping
 
-- **8081:80** - Web应用访问端口
-- **3000:3000** - MCP服务器直接访问端口（可选）
+- **8081:80** - Web application access port
+- **3000:3000** - Direct MCP server access port (optional)
 
-## 环境变量配置
+## Environment Variable Configuration
 
-### Web应用配置
+### Web Application Configuration
 ```bash
 VITE_OPENAI_API_KEY=sk-your-key
 VITE_GEMINI_API_KEY=your-key
-# ... 其他Web应用API配置
+# ... other Web application API configuration
 ```
 
-### MCP服务器配置
+### MCP Server Configuration
 ```bash
-# 基础配置
+# Basic configuration
 MCP_HTTP_PORT=3000
 MCP_LOG_LEVEL=info
 MCP_ENABLE_CORS=true
 MCP_ALLOWED_ORIGINS=*
 
-# 模型配置（必需）
+# Model configuration (required)
 MCP_DEFAULT_MODEL_PROVIDER=openai
 MCP_DEFAULT_MODEL_NAME=gpt-4
 MCP_DEFAULT_MODEL_API_KEY=sk-your-key
 MCP_DEFAULT_MODEL_BASE_URL=
 ```
 
-## 使用方法
+## Usage
 
-### 1. 配置环境变量
+### 1. Configure environment variables
 ```bash
 cp .env.docker.example .env
-# 编辑.env文件，填入实际的API密钥
+# Edit the .env file and fill in your actual API keys
 ```
 
-### 2. 启动服务
+### 2. Start the services
 ```bash
 docker-compose up -d
 ```
 
-### 3. 访问服务
-- **Web应用**: http://localhost:8081
-- **MCP服务器**: 
-  - 直接访问: http://localhost:3000
-  - 通过代理: http://localhost:8081/mcp
+### 3. Access the services
+- **Web application**: http://localhost:8081
+- **MCP server**: 
+  - Direct access: http://localhost:3000
+  - Via proxy: http://localhost:8081/mcp
 
-### 4. 健康检查
+### 4. Health checks
 ```bash
-# 检查容器状态
+# Check container status
 docker-compose ps
 
-# 查看日志
+# View logs
 docker-compose logs -f
 
-# 查看MCP服务器日志
+# View MCP server logs
 docker-compose exec prompt-optimizer supervisorctl tail -f mcp-server
 ```
 
-## MCP服务器API
+## MCP Server API
 
-### 获取工具列表
+### Get the tool list
 ```bash
 curl -X POST http://localhost:8081/mcp \
   -H "Content-Type: application/json" \
   -d '{"jsonrpc": "2.0", "id": 1, "method": "tools/list"}'
 ```
 
-### 调用工具
+### Call a tool
 ```bash
 curl -X POST http://localhost:8081/mcp \
   -H "Content-Type: application/json" \
@@ -99,37 +99,37 @@ curl -X POST http://localhost:8081/mcp \
     "params": {
       "name": "optimize-user-prompt",
       "arguments": {
-        "prompt": "写一个故事",
+        "prompt": "Write a story",
         "template": "user-prompt-basic"
       }
     }
   }'
 ```
 
-## 故障排除
+## Troubleshooting
 
-### 查看服务状态
+### Check service status
 ```bash
 docker-compose exec prompt-optimizer supervisorctl status
 ```
 
-### 重启MCP服务器
+### Restart the MCP server
 ```bash
 docker-compose exec prompt-optimizer supervisorctl restart mcp-server
 ```
 
-### 查看详细日志
+### View detailed logs
 ```bash
-# Nginx日志
+# Nginx logs
 docker-compose exec prompt-optimizer tail -f /var/log/nginx/error.log
 
-# MCP服务器日志
+# MCP server logs
 docker-compose exec prompt-optimizer tail -f /var/log/supervisor/mcp-server.out.log
 ```
 
-## 开发模式
+## Development Mode
 
-如果需要在开发模式下运行，可以修改docker-compose.yml：
+To run in development mode, you can modify docker-compose.yml:
 
 ```yaml
 services:
@@ -137,10 +137,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    # ... 其他配置
+    # ... other configuration
 ```
 
-然后重新构建：
+Then rebuild:
 ```bash
 docker-compose up --build -d
 ```

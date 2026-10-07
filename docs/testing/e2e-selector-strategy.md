@@ -1,64 +1,64 @@
-# E2E 测试选择器策略优化方案
+# E2E Test Selector Strategy Optimization Plan
 
-## 问题分析
+## Problem Analysis
 
-### 当前问题
-1. **依赖文本内容**：受国际化影响，需要维护多语言正则表达式
-2. **按钮位置不明确**：页面可能有多个同名按钮
-3. **XPath 脆弱**：组件结构变化会导致失败
-4. **不同模式 UI 不同**：Basic/Pro/Image 模式的界面结构完全不同
+### Current Problems
+1. **Reliance on text content**: Affected by internationalization, requiring maintenance of multi-language regular expressions
+2. **Ambiguous button location**: A page may have multiple buttons with the same name
+3. **Fragile XPath**: Component structure changes cause failures
+4. **Different UI per mode**: The Basic/Pro/Image modes have completely different interface structures
 
-### 示例：当前定位方式
+### Example: Current Locating Approach
 ```typescript
-// ❌ 问题 1：依赖文本
-page.getByText(/Original Prompt|原始提示词|原始提示/i)
+// ❌ Problem 1: relies on text
+page.getByText(/Original Prompt/i)
 
-// ❌ 问题 2：可能匹配多个按钮
-page.getByRole('button', { name: /^(分析|Analyze)$/i })
+// ❌ Problem 2: may match multiple buttons
+page.getByRole('button', { name: /^Analyze$/i })
 
-// ❌ 问题 3：XPath 脆弱
+// ❌ Problem 3: fragile XPath
 title.locator('xpath=ancestor::*[contains(@class,"n-card")][1]')
 ```
 
 ---
 
-## 解决方案：使用 `data-testid` 属性
+## Solution: Use the `data-testid` Attribute
 
-### 方案概述
-为关键 UI 元素添加 `data-testid` 属性，提供稳定、语言无关的定位标识。
+### Overview
+Add `data-testid` attributes to key UI elements to provide stable, language-independent locator identifiers.
 
-### 实施步骤
+### Implementation Steps
 
-#### 步骤 1：在组件中添加 `data-testid`
+#### Step 1: Add `data-testid` to components
 
-**命名规范**：
+**Naming convention**:
 ```
-data-testid="{模式}-{功能}-{元素类型}"
+data-testid="{mode}-{feature}-{element-type}"
 ```
 
-**示例**：
-- `basic-system-input-panel` - Basic System 模式的输入面板
-- `basic-system-analyze-button` - Basic System 模式的分析按钮
-- `basic-user-analyze-button` - Basic User 模式的分析按钮
-- `pro-multi-message-list` - Pro Multi 模式的消息列表
-- `evaluation-score-badge` - 评估分数徽章（通用）
+**Examples**:
+- `basic-system-input-panel` - Input panel of Basic System mode
+- `basic-system-analyze-button` - Analyze button of Basic System mode
+- `basic-user-analyze-button` - Analyze button of Basic User mode
+- `pro-multi-message-list` - Message list of Pro Multi mode
+- `evaluation-score-badge` - Evaluation score badge (shared)
 
 ---
 
-#### 步骤 2：修改组件代码
+#### Step 2: Modify component code
 
 ##### 2.1 InputPanel.vue
 
-在 `InputPanel.vue` 的关键按钮上添加 `data-testid`：
+Add `data-testid` to the key buttons in `InputPanel.vue`:
 
 ```vue
 <template>
   <NSpace vertical :size="16" :data-testid="testIdPrefix + '-input-panel'">
-    <!-- 标题区域 -->
+    <!-- Title area -->
     <NFlex justify="space-between" align="center" :wrap="false">
       <NText :data-testid="testIdPrefix + '-input-label'">{{ label }}</NText>
 
-      <!-- AI提取变量按钮 -->
+      <!-- AI variable extraction button -->
       <NButton
         v-if="enableVariableExtraction && showExtractButton"
         :data-testid="testIdPrefix + '-extract-variables-button'"
@@ -67,7 +67,7 @@ data-testid="{模式}-{功能}-{元素类型}"
         ...
       </NButton>
 
-      <!-- 预览按钮 -->
+      <!-- Preview button -->
       <NButton
         v-if="showPreview"
         :data-testid="testIdPrefix + '-preview-button'"
@@ -77,7 +77,7 @@ data-testid="{模式}-{功能}-{元素类型}"
       </NButton>
     </NFlex>
 
-    <!-- 输入框 -->
+    <!-- Input box -->
     <VariableAwareInput
       v-if="enableVariableExtraction"
       :data-testid="testIdPrefix + '-input'"
@@ -89,9 +89,9 @@ data-testid="{模式}-{功能}-{元素类型}"
       ...
     />
 
-    <!-- 操作按钮区域 -->
+    <!-- Action buttons area -->
     <NSpace>
-      <!-- 分析按钮 -->
+      <!-- Analyze button -->
       <NButton
         v-if="showAnalyzeButton"
         :data-testid="testIdPrefix + '-analyze-button'"
@@ -101,7 +101,7 @@ data-testid="{模式}-{功能}-{元素类型}"
         {{ $t('promptOptimizer.analyze') }}
       </NButton>
 
-      <!-- 优化按钮 -->
+      <!-- Optimize button -->
       <NButton
         :data-testid="testIdPrefix + '-optimize-button'"
         @click="$emit('optimize')"
@@ -115,13 +115,13 @@ data-testid="{模式}-{功能}-{元素类型}"
 
 <script setup lang="ts">
 interface Props {
-  // ... 现有 props
-  /** 🆕 测试 ID 前缀（用于区分不同模式） */
+  // ... existing props
+  /** 🆕 Test ID prefix (used to distinguish different modes) */
   testIdPrefix?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  // ... 现有默认值
+  // ... existing defaults
   testIdPrefix: 'input-panel'
 })
 </script>
@@ -129,7 +129,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 ##### 2.2 BasicSystemWorkspace.vue
 
-在工作区中传递 `testIdPrefix`：
+Pass `testIdPrefix` in the workspace:
 
 ```vue
 <template>
@@ -141,7 +141,7 @@ const props = withDefaults(defineProps<Props>(), {
       @analyze="handleAnalyze"
     />
 
-    <!-- 评估分数徽章 -->
+    <!-- Evaluation score badge -->
     <EvaluationScoreBadge
       data-testid="basic-system-score-badge"
       :score="evaluationScore"
@@ -194,7 +194,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 ---
 
-#### 步骤 3：更新测试辅助函数
+#### Step 3: Update test helper functions
 
 ##### 3.1 helpers/analysis.ts
 
@@ -202,10 +202,10 @@ const props = withDefaults(defineProps<Props>(), {
 import { expect, type Page } from '@playwright/test'
 
 /**
- * 填写原始提示词（使用 data-testid）
- * @param page Playwright Page 对象
- * @param mode 模式前缀（如 'basic-system', 'basic-user'）
- * @param value 提示词内容
+ * Fill in the original prompt (using data-testid)
+ * @param page Playwright Page object
+ * @param mode Mode prefix (e.g. 'basic-system', 'basic-user')
+ * @param value Prompt content
  */
 export async function fillOriginalPrompt(
   page: Page,
@@ -215,7 +215,7 @@ export async function fillOriginalPrompt(
   const input = page.locator(`[data-testid="${mode}-input"]`)
   await expect(input).toBeVisible({ timeout: 15000 })
 
-  // 检查是否是 CodeMirror
+  // Check whether it is CodeMirror
   const cmContent = input.locator('.cm-content')
   if ((await cmContent.count()) > 0) {
     await cmContent.click()
@@ -225,15 +225,15 @@ export async function fillOriginalPrompt(
     await input.fill(value)
   }
 
-  // 等待按钮可用
+  // Wait for the button to be enabled
   const analyzeButton = page.locator(`[data-testid="${mode}-analyze-button"]`)
   await expect(analyzeButton).toBeEnabled({ timeout: 15000 })
 }
 
 /**
- * 点击分析按钮（使用 data-testid）
- * @param page Playwright Page 对象
- * @param mode 模式前缀
+ * Click the analyze button (using data-testid)
+ * @param page Playwright Page object
+ * @param mode Mode prefix
  */
 export async function clickAnalyzeButton(page: Page, mode: string): Promise<void> {
   const analyzeButton = page.locator(`[data-testid="${mode}-analyze-button"]`)
@@ -243,10 +243,10 @@ export async function clickAnalyzeButton(page: Page, mode: string): Promise<void
 }
 
 /**
- * 获取评估分数（使用 data-testid）
- * @param page Playwright Page 对象
- * @param mode 模式前缀（可选，用于更精确定位）
- * @returns 分数（0-100）
+ * Get the evaluation score (using data-testid)
+ * @param page Playwright Page object
+ * @param mode Mode prefix (optional, for more precise locating)
+ * @returns Score (0-100)
  */
 export async function getEvaluationScore(
   page: Page,
@@ -273,9 +273,9 @@ export async function getEvaluationScore(
 }
 
 /**
- * 验证分析按钮在输入为空时禁用
- * @param page Playwright Page 对象
- * @param mode 模式前缀
+ * Verify that the analyze button is disabled when the input is empty
+ * @param page Playwright Page object
+ * @param mode Mode prefix
  */
 export async function verifyAnalyzeButtonDisabledWhenEmpty(
   page: Page,
@@ -289,7 +289,7 @@ export async function verifyAnalyzeButtonDisabledWhenEmpty(
 
 ---
 
-#### 步骤 4：更新测试用例
+#### Step 4: Update test cases
 
 ##### 4.1 analysis/basic-system.spec.ts
 
@@ -305,32 +305,32 @@ import {
 
 const MODE = 'basic-system'
 
-test.describe('Basic System - 提示词分析', () => {
-  test('分析提示词并显示评估结果', async ({ page }) => {
+test.describe('Basic System - Prompt Analysis', () => {
+  test('analyzes the prompt and shows evaluation results', async ({ page }) => {
     test.setTimeout(180000)
 
-    // 1. 导航到 basic-system 工作区
+    // 1. Navigate to the basic-system workspace
     await navigateToMode(page, 'basic', 'system')
     await page.waitForTimeout(3000)
 
-    // 2. 填写提示词（使用 data-testid）
-    const testPrompt = '写一个排序算法'
+    // 2. Fill in the prompt (using data-testid)
+    const testPrompt = 'Write a sorting algorithm'
     await fillOriginalPrompt(page, MODE, testPrompt)
 
-    // 3. 点击分析按钮（使用 data-testid）
+    // 3. Click the analyze button (using data-testid)
     await clickAnalyzeButton(page, MODE)
     await page.waitForTimeout(500)
 
-    // 4. 验证评估分数（使用 data-testid）
+    // 4. Verify the evaluation score (using data-testid)
     const score = await getEvaluationScore(page, MODE)
-    console.log(`✓ ${MODE} 评估分数: ${score}/100`)
+    console.log(`✓ ${MODE} evaluation score: ${score}/100`)
   })
 
-  test('验证分析按钮在没有提示词时禁用', async ({ page }) => {
+  test('verifies the analyze button is disabled when there is no prompt', async ({ page }) => {
     await navigateToMode(page, 'basic', 'system')
     await page.waitForTimeout(1000)
 
-    // 使用 data-testid 验证按钮状态
+    // Verify the button state using data-testid
     await verifyAnalyzeButtonDisabledWhenEmpty(page, MODE)
   })
 })
@@ -338,69 +338,69 @@ test.describe('Basic System - 提示词分析', () => {
 
 ---
 
-## 优势对比
+## Before/After Comparison
 
-### 修改前 ❌
+### Before ❌
 ```typescript
-// 依赖文本，易受国际化影响
-const card = page.getByText(/Original Prompt|原始提示词/i)
-// 可能匹配多个按钮
-const button = card.getByRole('button', { name: /分析|Analyze/i })
-// XPath 脆弱
+// Relies on text, easily affected by internationalization
+const card = page.getByText(/Original Prompt/i)
+// May match multiple buttons
+const button = card.getByRole('button', { name: /Analyze/i })
+// Fragile XPath
 const ancestor = card.locator('xpath=ancestor::*[contains(@class,"n-card")]')
 ```
 
-### 修改后 ✅
+### After ✅
 ```typescript
-// 稳定、语言无关
-await fillOriginalPrompt(page, 'basic-system', '测试内容')
+// Stable and language-independent
+await fillOriginalPrompt(page, 'basic-system', 'Test content')
 await clickAnalyzeButton(page, 'basic-system')
 const score = await getEvaluationScore(page, 'basic-system')
 ```
 
-### 关键优势
-1. ✅ **语言无关**：不受国际化影响
-2. ✅ **精确定位**：通过 testIdPrefix 区分不同模式
-3. ✅ **稳定性高**：不依赖 DOM 结构和样式类
-4. ✅ **易于维护**：选择器语义清晰
-5. ✅ **符合最佳实践**：Playwright/Testing Library 推荐方式
+### Key Advantages
+1. ✅ **Language-independent**: Not affected by internationalization
+2. ✅ **Precise locating**: Different modes are distinguished through testIdPrefix
+3. ✅ **High stability**: Does not depend on DOM structure or style classes
+4. ✅ **Easy to maintain**: Selector semantics are clear
+5. ✅ **Follows best practices**: The approach recommended by Playwright/Testing Library
 
 ---
 
-## 实施计划
+## Implementation Plan
 
-### Phase 1：核心组件（高优先级）
-- [x] ~~创建优化方案文档~~
-- [ ] `InputPanel.vue` - 添加 `testIdPrefix` prop 和 data-testid
-- [ ] `BasicSystemWorkspace.vue` - 传递 testIdPrefix="basic-system"
-- [ ] `BasicUserWorkspace.vue` - 传递 testIdPrefix="basic-user"
-- [ ] `EvaluationScoreBadge.vue` - 添加 data-testid="evaluation-score-badge"
-- [ ] 更新 `helpers/analysis.ts` 使用新选择器
-- [ ] 更新 `analysis/basic-system.spec.ts` 和 `basic-user.spec.ts`
-- [ ] 运行测试验证
+### Phase 1: Core Components (High Priority)
+- [x] ~~Create the optimization plan document~~
+- [ ] `InputPanel.vue` - Add the `testIdPrefix` prop and data-testid
+- [ ] `BasicSystemWorkspace.vue` - Pass testIdPrefix="basic-system"
+- [ ] `BasicUserWorkspace.vue` - Pass testIdPrefix="basic-user"
+- [ ] `EvaluationScoreBadge.vue` - Add data-testid="evaluation-score-badge"
+- [ ] Update `helpers/analysis.ts` to use the new selectors
+- [ ] Update `analysis/basic-system.spec.ts` and `basic-user.spec.ts`
+- [ ] Run tests to verify
 
-### Phase 2：Pro 模式（中优先级）
-- [ ] `ContextSystemWorkspace.vue` - 添加 data-testid
-- [ ] `ContextUserWorkspace.vue` - 添加 data-testid
-- [ ] 设计并实现 Pro 模式的测试
+### Phase 2: Pro Mode (Medium Priority)
+- [ ] `ContextSystemWorkspace.vue` - Add data-testid
+- [ ] `ContextUserWorkspace.vue` - Add data-testid
+- [ ] Design and implement Pro mode tests
 
-### Phase 3：Image 模式（低优先级）
-- [ ] `ImageText2ImageWorkspace.vue` - 添加 data-testid
-- [ ] `ImageImage2ImageWorkspace.vue` - 添加 data-testid
-- [ ] 创建评估模板后实现测试
-
----
-
-## 注意事项
-
-1. **向后兼容**：添加 `data-testid` 不影响现有功能
-2. **生产环境**：`data-testid` 在生产环境保留（文件大小增加可忽略）
-3. **命名一致性**：严格遵守命名规范，便于查找和维护
-4. **渐进式迁移**：先迁移 Basic 模式，再扩展到其他模式
+### Phase 3: Image Mode (Low Priority)
+- [ ] `ImageText2ImageWorkspace.vue` - Add data-testid
+- [ ] `ImageImage2ImageWorkspace.vue` - Add data-testid
+- [ ] Implement tests after creating the evaluation templates
 
 ---
 
-## 参考资料
+## Notes
+
+1. **Backward compatible**: Adding `data-testid` does not affect existing functionality
+2. **Production environment**: `data-testid` is kept in production (the file size increase is negligible)
+3. **Naming consistency**: Strictly follow the naming convention for easy lookup and maintenance
+4. **Incremental migration**: Migrate Basic mode first, then extend to other modes
+
+---
+
+## References
 
 - [Playwright Best Practices - Use Test IDs](https://playwright.dev/docs/best-practices#use-test-ids)
 - [Testing Library - Priority](https://testing-library.com/docs/queries/about/#priority)

@@ -1,328 +1,328 @@
-# 历史记录管理正常流程测试
+# History Management Normal Flow Test
 
-## 📖 测试概述
-验证历史记录管理功能的基本流程，确保用户能够正常查看、管理和重用提示词优化历史记录。
+## 📖 Test Overview
+Verify the basic flow of the history management feature, ensuring users can normally view, manage, and reuse prompt optimization history records.
 
-## 🎯 测试目标
-- 验证历史记录界面正常打开
-- 验证历史记录显示和浏览功能
-- 验证历史记录重用功能
-- 验证历史记录删除和管理功能
-- 验证历史记录清空功能
+## 🎯 Test Goals
+- Verify that the history interface opens normally
+- Verify the history display and browsing features
+- Verify the history reuse feature
+- Verify the history deletion and management features
+- Verify the clear-all-history feature
 
-## 📋 前置条件
-- [ ] 应用已启动并加载完成
-- [ ] 用户界面显示正常
-- [ ] 已有一些提示词优化历史记录（或先创建一些）
+## 📋 Prerequisites
+- [ ] The application has started and finished loading
+- [ ] The user interface displays correctly
+- [ ] There are some prompt optimization history records (or create some first)
 
 ---
 
-## 🔧 测试步骤
+## 🔧 Test Steps
 
-### 步骤1：创建历史记录（如果没有）
+### Step 1: Create History Records (If None Exist)
 
-**AI执行指导：**
-- 如果没有历史记录，先创建一些
-- 使用 `browser_type` 输入测试提示词
-- 使用 `browser_click` 执行优化
-- 等待优化完成创建历史记录
+**AI execution guidance:**
+- If there are no history records, create some first
+- Use `browser_type` to enter test prompts
+- Use `browser_click` to execute optimization
+- Wait for the optimization to complete and create a history record
 
-**测试数据：**
+**Test data:**
 ```
-测试提示词1：请帮我写一个产品介绍
-测试提示词2：如何学习编程
-测试提示词3：制定健身计划
-```
-
-**预期结果：**
-- 优化操作成功完成
-- 历史记录自动保存
-- 可以进行后续的历史记录测试
-
-**验证点：**
-- [ ] 优化操作成功
-- [ ] 历史记录自动保存
-- [ ] 记录包含完整信息
-
----
-
-### 步骤2：打开历史记录管理器
-
-**AI执行指导：**
-- 使用 `browser_snapshot` 获取页面当前状态
-- 查找包含"📜"图标和"历史记录"文字的按钮
-- 使用 `browser_click` 点击该按钮
-
-**预期结果：**
-- 打开历史记录侧边栏或弹窗
-- 显示历史记录列表
-- 界面包含搜索、筛选、清空等功能按钮
-
-**验证点：**
-- [ ] 历史记录界面已显示
-- [ ] 历史记录列表正确加载
-- [ ] 功能按钮可见且可用
-- [ ] 界面布局清晰合理
-
----
-
-### 步骤3：浏览历史记录
-
-**AI执行指导：**
-- 使用 `browser_snapshot` 查看历史记录列表内容
-- 滚动列表查看更多记录（如果需要）
-- 点击一条历史记录查看详情
-- 检查详细信息的显示
-
-**预期结果：**
-- 历史记录按时间顺序排列（通常最新的在前）
-- 每条记录显示时间戳和提示词摘要
-- 点击记录能够展开或显示详细信息
-- 详细信息包含原始提示词、优化结果等
-
-**验证点：**
-- [ ] 历史记录正确显示
-- [ ] 记录排序合理（按时间）
-- [ ] 记录摘要信息准确
-- [ ] 详细信息显示完整
-
----
-
-### 步骤4：查看记录详情
-
-**AI执行指导：**
-- 选择一条历史记录
-- 查看记录的完整详细信息
-- 检查原始提示词、优化结果、使用的模板等
-- 验证信息的完整性和准确性
-
-**预期结果：**
-- 记录详情完整显示
-- 包含原始提示词和优化结果
-- 显示使用的模板和模型信息
-- 时间戳和其他元数据准确
-
-**验证点：**
-- [ ] 记录详情完整显示
-- [ ] 原始提示词正确
-- [ ] 优化结果完整
-- [ ] 元数据信息准确
-
----
-
-### 步骤5：重用历史记录
-
-**AI执行指导：**
-- 选择一条想要重用的历史记录
-- 查找"重用"、"应用"、"加载"等按钮
-- 使用 `browser_click` 点击重用按钮
-- 检查主界面是否加载了历史记录内容
-
-**预期结果：**
-- 历史记录的内容加载到主界面
-- 原始提示词填充到输入框
-- 优化结果显示在结果区域
-- 相关的模板和模型设置也被应用
-
-**验证点：**
-- [ ] 重用操作成功执行
-- [ ] 原始提示词正确加载
-- [ ] 优化结果正确显示
-- [ ] 模板和模型设置正确应用
-
----
-
-### 步骤6：搜索历史记录（如果支持）
-
-**AI执行指导：**
-- 查找搜索输入框
-- 使用 `browser_type` 输入搜索关键词
-- 检查搜索结果的变化
-- 清空搜索框验证列表恢复
-
-**测试数据：**
-```
-搜索关键词：产品、编程、健身等
+Test prompt 1: Please help me write a product introduction
+Test prompt 2: How to learn programming
+Test prompt 3: Make a fitness plan
 ```
 
-**预期结果：**
-- 搜索功能能够根据关键词过滤记录
-- 搜索结果准确匹配关键词
-- 清空搜索后显示完整列表
-- 搜索响应速度合理
+**Expected results:**
+- The optimization operation completes successfully
+- The history record is saved automatically
+- Subsequent history tests can proceed
 
-**验证点：**
-- [ ] 搜索功能正常工作
-- [ ] 搜索结果准确
-- [ ] 搜索清空功能正常
-- [ ] 搜索性能良好
+**Verification points:**
+- [ ] The optimization operation succeeds
+- [ ] The history record is saved automatically
+- [ ] The record contains complete information
 
 ---
 
-### 步骤7：删除单条历史记录
+### Step 2: Open the History Manager
 
-**AI执行指导：**
-- 选择一条历史记录
-- 查找删除按钮（垃圾桶图标或"删除"文字）
-- 使用 `browser_click` 点击删除按钮
-- 处理确认对话框（如果有）
-- 验证记录是否已删除
+**AI execution guidance:**
+- Use `browser_snapshot` to get the current page state
+- Find the button containing the "📜" icon and the "History" text
+- Use `browser_click` to click that button
 
-**预期结果：**
-- 显示删除确认对话框
-- 确认后记录从列表中移除
-- 显示删除成功提示
-- 列表更新正确
+**Expected results:**
+- The history sidebar or popup opens
+- The history list is displayed
+- The interface includes function buttons such as search, filter, and clear
 
-**验证点：**
-- [ ] 删除确认对话框出现
-- [ ] 删除操作成功执行
-- [ ] 记录从列表中移除
-- [ ] 界面更新正确
+**Verification points:**
+- [ ] The history interface is displayed
+- [ ] The history list loads correctly
+- [ ] Function buttons are visible and available
+- [ ] The interface layout is clear and reasonable
 
 ---
 
-### 步骤8：测试清空所有历史记录
+### Step 3: Browse History Records
 
-**AI执行指导：**
-- 查找"清空"、"清除所有"、"删除所有数据"等按钮
-- 使用 `browser_click` 点击清空按钮
-- 处理确认对话框
-- 验证清空结果（但建议取消操作以保留测试数据）
+**AI execution guidance:**
+- Use `browser_snapshot` to view the history list content
+- Scroll the list to see more records (if needed)
+- Click a history record to view details
+- Check the display of detailed information
 
-**预期结果：**
-- 显示清空确认对话框，包含警告信息
-- 确认对话框信息明确，提示操作不可恢复
-- 清空操作响应正常
-- 显示清空相关的提示
+**Expected results:**
+- History records are arranged in chronological order (usually newest first)
+- Each record shows a timestamp and a prompt summary
+- Clicking a record expands it or shows detailed information
+- The detailed information includes the original prompt, the optimization result, etc.
 
-**验证点：**
-- [ ] 清空确认对话框出现
-- [ ] 确认对话框包含适当警告
-- [ ] 清空操作响应正常
-- [ ] 提示信息明确
-
----
-
-### 步骤9：测试历史记录排序
-
-**AI执行指导：**
-- 检查历史记录的排序方式
-- 查找排序选项（如果有）
-- 测试不同的排序方式
-- 验证排序结果的正确性
-
-**预期结果：**
-- 默认按时间倒序排列
-- 排序选项功能正常（如果有）
-- 排序结果准确
-- 排序切换流畅
-
-**验证点：**
-- [ ] 默认排序正确
-- [ ] 排序选项功能正常（如果有）
-- [ ] 排序结果准确
-- [ ] 排序操作流畅
+**Verification points:**
+- [ ] History records are displayed correctly
+- [ ] The record ordering is reasonable (by time)
+- [ ] The record summary information is accurate
+- [ ] The detailed information is fully displayed
 
 ---
 
-### 步骤10：关闭历史记录界面
+### Step 4: View Record Details
 
-**AI执行指导：**
-- 查找关闭按钮（通常是X图标）
-- 使用 `browser_click` 点击关闭按钮
-- 或者点击界面外部区域关闭
-- 验证界面是否已关闭
+**AI execution guidance:**
+- Select a history record
+- View the full detailed information of the record
+- Check the original prompt, the optimization result, the template used, etc.
+- Verify the completeness and accuracy of the information
 
-**预期结果：**
-- 历史记录界面关闭
-- 返回主界面
-- 主界面功能正常可用
+**Expected results:**
+- The record details are fully displayed
+- It includes the original prompt and the optimization result
+- The template and model information used are displayed
+- The timestamp and other metadata are accurate
 
-**验证点：**
-- [ ] 历史记录界面成功关闭
-- [ ] 返回主界面
-- [ ] 主界面状态正常
-- [ ] 其他功能不受影响
-
----
-
-## ⚠️ 常见问题检查
-
-### 界面显示问题
-- 历史记录界面无法打开
-- 记录列表显示异常
-- 详情信息显示不完整
-- 界面布局错乱
-
-### 功能操作问题
-- 重用功能异常
-- 搜索功能不准确
-- 删除操作失败
-- 排序功能异常
-
-### 数据管理问题
-- 历史记录丢失
-- 记录信息不完整
-- 时间戳错误
-- 数据加载失败
+**Verification points:**
+- [ ] The record details are fully displayed
+- [ ] The original prompt is correct
+- [ ] The optimization result is complete
+- [ ] The metadata information is accurate
 
 ---
 
-## 🤖 AI验证执行模板
+### Step 5: Reuse a History Record
+
+**AI execution guidance:**
+- Select a history record to reuse
+- Find buttons such as "Reuse", "Apply", or "Load"
+- Use `browser_click` to click the reuse button
+- Check whether the main interface has loaded the history record content
+
+**Expected results:**
+- The content of the history record is loaded into the main interface
+- The original prompt is filled into the input box
+- The optimization result is displayed in the result area
+- The related template and model settings are also applied
+
+**Verification points:**
+- [ ] The reuse operation is executed successfully
+- [ ] The original prompt is loaded correctly
+- [ ] The optimization result is displayed correctly
+- [ ] The template and model settings are applied correctly
+
+---
+
+### Step 6: Search History Records (If Supported)
+
+**AI execution guidance:**
+- Find the search input box
+- Use `browser_type` to enter search keywords
+- Check the changes in the search results
+- Clear the search box to verify the list is restored
+
+**Test data:**
+```
+Search keywords: product, programming, fitness, etc.
+```
+
+**Expected results:**
+- The search feature can filter records by keyword
+- Search results accurately match the keywords
+- The complete list is displayed after clearing the search
+- The search response speed is reasonable
+
+**Verification points:**
+- [ ] The search feature works normally
+- [ ] Search results are accurate
+- [ ] The search clear feature works normally
+- [ ] Search performance is good
+
+---
+
+### Step 7: Delete a Single History Record
+
+**AI execution guidance:**
+- Select a history record
+- Find the delete button (trash icon or "Delete" text)
+- Use `browser_click` to click the delete button
+- Handle the confirmation dialog (if any)
+- Verify the record has been deleted
+
+**Expected results:**
+- A delete confirmation dialog is displayed
+- After confirmation, the record is removed from the list
+- A delete success prompt is displayed
+- The list updates correctly
+
+**Verification points:**
+- [ ] The delete confirmation dialog appears
+- [ ] The delete operation is executed successfully
+- [ ] The record is removed from the list
+- [ ] The interface updates correctly
+
+---
+
+### Step 8: Test Clearing All History Records
+
+**AI execution guidance:**
+- Find buttons such as "Clear", "Clear All", or "Delete All Data"
+- Use `browser_click` to click the clear button
+- Handle the confirmation dialog
+- Verify the clear result (but it is recommended to cancel the operation to keep the test data)
+
+**Expected results:**
+- A clear confirmation dialog with a warning message is displayed
+- The confirmation dialog message is clear and states that the operation cannot be undone
+- The clear operation responds normally
+- A clear-related prompt is displayed
+
+**Verification points:**
+- [ ] The clear confirmation dialog appears
+- [ ] The confirmation dialog contains an appropriate warning
+- [ ] The clear operation responds normally
+- [ ] The prompt message is clear
+
+---
+
+### Step 9: Test History Sorting
+
+**AI execution guidance:**
+- Check how the history records are sorted
+- Find the sort options (if any)
+- Test different sort methods
+- Verify the correctness of the sort results
+
+**Expected results:**
+- Sorted by time in descending order by default
+- The sort options work normally (if any)
+- The sort results are accurate
+- Sort switching is smooth
+
+**Verification points:**
+- [ ] The default sort is correct
+- [ ] The sort options work normally (if any)
+- [ ] The sort results are accurate
+- [ ] The sort operation is smooth
+
+---
+
+### Step 10: Close the History Interface
+
+**AI execution guidance:**
+- Find the close button (usually an X icon)
+- Use `browser_click` to click the close button
+- Or click the area outside the interface to close it
+- Verify the interface has closed
+
+**Expected results:**
+- The history interface closes
+- The view returns to the main interface
+- The main interface features are normally available
+
+**Verification points:**
+- [ ] The history interface closes successfully
+- [ ] The view returns to the main interface
+- [ ] The main interface state is normal
+- [ ] Other features are not affected
+
+---
+
+## ⚠️ Common Problem Checks
+
+### Interface Display Problems
+- The history interface cannot be opened
+- The record list displays abnormally
+- The detailed information is displayed incompletely
+- Layout disorder
+
+### Feature Operation Problems
+- The reuse feature is abnormal
+- The search feature is inaccurate
+- The delete operation fails
+- The sort feature is abnormal
+
+### Data Management Problems
+- History records are lost
+- Record information is incomplete
+- Wrong timestamps
+- Data loading fails
+
+---
+
+## 🤖 AI Verification Execution Template
 
 ```javascript
-// 1. 打开应用
+// 1. Open the application
 browser_navigate("http://localhost:18181/")
 
-// 2. 创建历史记录（如果需要）
-browser_type(element="原始提示词输入框", ref="e54", text="测试历史记录")
-browser_click(element="开始优化按钮", ref="e78")
+// 2. Create history records (if needed)
+browser_type(element="Original prompt input box", ref="e54", text="Test history")
+browser_click(element="Start optimization button", ref="e78")
 browser_wait_for(time=10)
 
-// 3. 打开历史记录
-browser_click(element="历史记录按钮", ref="history_button")
+// 3. Open history
+browser_click(element="History button", ref="history_button")
 browser_snapshot()
 
-// 4. 浏览历史记录
+// 4. Browse history records
 browser_snapshot()
 
-// 5. 查看记录详情
-browser_click(element="历史记录项", ref="history_item")
+// 5. View record details
+browser_click(element="History record item", ref="history_item")
 browser_snapshot()
 
-// 6. 重用历史记录
-browser_click(element="重用按钮", ref="reuse_button")
+// 6. Reuse a history record
+browser_click(element="Reuse button", ref="reuse_button")
 browser_snapshot()
 
-// 7. 搜索历史记录（如果支持）
-browser_type(element="搜索框", ref="search_input", text="测试")
+// 7. Search history records (if supported)
+browser_type(element="Search box", ref="search_input", text="test")
 browser_snapshot()
 
-// 8. 清空搜索
-browser_type(element="搜索框", ref="search_input", text="")
+// 8. Clear the search
+browser_type(element="Search box", ref="search_input", text="")
 browser_snapshot()
 
-// 9. 删除记录
-browser_click(element="删除按钮", ref="delete_button")
+// 9. Delete a record
+browser_click(element="Delete button", ref="delete_button")
 browser_snapshot()
 
-// 10. 测试清空功能
-browser_click(element="清空按钮", ref="clear_button")
+// 10. Test the clear feature
+browser_click(element="Clear button", ref="clear_button")
 browser_snapshot()
-browser_press_key("Escape") // 取消清空操作
+browser_press_key("Escape") // Cancel the clear operation
 
-// 11. 关闭历史记录界面
+// 11. Close the history interface
 browser_press_key("Escape")
 browser_snapshot()
 ```
 
-**成功标准：**
-- 历史记录界面正常打开和关闭
-- 历史记录正确显示和加载
-- 重用功能能够正常工作
-- 搜索和筛选功能正常（如果支持）
-- 删除功能正常工作
-- 清空功能有适当的确认机制
-- 所有交互功能按预期工作
-- 无错误提示或异常状态
+**Success criteria:**
+- The history interface opens and closes normally
+- History records are displayed and loaded correctly
+- The reuse feature works normally
+- Search and filter features work normally (if supported)
+- The delete feature works normally
+- The clear feature has an appropriate confirmation mechanism
+- All interactive features work as expected
+- No error messages or abnormal states

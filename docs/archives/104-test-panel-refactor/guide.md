@@ -1,32 +1,32 @@
-## **`TestPanel.vue` 组件升级改造文档**
+## **`TestPanel.vue` Component Upgrade Document**
 
-### 1. **目标**
+### 1. **Goal**
 
-将 `TestPanel.vue` 组件中用于显示"原始提示词结果"和"优化后提示词结果"的 `OutputPanelUI` 组件，全面升级为功能更强大、体验更统一的 `OutputDisplay` 组件。
+Fully upgrade the `OutputPanelUI` component used in the `TestPanel.vue` component to display the "original prompt result" and the "optimized prompt result" to the more powerful and more consistent `OutputDisplay` component.
 
-### 2. **核心原则**
+### 2. **Core Principles**
 
-本次改造将遵循与 `PromptPanel.vue` 中 `OutputDisplay` 用法一致的架构模式，确保代码库风格的统一性和可维护性。核心原则如下：
+This change follows the same architecture pattern as the use of `OutputDisplay` in `PromptPanel.vue`, ensuring a consistent code style and maintainability across the codebase. The core principles are as follows:
 
-*   **父组件拥有状态**：`TestPanel.vue` 将作为数据的所有者，全权负责管理测试结果的流式接收、内容存储和加载状态。
-*   **单向数据流**：所有状态（如内容和加载状态）将通过 `props` 的形式单向传递给子组件 `OutputDisplay`。
-*   **关注点分离**：`TestPanel.vue` 关注业务逻辑（如何获取数据），而 `OutputDisplay` 关注视图呈现（如何展示数据）。
+*   **The parent component owns the state**: `TestPanel.vue` is the owner of the data and is fully responsible for managing the streaming reception, content storage, and loading state of the test results.
+*   **One-way data flow**: All state (such as content and loading state) is passed one-way to the child component `OutputDisplay` via `props`.
+*   **Separation of concerns**: `TestPanel.vue` focuses on business logic (how to obtain data), while `OutputDisplay` focuses on view presentation (how to display data).
 
-### 3. **改造范围**
+### 3. **Scope of Changes**
 
-*   **文件**: `packages/ui/src/components/TestPanel.vue`
+*   **File**: `packages/ui/src/components/TestPanel.vue`
 
-### 4. **详细实施步骤**
+### 4. **Detailed Implementation Steps**
 
-#### **4.1. 模板 (`<template>`) 修改**
+#### **4.1. Template (`<template>`) changes**
 
-1.  **移除 Markdown 切换按钮**:
-    *   在模板中，找到并彻底删除用于切换 Markdown 渲染的两个 `<button>` 元素及其相关的 `enableMarkdown` 逻辑。`OutputDisplay` 自带视图切换功能，外部控制已不再需要。
+1.  **Remove the Markdown toggle buttons**:
+    *   In the template, find and completely delete the two `<button>` elements used to toggle Markdown rendering, along with the related `enableMarkdown` logic. `OutputDisplay` has its own view switching, so external control is no longer needed.
 
-2.  **替换 "原始提示词测试结果" 面板**:
-    *   找到 `v-show="isCompareMode"` 的 `div`。
-    *   删除内部的 `<OutputPanelUI ... />` 组件。
-    *   在原位置添加以下新结构：
+2.  **Replace the "original prompt test result" panel**:
+    *   Find the `div` with `v-show="isCompareMode"`.
+    *   Delete the `<OutputPanelUI ... />` component inside it.
+    *   Add the following new structure in its place:
         ```html
         <h3 class="text-lg font-semibold theme-text truncate mb-3">{{ t('test.originalResult') }}</h3>
         <OutputDisplay
@@ -37,10 +37,10 @@
         />
         ```
 
-3.  **替换 "优化后提示词测试结果" 面板**:
-    *   找到显示优化结果的 `div`。
-    *   删除内部的 `<OutputPanelUI ... />` 组件。
-    *   在原位置添加以下新结构：
+3.  **Replace the "optimized prompt test result" panel**:
+    *   Find the `div` that displays the optimized result.
+    *   Delete the `<OutputPanelUI ... />` component inside it.
+    *   Add the following new structure in its place:
         ```html
         <h3 class="text-lg font-semibold theme-text truncate mb-3">
           {{ isCompareMode ? t('test.optimizedResult') : t('test.testResult') }}
@@ -53,43 +53,43 @@
         />
         ```
 
-4.  **移除 `ref` 属性**:
-    *   从模板中删除 `ref="originalOutputPanelRef"` 和 `ref="optimizedOutputPanelRef"` 属性，它们将不再被使用。
+4.  **Remove the `ref` attributes**:
+    *   Delete the `ref="originalOutputPanelRef"` and `ref="optimizedOutputPanelRef"` attributes from the template; they will no longer be used.
 
-#### **4.2. 脚本 (`<script setup>`) 修改**
+#### **4.2. Script (`<script setup>`) changes**
 
-1.  **更新导入**:
-    *   从 `'./OutputPanel.vue'` 的导入语句中移除 `OutputPanelUI`。
-    *   添加从 `'./OutputDisplay.vue'` 导入 `OutputDisplay`。
-    *   确保已从 `'../composables/useToast'` 导入 `useToast` 并初始化 `const toast = useToast()`。
+1.  **Update imports**:
+    *   Remove `OutputPanelUI` from the import statement from `'./OutputPanel.vue'`.
+    *   Add an import of `OutputDisplay` from `'./OutputDisplay.vue'`.
+    *   Make sure `useToast` is imported from `'../composables/useToast'` and `const toast = useToast()` is initialized.
 
-2.  **移除废弃的状态**:
-    *   删除以下 `ref` 定义：
+2.  **Remove obsolete state**:
+    *   Delete the following `ref` definitions:
         ```javascript
         const originalOutputPanelRef = ref(null)
         const optimizedOutputPanelRef = ref(null)
-        const enableMarkdown = ref(true); // 如果存在
+        const enableMarkdown = ref(true); // if present
         ```
 
-3.  **重构 `testOriginalPrompt` 函数**:
-    *   此函数将从委托模式重构为主动管理模式。
-    *   **修改后**的完整逻辑应如下：
+3.  **Refactor the `testOriginalPrompt` function**:
+    *   This function changes from a delegation pattern to an active management pattern.
+    *   The complete logic **after the change** should be as follows:
         ```javascript
         const testOriginalPrompt = async () => {
           if (!props.originalPrompt) return
 
           isTestingOriginal.value = true
           originalTestResult.value = ''
-          originalTestError.value = '' // 可选，主要用于调试
+          originalTestError.value = '' // Optional, mainly for debugging
           
-          await nextTick(); // 确保状态更新和DOM清空完成
+          await nextTick(); // Ensure the state update and DOM clearing are complete
 
           try {
             const streamHandler = {
               onToken: (token) => {
                 originalTestResult.value += token
               },
-              onComplete: () => { /* 流结束后不再需要设置 isTesting, 由 finally 处理 */ },
+              onComplete: () => { /* No need to set isTesting after the stream ends; finally handles it */ },
               onError: (err) => {
                 const errorMessage = err.message || t('test.error.failed')
                 originalTestError.value = errorMessage
@@ -97,7 +97,7 @@
               }
             }
 
-            // ... 此处构建 systemPrompt 和 userPrompt 的逻辑保持不变 ...
+            // ... the logic for building systemPrompt and userPrompt here stays unchanged ...
 
             await props.promptService.testPromptStream(
               systemPrompt,
@@ -106,28 +106,28 @@
               streamHandler
             )
           } catch (error) {
-            console.error('[TestPanel] Original prompt test failed:', error); // 增加详细错误日志
+            console.error('[TestPanel] Original prompt test failed:', error); // Add detailed error logging
             const errorMessage = error.message || t('test.error.failed')
             originalTestError.value = errorMessage
             toast.error(errorMessage)
             originalTestResult.value = ''
           } finally {
-            // 确保无论成功或失败，加载状态最终都会被关闭
+            // Ensure that the loading state is always turned off, whether it succeeds or fails
             isTestingOriginal.value = false
           }
         }
         ```
 
-4.  **重构 `testOptimizedPrompt` 函数**:
-    *   应用与 `testOriginalPrompt` 完全相同的重构逻辑，但操作对象是 `optimized` 相关的状态 (`props.optimizedPrompt`, `isTestingOptimized`, `optimizedTestResult`, `optimizedTestError`)。
-    *   **关键增强点**: 同样需要在这里的 `try-catch-finally` 结构中加入 `await nextTick()` 和 `console.error` 日志。
+4.  **Refactor the `testOptimizedPrompt` function**:
+    *   Apply exactly the same refactor logic as `testOriginalPrompt`, but operate on the `optimized`-related state (`props.optimizedPrompt`, `isTestingOptimized`, `optimizedTestResult`, `optimizedTestError`).
+    *   **Key enhancement**: The `try-catch-finally` structure here also needs `await nextTick()` and the `console.error` log.
 
-5.  **移除 `defineExpose`**:
-    *   由于不再需要从外部引用组件内部的 `ref` 或方法，请删除整个 `defineExpose` 代码块。
+5.  **Remove `defineExpose`**:
+    *   Since the component's internal `ref`s or methods no longer need to be referenced from outside, delete the entire `defineExpose` code block.
 
-### 5. **预期结果**
+### 5. **Expected Results**
 
-*   `TestPanel.vue` 不再依赖 `OutputPanel.vue`，而是完全使用 `OutputDisplay.vue`。
-*   测试结果区域拥有了与主优化面板一致的外观和交互（如视图切换、全屏等），但被限制为只读模式。
-*   流式数据显示逻辑被正确地移至 `TestPanel.vue` 的 `<script>` 部分，代码结构更清晰，状态管理更可靠。
-*   项目减少了一个仅用于特定场景的 `OutputPanel.vue` 组件，提高了代码的复用性和一致性。 
+*   `TestPanel.vue` no longer depends on `OutputPanel.vue` and uses `OutputDisplay.vue` entirely.
+*   The test result area gets the same look and interactions as the main optimization panel (such as view switching and fullscreen), but is restricted to read-only mode.
+*   The streaming data display logic is correctly moved to the `<script>` section of `TestPanel.vue`, giving a clearer code structure and more reliable state management.
+*   The project loses an `OutputPanel.vue` component used only in a specific scenario, improving code reuse and consistency. 

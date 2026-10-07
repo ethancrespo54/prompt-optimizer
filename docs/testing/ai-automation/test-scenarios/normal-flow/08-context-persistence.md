@@ -1,118 +1,117 @@
-# 上下文管理与持久化测试（Normal Flow）
+# Context Management and Persistence Test (Normal Flow)
 
-## 📖 测试概述
-验证基于 ContextRepo 的上下文在编辑→持久化→刷新恢复的完整链路，覆盖消息与变量的保存、默认上下文初始化、导出基本检查等正常流程。
+## 📖 Test Overview
+Verify the complete chain of ContextRepo-based context from editing → persistence → refresh recovery, covering normal flows such as saving messages and variables, default context initialization, and basic export checks.
 
-## 🎯 测试目标
-- 确认默认上下文存在且可编辑
-- 验证 ContextEditor 的变更会被立即持久化
-- 刷新页面后上下文数据可恢复
-- 基础导出内容结构正确（context-bundle）
+## 🎯 Test Goals
+- Confirm that the default context exists and is editable
+- Verify that ContextEditor changes are persisted immediately
+- Verify that context data can be restored after refreshing the page
+- Basic export content structure is correct (context-bundle)
 
-## 📋 前置条件
-- [ ] 应用可正常启动（Web 或 Electron 桌面端均可）
-- [ ] 基础功能可用（可打开优化页与上下文编辑器）
-- [ ] 如需走导出流程，浏览器需允许下载/剪贴板权限
-
----
-
-## 🔧 测试步骤
-
-### 步骤1：准备并打开上下文编辑器
-**AI执行指导：**
-- 使用 `browser_snapshot` 定位“对话管理/会话管理”区域
-- 若无消息，点击“添加消息”创建至少1条
-- 点击“打开编辑器”按钮，等待全屏 ContextEditor 出现
-
-**预期结果：**
-- 对话区域显示消息数量与变量统计徽章
-- 点击“打开编辑器”后出现标题为“上下文编辑器”的弹窗
-
-**验证点：**
-- [ ] 顶部显示“消息数”标签
-- [ ] 存在“打开编辑器”按钮并可点击
-- [ ] 弹窗渲染正常，无布局错乱
+## 📋 Prerequisites
+- [ ] The application starts normally (either Web or Electron desktop)
+- [ ] Basic features are available (the optimization page and the context editor can be opened)
+- [ ] If running the export flow, the browser must allow download/clipboard permissions
 
 ---
 
-### 步骤2：编辑消息并触发持久化
-**AI执行指导：**
-- 在“消息”标签页：
-  - 将第一条消息内容设置为：`系统：你是一个有用的助手，任务是 {{task}}`（system）
-  - 新增一条用户消息：`请帮我完成 {{task}}，场景：{{scene}}`
-- 使用 `browser_wait_for` 等待界面稳定
+## 🔧 Test Steps
 
-**预期结果：**
-- ContextEditor 触发 `update:state/contextChange` 事件，父层应立即写入 ContextRepo
-- 变量统计显示包含 task、scene 两个变量
+### Step 1: Prepare and Open the Context Editor
+**AI execution guidance:**
+- Use `browser_snapshot` to locate the "Conversation Management / Session Management" area
+- If there are no messages, click "Add Message" to create at least 1
+- Click the "Open Editor" button and wait for the fullscreen ContextEditor to appear
 
-**验证点：**
-- [ ] 变量统计数量为2（不强制位置，仅检查存在）
-- [ ] 无错误提示或异常交互
+**Expected results:**
+- The conversation area shows a message count and variable statistics badge
+- After clicking "Open Editor", a popup titled "Context Editor" appears
 
----
-
-### 步骤3：在变量页添加覆盖并再次保存
-**AI执行指导：**
-- 切换到“变量/上下文变量”标签页
-- 点击“添加变量”，创建：
-  - `task = 集成测试`
-  - `scene = 正常流程`
-- 关闭编辑器（或保持开启）
-
-**预期结果：**
-- 上下文变量覆盖写入持久化层
-- 返回对话区域后，变量缺失数应为0
-
-**验证点：**
-- [ ] 变量页展示2个覆盖项
-- [ ] 对话区缺失变量标签消失
+**Verification points:**
+- [ ] The "message count" label is shown at the top
+- [ ] The "Open Editor" button exists and is clickable
+- [ ] The popup renders normally without layout disorder
 
 ---
 
-### 步骤4：刷新恢复验证
-**AI执行指导：**
-- 执行页面刷新（`browser_navigate` 到同一路由，或 `browser_press_key` 执行刷新快捷键）
-- 回到优化页面后，重复“步骤1”的操作打开 ContextEditor
+### Step 2: Edit Messages and Trigger Persistence
+**AI execution guidance:**
+- In the "Messages" tab:
+  - Set the content of the first message to: `System: You are a helpful assistant, your task is {{task}}` (system)
+  - Add a user message: `Please help me complete {{task}}, scenario: {{scene}}`
+- Use `browser_wait_for` to wait for the interface to stabilize
 
-**预期结果：**
-- 刷新后仍能看到先前的两条消息与两个变量覆盖
-- 变量统计、缺失数与刷新前一致
+**Expected results:**
+- ContextEditor triggers the `update:state/contextChange` event, and the parent layer should write to ContextRepo immediately
+- The variable statistics show the two variables task and scene
 
-**验证点：**
-- [ ] 消息数与内容与刷新前一致
-- [ ] 变量覆盖项与刷新前一致
-- [ ] 无任何丢失或回退到初始状态
-
----
-
-### 步骤5：导出基本检查（结构校验）
-**AI执行指导：**
-- 在 ContextEditor 中打开“导出”对话框，选择“标准格式”
-- 执行“复制到剪贴板”或“导出到文件”
-- 读取导出内容（剪贴板或文件）并解析 JSON
-
-**预期结果：**
-- 导出数据的 metadata.variables、messages 字段完整
-- 若包含 tools 字段应为数组（可为空）
-
-**验证点：**
-- [ ] `messages` 为数组且长度 ≥ 2
-- [ ] `metadata.variables.task === "集成测试"`
-- [ ] `metadata.variables.scene === "正常流程"`
-- [ ] `tools` 字段存在（数组，可空）
+**Verification points:**
+- [ ] The variable statistics count is 2 (position is not enforced, only existence is checked)
+- [ ] No error prompts or abnormal interactions
 
 ---
 
-## 🧪 诊断建议（失败时）
-- 若刷新后数据丢失：检查 `ContextRepo.update/ save` 是否被调用（通过控制台日志或 IPC 调用）
-- 若导出为空：确认导出前已 `setData`，或查看导出格式选择是否正确
-- 若变量缺失统计异常：确认变量名与占位符大小写是否完全匹配
+### Step 3: Add Overrides in the Variables Tab and Save Again
+**AI execution guidance:**
+- Switch to the "Variables / Context Variables" tab
+- Click "Add Variable" and create:
+  - `task = Integration Test`
+  - `scene = Normal Flow`
+- Close the editor (or keep it open)
+
+**Expected results:**
+- The context variable overrides are written to the persistence layer
+- After returning to the conversation area, the missing variable count should be 0
+
+**Verification points:**
+- [ ] The variables tab shows 2 override items
+- [ ] The missing variable label in the conversation area disappears
 
 ---
 
-## ✅ 成功标准
-- 编辑→持久化→刷新后恢复完整一致
-- 导出结构正确，可被再次导入（replace 模式）
-- 全流程无前端错误、无阻塞告警
+### Step 4: Refresh Recovery Verification
+**AI execution guidance:**
+- Refresh the page (`browser_navigate` to the same route, or use `browser_press_key` to run the refresh shortcut)
+- After returning to the optimization page, repeat the operation of "Step 1" to open the ContextEditor
 
+**Expected results:**
+- After the refresh, the two previous messages and two variable overrides are still visible
+- The variable statistics and missing count are consistent with those before the refresh
+
+**Verification points:**
+- [ ] The message count and content are consistent with those before the refresh
+- [ ] The variable overrides are consistent with those before the refresh
+- [ ] Nothing is lost or reverted to the initial state
+
+---
+
+### Step 5: Basic Export Check (Structure Validation)
+**AI execution guidance:**
+- Open the "Export" dialog in the ContextEditor and select "Standard Format"
+- Run "Copy to Clipboard" or "Export to File"
+- Read the exported content (clipboard or file) and parse the JSON
+
+**Expected results:**
+- The exported data's metadata.variables and messages fields are complete
+- If a tools field is included, it should be an array (can be empty)
+
+**Verification points:**
+- [ ] `messages` is an array with length ≥ 2
+- [ ] `metadata.variables.task === "Integration Test"`
+- [ ] `metadata.variables.scene === "Normal Flow"`
+- [ ] The `tools` field exists (an array, can be empty)
+
+---
+
+## 🧪 Diagnostic Suggestions (On Failure)
+- If data is lost after refresh: check whether `ContextRepo.update/ save` is called (via console logs or IPC calls)
+- If the export is empty: confirm that `setData` was called before exporting, or check whether the export format selection is correct
+- If the missing variable statistics are abnormal: confirm that variable names and placeholder casing match exactly
+
+---
+
+## ✅ Success Criteria
+- Edit → persist → restore after refresh is complete and consistent
+- The export structure is correct and can be imported again (replace mode)
+- No frontend errors and no blocking warnings throughout the flow

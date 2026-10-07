@@ -1,6 +1,6 @@
 {
   "testName": "optimize\\pro-variable.spec.ts",
-  "testCase": "优化带变量的提示词并生成优化结果",
+  "testCase": "Optimize a prompt with variables and generate an optimized result",
   "provider": "deepseek",
   "url": "https://api.deepseek.com/v1/chat/completions",
   "requestBody": {

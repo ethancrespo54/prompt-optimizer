@@ -1,62 +1,62 @@
-# 提示词优化器产品需求文档
+# Prompt Optimizer Product Requirements Document
 
-## 1. 产品概述
-提示词优化器是一个纯前端的工具，帮助用户优化和改进AI提示词。通过集成多个LLM模型，为用户提供专业的提示词优化建议。
+## 1. Product Overview
+Prompt Optimizer is a pure frontend tool that helps users optimize and improve AI prompts. By integrating multiple LLM models, it provides users with professional prompt optimization suggestions.
 
-## 2. 目标用户
-- AI应用开发者
-- 提示词工程师
-- 需要与AI模型交互的普通用户
+## 2. Target Users
+- AI application developers
+- Prompt engineers
+- Regular users who need to interact with AI models
 
-## 3. 核心功能需求
+## 3. Core Functional Requirements
 
-### 3.1 提示词优化
-- 支持输入原始提示词
-- 提供多个LLM模型选择
-- 实时字数统计
-- 一键清空输入
-- 优化结果预览
-- 一键复制结果
+### 3.1 Prompt Optimization
+- Support entering the original prompt
+- Provide a choice of multiple LLM models
+- Real-time character count
+- One-click clear of the input
+- Optimization result preview
+- One-click copy of the result
 
-### 3.2 模型管理
-- 支持多个LLM模型（DeepSeek、Gemini等）
-- API密钥管理
-- 模型配置编辑
-- 自定义模型支持
+### 3.2 Model Management
+- Support multiple LLM models (DeepSeek, Gemini, etc.)
+- API key management
+- Model configuration editing
+- Custom model support
 
-### 3.3 历史记录
-- 本地保存优化历史
-- 按时间排序
-- 搜索和过滤
-- 一键重用历史记录
-- 删除历史记录
+### 3.3 History
+- Save optimization history locally
+- Sort by time
+- Search and filter
+- One-click reuse of history entries
+- Delete history entries
 
-### 3.4 用户界面
-- 响应式设计
-- 深色/浅色主题
-- 多语言支持
-- 操作反馈提示
+### 3.4 User Interface
+- Responsive design
+- Dark/light themes
+- Multi-language support
+- Operation feedback notifications
 
-## 4. 非功能需求
+## 4. Non-Functional Requirements
 
-### 4.1 性能要求
-- 页面加载时间 < 2秒
-- API响应时间 < 5秒
-- 流畅的动画效果
+### 4.1 Performance Requirements
+- Page load time < 2 seconds
+- API response time < 5 seconds
+- Smooth animations
 
-### 4.2 安全要求
-- API密钥加密存储
-- 本地数据安全存储
-- 敏感信息保护
+### 4.2 Security Requirements
+- Encrypted storage of API keys
+- Secure storage of local data
+- Protection of sensitive information
 
-### 4.3 兼容性要求
-- 支持主流浏览器
-- 移动端适配
-- 响应式布局
+### 4.3 Compatibility Requirements
+- Support mainstream browsers
+- Mobile adaptation
+- Responsive layout
 
-## 5. 未来规划
-- 支持更多LLM模型
-- 提示词模板库
-- 批量优化功能
-- 提示词评分系统
-- 社区分享功能 
+## 5. Future Plans
+- Support more LLM models
+- Prompt template library
+- Batch optimization
+- Prompt scoring system
+- Community sharing

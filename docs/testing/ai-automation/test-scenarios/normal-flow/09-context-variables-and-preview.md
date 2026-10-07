@@ -1,114 +1,113 @@
-# 上下文变量与预览一致性测试（Normal Flow）
+# Context Variables and Preview Consistency Test (Normal Flow)
 
-## 📖 测试概述
-验证变量管理在上下文内的“增/改/删”操作、预定义变量名保护、以及 finalVars 合并策略对预览/缺失统计的一致性影响。
+## 📖 Test Overview
+Verify the "add/edit/delete" operations of variable management within a context, the protection of predefined variable names, and the consistent impact of the finalVars merge strategy on the preview and missing-variable statistics.
 
-## 🎯 测试目标
-- 变量覆盖的新增、编辑、删除正常
-- 预定义变量名不可作为覆盖项保存
-- finalVars = availableVariables ∪ context.variables（自动剔除预定义名）
-- 预览结果与缺失变量统计一致
+## 🎯 Test Goals
+- Adding, editing, and deleting variable overrides works normally
+- Predefined variable names cannot be saved as overrides
+- finalVars = availableVariables ∪ context.variables (predefined names are automatically removed)
+- The preview result is consistent with the missing-variable statistics
 
-## 📋 前置条件
-- [ ] 应用正常运行
-- [ ] 可打开“变量管理器”（全局变量）与“上下文编辑器”（上下文覆盖）
-- [ ] 如要验证 global→context 覆盖，请先在全局创建一个同名变量
-
----
-
-## 🔧 测试步骤
-
-### 步骤1：准备消息并打开上下文编辑器
-**AI执行指导：**
-- 在对话区添加消息：
-  - system: `系统：角色={{role}}`
-  - user: `你好 {{name}}，场景是 {{scene}}，当前提示={{currentPrompt}}`
-- 打开“上下文编辑器”
-
-**预期结果：**
-- 变量统计至少包含 `role/name/scene/currentPrompt`
-- 缺失变量提示包含 `role/name/scene`（若全局尚未提供），`currentPrompt` 取决于全局是否已内置预定义值
-
-**验证点：**
-- [ ] 变量统计数量符合消息中占位符
-- [ ] 缺失变量列表与实际未赋值变量一致
+## 📋 Prerequisites
+- [ ] The application is running normally
+- [ ] The "Variable Manager" (global variables) and the "Context Editor" (context overrides) can be opened
+- [ ] To verify global→context override, first create a variable with the same name globally
 
 ---
 
-### 步骤2：添加上下文变量覆盖
-**AI执行指导：**
-- 切换“变量”页，新增：
+## 🔧 Test Steps
+
+### Step 1: Prepare Messages and Open the Context Editor
+**AI execution guidance:**
+- Add messages in the conversation area:
+  - system: `System: role={{role}}`
+  - user: `Hello {{name}}, the scenario is {{scene}}, current prompt={{currentPrompt}}`
+- Open the "Context Editor"
+
+**Expected results:**
+- The variable statistics include at least `role/name/scene/currentPrompt`
+- The missing variable prompt includes `role/name/scene` (if not yet provided globally); `currentPrompt` depends on whether a predefined value is built in globally
+
+**Verification points:**
+- [ ] The variable statistics count matches the placeholders in the messages
+- [ ] The missing variable list matches the actually unassigned variables
+
+---
+
+### Step 2: Add Context Variable Overrides
+**AI execution guidance:**
+- Switch to the "Variables" tab and add:
   - `name = Alice`
-  - `scene = 正常流`
-  - `role = 系统助手`
+  - `scene = Normal Flow`
+  - `role = System Assistant`
 
-**预期结果：**
-- 三个覆盖项创建成功
-- 返回“消息”页切换预览后，占位符被正确替换
+**Expected results:**
+- The three override items are created successfully
+- After returning to the "Messages" tab and switching to preview, the placeholders are replaced correctly
 
-**验证点：**
-- [ ] 变量覆盖数量=3
-- [ ] 预览文本中无 `{{name}}/{{scene}}/{{role}}` 字样
-- [ ] 缺失变量数量减少或为0（取决于 `currentPrompt` 是否被全局提供）
+**Verification points:**
+- [ ] The variable override count = 3
+- [ ] The preview text contains no `{{name}}/{{scene}}/{{role}}` strings
+- [ ] The missing variable count decreases or is 0 (depending on whether `currentPrompt` is provided globally)
 
 ---
 
-### 步骤3：预定义变量名保护校验
-**AI执行指导：**
-- 在“变量”页尝试新增或编辑变量名为以下任一项：
+### Step 3: Predefined Variable Name Protection Check
+**AI execution guidance:**
+- In the "Variables" tab, try to add or edit a variable with any of the following names:
   - `currentPrompt` / `originalPrompt` / `lastOptimizedPrompt` / `iterateInput` / `userQuestion` / `conversationContext`
-- 观察保存按钮与提示文字
+- Observe the save button and the prompt text
 
-**预期结果：**
-- 保存按钮应被禁用或操作被阻止
-- 展示“预定义变量不可覆盖”的提示（或禁用状态说明）
+**Expected results:**
+- The save button should be disabled or the operation blocked
+- A "Predefined variables cannot be overridden" prompt (or a disabled-state explanation) is shown
 
-**验证点：**
-- [ ] 预定义变量名不可被保存为上下文覆盖
-- [ ] UI 有明显禁用/提示反馈
-
----
-
-### 步骤4：global→context 覆盖优先级（可选）
-**AI执行指导：**
-- 打开“变量管理器”（全局），新增：`name = Bob`
-- 在“上下文变量”中保持 `name = Alice`
-- 返回“消息”页，切换“预览”
-
-**预期结果：**
-- finalVars = global ∪ context 覆盖，其中 context 同名覆盖优先生效
-- 预览中应显示 `Alice`（而非 `Bob`）
-
-**验证点：**
-- [ ] 预览中 `name` 的值以上下文覆盖为准
-- [ ] 缺失变量统计不受该覆盖关系影响（仍以 finalVars 计算）
+**Verification points:**
+- [ ] Predefined variable names cannot be saved as context overrides
+- [ ] The UI gives clear disabled/prompt feedback
 
 ---
 
-### 步骤5：删除与回退校验
-**AI执行指导：**
-- 删除 `scene` 覆盖项
-- 返回“消息”页并切换预览
+### Step 4: global→context Override Priority (Optional)
+**AI execution guidance:**
+- Open the "Variable Manager" (global) and add: `name = Bob`
+- Keep `name = Alice` in the "Context Variables"
+- Return to the "Messages" tab and switch to "Preview"
 
-**预期结果：**
-- 若全局未提供 `scene`，预览重新出现 `{{scene}}` 占位符，缺失统计+1
-- 若全局提供 `scene`，预览显示全局值，缺失统计不变
+**Expected results:**
+- finalVars = global ∪ context overrides, where the context override with the same name takes precedence
+- The preview should show `Alice` (not `Bob`)
 
-**验证点：**
-- [ ] 删除覆盖后预览与缺失统计同步变化
-- [ ] 无异常报错或卡顿
-
----
-
-## 🧪 诊断建议（失败时）
-- 预定义名仍可保存：检查 UI 是否正确引用 PREDEFINED_VARIABLES（core/ui 一致）
-- 预览不一致：检查 ContextEditor 中 `finalVars` 合并逻辑与 `replaceVariables` 调用
-- 缺失统计异常：确认统计统一基于 `finalVars`（UI 已实现应一致）
+**Verification points:**
+- [ ] The value of `name` in the preview follows the context override
+- [ ] The missing variable statistics are not affected by this override relationship (still computed from finalVars)
 
 ---
 
-## ✅ 成功标准
-- 变量覆盖的增改删工作稳定，预定义名严格受控
-- 预览与缺失统计始终与 finalVars 一致
-- 无异常日志与交互阻塞
+### Step 5: Deletion and Fallback Check
+**AI execution guidance:**
+- Delete the `scene` override item
+- Return to the "Messages" tab and switch to preview
 
+**Expected results:**
+- If `scene` is not provided globally, the `{{scene}}` placeholder reappears in the preview and the missing count increases by 1
+- If `scene` is provided globally, the preview shows the global value and the missing count is unchanged
+
+**Verification points:**
+- [ ] After deleting the override, the preview and missing statistics change in sync
+- [ ] No abnormal errors or freezing
+
+---
+
+## 🧪 Diagnostic Suggestions (On Failure)
+- Predefined names can still be saved: check whether the UI correctly references PREDEFINED_VARIABLES (consistent between core and ui)
+- Inconsistent preview: check the `finalVars` merge logic in ContextEditor and the `replaceVariables` call
+- Abnormal missing statistics: confirm the statistics are uniformly based on `finalVars` (the UI implements this, so they should be consistent)
+
+---
+
+## ✅ Success Criteria
+- Adding, editing, and deleting variable overrides works stably, and predefined names are strictly controlled
+- The preview and missing statistics are always consistent with finalVars
+- No abnormal logs and no interaction blocking

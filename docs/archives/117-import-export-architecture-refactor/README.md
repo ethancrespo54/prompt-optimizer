@@ -1,110 +1,110 @@
-# 导入导出架构重构
+# Import/Export Architecture Refactor
 
-## 📋 项目概述
+## 📋 Project Overview
 
-- **项目编号**: 117
-- **项目名称**: 导入导出架构重构
-- **开发时间**: 2025-01-08 ~ 2025-01-09
-- **项目状态**: ✅ 已完成
-- **开发人员**: AI Assistant
+- **Project number**: 117
+- **Project name**: Import/Export Architecture Refactor
+- **Development period**: 2025-01-08 ~ 2025-01-09
+- **Project status**: ✅ Completed
+- **Developer**: AI Assistant
 
-## 🎯 项目目标
+## 🎯 Project Goals
 
-### 主要目标
-- 修复数据导出不完整问题（从4个设置项恢复到8个）
-- 重构导入导出架构，实现分布式服务设计
-- 统一存储键管理，解决架构不一致问题
+### Main Goals
+- Fix the incomplete data export problem (restore from 4 settings to 8)
+- Refactor the import/export architecture into a distributed service design
+- Unify storage key management and resolve architectural inconsistencies
 
-### 技术目标
-- 创建IImportExportable接口，实现关注点分离
-- 精简DataManager职责，从集中式改为协调者模式
-- 建立完整的架构文档和测试体系
+### Technical Goals
+- Create the IImportExportable interface to achieve separation of concerns
+- Slim down DataManager's responsibilities, moving from centralized to coordinator pattern
+- Establish complete architecture documentation and a testing system
 
-## ✅ 完成情况
+## ✅ Completion Status
 
-### 核心功能完成情况
-- ✅ IImportExportable接口设计与实现
-- ✅ 各服务分布式导入导出逻辑
-- ✅ DataManager重构（从375行精简到67行）
-- ✅ 存储键架构统一管理
-- ✅ Electron IPC更新支持新架构
-- ✅ 全面测试覆盖（单元测试+集成测试+MCP浏览器测试）
+### Core Feature Completion
+- ✅ IImportExportable interface design and implementation
+- ✅ Distributed import/export logic in each service
+- ✅ DataManager refactor (slimmed from 375 lines to 67 lines)
+- ✅ Unified storage key architecture management
+- ✅ Electron IPC updated to support the new architecture
+- ✅ Comprehensive test coverage (unit tests + integration tests + MCP browser tests)
 
-### 技术实现完成情况
-- ✅ 核心架构重构：IImportExportable接口和分布式导入导出
-- ✅ 存储键优化：移动storage-keys.ts到core包，统一管理
-- ✅ 服务层改造：ModelManager、TemplateManager、HistoryManager、PreferenceService
-- ✅ Electron桌面端更新：main.js (+177行)、preload.js (+148行)
-- ✅ 测试体系完善：5个import-export测试文件 + AI自动化测试框架
-- ✅ 文档与架构说明：4个架构文档 + 完整设计说明
+### Technical Implementation Completion
+- ✅ Core architecture refactor: IImportExportable interface and distributed import/export
+- ✅ Storage key optimization: moved storage-keys.ts to the core package for unified management
+- ✅ Service layer refactor: ModelManager, TemplateManager, HistoryManager, PreferenceService
+- ✅ Electron desktop update: main.js (+177 lines), preload.js (+148 lines)
+- ✅ Testing system completion: 5 import-export test files + AI automated testing framework
+- ✅ Documentation and architecture notes: 4 architecture documents + complete design description
 
-## 🎉 主要成果
+## 🎉 Main Results
 
-### 架构改进
-- **分布式设计**: 从集中式DataManager改为分布式服务自管理
-- **职责分离**: DataManager精简82%，只负责协调工作
-- **接口统一**: 所有服务实现IImportExportable接口
-- **存储统一**: 消除重复定义，统一存储键管理
+### Architecture Improvements
+- **Distributed design**: moved from a centralized DataManager to self-managing distributed services
+- **Separation of responsibilities**: DataManager slimmed down 82%, and only coordinates
+- **Unified interface**: all services implement the IImportExportable interface
+- **Unified storage**: eliminated duplicate definitions and unified storage key management
 
-### 稳定性提升
-- **数据完整性**: 修复导出不完整问题，恢复所有用户设置
-- **错误处理**: 新增ImportExportError专门错误类
-- **类型安全**: 完整的TypeScript接口定义
-- **向后兼容**: 保持现有API接口不变
+### Stability Improvements
+- **Data integrity**: fixed the incomplete export problem and restored all user settings
+- **Error handling**: added the dedicated ImportExportError error class
+- **Type safety**: complete TypeScript interface definitions
+- **Backward compatibility**: kept the existing API unchanged
 
-### 开发体验优化
-- **测试覆盖**: 建立完整的测试体系，包括AI自动化测试
-- **文档完善**: 创建详细的架构文档和设计说明
-- **代码质量**: 移除过度设计，提高可维护性
-- **开发效率**: 统一的接口模式，便于扩展新服务
+### Developer Experience Improvements
+- **Test coverage**: established a complete testing system, including AI automated tests
+- **Documentation**: created detailed architecture documents and design descriptions
+- **Code quality**: removed over-engineering and improved maintainability
+- **Development efficiency**: a unified interface pattern makes it easy to add new services
 
-## 📊 量化成果
+## 📊 Quantified Results
 
-### 代码变更统计
-- **文件变更**: 49个文件
-- **代码行数**: +1,904行，-951行，净增953行
-- **DataManager精简**: 从375行减至67行(-82%)
-- **Electron更新**: main.js +177行，preload.js +148行
+### Code Change Statistics
+- **Files changed**: 49 files
+- **Lines of code**: +1,904 lines, -951 lines, net +953 lines
+- **DataManager slimmed down**: from 375 lines to 67 lines (-82%)
+- **Electron updates**: main.js +177 lines, preload.js +148 lines
 
-### 测试覆盖
-- **新增测试文件**: 5个专门的import-export测试
-- **集成测试**: data/import-export-integration.test.ts
-- **AI自动化测试**: 3个测试用例验证存储键一致性
-- **MCP浏览器测试**: 全面验证导入导出功能
+### Test Coverage
+- **New test files**: 5 dedicated import-export tests
+- **Integration test**: data/import-export-integration.test.ts
+- **AI automated tests**: 3 test cases verifying storage key consistency
+- **MCP browser tests**: comprehensive verification of import/export functionality
 
-### 文档产出
-- **架构文档**: 4个详细设计文档
-- **AI测试框架**: 完整的自动化测试体系
-- **经验总结**: 大型重构最佳实践记录
+### Documentation Output
+- **Architecture documents**: 4 detailed design documents
+- **AI testing framework**: a complete automated testing system
+- **Lessons learned**: a record of best practices for large refactors
 
-## 🚀 后续工作
+## 🚀 Follow-up Work
 
-### 已识别的待办事项
-- [ ] 添加ESLint规则检测存储键魔法字符串 - 低优先级
-- [ ] 创建TypeScript类型约束存储键使用 - 低优先级
-- [ ] AI测试系统测试项补充 - 低优先级
+### Identified To-dos
+- [ ] Add an ESLint rule to detect magic strings for storage keys - low priority
+- [ ] Create TypeScript type constraints for storage key usage - low priority
+- [ ] Fill in the test items of the AI testing system - low priority
 
-### 建议的改进方向
-- **性能优化**: 考虑实现统一的缓存层
-- **监控增强**: 添加导入导出操作的性能监控
-- **用户体验**: 优化大文件导入的进度显示
-- **安全性**: 增强数据验证和错误恢复机制
+### Suggested Improvement Directions
+- **Performance optimization**: consider implementing a unified cache layer
+- **Monitoring**: add performance monitoring for import/export operations
+- **User experience**: improve progress display when importing large files
+- **Security**: strengthen data validation and error recovery mechanisms
 
-## 🔗 相关文档
+## 🔗 Related Documents
 
-### 核心文档
-- [implementation.md](./implementation.md) - 详细技术实现
-- [experience.md](./experience.md) - 开发经验总结
+### Core Documents
+- [implementation.md](./implementation.md) - Detailed technical implementation
+- [experience.md](./experience.md) - Development lessons learned
 
-### 架构文档
+### Architecture Documents
 - [docs/architecture/import-export-interface-design.md](../../architecture/import-export-interface-design.md)
 - [docs/architecture/storage-key-architecture.md](../../architecture/storage-key-architecture.md)
 - [docs/architecture/storage-refactoring-summary.md](../../architecture/storage-refactoring-summary.md)
 - [docs/architecture/preference-service-optimization.md](../../architecture/preference-service-optimization.md)
 
-### 测试文档
+### Test Documents
 - [docs/testing/ai-automation/storage-key-consistency/](../../testing/ai-automation/storage-key-consistency/)
 
-## 📈 项目影响
+## 📈 Project Impact
 
-这次重构是项目架构演进的重要里程碑，建立了可扩展的分布式服务架构，为后续功能开发奠定了坚实基础。通过引入AI自动化测试框架，也提升了项目的质量保证能力。
+This refactor is an important milestone in the project's architectural evolution. It established an extensible distributed service architecture and laid a solid foundation for subsequent feature development. Introducing the AI automated testing framework also improved the project's quality assurance capability.

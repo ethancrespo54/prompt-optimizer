@@ -1,293 +1,293 @@
-# 项目状态文档
+# Project Status Document
 
-## 1. 项目概述
+## 1. Project Overview
 
-提示词优化器是一个帮助用户优化AI提示词的工具，支持多种模型和界面形式。包括Web应用和Chrome浏览器插件两种使用方式，采用monorepo结构进行开发。
+Prompt Optimizer is a tool that helps users optimize AI prompts, supporting multiple models and interface forms. It is available as a Web application and a Chrome browser extension, and is developed using a monorepo structure.
 
-## 2. 总体进度
-- 项目完成度：95%
-- 当前阶段：功能完善与用户体验优化
-- 主要版本：v1.0.6
-- 最新更新：2025年1月
+## 2. Overall Progress
+- Project completion: 95%
+- Current phase: Feature refinement and user experience optimization
+- Main version: v1.0.6
+- Latest update: January 2025
 
-## 3. 功能完成情况
+## 3. Feature Completion Status
 
-### 3.1 核心包（@prompt-optimizer/core）
-- ✅ 基础架构搭建
-  - ✅ 项目结构设计
-  - ✅ 多包工作区配置
-  - ✅ 基础设施搭建
+### 3.1 Core Package (@prompt-optimizer/core)
+- ✅ Basic architecture setup
+  - ✅ Project structure design
+  - ✅ Multi-package workspace configuration
+  - ✅ Infrastructure setup
 
-- ✅ 服务迁移与优化
-  - ✅ 从LangChain迁移到原生SDK
-  - ✅ 模型管理服务优化
-  - ✅ 提示词服务优化
-  - ✅ 模板服务完善
-  - ✅ 历史记录服务重构
+- ✅ Service migration and optimization
+  - ✅ Migration from LangChain to native SDKs
+  - ✅ Model management service optimization
+  - ✅ Prompt service optimization
+  - ✅ Template service refinement
+  - ✅ History service refactor
 
-- ✅ 模型集成
-  - ✅ OpenAI集成
-  - ✅ Gemini集成
-  - ✅ DeepSeek集成
-  - ✅ 自定义API支持
-  - ✅ 流式响应支持
-  - ✅ 错误处理优化
+- ✅ Model integration
+  - ✅ OpenAI integration
+  - ✅ Gemini integration
+  - ✅ DeepSeek integration
+  - ✅ Custom API support
+  - ✅ Streaming response support
+  - ✅ Error handling optimization
 
-### 3.2 Web包（@prompt-optimizer/web）
-- ✅ UI重构
-  - ✅ 组件模块化
-  - ✅ UI包抽取
-  - ✅ 服务调用更新
-  - ✅ 错误处理优化
+### 3.2 Web Package (@prompt-optimizer/web)
+- ✅ UI refactor
+  - ✅ Component modularization
+  - ✅ UI package extraction
+  - ✅ Service call updates
+  - ✅ Error handling optimization
 
-- ✅ 功能增强
-  - ✅ 流式响应UI
-  - ✅ 模型连接测试
-  - ✅ 配置验证增强
-  - ✅ Toast组件迁移
-  - ✅ 环境变量加载优化
+- ✅ Feature enhancements
+  - ✅ Streaming response UI
+  - ✅ Model connection testing
+  - ✅ Enhanced configuration validation
+  - ✅ Toast component migration
+  - ✅ Environment variable loading optimization
 
-### 3.3 Chrome插件（@prompt-optimizer/extension）
-- ✅ 基础框架
-  - ✅ 插件架构设计
-  - ✅ 核心功能移植
-  - ✅ 权限管理
-  - ✅ UI组件复用
-- ✅ 特性开发
-  - ✅ 右键菜单集成
-  - ✅ 快捷键支持
-  - ✅ 历史同步
-  - ✅ 配置管理
+### 3.3 Chrome Extension (@prompt-optimizer/extension)
+- ✅ Basic framework
+  - ✅ Extension architecture design
+  - ✅ Core feature porting
+  - ✅ Permission management
+  - ✅ UI component reuse
+- ✅ Feature development
+  - ✅ Context menu integration
+  - ✅ Keyboard shortcut support
+  - ✅ History sync
+  - ✅ Configuration management
 
-## 4. 进行中的任务
+## 4. In-Progress Tasks
 
-### 4.1 核心功能完善（进度：90%）
-- ✅ 错误处理系统
-  - ✅ 统一错误类型
-  - ✅ 错误处理流程
-  - ✅ 错误恢复机制
-- ⏳ 性能优化
-  - ✅ 原生SDK迁移
-  - ✅ 资源管理优化
-  - ⏳ 内存使用优化
+### 4.1 Core Feature Refinement (Progress: 90%)
+- ✅ Error handling system
+  - ✅ Unified error types
+  - ✅ Error handling flow
+  - ✅ Error recovery mechanism
+- ⏳ Performance optimization
+  - ✅ Native SDK migration
+  - ✅ Resource management optimization
+  - ⏳ Memory usage optimization
 
-### 4.2 测试覆盖（进度：70%）
-- ✅ 单元测试
-  - ✅ 服务测试
-  - ✅ 工具函数测试
-  - ✅ 错误处理测试
-- ⏳ 集成测试
-  - ✅ 服务集成测试
-  - ⏳ API集成测试
-  - ⏳ 流程测试
+### 4.2 Test Coverage (Progress: 70%)
+- ✅ Unit tests
+  - ✅ Service tests
+  - ✅ Utility function tests
+  - ✅ Error handling tests
+- ⏳ Integration tests
+  - ✅ Service integration tests
+  - ⏳ API integration tests
+  - ⏳ Workflow tests
 
-### 4.3 文档完善（进度：85%）
-- ✅ 核心文档
-  - ✅ 架构文档
-  - ✅ API文档
-  - ✅ 开发指南
-- ⏳ 使用文档
-  - ✅ 最佳实践
-  - ⏳ 示例代码
-  - ⏳ 故障排除
+### 4.3 Documentation Refinement (Progress: 85%)
+- ✅ Core documentation
+  - ✅ Architecture documentation
+  - ✅ API documentation
+  - ✅ Development guide
+- ⏳ Usage documentation
+  - ✅ Best practices
+  - ⏳ Example code
+  - ⏳ Troubleshooting
 
-### 4.4 Chrome插件优化（进度：90%）
-- ✅ 性能优化
-  - ✅ 资源加载优化
-  - ✅ 响应速度优化
-  - ⏳ 内存使用优化
+### 4.4 Chrome Extension Optimization (Progress: 90%)
+- ✅ Performance optimization
+  - ✅ Resource loading optimization
+  - ✅ Response speed optimization
+  - ⏳ Memory usage optimization
 
-- ✅ 安全加固
-  - ✅ 权限管理
-  - ✅ 数据安全
-  - ⏳ 通信安全
+- ✅ Security hardening
+  - ✅ Permission management
+  - ✅ Data security
+  - ⏳ Communication security
 
-- ⏳ 测试与文档
-  - ✅ 单元测试
-  - ⏳ 集成测试
-  - ⏳ 文档更新
+- ⏳ Testing and documentation
+  - ✅ Unit tests
+  - ⏳ Integration tests
+  - ⏳ Documentation updates
 
-## 5. 待开发功能
+## 5. Features To Be Developed
 
-### 5.1 高级功能（计划启动：4月初）
-- ⏳ 批量处理
-  - ⏳ 批量优化
-  - ⏳ 任务队列
-  - ⏳ 进度管理
-- ⏳ 提示词分析
-  - ⏳ 质量评估
-  - ⏳ 性能分析
-  - ⏳ 优化建议
+### 5.1 Advanced Features (Planned start: early April)
+- ⏳ Batch processing
+  - ⏳ Batch optimization
+  - ⏳ Task queue
+  - ⏳ Progress management
+- ⏳ Prompt analysis
+  - ⏳ Quality assessment
+  - ⏳ Performance analysis
+  - ⏳ Optimization suggestions
 
-## 6. 技术指标
+## 6. Technical Metrics
 
-### 6.1 当前指标（2024-02-26）
-- 代码测试覆盖率：80%
-- 页面加载时间：1.3秒
-- API响应时间：0.8-2.0秒
-- 首次内容渲染：0.8秒
+### 6.1 Current Metrics (2024-02-26)
+- Code test coverage: 80%
+- Page load time: 1.3 seconds
+- API response time: 0.8-2.0 seconds
+- First contentful paint: 0.8 seconds
 
-### 6.2 目标指标（4月初）
-- 代码测试覆盖率：>85%
-- 页面加载时间：<1.2秒
-- API响应时间：<1.5秒
-- 首次内容渲染：<0.8秒
+### 6.2 Target Metrics (early April)
+- Code test coverage: >85%
+- Page load time: <1.2 seconds
+- API response time: <1.5 seconds
+- First contentful paint: <0.8 seconds
 
-## 7. 风险评估
+## 7. Risk Assessment
 
-### 7.1 技术风险
-- 🟢 原生SDK集成
-  - 版本兼容性已解决
-  - API稳定性已验证
-  - 性能提升明显
-- 🟢 多模型支持
-  - API差异处理已完成
-  - 错误处理统一完成
-  - 配置复杂性降低
-- 🟡 安全性问题
-  - API密钥保护已实现
-  - 数据安全待加强
-  - XSS防护完善中
+### 7.1 Technical Risks
+- 🟢 Native SDK integration
+  - Version compatibility resolved
+  - API stability verified
+  - Significant performance improvement
+- 🟢 Multi-model support
+  - API difference handling completed
+  - Unified error handling completed
+  - Configuration complexity reduced
+- 🟡 Security issues
+  - API key protection implemented
+  - Data security needs strengthening
+  - XSS protection being improved
 
-### 7.2 项目风险
-- 🟢 进度风险
-  - 核心功能已完成
-  - 测试覆盖持续增加
-  - 文档更新同步
-- 🟢 质量风险
-  - 代码质量控制
-  - 性能优化明显
-  - 用户体验提升
-- 🟢 Chrome API兼容性（已解决）
-- 🟡 性能瓶颈（优化中）
-- 🟢 跨域通信（已解决）
+### 7.2 Project Risks
+- 🟢 Schedule risk
+  - Core features completed
+  - Test coverage continues to grow
+  - Documentation updated in sync
+- 🟢 Quality risk
+  - Code quality control
+  - Significant performance optimization
+  - Improved user experience
+- 🟢 Chrome API compatibility (resolved)
+- 🟡 Performance bottlenecks (being optimized)
+- 🟢 Cross-origin communication (resolved)
 
-## 8. 发布计划
+## 8. Release Plan
 
-### 8.1 测试版（v0.1.0）- 预计3月初发布
-- ✅ 基础功能可用
-- ✅ 核心特性完整
-- ✅ 初步性能优化
-- ✅ 基本安全措施
+### 8.1 Beta (v0.1.0) - Expected early March
+- ✅ Basic features usable
+- ✅ Core features complete
+- ✅ Initial performance optimization
+- ✅ Basic security measures
 
-### 8.2 正式版（v1.0.0）- 预计3月中旬发布
-- ⏳ 完整功能集
-- ⏳ 性能优化完成
-- ⏳ 安全措施完善
-- ⏳ 文档完整
+### 8.2 Official Release (v1.0.0) - Expected mid-March
+- ⏳ Complete feature set
+- ⏳ Performance optimization completed
+- ⏳ Security measures refined
+- ⏳ Complete documentation
 
-## 9. 发布准备
+## 9. Release Preparation
 
-### 9.1 商店发布材料（进行中）
-- ⏳ 扩展描述
-- ⏳ 详细功能介绍
-- ⏳ 高质量截图（至少3张）
-- ⏳ 宣传视频（可选）
-- ⏳ 隐私政策
+### 9.1 Store Listing Materials (In progress)
+- ⏳ Extension description
+- ⏳ Detailed feature introduction
+- ⏳ High-quality screenshots (at least 3)
+- ⏳ Promotional video (optional)
+- ⏳ Privacy policy
 
-### 9.2 最终审核（计划中）
-- ⏳ 代码审核
-- ⏳ 功能测试
-- ⏳ 权限审查
-- ⏳ 安全检查
-- ⏳ 性能测试
+### 9.2 Final Review (Planned)
+- ⏳ Code review
+- ⏳ Functional testing
+- ⏳ Permission review
+- ⏳ Security check
+- ⏳ Performance testing
 
-## 10. 后续计划
+## 10. Next Steps
 
-### 10.1 近期计划（1-2周）
-1. 完成剩余功能优化
-   - 内存使用优化
-   - 性能进一步调优
-   - 用户体验改进
+### 10.1 Short-Term Plan (1-2 weeks)
+1. Complete remaining feature optimizations
+   - Memory usage optimization
+   - Further performance tuning
+   - User experience improvements
 
-2. 提升测试覆盖率
-   - 补充集成测试
-   - 完善API测试
-   - 添加E2E测试
+2. Improve test coverage
+   - Add integration tests
+   - Refine API tests
+   - Add E2E tests
 
-3. 完善文档系统
-   - 更新技术栈文档
-   - 添加示例代码
-   - 编写故障排除指南
+3. Refine the documentation system
+   - Update tech stack documentation
+   - Add example code
+   - Write a troubleshooting guide
 
-### 10.2 中期计划（2-3周）
-1. 完成Chrome插件发布准备
-   - 最终功能测试
-   - 性能优化
-   - 文档准备
-   - 商店资料准备
+### 10.2 Mid-Term Plan (2-3 weeks)
+1. Complete Chrome extension release preparation
+   - Final functional testing
+   - Performance optimization
+   - Documentation preparation
+   - Store materials preparation
 
-2. 开发高级功能
-   - 实现批量处理
-   - 添加分析功能
-   - 优化用户体验
+2. Develop advanced features
+   - Implement batch processing
+   - Add analysis features
+   - Optimize user experience
 
-### 10.3 长期计划（1-2月）
-1. 产品化完善
-   - 功能完整性
-   - 稳定性提升
-   - 性能持续优化
+### 10.3 Long-Term Plan (1-2 months)
+1. Productization refinement
+   - Feature completeness
+   - Stability improvements
+   - Continued performance optimization
 
-2. 社区建设
-   - 开源推广
-   - 文档完善
-   - 示例丰富
+2. Community building
+   - Open source promotion
+   - Documentation refinement
+   - Richer examples
 
-## 11. 维护计划
+## 11. Maintenance Plan
 
-### 11.1 日常维护
-- 问题修复
-- 性能监控
-- 安全更新
-- 用户反馈
+### 11.1 Routine Maintenance
+- Bug fixes
+- Performance monitoring
+- Security updates
+- User feedback
 
-### 11.2 版本更新
-- 功能迭代
-- 性能优化
-- 安全加固
-- 文档更新
+### 11.2 Version Updates
+- Feature iteration
+- Performance optimization
+- Security hardening
+- Documentation updates
 
-## 12. 更新记录
+## 12. Change Log
 
-### 2025年1月 (v1.0.6)
-- 2025-01-06: 添加高级LLM参数配置功能 (llmParams)
-- 2024-12-20: 增强数据管理器和模板管理器的导入逻辑
-- 2024-12-20: 在模板管理器中添加模板名称显示
-- 2024-12-20: 优化数据管理器样式并增强警告信息展示
-- 2024-12-15: 添加基本认证功能和环境变量配置 (Docker)
-- 2024-12-10: 实现Vercel密码保护功能
-- 2024-12-05: 重构数据管理器并添加UI配置导入导出功能
-- 2024-11-30: 实现统一存储层和数据导入导出功能
-- 2024-11-25: 实现全屏弹窗功能并优化组件交互
-- 2024-11-20: 集成Vercel Analytics
-- 2024-11-15: 添加Zhipu智谱AI模型支持
-- 2024-11-10: 优化PromptPanel组件中版本选择按钮的样式和布局
-- 2024-11-05: 测试结果展示框增加放大弹窗功能
+### January 2025 (v1.0.6)
+- 2025-01-06: Added advanced LLM parameter configuration (llmParams)
+- 2024-12-20: Enhanced import logic for the data manager and template manager
+- 2024-12-20: Added template name display in the template manager
+- 2024-12-20: Optimized data manager styling and enhanced warning message display
+- 2024-12-15: Added basic authentication and environment variable configuration (Docker)
+- 2024-12-10: Implemented Vercel password protection
+- 2024-12-05: Refactored the data manager and added UI configuration import/export
+- 2024-11-30: Implemented a unified storage layer and data import/export
+- 2024-11-25: Implemented fullscreen dialog and optimized component interactions
+- 2024-11-20: Integrated Vercel Analytics
+- 2024-11-15: Added Zhipu AI (智谱AI) model support
+- 2024-11-10: Optimized the style and layout of the version selection button in the PromptPanel component
+- 2024-11-05: Added an enlarge-dialog feature to the test result display box
 
-### 2024年早期版本
-- 2024-02-26: 完成从LangChain迁移到原生SDK
-- 2024-02-26: 更新项目配置和依赖
-- 2024-02-25: 优化环境变量加载和测试集成
-- 2024-02-25: 重构核心包导出和模块结构
-- 2024-02-21: 重构历史记录管理，移除初始化逻辑并优化UI组件
-- 2024-02-18: 改进模板选择类型安全性和错误处理
-- 2024-02-18: 模块化UI包并改进扩展和Web应用中的类型安全性
-- 2024-02-15: 优化多模型支持
-- 2024-02-14: 重构提示词服务
-- 2024-02-12: 重构UI组件结构
+### Early 2024 Versions
+- 2024-02-26: Completed migration from LangChain to native SDKs
+- 2024-02-26: Updated project configuration and dependencies
+- 2024-02-25: Optimized environment variable loading and test integration
+- 2024-02-25: Refactored core package exports and module structure
+- 2024-02-21: Refactored history management, removed initialization logic and optimized UI components
+- 2024-02-18: Improved type safety and error handling in template selection
+- 2024-02-18: Modularized the UI package and improved type safety in the extension and Web apps
+- 2024-02-15: Optimized multi-model support
+- 2024-02-14: Refactored the prompt service
+- 2024-02-12: Refactored the UI component structure
 
 - **2024-07-28**:
-  - **完成 Composable 重构后的大规模修复**：
-    - 解决了因 `ref` 迁移到 `reactive` 引起的系列问题。
-    - 修复了 `templateLanguageService` 依赖注入失败的 bug。
-    - 使用 `toRef` 优雅地解决了 `useTemplateManager` 与 `usePromptOptimizer` 之间响应式状态传递的接口不匹配问题。
-    - 修复了 i18n 键值缺失和 Vercel API 检测误报的警告。
-  - **状态**: 应用初始化流程恢复稳定，核心功能回归正常。
+  - **Completed large-scale fixes after the Composable refactor**:
+    - Resolved a series of problems caused by migrating from `ref` to `reactive`.
+    - Fixed the bug where `templateLanguageService` dependency injection failed.
+    - Used `toRef` to cleanly resolve the interface mismatch in reactive state passing between `useTemplateManager` and `usePromptOptimizer`.
+    - Fixed warnings about missing i18n keys and false positives in Vercel API detection.
+  - **Status**: The application initialization flow is stable again, and core features are back to normal.
 
-## 13. Chrome扩展开发经验
+## 13. Chrome Extension Development Experience
 
-### 13.1 图标问题排查
-- manifest.json中的图标设置需要严格遵循Chrome扩展规范
-- 图标必须是有效的PNG格式
-- 图标尺寸必须严格符合声明（16x16、48x48、128x128）
-- 如果图标不显示，可以尝试更换其他已确认可用的PNG图片进行测试 
+### 13.1 Icon Troubleshooting
+- Icon settings in manifest.json must strictly follow the Chrome extension specification
+- Icons must be valid PNG format
+- Icon dimensions must strictly match what is declared (16x16, 48x48, 128x128)
+- If the icon does not display, try swapping in another PNG image that is known to work

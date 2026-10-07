@@ -1,123 +1,123 @@
-# 桌面端应用发布与智能更新系统 - 技术实现详解
+# Desktop App Release and Smart Update System - Technical Implementation Details
 
-## 1. 总体设计目标
+## 1. Overall Design Goals
 
-构建一个专业、跨平台、用户体验优先的桌面应用更新系统。系统应为非侵入式，将完整的控制权交给用户，同时确保更新流程的稳定性和数据的安全性。
+Build a professional, cross-platform, user-experience-first desktop app update system. The system should be non-intrusive, give full control to the user, and ensure the stability of the update process and the safety of data.
 
 ---
 
-## 2. 打包与发布策略 (CI/CD)
+## 2. Packaging and Release Strategy (CI/CD)
 
-**目标**: 自动化构建支持自动更新的安装包和供高级用户使用的便携包，并将其发布到 GitHub Releases。
+**Goal**: Automatically build installers that support auto-update and portable packages for advanced users, and publish them to GitHub Releases.
 
-- **涉及文件**:
+- **Files involved**:
   - `packages/desktop/package.json`
   - `.github/workflows/release.yml`
 
-#### 2.1. 构建配置 (`package.json`)
+#### 2.1. Build Configuration (`package.json`)
 
-1.  **核心依赖**: 添加 `electron-updater` 到 `dependencies`。
-2.  **更新源配置**: 在 `build` 节点下，添加 `publish` 配置，指向项目的 GitHub 仓库（提供 `owner` 和 `repo`）。
-3.  **多目标构建**:
-    -   `win.target`: 设置为 `['nsis', 'zip']`，同时生成 Windows 安装包和便携包。
-    -   `mac.target`: 设置为 `['dmg', 'zip']`，同时生成 macOS 安装包和便携包。
-    -   `linux.target`: 设置为 `['AppImage', 'zip']`，同时生成 Linux 安装包和便携包。
+1.  **Core dependency**: Add `electron-updater` to `dependencies`.
+2.  **Update source configuration**: Under the `build` node, add a `publish` configuration pointing to the project's GitHub repository (provide `owner` and `repo`).
+3.  **Multi-target builds**:
+    -   `win.target`: set to `['nsis', 'zip']`, generating both a Windows installer and a portable package.
+    -   `mac.target`: set to `['dmg', 'zip']`, generating both a macOS installer and a portable package.
+    -   `linux.target`: set to `['AppImage', 'zip']`, generating both a Linux installer and a portable package.
 
-#### 2.2. 自动化工作流 (`release.yml`)
+#### 2.2. Automated Workflow (`release.yml`)
 
-1.  **上传所有产物**: 在 `build-windows`, `build-macos`, `build-linux` 这三个 `job` 中，修改 `actions/upload-artifact` 步骤，确保上传所有生成的文件（如 `*.exe`, `*.dmg`, `*.AppImage`, `*.zip`, `*.yml`），而不仅仅是 `.zip`。
-2.  **发布所有产物**: 在最终的 `create-release` `job` 中，修改 `softprops/action-gh-release` 的 `files` 参数，使用通配符（如 `artifacts/**/*`）将所有下载的 `artifact` 文件附加到 GitHub Release 中。
-
----
-
-## 3. 核心更新逻辑 (主进程)
-
-**目标**: 编写健壮的主进程逻辑，作为整个交互式更新流程的后端引擎。
-
-- **涉及文件**: `packages/desktop/main.js`
-
-#### 3.1. `checkUpdate` 异步函数
-
-1.  **读取持久化设置**: 在函数开始时，从 `PreferenceService` 异步读取 `updater.allowPrerelease` 和 `updater.ignoredVersion` 的值。
-2.  **配置更新器**:
-    -   根据读取到的偏好设置 `autoUpdater.allowPrerelease`。
-    -   **必须**设置 `autoUpdater.autoDownload = false`，将下载控制权交给用户。
-3.  **处理 `update-available` 事件**:
-    -   **智能忽略**: 在回调函数第一行，进行判断：`if (info.version === ignoredVersion) return;`。如果发现的版本是用户忽略过的，则提前终止流程。
-    -   **构建详情链接**: 根据 `package.json` 中的 `publish` 配置和 `info.version`，动态构建出指向 GitHub Release 页面的 `releaseUrl`。
-    -   **发送通知**: 通过 IPC (`update-available-info`) 将包含版本信息和 `releaseUrl` 的对象发送给 UI 层。
-
-#### 3.2. IPC 处理器
-
-1.  **`start-download-update`**: 调用 `autoUpdater.downloadUpdate()`，开始下载更新。
-2.  **`install-update`**: 调用 `autoUpdater.quitAndInstall()`，安装更新并重启应用。
-3.  **`ignore-update`**: 接收版本号参数，将其保存到 `PreferenceService` 的 `updater.ignoredVersion` 中。
-4.  **`open-external-link`**: 接收 URL 参数，使用 `shell.openExternal()` 在用户的默认浏览器中打开链接。
+1.  **Upload all artifacts**: In the three `job`s `build-windows`, `build-macos` and `build-linux`, modify the `actions/upload-artifact` step to make sure all generated files (such as `*.exe`, `*.dmg`, `*.AppImage`, `*.zip`, `*.yml`) are uploaded, not just `.zip`.
+2.  **Publish all artifacts**: In the final `create-release` `job`, modify the `files` parameter of `softprops/action-gh-release` to use a wildcard (such as `artifacts/**/*`) to attach all downloaded `artifact` files to the GitHub Release.
 
 ---
 
-## 4. UI 层交互设计
+## 3. Core Update Logic (Main Process)
 
-**目标**: 设计一个简洁、直观的用户界面，让用户能够轻松控制更新流程。
+**Goal**: Write robust main-process logic that serves as the backend engine of the whole interactive update flow.
 
-- **涉及文件**:
+- **Files involved**: `packages/desktop/main.js`
+
+#### 3.1. The `checkUpdate` Async Function
+
+1.  **Read persisted settings**: At the start of the function, asynchronously read the values of `updater.allowPrerelease` and `updater.ignoredVersion` from `PreferenceService`.
+2.  **Configure the updater**:
+    -   Set `autoUpdater.allowPrerelease` according to the loaded preference.
+    -   **Must** set `autoUpdater.autoDownload = false`, handing download control to the user.
+3.  **Handle the `update-available` event**:
+    -   **Smart ignore**: On the first line of the callback, check: `if (info.version === ignoredVersion) return;`. If the discovered version is one the user has ignored, terminate the flow early.
+    -   **Build the details link**: Based on the `publish` configuration in `package.json` and `info.version`, dynamically build the `releaseUrl` pointing to the GitHub Release page.
+    -   **Send the notification**: Send an object containing the version information and `releaseUrl` to the UI layer via IPC (`update-available-info`).
+
+#### 3.2. IPC Handlers
+
+1.  **`start-download-update`**: Calls `autoUpdater.downloadUpdate()` to start downloading the update.
+2.  **`install-update`**: Calls `autoUpdater.quitAndInstall()` to install the update and restart the app.
+3.  **`ignore-update`**: Receives a version number parameter and saves it to `updater.ignoredVersion` in `PreferenceService`.
+4.  **`open-external-link`**: Receives a URL parameter and uses `shell.openExternal()` to open the link in the user's default browser.
+
+---
+
+## 4. UI Layer Interaction Design
+
+**Goal**: Design a simple, intuitive user interface that lets users easily control the update flow.
+
+- **Files involved**:
   - `packages/ui/src/composables/useUpdater.ts`
   - `packages/ui/src/components/UpdaterIcon.vue`
   - `packages/ui/src/components/UpdaterModal.vue`
 
 #### 4.1. `useUpdater` Composable
 
-1.  **状态管理**: 定义 `hasUpdate`, `updateInfo`, `downloadProgress`, `isDownloading`, `isDownloaded`, `allowPrerelease` 等响应式状态。
-2.  **IPC 通信**: 封装与主进程的 IPC 通信，提供 `checkUpdate`, `startDownload`, `installUpdate`, `ignoreUpdate`, `togglePrerelease` 等方法。
-3.  **事件监听**: 监听主进程发送的 `update-available-info`, `update-download-progress`, `update-downloaded` 事件，并更新相应的状态。
+1.  **State management**: Define reactive states such as `hasUpdate`, `updateInfo`, `downloadProgress`, `isDownloading`, `isDownloaded` and `allowPrerelease`.
+2.  **IPC communication**: Wrap the IPC communication with the main process, providing methods such as `checkUpdate`, `startDownload`, `installUpdate`, `ignoreUpdate` and `togglePrerelease`.
+3.  **Event listening**: Listen for the `update-available-info`, `update-download-progress` and `update-downloaded` events sent by the main process, and update the corresponding states.
 
-#### 4.2. `UpdaterIcon` 组件
+#### 4.2. The `UpdaterIcon` Component
 
-1.  **条件渲染**: 仅在 Electron 环境中显示，使用 `isRunningInElectron()` 进行环境检测。
-2.  **状态指示**: 根据 `hasUpdate` 状态显示更新提示（如小红点）。
-3.  **点击交互**: 点击图标弹出 `UpdaterModal` 组件。
+1.  **Conditional rendering**: Shown only in the Electron environment, using `isRunningInElectron()` for environment detection.
+2.  **Status indication**: Show an update hint (such as a red dot) based on the `hasUpdate` state.
+3.  **Click interaction**: Clicking the icon opens the `UpdaterModal` component.
 
-#### 4.3. `UpdaterModal` 组件
+#### 4.3. The `UpdaterModal` Component
 
-1.  **多状态视图**:
-    -   **默认状态**: 显示当前版本，提供"检查更新"按钮。
-    -   **更新可用**: 显示新版本信息，提供"下载"、"查看详情"、"忽略"按钮。
-    -   **下载中**: 显示下载进度条。
-    -   **下载完成**: 提供"安装并重启"按钮。
-2.  **用户控制**: 提供预览版开关，让用户选择是否接收预览版更新。
+1.  **Multi-state views**:
+    -   **Default state**: Shows the current version and provides a "Check for Updates" button.
+    -   **Update available**: Shows the new version information and provides "Download", "View Details" and "Ignore" buttons.
+    -   **Downloading**: Shows a download progress bar.
+    -   **Download complete**: Provides an "Install and Restart" button.
+2.  **User control**: Provides a prerelease toggle that lets users choose whether to receive prerelease updates.
 
 ---
 
-## 5. 多形态产品兼容性
+## 5. Compatibility Across Product Forms
 
-**目标**: 确保更新功能仅在桌面环境中可见，对 Web 和 Extension 环境完全透明。
+**Goal**: Ensure the update feature is visible only in the desktop environment and completely transparent to the Web and Extension environments.
 
-#### 5.1. 环境检测
+#### 5.1. Environment Detection
 
-使用 `@prompt-optimizer/core` 包中的 `isRunningInElectron()` 函数进行环境检测：
+Use the `isRunningInElectron()` function from the `@prompt-optimizer/core` package for environment detection:
 
 ```typescript
 import { isRunningInElectron } from '@prompt-optimizer/core'
 
-// 仅在 Electron 环境中显示更新组件
+// Show the update component only in the Electron environment
 <div v-if="isRunningInElectron()">
   <UpdaterIcon />
 </div>
 ```
 
-#### 5.2. 条件渲染策略
+#### 5.2. Conditional Rendering Strategy
 
-1.  **组件级别**: 在 `UpdaterIcon` 组件内部进行环境检测，非 Electron 环境直接返回空。
-2.  **Composable 级别**: 在 `useUpdater` 中提供空实现，保持 API 一致性。
-3.  **集成级别**: 在 `App.vue` 中条件性地包含更新组件。
+1.  **Component level**: Perform environment detection inside the `UpdaterIcon` component; return empty directly in non-Electron environments.
+2.  **Composable level**: Provide an empty implementation in `useUpdater` to keep the API consistent.
+3.  **Integration level**: Conditionally include the update component in `App.vue`.
 
 ---
 
-## 6. 安全性考虑
+## 6. Security Considerations
 
-#### 6.1. 外部链接安全
+#### 6.1. External Link Safety
 
-在 `open-external-link` IPC 处理器中，验证 URL 的协议，仅允许 `http://` 和 `https://` 链接：
+In the `open-external-link` IPC handler, validate the URL's protocol and only allow `http://` and `https://` links:
 
 ```javascript
 if (!url.startsWith('http://') && !url.startsWith('https://')) {
@@ -125,9 +125,9 @@ if (!url.startsWith('http://') && !url.startsWith('https://')) {
 }
 ```
 
-#### 6.2. 版本验证
+#### 6.2. Version Validation
 
-对接收到的版本号进行格式验证，防止恶意输入：
+Validate the format of received version numbers to prevent malicious input:
 
 ```javascript
 const versionRegex = /^v?\d+\.\d+\.\d+(-[\w.-]+)?(\+[\w.-]+)?$/;
@@ -136,9 +136,9 @@ if (!versionRegex.test(version)) {
 }
 ```
 
-#### 6.3. 配置安全
+#### 6.3. Configuration Safety
 
-使用配置文件管理敏感信息，避免硬编码：
+Use a configuration file to manage sensitive information and avoid hardcoding:
 
 ```javascript
 const { buildReleaseUrl, validateVersion } = require('./config/update-config');
@@ -146,79 +146,79 @@ const { buildReleaseUrl, validateVersion } = require('./config/update-config');
 
 ---
 
-## 7. 错误处理与恢复
+## 7. Error Handling and Recovery
 
-#### 7.1. 网络错误处理
+#### 7.1. Network Error Handling
 
-1.  **超时机制**: 为所有网络请求设置合理的超时时间。
-2.  **重试策略**: 允许用户手动重试失败的操作。
-3.  **降级处理**: 在服务不可用时提供基本功能。
+1.  **Timeout mechanism**: Set reasonable timeouts for all network requests.
+2.  **Retry strategy**: Allow users to manually retry failed operations.
+3.  **Degraded handling**: Provide basic functionality when the service is unavailable.
 
-#### 7.2. 状态恢复
+#### 7.2. State Recovery
 
-1.  **智能重置**: 根据用户操作上下文决定状态重置策略。
-2.  **错误边界**: 在关键操作周围设置错误边界。
-3.  **状态锁**: 使用状态锁防止并发操作导致的状态混乱。
-
----
-
-## 8. 性能优化
-
-#### 8.1. 事件监听器管理
-
-1.  **生命周期管理**: 在组件挂载时注册监听器，卸载时清理。
-2.  **避免重复注册**: 确保事件监听器只在应用启动时注册一次。
-3.  **内存泄漏防护**: 正确清理所有事件监听器。
-
-#### 8.2. 状态更新优化
-
-1.  **批量更新**: 合并相关的状态更新操作。
-2.  **条件更新**: 只在状态真正改变时触发更新。
-3.  **异步处理**: 使用异步操作避免阻塞 UI。
+1.  **Smart reset**: Decide the state reset strategy based on the user's operation context.
+2.  **Error boundaries**: Set up error boundaries around critical operations.
+3.  **State locks**: Use state locks to prevent state confusion caused by concurrent operations.
 
 ---
 
-## 9. 测试策略
+## 8. Performance Optimization
 
-#### 9.1. 多环境测试
+#### 8.1. Event Listener Management
 
-1.  **Web 环境**: 验证更新组件不显示。
-2.  **Desktop 环境**: 验证完整的更新流程。
-3.  **构建测试**: 验证多平台构建产物。
+1.  **Lifecycle management**: Register listeners when the component mounts and clean them up when it unmounts.
+2.  **Avoid duplicate registration**: Ensure event listeners are registered only once at app startup.
+3.  **Memory leak protection**: Properly clean up all event listeners.
 
-#### 9.2. 边缘情况测试
+#### 8.2. State Update Optimization
 
-1.  **网络中断**: 测试下载过程中的网络异常。
-2.  **并发操作**: 测试用户快速重复操作的场景。
-3.  **错误恢复**: 测试各种异常情况的恢复机制。
-
----
-
-## 10. 部署与维护
-
-#### 10.1. 发布流程
-
-1.  **版本标记**: 使用语义化版本号。
-2.  **自动构建**: 通过 CI/CD 自动构建和发布。
-3.  **质量检查**: 发布前进行完整的质量验证。
-
-#### 10.2. 监控与维护
-
-1.  **更新成功率**: 监控更新操作的成功率。
-2.  **错误日志**: 收集和分析错误日志。
-3.  **用户反馈**: 建立用户反馈机制。
+1.  **Batch updates**: Merge related state update operations.
+2.  **Conditional updates**: Trigger updates only when the state actually changes.
+3.  **Async processing**: Use async operations to avoid blocking the UI.
 
 ---
 
-## 11. 总结
+## 9. Testing Strategy
 
-本技术方案实现了一个完整、安全、用户友好的桌面应用自动更新系统。通过多形态产品兼容性设计，确保了更新功能仅在需要的环境中可见。通过完善的错误处理和状态管理，保证了系统的稳定性和可靠性。
+#### 9.1. Multi-environment Testing
 
-## 12. 深度重构技术实现
+1.  **Web environment**: Verify that the update component is not shown.
+2.  **Desktop environment**: Verify the complete update flow.
+3.  **Build testing**: Verify the multi-platform build artifacts.
 
-### 12.1. 错误处理机制重构
+#### 9.2. Edge Case Testing
 
-#### 详细错误响应函数
+1.  **Network interruption**: Test network failures during download.
+2.  **Concurrent operations**: Test scenarios where users repeat actions quickly.
+3.  **Error recovery**: Test the recovery mechanisms for various abnormal situations.
+
+---
+
+## 10. Deployment and Maintenance
+
+#### 10.1. Release Process
+
+1.  **Version tagging**: Use semantic version numbers.
+2.  **Automated builds**: Build and publish automatically through CI/CD.
+3.  **Quality checks**: Perform complete quality verification before release.
+
+#### 10.2. Monitoring and Maintenance
+
+1.  **Update success rate**: Monitor the success rate of update operations.
+2.  **Error logs**: Collect and analyze error logs.
+3.  **User feedback**: Establish a user feedback mechanism.
+
+---
+
+## 11. Summary
+
+This technical solution implements a complete, secure and user-friendly desktop app auto-update system. Through the compatibility design across product forms, the update feature is visible only in the environments that need it. Through thorough error handling and state management, the stability and reliability of the system are ensured.
+
+## 12. In-depth Refactoring Technical Implementation
+
+### 12.1. Error Handling Mechanism Refactoring
+
+#### Detailed Error Response Function
 ```javascript
 function createDetailedErrorResponse(error) {
   const timestamp = new Date().toISOString();
@@ -231,7 +231,7 @@ function createDetailedErrorResponse(error) {
     if (error.url) detailedMessage += `URL: ${error.url}\n`;
     if (error.stack) detailedMessage += `\nStack Trace:\n${error.stack}\n`;
 
-    // 捕获其他属性和JSON兜底机制
+    // Capture other properties and the JSON fallback mechanism
     const jsonError = JSON.stringify(error, Object.getOwnPropertyNames(error), 2);
     if (jsonError && jsonError !== '{}') {
       detailedMessage += `\nComplete Object Dump:\n${jsonError}`;
@@ -242,14 +242,14 @@ function createDetailedErrorResponse(error) {
 }
 ```
 
-#### preload.js 错误信息保留
+#### Preserving Error Information in preload.js
 ```javascript
-// 修复前：丢失详细信息
+// Before the fix: detailed information was lost
 if (!result.success) {
   throw new Error(result.error);
 }
 
-// 修复后：保留完整信息
+// After the fix: full information is preserved
 if (!result.success) {
   const error = new Error(result.error);
   error.originalError = result.error;
@@ -258,13 +258,13 @@ if (!result.success) {
 }
 ```
 
-### 12.2. 组件架构重构
+### 12.2. Component Architecture Refactoring
 
-#### 智能组件设计
+#### Smart Component Design
 ```vue
-<!-- UpdaterModal.vue - 智能组件 -->
+<!-- UpdaterModal.vue - smart component -->
 <script setup lang="ts">
-// 内部管理所有更新逻辑
+// Manages all update logic internally
 const {
   state,
   checkUpdate,
@@ -275,7 +275,7 @@ const {
   openReleaseUrl
 } = useUpdater()
 
-// 简化的接口
+// Simplified interface
 interface Props {
   modelValue: boolean
 }
@@ -286,52 +286,52 @@ const emit = defineEmits<{
 </script>
 ```
 
-#### 简化组件设计
+#### Simplified Component Design
 ```vue
-<!-- UpdaterIcon.vue - 简化组件 -->
+<!-- UpdaterIcon.vue - simplified component -->
 <script setup lang="ts">
-// 只获取状态用于图标显示
+// Only gets the state for icon display
 const { state } = useUpdater()
 
-// 只管理模态框显示
+// Only manages modal display
 const showModal = ref(false)
 </script>
 
 <template>
-  <!-- 极简调用 -->
+  <!-- Minimal invocation -->
   <UpdaterModal v-model="showModal" />
 </template>
 ```
 
-### 12.3. 开发环境智能处理
+### 12.3. Smart Handling of the Development Environment
 
-#### 环境检测逻辑
+#### Environment Detection Logic
 ```javascript
-// 开发模式下的更新检查配置
+// Update check configuration in development mode
 if (process.env.NODE_ENV === 'development' || !app.isPackaged) {
   const fs = require('fs');
   const devConfigPath = path.join(__dirname, 'dev-app-update.yml');
   if (fs.existsSync(devConfigPath)) {
     autoUpdater.forceDevUpdateConfig = true;
   } else {
-    // 返回友好的开发环境提示
+    // Return a friendly development environment hint
     responseData.message = 'Development environment: Update checking is disabled';
     return createSuccessResponse(responseData);
   }
 }
 ```
 
-### 12.4. 状态管理系统
+### 12.4. State Management System
 
-#### 状态类型定义
+#### State Type Definitions
 ```typescript
 interface UpdaterState {
   lastCheckResult: 'none' | 'available' | 'not-available' | 'error' | 'dev-disabled'
-  // ... 其他状态
+  // ... other states
 }
 ```
 
-#### 状态转换逻辑
+#### State Transition Logic
 ```javascript
 if (checkData.hasUpdate && checkData.checkResult?.updateInfo) {
   state.lastCheckResult = 'available'
@@ -344,33 +344,33 @@ if (checkData.hasUpdate && checkData.checkResult?.updateInfo) {
 }
 ```
 
-### 12.5. 动态UI实现
+### 12.5. Dynamic UI Implementation
 
-#### 根据状态显示不同按钮
+#### Show Different Buttons Based on State
 ```vue
 <template #footer>
-  <!-- 开发环境：只显示关闭按钮 -->
+  <!-- Development environment: show only the close button -->
   <div v-if="state.lastCheckResult === 'dev-disabled'">
-    <button @click="$emit('update:modelValue', false)">关闭</button>
+    <button @click="$emit('update:modelValue', false)">Close</button>
   </div>
 
-  <!-- 默认状态：关闭 + 立即检查 -->
+  <!-- Default state: close + check now -->
   <div v-else-if="!state.hasUpdate && !state.isCheckingUpdate">
-    <button @click="$emit('update:modelValue', false)">关闭</button>
-    <button @click="handleCheckUpdate">立即检查</button>
+    <button @click="$emit('update:modelValue', false)">Close</button>
+    <button @click="handleCheckUpdate">Check Now</button>
   </div>
 
-  <!-- 有更新：多个操作按钮 -->
+  <!-- Update available: multiple action buttons -->
   <div v-else-if="state.hasUpdate">
-    <button @click="handleStartDownload">下载更新</button>
+    <button @click="handleStartDownload">Download Update</button>
   </div>
 </template>
 ```
 
-关键特性：
-- **用户控制**: 用户完全控制更新时机和选择
-- **环境适配**: 多形态产品的优雅兼容
-- **安全可靠**: 完整的安全验证和错误处理
-- **易于维护**: 配置化设计和完善的文档
-- **架构健壮**: 组件职责清晰，错误处理完善
-- **开发友好**: 智能环境检测，详细错误诊断
+Key features:
+- **User control**: users fully control the timing and choice of updates
+- **Environment adaptation**: graceful compatibility across product forms
+- **Secure and reliable**: complete security validation and error handling
+- **Easy to maintain**: configuration-driven design and thorough documentation
+- **Robust architecture**: clear component responsibilities and thorough error handling
+- **Developer friendly**: smart environment detection and detailed error diagnostics

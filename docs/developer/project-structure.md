@@ -1,243 +1,243 @@
-# 项目结构文档
+# Project Structure Document
 
-> **注意:** 本文档专注于项目的文件和目录结构。关于技术栈详情和实现流程，请参考 [技术文档](./technical-documentation.md)。
+> **Note:** This document focuses on the project's file and directory structure. For tech stack details and implementation workflow, see the [Technical Documentation](./technical-documentation.md).
 
-## 1. 项目整体架构
+## 1. Overall Project Architecture
 
-### 1.1 根目录结构
+### 1.1 Root Directory Structure
 ```
 prompt-optimizer/
-├── packages/             # 项目包
-│   ├── core/            # 核心功能包
-│   │   ├── src/         # 核心源代码
-│   │   ├── tests/       # 核心包测试
-│   │   └── package.json # 核心包配置
-│   ├── web/             # Web版本
-│   │   ├── src/         # Web源代码
-│   │   ├── tests/       # Web测试
-│   │   └── package.json # Web包配置
-│   └── extension/       # Chrome插件
-├── docs/                # 项目文档
-├── tools/               # 工具脚本
-└── ...配置文件
+├── packages/             # Project packages
+│   ├── core/            # Core functionality package
+│   │   ├── src/         # Core source code
+│   │   ├── tests/       # Core package tests
+│   │   └── package.json # Core package configuration
+│   ├── web/             # Web version
+│   │   ├── src/         # Web source code
+│   │   ├── tests/       # Web tests
+│   │   └── package.json # Web package configuration
+│   └── extension/       # Chrome extension
+├── docs/                # Project documentation
+├── tools/               # Utility scripts
+└── ...configuration files
 ```
 
-### 1.2 配置文件
-- `pnpm-workspace.yaml` - 工作区配置
-- `.env.example` - 环境变量示例
-- `package.json` - 项目配置
-- `.vscode/` - VSCode配置目录
-- `.cursorrules` - Cursor IDE配置
-- `.gitignore` - Git忽略配置
+### 1.2 Configuration Files
+- `pnpm-workspace.yaml` - Workspace configuration
+- `.env.example` - Environment variable example
+- `package.json` - Project configuration
+- `.vscode/` - VSCode configuration directory
+- `.cursorrules` - Cursor IDE configuration
+- `.gitignore` - Git ignore configuration
 
-### 1.3 工作区文件
-- `README.md` - 项目说明文档
-- `scratchpad.md` - 开发笔记和任务规划（已迁移到docs/workspace/）
-- `experience.md` - 项目经验总结（已迁移到docs/workspace/）
+### 1.3 Workspace Files
+- `README.md` - Project description document
+- `scratchpad.md` - Development notes and task planning (migrated to docs/workspace/)
+- `experience.md` - Project lessons learned (migrated to docs/workspace/)
 
-### 1.4 文档目录 (docs/)
-- `README.md` - 文档索引
-- `development-guidelines.md` - 开发指南
-- `project-status.md` - 项目状态
-- `project-structure.md` - 项目结构
-- `technical-documentation.md` - 技术文档
-- `prd.md` - 产品需求文档
-- `CHANGELOG.md` - 更新日志
+### 1.4 Documentation Directory (docs/)
+- `README.md` - Documentation index
+- `development-guidelines.md` - Development guidelines
+- `project-status.md` - Project status
+- `project-structure.md` - Project structure
+- `technical-documentation.md` - Technical documentation
+- `prd.md` - Product requirements document
+- `CHANGELOG.md` - Changelog
 
-## 2. 核心包结构 (packages/core)
+## 2. Core Package Structure (packages/core)
 
-### 2.1 源代码目录 (packages/core/src/)
+### 2.1 Source Directory (packages/core/src/)
 ```
 src/
-├── services/           # 核心服务
-│   ├── llm/           # LLM服务
-│   │   ├── service.ts # LLM服务实现
-│   │   ├── types.ts   # 类型定义
-│   │   └── errors.ts  # 错误定义
-│   ├── model/         # 文本模型管理
-│   │   ├── manager.ts # 模型管理器
-│   │   ├── types.ts   # 类型定义
-│   │   └── defaults.ts# 默认配置
-│   ├── image/         # 图像服务（新增）
-│   │   ├── service.ts # 图像生成服务
-│   │   ├── types.ts   # 图像服务类型定义
-│   │   ├── electron-proxy.ts # Electron代理
-│   │   └── adapters/  # 图像提供商适配器
-│   │       ├── abstract-adapter.ts # 抽象适配器基类
-│   │       ├── registry.ts         # 适配器注册表
-│   │       ├── openai.ts          # OpenAI DALL-E适配器
-│   │       ├── gemini.ts          # Google Gemini适配器
-│   │       ├── siliconflow-adapter.ts # SiliconFlow适配器
-│   │       └── seedream.ts        # SeeDream适配器
-│   ├── image-model/   # 图像模型管理（新增）
-│   │   ├── manager.ts # 图像模型管理器
-│   │   ├── types.ts   # 类型定义
-│   │   └── defaults.ts# 默认配置
-│   ├── prompt/        # 提示词服务
-│   │   ├── service.ts # 提示词服务实现
-│   │   ├── types.ts   # 类型定义
-│   │   └── errors.ts  # 错误定义
-│   ├── template/      # 模板服务
-│   │   ├── manager.ts # 模板管理器
-│   │   ├── types.ts   # 类型定义
-│   │   └── default-templates/ # 默认模板
-│   │       ├── image-optimize/ # 图像模板（新增）
-│   │       │   ├── text2image/ # 文生图模板
-│   │       │   ├── image2image/ # 图生图模板
-│   │       │   └── iterate/    # 图像迭代模板
-│   │       ├── basic/         # 基础模板
-│   │       └── context/       # 上下文模板
-│   └── history/       # 历史记录服务
-│       ├── manager.ts # 历史管理器
-│       └── types.ts   # 类型定义
-├── types/             # 公共类型定义
-└── utils/             # 工具函数
+├── services/           # Core services
+│   ├── llm/           # LLM service
+│   │   ├── service.ts # LLM service implementation
+│   │   ├── types.ts   # Type definitions
+│   │   └── errors.ts  # Error definitions
+│   ├── model/         # Text model management
+│   │   ├── manager.ts # Model manager
+│   │   ├── types.ts   # Type definitions
+│   │   └── defaults.ts# Default configuration
+│   ├── image/         # Image service (new)
+│   │   ├── service.ts # Image generation service
+│   │   ├── types.ts   # Image service type definitions
+│   │   ├── electron-proxy.ts # Electron proxy
+│   │   └── adapters/  # Image provider adapters
+│   │       ├── abstract-adapter.ts # Abstract adapter base class
+│   │       ├── registry.ts         # Adapter registry
+│   │       ├── openai.ts          # OpenAI DALL-E adapter
+│   │       ├── gemini.ts          # Google Gemini adapter
+│   │       ├── siliconflow-adapter.ts # SiliconFlow adapter
+│   │       └── seedream.ts        # SeeDream adapter
+│   ├── image-model/   # Image model management (new)
+│   │   ├── manager.ts # Image model manager
+│   │   ├── types.ts   # Type definitions
+│   │   └── defaults.ts# Default configuration
+│   ├── prompt/        # Prompt service
+│   │   ├── service.ts # Prompt service implementation
+│   │   ├── types.ts   # Type definitions
+│   │   └── errors.ts  # Error definitions
+│   ├── template/      # Template service
+│   │   ├── manager.ts # Template manager
+│   │   ├── types.ts   # Type definitions
+│   │   └── default-templates/ # Default templates
+│   │       ├── image-optimize/ # Image templates (new)
+│   │       │   ├── text2image/ # Text-to-image templates
+│   │       │   ├── image2image/ # Image-to-image templates
+│   │       │   └── iterate/    # Image iteration templates
+│   │       ├── basic/         # Basic templates
+│   │       └── context/       # Context templates
+│   └── history/       # History service
+│       ├── manager.ts # History manager
+│       └── types.ts   # Type definitions
+├── types/             # Shared type definitions
+└── utils/             # Utility functions
 ```
 
-### 2.2 API目录 (src/api/)
-- `api/llm.js` - LLM API调用封装
+### 2.2 API Directory (src/api/)
+- `api/llm.js` - LLM API call wrapper
 
-### 2.3 配置目录 (packages/core/config/)
-- `models.js` - LLM模型配置
-- `prompts.js` - 提示词模板配置
+### 2.3 Configuration Directory (packages/core/config/)
+- `models.js` - LLM model configuration
+- `prompts.js` - Prompt template configuration
 
-### 2.4 测试目录 (packages/core/tests/)
+### 2.4 Test Directory (packages/core/tests/)
 ```
 tests/
-├── unit/             # 单元测试
-│   └── services/     # 服务测试
-│       ├── llm/      # LLM服务测试
-│       ├── model/    # 模型管理测试
-│       └── prompt/   # 提示词服务测试
-└── integration/      # 集成测试
-    └── services/     # 服务集成测试
+├── unit/             # Unit tests
+│   └── services/     # Service tests
+│       ├── llm/      # LLM service tests
+│       ├── model/    # Model management tests
+│       └── prompt/   # Prompt service tests
+└── integration/      # Integration tests
+    └── services/     # Service integration tests
 ```
 
-### 2.5 核心包配置
-- `package.json` - 核心包配置
-- `tsconfig.json` - TypeScript配置
-- `vitest.config.ts` - 测试配置
+### 2.5 Core Package Configuration
+- `package.json` - Core package configuration
+- `tsconfig.json` - TypeScript configuration
+- `vitest.config.ts` - Test configuration
 
-## 3. Web包结构 (packages/web)
+## 3. Web Package Structure (packages/web)
 
-### 3.1 源代码目录 (packages/web/src/)
+### 3.1 Source Directory (packages/web/src/)
 ```
 src/
-├── components/        # Vue组件
-│   ├── PromptPanel.vue      # 提示词面板
-│   ├── ModelManager.vue     # 统一模型管理器（支持文本/图像模型切换）
-│   ├── ImageModelManager.vue# 图像模型专用管理组件
-│   ├── ImageModelEditModal.vue # 图像模型编辑弹窗
-│   ├── TemplateManager.vue  # 模板管理器
-│   ├── InputPanel.vue       # 输入面板
-│   ├── OutputPanel.vue      # 输出面板
-│   └── image-mode/         # 图像模式专用组件
-│       └── ImageWorkspace.vue # 图像工作区
-├── composables/       # Vue组合式函数
-│   ├── useImageModelManager.ts # 图像模型管理composable
-│   ├── useImageGeneration.ts   # 图像生成composable
-│   └── useImageWorkspace.ts    # 图像工作区composable
-├── services/          # 业务逻辑
-│   ├── llm/           # LLM服务
-│   ├── model/         # 模型配置
-│   ├── prompt/        # 提示词服务
-│   ├── promptManager.js # 提示词管理
-│   └── themeManager.js # 主题管理
-├── assets/           # 静态资源
-│   ├── images/       # 图片资源
-│   └── styles/       # 样式资源
-├── prompts/          # 提示词模板
-├── App.vue           # 根组件
-└── main.ts           # 入口文件
+├── components/        # Vue components
+│   ├── PromptPanel.vue      # Prompt panel
+│   ├── ModelManager.vue     # Unified model manager (supports switching between text/image models)
+│   ├── ImageModelManager.vue# Dedicated image model management component
+│   ├── ImageModelEditModal.vue # Image model edit dialog
+│   ├── TemplateManager.vue  # Template manager
+│   ├── InputPanel.vue       # Input panel
+│   ├── OutputPanel.vue      # Output panel
+│   └── image-mode/         # Image mode components
+│       └── ImageWorkspace.vue # Image workspace
+├── composables/       # Vue composables
+│   ├── useImageModelManager.ts # Image model management composable
+│   ├── useImageGeneration.ts   # Image generation composable
+│   └── useImageWorkspace.ts    # Image workspace composable
+├── services/          # Business logic
+│   ├── llm/           # LLM service
+│   ├── model/         # Model configuration
+│   ├── prompt/        # Prompt service
+│   ├── promptManager.js # Prompt management
+│   └── themeManager.js # Theme management
+├── assets/           # Static assets
+│   ├── images/       # Image assets
+│   └── styles/       # Style assets
+├── prompts/          # Prompt templates
+├── App.vue           # Root component
+└── main.ts           # Entry file
 ```
 
-### 3.2 组件目录详情 (packages/web/src/components/)
+### 3.2 Component Directory Details (packages/web/src/components/)
 
-#### 核心组件
-- `PromptPanel.vue` - 提示词输入和优化面板
-- `InputPanel.vue` - 输入面板组件
-- `OutputPanel.vue` - 输出面板组件
-- `TemplateManager.vue` - 模板管理器
-- `ThemeToggle.vue` - 主题切换组件
-- `LoadingSpinner.vue` - 加载动画组件
+#### Core Components
+- `PromptPanel.vue` - Prompt input and optimization panel
+- `InputPanel.vue` - Input panel component
+- `OutputPanel.vue` - Output panel component
+- `TemplateManager.vue` - Template manager
+- `ThemeToggle.vue` - Theme toggle component
+- `LoadingSpinner.vue` - Loading spinner component
 
-#### 模型管理架构
-- `ModelManager.vue` - **统一模型管理器**
-  - 支持文本模型和图像模型的标签页切换
-  - 文本模型：直接在该组件内管理
-  - 图像模型：委托给 `ImageModelManager.vue` 组件处理
-  - 替代了原有的单一模型管理方案（`ModelManager.vue.bak`）
+#### Model Management Architecture
+- `ModelManager.vue` - **Unified model manager**
+  - Supports tab switching between text models and image models
+  - Text models: managed directly within this component
+  - Image models: delegated to the `ImageModelManager.vue` component
+  - Replaces the original single-component model management approach (`ModelManager.vue.bak`)
 
-- `ImageModelManager.vue` - **图像模型专用管理组件**
-  - 专门负责图像模型的列表展示、连接测试、启用/禁用等操作
-  - 与 `useImageModelManager` composable 配合使用
-  - 支持图像提供商（OpenAI DALL-E、Gemini、SiliconFlow等）的模型管理
+- `ImageModelManager.vue` - **Dedicated image model management component**
+  - Specifically responsible for image model list display, connection testing, enable/disable, and other operations
+  - Used together with the `useImageModelManager` composable
+  - Supports model management for image providers (OpenAI DALL-E, Gemini, SiliconFlow, etc.)
 
-- `ImageModelEditModal.vue` - **图像模型编辑弹窗**
-  - 用于添加/编辑图像模型配置
-  - 提供商选择、模型选择、连接配置等表单功能
+- `ImageModelEditModal.vue` - **Image model edit dialog**
+  - Used to add/edit image model configurations
+  - Form features such as provider selection, model selection, and connection configuration
 
-#### 图像模式组件
-- `image-mode/ImageWorkspace.vue` - **图像工作区**
-  - 图像模式的主要工作界面
-  - 整合文生图、图生图、图像迭代等功能
+#### Image Mode Components
+- `image-mode/ImageWorkspace.vue` - **Image workspace**
+  - The main working interface of image mode
+  - Integrates text-to-image, image-to-image, image iteration, and other features
 
-### 3.3 测试目录 (packages/web/tests/)
+### 3.3 Test Directory (packages/web/tests/)
 ```
 tests/
-├── unit/            # 单元测试
-│   ├── components/  # 组件测试
-│   └── services/    # 服务测试
-└── integration/     # 集成测试
-    └── services/    # 服务集成测试
+├── unit/            # Unit tests
+│   ├── components/  # Component tests
+│   └── services/    # Service tests
+└── integration/     # Integration tests
+    └── services/    # Service integration tests
 ```
 
-### 3.4 Web包配置
-- `package.json` - Web包配置
-- `vite.config.ts` - Vite配置
-- `tailwind.config.js` - TailwindCSS配置
-- `.env.local` - 本地环境变量
-- `postcss.config.js` - PostCSS配置
-- `index.html` - 项目入口HTML文件
+### 3.4 Web Package Configuration
+- `package.json` - Web package configuration
+- `vite.config.ts` - Vite configuration
+- `tailwind.config.js` - TailwindCSS configuration
+- `.env.local` - Local environment variables
+- `postcss.config.js` - PostCSS configuration
+- `index.html` - Project entry HTML file
 
-## 4. 扩展包结构 (packages/extension)
+## 4. Extension Package Structure (packages/extension)
 
-### 4.1 源代码目录 (packages/extension/src/)
+### 4.1 Source Directory (packages/extension/src/)
 ```
 src/
-├── popup/           # 弹出窗口界面
-├── background/      # 后台脚本
-├── content/         # 内容脚本
-└── manifest.json    # 扩展配置文件
+├── popup/           # Popup window interface
+├── background/      # Background scripts
+├── content/         # Content scripts
+└── manifest.json    # Extension configuration file
 ```
 
-### 4.2 扩展包配置
-- `package.json` - 扩展包配置
-- `vite.config.ts` - 构建配置
+### 4.2 Extension Package Configuration
+- `package.json` - Extension package configuration
+- `vite.config.ts` - Build configuration
 
-## 5. 依赖关系
+## 5. Dependencies
 
-### 5.1 核心包依赖 (@prompt-optimizer/core)
+### 5.1 Core Package Dependencies (@prompt-optimizer/core)
 ```
 @prompt-optimizer/core
 ├── @openai/openai ^4.83.0      # OpenAI SDK
 ├── @google/generative-ai ^0.21.0 # Google Generative AI SDK
-└── uuid ^11.0.5                # UUID生成
+└── uuid ^11.0.5                # UUID generation
 ```
 
-### 5.2 Web包依赖 (@prompt-optimizer/web)
+### 5.2 Web Package Dependencies (@prompt-optimizer/web)
 ```
 @prompt-optimizer/web
-├── @prompt-optimizer/core  # 依赖核心包
-├── vue ^3.5.x             # Vue框架
-├── pinia ^2.1.x           # 状态管理
-└── tailwindcss ^3.4.1     # 样式框架
+├── @prompt-optimizer/core  # Depends on the core package
+├── vue ^3.5.x             # Vue framework
+├── pinia ^2.1.x           # State management
+└── tailwindcss ^3.4.1     # Styling framework
 ```
 
-### 5.3 扩展包依赖 (@prompt-optimizer/extension)
+### 5.3 Extension Package Dependencies (@prompt-optimizer/extension)
 ```
 @prompt-optimizer/extension
-├── @prompt-optimizer/core  # 依赖核心包
-├── @prompt-optimizer/ui    # 依赖UI组件包
-└── vue ^3.5.x             # Vue框架
-``` 
+├── @prompt-optimizer/core  # Depends on the core package
+├── @prompt-optimizer/ui    # Depends on the UI component package
+└── vue ^3.5.x             # Vue framework
+```

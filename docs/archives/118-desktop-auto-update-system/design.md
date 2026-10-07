@@ -1,58 +1,58 @@
-# 桌面端自动更新系统 - 设计文档
+# Desktop Auto-update System - Design Document
 
-## 🎯 设计概述
+## 🎯 Design Overview
 
-桌面端自动更新系统采用双版本显示设计，同时展示正式版和预览版更新信息，让用户自主选择更新路径。
+The desktop auto-update system uses a dual-version display design, showing update information for both the stable release and the preview release at the same time so users can choose their own update path.
 
-### 核心设计原则
-1. **信息层次清晰**：当前版本 → 最新正式版 → 最新预览版
-2. **操作直观明确**：每个版本独立的操作按钮
-3. **状态标识醒目**：右上角红色"有更新"标签
-4. **底部按钮固定**：只有"关闭"和"检查更新"两个按钮
+### Core Design Principles
+1. **Clear information hierarchy**: current version → latest stable release → latest preview release
+2. **Intuitive and explicit actions**: each version has its own action buttons
+3. **Prominent status indicator**: a red "Update Available" label in the top-right corner
+4. **Fixed bottom buttons**: only the two buttons "Close" and "Check for Updates"
 
-## 📱 界面布局设计
+## 📱 Interface Layout Design
 
-### 完整布局结构
+### Complete Layout Structure
 ```
 ┌─────────────────────────────────────────┐
-│ 应用更新                                 │
+│ App Update                               │
 ├─────────────────────────────────────────┤
-│ ┌─ 当前版本 ─────────────────────────┐   │
-│ │ 当前版本: v1.2.0                   │   │
+│ ┌─ Current Version ──────────────────┐   │
+│ │ Current version: v1.2.0            │   │
 │ └───────────────────────────────────┘   │
 │                                         │
-│ ┌─ 最新正式版 ─────────────────────────┐ │
-│ │ 正式版 v1.2.1        [有更新] ↗    │ │
-│ │ [详情] [忽略] [下载]                │ │
+│ ┌─ Latest Stable ────────────────────┐ │
+│ │ Stable v1.2.1   [Update Avail.] ↗  │ │
+│ │ [Details] [Ignore] [Download]       │ │
 │ └─────────────────────────────────────┘ │
 │                                         │
-│ ┌─ 最新预览版 ─────────────────────────┐ │
-│ │ 预览版 v1.3.0-beta.1  [有更新] ↗    │ │
-│ │ [详情] [忽略] [下载]                │ │
+│ ┌─ Latest Preview ───────────────────┐ │
+│ │ Preview v1.3.0-beta.1 [Update Avail.] ↗ │ │
+│ │ [Details] [Ignore] [Download]       │ │
 │ └─────────────────────────────────────┘ │
 │                                         │
 ├─────────────────────────────────────────┤
-│              [关闭] [检查更新]           │
+│           [Close] [Check for Updates]    │
 └─────────────────────────────────────────┘
 ```
 
-### 状态显示逻辑
-- **有更新**：显示红色"有更新"标签和右上角链接图标
-- **已是最新**：显示绿色"已是最新"文字
-- **检查中**：显示加载动画和"检查中..."文字
-- **检查失败**：显示错误信息和重试提示
+### Status Display Logic
+- **Update available**: shows a red "Update Available" label and a link icon in the top-right corner
+- **Up to date**: shows green "Up to date" text
+- **Checking**: shows a loading animation and "Checking..." text
+- **Check failed**: shows an error message and a retry hint
 
-## 🔧 技术架构设计
+## 🔧 Technical Architecture Design
 
-### 双版本检查机制
+### Dual-version Check Mechanism
 ```typescript
-// 主进程统一管理，避免并发冲突
+// Managed uniformly by the main process to avoid concurrency conflicts
 const checkAllVersions = async () => {
-  // 串行检查正式版
+  // Check the stable release serially
   autoUpdater.allowPrerelease = false
   const stableResult = await autoUpdater.checkForUpdates()
   
-  // 延迟后检查预览版
+  // Check the preview release after a delay
   await new Promise(resolve => setTimeout(resolve, 1000))
   autoUpdater.allowPrerelease = true
   const prereleaseResult = await autoUpdater.checkForUpdates()
@@ -61,106 +61,106 @@ const checkAllVersions = async () => {
 }
 ```
 
-### 版本比较逻辑
-- **正式版比较**：使用semver标准比较
-- **预览版比较**：先比较基础版本，再比较预发布标识
-- **忽略版本处理**：支持分别忽略正式版和预览版
+### Version Comparison Logic
+- **Stable comparison**: uses the standard semver comparison
+- **Preview comparison**: compares the base version first, then the prerelease identifier
+- **Ignored version handling**: supports ignoring the stable and preview releases separately
 
-### 状态管理设计
+### State Management Design
 ```typescript
 interface UpdaterState {
-  // 检查状态
+  // Check state
   isChecking: boolean
   hasStableUpdate: boolean
   hasPrereleaseUpdate: boolean
   
-  // 版本信息
+  // Version information
   currentVersion: string
   stableVersion: string | null
   prereleaseVersion: string | null
   
-  // 下载状态
+  // Download state
   isDownloading: boolean
   downloadProgress: number
   isDownloaded: boolean
   
-  // 忽略状态
+  // Ignore state
   isStableVersionIgnored: boolean
   isPrereleaseVersionIgnored: boolean
 }
 ```
 
-## 🎨 UI组件设计
+## 🎨 UI Component Design
 
-### 版本信息卡片
-- **标题区域**：版本类型 + 版本号 + 状态标签
-- **操作区域**：详情链接 + 忽略按钮 + 下载按钮
-- **状态指示**：右上角链接图标（有更新时显示）
+### Version Information Card
+- **Title area**: version type + version number + status label
+- **Action area**: details link + ignore button + download button
+- **Status indicator**: link icon in the top-right corner (shown when an update is available)
 
-### 按钮状态设计
-- **下载按钮**：
-  - 有更新且未忽略：显示"下载"
-  - 下载中：显示进度条
-  - 下载完成：显示"安装并重启"
-- **忽略按钮**：只在有更新时显示
-- **详情链接**：始终显示，点击打开GitHub发布页面
+### Button State Design
+- **Download button**:
+  - Update available and not ignored: shows "Download"
+  - Downloading: shows a progress bar
+  - Download complete: shows "Install and Restart"
+- **Ignore button**: shown only when an update is available
+- **Details link**: always shown; clicking opens the GitHub release page
 
-### 响应式设计
-- **最小宽度**：480px
-- **最大宽度**：600px
-- **高度自适应**：根据内容动态调整
-- **移动端适配**：按钮大小和间距优化
+### Responsive Design
+- **Minimum width**: 480px
+- **Maximum width**: 600px
+- **Adaptive height**: adjusts dynamically to the content
+- **Mobile adaptation**: optimized button sizes and spacing
 
-## 🔄 交互流程设计
+## 🔄 Interaction Flow Design
 
-### 检查更新流程
-1. 用户点击"检查更新"
-2. 显示加载状态
-3. 主进程串行检查两个版本
-4. 更新UI显示结果
-5. 根据结果显示相应的操作按钮
+### Update Check Flow
+1. The user clicks "Check for Updates"
+2. A loading state is shown
+3. The main process checks both versions serially
+4. The UI is updated to display the result
+5. The corresponding action buttons are shown according to the result
 
-### 下载安装流程
-1. 用户选择版本并点击"下载"
-2. 显示下载进度
-3. 下载完成后显示"安装并重启"按钮
-4. 用户点击安装，应用重启并更新
+### Download and Install Flow
+1. The user selects a version and clicks "Download"
+2. Download progress is shown
+3. After the download completes, an "Install and Restart" button is shown
+4. The user clicks install, and the app restarts and updates
 
-### 忽略版本流程
-1. 用户点击"忽略"按钮
-2. 保存忽略状态到本地存储
-3. 隐藏该版本的更新提示
-4. 更新主界面的红点状态
+### Ignore Version Flow
+1. The user clicks the "Ignore" button
+2. The ignore state is saved to local storage
+3. The update hint for that version is hidden
+4. The red-dot state in the main interface is updated
 
-## 🛡️ 错误处理设计
+## 🛡️ Error Handling Design
 
-### 网络错误处理
-- **超时处理**：30秒超时，显示重试提示
-- **连接失败**：显示网络错误信息
-- **认证失败**：显示权限错误提示
+### Network Error Handling
+- **Timeout handling**: 30-second timeout, shows a retry hint
+- **Connection failure**: shows a network error message
+- **Authentication failure**: shows a permission error hint
 
-### 下载错误处理
-- **下载中断**：支持断点续传
-- **文件损坏**：重新下载
-- **磁盘空间不足**：显示空间不足提示
+### Download Error Handling
+- **Download interrupted**: supports resuming from a breakpoint
+- **Corrupted file**: re-download
+- **Insufficient disk space**: shows an insufficient-space hint
 
-### 安装错误处理
-- **权限不足**：提示以管理员身份运行
-- **文件占用**：提示关闭相关程序
-- **安装失败**：显示详细错误信息
+### Installation Error Handling
+- **Insufficient permissions**: prompts to run as administrator
+- **File in use**: prompts to close the related programs
+- **Installation failure**: shows detailed error information
 
-## 📊 性能优化设计
+## 📊 Performance Optimization Design
 
-### 缓存策略
-- **版本信息缓存**：2小时有效期
-- **下载文件缓存**：保留最新版本文件
-- **状态持久化**：忽略状态本地存储
+### Caching Strategy
+- **Version information cache**: valid for 2 hours
+- **Download file cache**: keeps the latest version file
+- **State persistence**: ignore state stored locally
 
-### 资源优化
-- **按需加载**：只在需要时检查更新
-- **后台检查**：应用启动时自动检查
-- **智能提醒**：避免频繁打扰用户
+### Resource Optimization
+- **Load on demand**: check for updates only when needed
+- **Background check**: automatically check when the app starts
+- **Smart reminders**: avoid disturbing users too frequently
 
 ---
 
-**设计目标**：提供直观、可靠、用户友好的自动更新体验，让用户能够轻松管理应用版本更新。
+**Design goal**: Provide an intuitive, reliable and user-friendly auto-update experience so users can easily manage app version updates.

@@ -1,36 +1,36 @@
-# 102-web-architecture-refactor - Web架构重构
+# 102-web-architecture-refactor - Web Architecture Refactor
 
-## 概述
-基于单例重构的基础，对Web应用和浏览器插件的架构进行全面重构，采用统一的Composable架构。
+## Overview
+Building on the singleton refactor, perform a comprehensive refactor of the architecture of the web app and browser extension, adopting a unified Composable architecture.
 
-## 时间线
-- 开始时间：2024-12-29
-- 完成时间：2024-12-30
-- 状态：✅ 已完成
+## Timeline
+- Start date: 2024-12-29
+- Completion date: 2024-12-30
+- Status: ✅ Completed
 
-## 相关开发者
-- 主要开发者：项目团队
-- 代码审查：项目团队
+## Contributors
+- Main developer: Project team
+- Code review: Project team
 
-## 文档清单
-- [x] `plan.md` - Web架构重构计划
-- [x] `composables-plan.md` - Composables重构详细计划
-- [ ] `experience.md` - 重构过程中的经验总结（待从experience.md中提取）
+## Document List
+- [x] `plan.md` - Web architecture refactor plan
+- [x] `composables-plan.md` - Detailed Composables refactor plan
+- [ ] `experience.md` - Lessons learned during the refactor (to be extracted from experience.md)
 
-## 相关代码变更
-- 影响包：@prompt-optimizer/web, @prompt-optimizer/extension
-- 主要变更：
-  - 修复应用启动失败问题
-  - 完全对齐上层应用与底层服务架构
-  - 简化App.vue，采用useAppInitializer进行服务初始化
-  - 采用最新的Composable架构
+## Related Code Changes
+- Affected packages: @prompt-optimizer/web, @prompt-optimizer/extension
+- Main changes:
+  - Fixed the application startup failure
+  - Fully aligned the upper-level apps with the underlying service architecture
+  - Simplified App.vue and used useAppInitializer for service initialization
+  - Adopted the latest Composable architecture
 
-## 后续影响
-- 应用能够正常启动和运行
-- 统一了Web和插件的架构模式
-- 提高了代码的一致性和可维护性
-- 为后续功能开发提供了稳定的架构基础
+## Follow-up Impact
+- The application starts and runs normally
+- Unified the architecture patterns of the web app and the extension
+- Improved code consistency and maintainability
+- Provided a stable architectural foundation for future feature development
 
-## 相关功能点
-- 前置依赖：101-singleton-refactor
-- 后续功能：103-desktop-architecture
+## Related Features
+- Prerequisites: 101-singleton-refactor
+- Follow-up work: 103-desktop-architecture

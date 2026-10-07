@@ -26,8 +26,8 @@ Modify the gemini model apiKey → all other models (openai, deepseek, etc.) dis
 
 ### 1. IPC-layer Serialization Protection
 
-#### safeSerialize函数
 #### safeSerialize Function
+```typescript
 /**
  * Safe serialization function used to clean Vue reactive objects
  * Ensures all objects passed through IPC are plain JavaScript objects

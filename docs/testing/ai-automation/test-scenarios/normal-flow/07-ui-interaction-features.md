@@ -1,263 +1,263 @@
-# UI交互功能独立测试
+# Standalone UI Interaction Feature Tests
 
-## 📖 测试概述
-验证不依赖优化流程的独立UI交互功能，确保界面交互元素的基本功能正常工作。这些功能可以在任何时候独立测试，不需要先执行优化操作。
+## 📖 Test Overview
+Verify standalone UI interaction features that do not depend on the optimization flow, ensuring the basic functionality of interface interaction elements works correctly. These features can be tested independently at any time, without first performing an optimization.
 
-## 🎯 测试目标
-- 验证主题切换功能的完整性
-- 确认语言切换功能的正确性
-- 检查多结果区域的独立功能
-- 验证快速操作的稳定性
+## 🎯 Test Goals
+- Verify the completeness of the theme switching feature
+- Confirm the correctness of the language switching feature
+- Check the independent features of the multi-result areas
+- Verify the stability of rapid operations
 
-## 📋 前置条件
-- [ ] 应用已启动并加载完成
-- [ ] 界面显示正常，所有元素可见
-- [ ] 网络连接正常
-
----
-
-## 🔧 测试步骤
-
-### 测试1：主题切换功能
-
-**AI执行指导：**
-- 使用 `browser_snapshot` 获取页面当前状态
-- 使用 `browser_click` 点击主题切换按钮
-- 观察主题选择器的展开
-- 测试不同主题的切换效果
-
-**测试步骤：**
-1. 点击主题切换按钮（如"Dark Mode"）
-2. 验证主题选择器展开，显示所有可用主题
-3. 依次测试各种主题切换：
-   - Light Mode (日间模式)
-   - Dark Mode (夜间模式)
-   - Blue Mode (蓝色模式)
-   - Green Mode (绿色模式)
-   - Purple Mode (紫色模式)
-4. 验证每次切换后界面元素的主题一致性
-
-**预期结果：**
-- 主题选择器正确展开，显示6种主题选项
-- 每种主题切换后界面颜色和样式正确更新
-- 主题选择器自动收起
-- 按钮文字更新为当前选中的主题
-
-**验证点：**
-- [ ] 主题选择器展开/收起正常
-- [ ] 所有主题选项可见且可点击
-- [ ] 主题切换立即生效
-- [ ] 界面元素主题一致性良好
-- [ ] 按钮状态正确更新
+## 📋 Prerequisites
+- [ ] The application has started and finished loading
+- [ ] The interface displays correctly and all elements are visible
+- [ ] The network connection is normal
 
 ---
 
-### 测试2：语言切换功能
+## 🔧 Test Steps
 
-**AI执行指导：**
-- 使用 `browser_click` 点击语言切换按钮
-- 使用 `browser_snapshot` 验证界面语言变化
-- 检查所有文本元素的翻译情况
+### Test 1: Theme Switching Feature
 
-**测试步骤：**
-1. 记录当前界面语言（中文或英文）
-2. 点击语言切换按钮
-3. 验证界面语言完全切换
-4. 检查主要文本元素的翻译：
-   - 导航栏按钮文字
-   - 功能区域标题
-   - 输入框提示文字
-   - 按钮标签
-5. 再次点击语言切换按钮，验证切换回原语言
+**AI execution guidance:**
+- Use `browser_snapshot` to get the current page state
+- Use `browser_click` to click the theme toggle button
+- Observe the expansion of the theme selector
+- Test the switching effect of different themes
 
-**预期结果：**
-- 界面语言完全切换（中文 ↔ 英文）
-- 所有文本元素正确翻译
-- 按钮和提示文字正确更新
-- 语言切换按钮文字更新
+**Test steps:**
+1. Click the theme toggle button (such as "Dark Mode")
+2. Verify the theme selector expands and shows all available themes
+3. Test switching between the various themes in turn:
+   - Light Mode
+   - Dark Mode
+   - Blue Mode
+   - Green Mode
+   - Purple Mode
+4. Verify the theme consistency of the interface elements after each switch
 
-**验证点：**
-- [ ] 语言切换立即生效
-- [ ] 所有文本元素正确翻译
-- [ ] 按钮和标签文字正确更新
-- [ ] 输入框提示文字正确翻译
-- [ ] 语言切换按钮状态正确
+**Expected results:**
+- The theme selector expands correctly and shows 6 theme options
+- The interface colors and styles update correctly after each theme switch
+- The theme selector collapses automatically
+- The button text updates to the currently selected theme
 
----
-
-### 测试3：多结果区域独立功能
-
-**AI执行指导：**
-- 使用 `browser_snapshot` 观察底部的对比测试区域
-- 测试各个结果展示区域的独立功能
-- 验证每个区域的视图控制按钮
-
-**测试步骤：**
-1. 观察底部的对比测试区域结构：
-   - "Original Prompt Result"区域
-   - "Optimized Prompt Result"区域
-2. 测试每个区域的独立功能：
-   - 视图切换按钮（Render/Source）
-   - 复制按钮
-   - 全屏按钮
-3. 验证空状态显示：
-   - 确认显示"No content"提示
-   - 验证按钮状态（应该是disabled或有适当提示）
-
-**预期结果：**
-- 两个独立的结果展示区域正确显示
-- 每个区域有完整的功能控制按钮
-- 空状态显示友好的提示信息
-- 按钮状态符合当前内容状态
-
-**验证点：**
-- [ ] 多个结果区域独立显示
-- [ ] 每个区域功能按钮完整
-- [ ] 空状态提示友好
-- [ ] 按钮状态逻辑正确
-- [ ] 区域标题清晰明确
+**Verification points:**
+- [ ] The theme selector expands/collapses normally
+- [ ] All theme options are visible and clickable
+- [ ] Theme switching takes effect immediately
+- [ ] The theme consistency of interface elements is good
+- [ ] The button state updates correctly
 
 ---
 
-### 测试4：快速操作稳定性测试
+### Test 2: Language Switching Feature
 
-**AI执行指导：**
-- 进行快速连续的界面操作
-- 观察系统响应和稳定性
-- 验证没有异常状态或错误
+**AI execution guidance:**
+- Use `browser_click` to click the language toggle button
+- Use `browser_snapshot` to verify the interface language change
+- Check the translation of all text elements
 
-**测试步骤：**
-1. 快速连续点击主题切换按钮（5次）
-2. 快速连续点击语言切换按钮（5次）
-3. 快速连续点击各种功能按钮
-4. 观察界面响应和状态变化
-5. 验证最终状态的正确性
+**Test steps:**
+1. Record the current interface language (Chinese or English)
+2. Click the language toggle button
+3. Verify the interface language switches completely
+4. Check the translation of the main text elements:
+   - Navigation bar button text
+   - Function area titles
+   - Input box placeholder text
+   - Button labels
+5. Click the language toggle button again to verify it switches back to the original language
 
-**预期结果：**
-- 系统响应稳定，无卡顿或崩溃
-- 快速操作不会导致界面异常
-- 最终状态与最后一次操作一致
-- 没有错误提示或异常状态
+**Expected results:**
+- The interface language switches completely (Chinese ↔ English)
+- All text elements are translated correctly
+- Buttons and prompt text update correctly
+- The language toggle button text updates
 
-**验证点：**
-- [ ] 快速操作响应稳定
-- [ ] 无界面异常或错误
-- [ ] 最终状态正确
-- [ ] 系统性能良好
-- [ ] 无内存泄漏迹象
-
----
-
-### 测试5：展开功能独立测试
-
-**AI执行指导：**
-- 测试各个区域的展开功能
-- 验证全屏编辑模式的独立功能
-
-**测试步骤：**
-1. 测试优化区域的展开功能：
-   - 点击"Expand"按钮
-   - 验证全屏编辑界面
-   - 测试输入功能
-   - 测试关闭功能
-2. 测试测试区域的展开功能：
-   - 点击测试内容区域的"Expand"按钮
-   - 验证测试内容的全屏编辑
-   - 测试功能完整性
-
-**预期结果：**
-- 展开功能正确打开全屏编辑模式
-- 全屏编辑界面功能完整
-- 输入功能正常工作
-- 关闭功能正确恢复原界面
-
-**验证点：**
-- [ ] 展开功能正确工作
-- [ ] 全屏编辑界面完整
-- [ ] 输入功能正常
-- [ ] 关闭功能正确
-- [ ] 内容保持一致
+**Verification points:**
+- [ ] Language switching takes effect immediately
+- [ ] All text elements are translated correctly
+- [ ] Button and label text update correctly
+- [ ] Input box placeholder text is translated correctly
+- [ ] The language toggle button state is correct
 
 ---
 
-## 🎯 测试重点
+### Test 3: Independent Features of the Multi-Result Areas
 
-### 界面响应性验证
-1. **即时反馈**：所有操作应有即时的视觉反馈
-2. **状态一致性**：界面状态应与用户操作保持一致
-3. **错误处理**：异常操作应有适当的提示或处理
+**AI execution guidance:**
+- Use `browser_snapshot` to observe the comparison test area at the bottom
+- Test the independent features of each result display area
+- Verify the view control buttons of each area
 
-### 用户体验验证
-1. **操作流畅性**：界面切换和操作应该流畅自然
-2. **视觉一致性**：主题和语言切换后界面应保持视觉一致
-3. **功能可发现性**：用户应该能够容易发现和使用各种功能
+**Test steps:**
+1. Observe the structure of the comparison test area at the bottom:
+   - The "Original Prompt Result" area
+   - The "Optimized Prompt Result" area
+2. Test the independent features of each area:
+   - View toggle button (Render/Source)
+   - Copy button
+   - Fullscreen button
+3. Verify the empty state display:
+   - Confirm the "No content" prompt is displayed
+   - Verify the button state (should be disabled or have an appropriate prompt)
 
-### 稳定性验证
-1. **快速操作稳定性**：快速连续操作不应导致异常
-2. **状态恢复能力**：异常情况下应能正确恢复状态
-3. **性能表现**：界面操作应保持良好的性能
+**Expected results:**
+- Two independent result display areas are displayed correctly
+- Each area has complete function control buttons
+- The empty state displays a friendly prompt message
+- Button states match the current content state
 
----
-
-## 📊 成功标准
-
-### A级标准（必须通过）
-- [ ] 主题切换功能100%正常
-- [ ] 语言切换功能100%正常
-- [ ] 展开功能100%正常
-- [ ] 快速操作稳定性100%
-
-### B级标准（应该通过）
-- [ ] 多结果区域功能正常
-- [ ] 界面响应流畅
-- [ ] 用户体验良好
-- [ ] 视觉一致性良好
-
-### C级标准（可以接受的问题）
-- [ ] 轻微的界面延迟（<500ms可接受）
-- [ ] 非关键功能的小问题
-- [ ] 边缘情况的小异常
+**Verification points:**
+- [ ] Multiple result areas are displayed independently
+- [ ] The function buttons of each area are complete
+- [ ] The empty state prompt is friendly
+- [ ] The button state logic is correct
+- [ ] Area titles are clear
 
 ---
 
-## 🐛 常见问题排查
+### Test 4: Rapid Operation Stability Test
 
-### 主题切换问题
-- 检查主题选择器是否正确展开
-- 确认主题切换是否立即生效
-- 验证界面元素是否保持主题一致性
+**AI execution guidance:**
+- Perform rapid consecutive interface operations
+- Observe system response and stability
+- Verify there are no abnormal states or errors
 
-### 语言切换问题
-- 检查所有文本元素是否正确翻译
-- 确认输入框提示文字是否更新
-- 验证按钮标签是否正确切换
+**Test steps:**
+1. Rapidly click the theme toggle button consecutively (5 times)
+2. Rapidly click the language toggle button consecutively (5 times)
+3. Rapidly click various function buttons consecutively
+4. Observe the interface response and state changes
+5. Verify the correctness of the final state
 
-### 展开功能问题
-- 检查全屏编辑界面是否正确显示
-- 确认输入功能是否正常工作
-- 验证关闭功能是否正确恢复
+**Expected results:**
+- The system responds stably without freezing or crashing
+- Rapid operations do not cause interface abnormalities
+- The final state is consistent with the last operation
+- No error messages or abnormal states
 
-### 快速操作问题
-- 观察是否有界面卡顿或异常
-- 检查最终状态是否正确
-- 确认没有错误提示或异常状态
+**Verification points:**
+- [ ] Rapid operations respond stably
+- [ ] No interface abnormalities or errors
+- [ ] The final state is correct
+- [ ] System performance is good
+- [ ] No signs of memory leaks
 
 ---
 
-## 📝 测试记录模板
+### Test 5: Standalone Expand Feature Test
+
+**AI execution guidance:**
+- Test the expand feature of each area
+- Verify the standalone features of fullscreen editing mode
+
+**Test steps:**
+1. Test the expand feature of the optimization area:
+   - Click the "Expand" button
+   - Verify the fullscreen editing interface
+   - Test the input feature
+   - Test the close feature
+2. Test the expand feature of the test area:
+   - Click the "Expand" button of the test content area
+   - Verify fullscreen editing of the test content
+   - Test feature completeness
+
+**Expected results:**
+- The expand feature correctly opens fullscreen editing mode
+- The fullscreen editing interface is fully functional
+- The input feature works normally
+- The close feature correctly restores the original interface
+
+**Verification points:**
+- [ ] The expand feature works correctly
+- [ ] The fullscreen editing interface is complete
+- [ ] The input feature works normally
+- [ ] The close feature is correct
+- [ ] The content stays consistent
+
+---
+
+## 🎯 Testing Focus
+
+### Interface Responsiveness Verification
+1. **Immediate feedback**: All operations should have immediate visual feedback
+2. **State consistency**: The interface state should stay consistent with user operations
+3. **Error handling**: Abnormal operations should have appropriate prompts or handling
+
+### User Experience Verification
+1. **Operation smoothness**: Interface switching and operations should be smooth and natural
+2. **Visual consistency**: The interface should remain visually consistent after theme and language switching
+3. **Feature discoverability**: Users should be able to easily discover and use various features
+
+### Stability Verification
+1. **Rapid operation stability**: Rapid consecutive operations should not cause abnormalities
+2. **State recovery ability**: The state should be correctly restored in abnormal situations
+3. **Performance**: Interface operations should maintain good performance
+
+---
+
+## 📊 Success Criteria
+
+### Level A Criteria (Must Pass)
+- [ ] The theme switching feature is 100% normal
+- [ ] The language switching feature is 100% normal
+- [ ] The expand feature is 100% normal
+- [ ] Rapid operation stability is 100%
+
+### Level B Criteria (Should Pass)
+- [ ] The multi-result area features are normal
+- [ ] Interface response is smooth
+- [ ] The user experience is good
+- [ ] Visual consistency is good
+
+### Level C Criteria (Acceptable Issues)
+- [ ] Slight interface delay (<500ms is acceptable)
+- [ ] Minor issues in non-critical features
+- [ ] Minor anomalies in edge cases
+
+---
+
+## 🐛 Common Problem Troubleshooting
+
+### Theme Switching Problems
+- Check whether the theme selector expands correctly
+- Confirm whether theme switching takes effect immediately
+- Verify whether interface elements keep a consistent theme
+
+### Language Switching Problems
+- Check whether all text elements are translated correctly
+- Confirm whether the input box placeholder text updates
+- Verify whether the button labels switch correctly
+
+### Expand Feature Problems
+- Check whether the fullscreen editing interface is displayed correctly
+- Confirm whether the input feature works normally
+- Verify whether the close feature restores correctly
+
+### Rapid Operation Problems
+- Observe whether there is interface freezing or abnormality
+- Check whether the final state is correct
+- Confirm there are no error messages or abnormal states
+
+---
+
+## 📝 Test Record Template
 
 ```
-测试执行时间：____
-测试执行人：____
-测试环境：____
+Test execution time: ____
+Tester: ____
+Test environment: ____
 
-测试1 - 主题切换：□ 通过 □ 失败
-测试2 - 语言切换：□ 通过 □ 失败  
-测试3 - 多结果区域：□ 通过 □ 失败
-测试4 - 快速操作稳定性：□ 通过 □ 失败
-测试5 - 展开功能：□ 通过 □ 失败
+Test 1 - Theme switching: □ Pass □ Fail
+Test 2 - Language switching: □ Pass □ Fail  
+Test 3 - Multi-result areas: □ Pass □ Fail
+Test 4 - Rapid operation stability: □ Pass □ Fail
+Test 5 - Expand feature: □ Pass □ Fail
 
-总体评分：____/100
-发现问题：____
-改进建议：____
+Overall score: ____/100
+Problems found: ____
+Improvement suggestions: ____
 ```

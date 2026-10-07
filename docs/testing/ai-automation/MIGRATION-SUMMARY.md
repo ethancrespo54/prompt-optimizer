@@ -1,207 +1,207 @@
-# 文档重构迁移总结
+# Documentation Restructuring Migration Summary
 
-## 📋 重构概述
+## 📋 Restructuring Overview
 
-根据用户反馈，我们将原本放在 `docs/user/functional-operations/` 的功能操作文档重新设计和迁移，更好地服务于AI自动化测试的目标。
+Based on user feedback, we redesigned and migrated the functional operation documents that were originally placed in `docs/user/functional-operations/`, so that they better serve the goals of AI automated testing.
 
-## 🎯 重构目标
+## 🎯 Restructuring Goals
 
-### 原始问题
-1. **用户需求不匹配** - 用户通常不需要如此详细的操作文档
-2. **目录位置不当** - 放在user目录下不符合实际用途
-3. **测试目标不明确** - 重点应该是发现bug，而不是验证正常流程
+### Original Problems
+1. **Mismatch with user needs** - Users usually do not need such detailed operation documents
+2. **Inappropriate directory location** - Placing them under the user directory does not match their actual purpose
+3. **Unclear testing goals** - The focus should be on finding bugs rather than verifying normal flows
 
-### 重构目标
-1. **专注Bug发现** - 设计专门用于发现问题的测试场景
-2. **合理的目录结构** - 将测试文档放在专门的测试目录
-3. **用户文档简化** - 为用户提供简洁实用的快速上手指南
+### Restructuring Goals
+1. **Focus on bug discovery** - Design test scenarios specifically for finding problems
+2. **A sensible directory structure** - Put test documents in a dedicated testing directory
+3. **Simplified user documentation** - Provide users with a concise, practical quick start guide
 
-## 📁 新的目录结构
+## 📁 New Directory Structure
 
 ```
 docs/
 ├── user/
-│   └── quick-start.md              # 简洁的用户快速上手指南
+│   └── quick-start.md              # Concise user quick start guide
 └── testing/
-    └── ai-automation/              # AI自动化测试系统
-        ├── README.md               # 测试系统总体介绍
-        ├── test-scenarios/         # 测试场景
-        │   ├── normal-flow/        # 正常流程测试（回归测试基准）
+    └── ai-automation/              # AI automated testing system
+        ├── README.md               # Overall introduction to the testing system
+        ├── test-scenarios/         # Test scenarios
+        │   ├── normal-flow/        # Normal flow tests (regression test baseline)
         │   │   ├── README.md
-        │   │   └── 04-prompt-optimization.md  # 已验证的测试
-        │   ├── edge-cases/         # 边缘情况测试
-        │   │   ├── input-validation.md        # 输入验证边缘测试
-        │   │   └── concurrent-operations.md   # 并发操作测试
-        │   └── error-handling/     # 错误处理测试
-        │       └── network-failures.md        # 网络故障测试
-        └── bug-hunting/            # 专门的bug发现测试
-            └── ui-glitches.md      # UI显示故障测试
+        │   │   └── 04-prompt-optimization.md  # Verified test
+        │   ├── edge-cases/         # Edge case tests
+        │   │   ├── input-validation.md        # Input validation edge tests
+        │   │   └── concurrent-operations.md   # Concurrent operation tests
+        │   └── error-handling/     # Error handling tests
+        │       └── network-failures.md        # Network failure tests
+        └── bug-hunting/            # Dedicated bug-hunting tests
+            └── ui-glitches.md      # UI display glitch tests
 ```
 
-## 🔄 迁移内容
+## 🔄 Migrated Content
 
-### 已迁移的文档
-1. **01-basic-setup.md** - 基础设置功能测试
-2. **02-model-management.md** - 模型管理功能测试
-3. **03-template-management.md** - 模板管理功能测试
-4. **04-prompt-optimization.md** - 提示词优化功能测试（已验证✅）
-5. **05-history-management.md** - 历史记录管理功能测试
-6. **06-data-management.md** - 数据管理功能测试
+### Migrated Documents
+1. **01-basic-setup.md** - Basic setup feature tests
+2. **02-model-management.md** - Model management feature tests
+3. **03-template-management.md** - Template management feature tests
+4. **04-prompt-optimization.md** - Prompt optimization feature tests (verified ✅)
+5. **05-history-management.md** - History management feature tests
+6. **06-data-management.md** - Data management feature tests
 
-所有文档都已：
-- 从用户操作指南转换为测试验证文档
-- 保留了AI执行指导和验证点
-- 添加了具体的MCP工具调用示例
-- 重点关注功能验证和问题发现
+All documents have been:
+- Converted from user operation guides into test verification documents
+- Kept with AI execution guidance and verification points
+- Supplemented with concrete MCP tool call examples
+- Focused on feature verification and problem discovery
 
-### 新增的专业测试文档
-1. **input-validation.md** - 输入验证边缘情况测试
-   - 超长文本输入测试
-   - 特殊字符和Emoji测试
-   - 空输入和边界值测试
-   - 快速连续输入测试
+### Newly Added Specialized Test Documents
+1. **input-validation.md** - Input validation edge case tests
+   - Very long text input tests
+   - Special character and emoji tests
+   - Empty input and boundary value tests
+   - Rapid consecutive input tests
 
-2. **concurrent-operations.md** - 并发操作边缘情况测试
-   - 快速连续点击测试
-   - 同时操作多个功能测试
-   - 优化过程中的干扰操作测试
-   - 多窗口/标签页并发测试
+2. **concurrent-operations.md** - Concurrent operation edge case tests
+   - Rapid consecutive click tests
+   - Tests of operating multiple features simultaneously
+   - Tests of interfering operations during optimization
+   - Multi-window/tab concurrency tests
 
-3. **network-failures.md** - 网络故障错误处理测试
-   - API调用超时测试
-   - 网络连接中断测试
-   - API密钥无效测试
-   - 服务器错误响应测试
+3. **network-failures.md** - Network failure error handling tests
+   - API call timeout tests
+   - Network connection interruption tests
+   - Invalid API key tests
+   - Server error response tests
 
-4. **ui-glitches.md** - UI显示故障Bug发现测试
-   - 极端窗口尺寸测试
-   - 长文本显示测试
-   - 主题切换一致性测试
-   - 动态内容加载显示测试
+4. **ui-glitches.md** - UI display glitch bug-hunting tests
+   - Extreme window size tests
+   - Long text display tests
+   - Theme switching consistency tests
+   - Dynamic content loading display tests
 
-### 简化的用户文档
-1. **quick-start.md** - 用户快速上手指南
-   - 5分钟快速开始流程
-   - 主要功能简介
-   - 使用技巧和常见问题
-   - 故障排除指南
+### Simplified User Documentation
+1. **quick-start.md** - User quick start guide
+   - 5-minute quick start flow
+   - Overview of main features
+   - Usage tips and FAQ
+   - Troubleshooting guide
 
-## 🎯 测试重点转变
+## 🎯 Shift in Testing Focus
 
-### 从功能验证到Bug发现
-**之前：** 验证功能是否正常工作
+### From Feature Verification to Bug Discovery
+**Before:** Verify whether features work correctly
 ```markdown
-验证点：
-- [ ] 提示词已成功输入到文本框
-- [ ] 优化过程成功启动
-- [ ] 右侧显示优化后的提示词
+Verification points:
+- [ ] The prompt was successfully entered into the text box
+- [ ] The optimization process started successfully
+- [ ] The optimized prompt is displayed on the right
 ```
 
-**现在：** 专注发现潜在问题
+**Now:** Focus on discovering potential problems
 ```markdown
-预期发现的问题：
-- 输入框滚动异常
-- 界面卡顿或无响应
-- 内存使用过高
-- 优化超时或失败
-- 结果显示异常
+Expected problems to discover:
+- Abnormal input box scrolling
+- UI freezes or becomes unresponsive
+- Excessive memory usage
+- Optimization timeouts or failures
+- Abnormal result display
 ```
 
-### 从正常流程到边缘情况
-**之前：** 测试标准用户操作流程
+### From Normal Flows to Edge Cases
+**Before:** Test standard user operation flows
 ```javascript
-browser_type(element="原始提示词输入框", ref="e54", text="请帮我写一个关于人工智能发展历史的文章");
+browser_type(element="Original prompt input box", ref="e54", text="Please help me write an article about the history of artificial intelligence");
 ```
 
-**现在：** 测试极端和异常情况
+**Now:** Test extreme and abnormal situations
 ```javascript
-// 测试超长文本
-const longText = "这是一个测试文本。".repeat(1000); // 约10000字符
-browser_type(element="原始提示词输入框", ref="e54", text=longText);
+// Test very long text
+const longText = "This is a test text. ".repeat(1000); // About 10000 characters
+browser_type(element="Original prompt input box", ref="e54", text=longText);
 
-// 测试特殊字符
+// Test special characters
 const specialChars = "🚀🎯💡🔥⭐️🌟✨🎉🎊🎈<script>alert('test')</script>";
-browser_type(element="原始提示词输入框", ref="e54", text=specialChars);
+browser_type(element="Original prompt input box", ref="e54", text=specialChars);
 ```
 
-## 📊 测试覆盖范围
+## 📊 Test Coverage
 
-### 正常流程测试（回归测试基准）
-- ✅ **基础设置** - 主题切换、语言切换、响应式布局测试
-- ✅ **模型管理** - API配置、连接测试、模型选择测试
-- ✅ **模板管理** - 模板创建、编辑、分类管理测试
-- ✅ **提示词优化** - 已通过AI验证的完整优化流程测试
-- ✅ **历史记录** - 记录查看、重用、搜索、删除测试
-- ✅ **数据管理** - 导入导出、备份恢复、数据清除测试
+### Normal Flow Tests (Regression Test Baseline)
+- ✅ **Basic setup** - Theme switching, language switching, responsive layout tests
+- ✅ **Model management** - API configuration, connection tests, model selection tests
+- ✅ **Template management** - Template creation, editing, category management tests
+- ✅ **Prompt optimization** - Complete optimization flow tests verified by AI
+- ✅ **History** - Record viewing, reuse, search, deletion tests
+- ✅ **Data management** - Import/export, backup/restore, data clearing tests
 
-### 边缘情况测试（Bug发现重点）
-- ✅ **输入验证** - 各种异常输入的处理测试
-- ✅ **并发操作** - 竞态条件和并发处理测试
-- 🔄 **性能极限** - 待添加的性能边界测试
-- 🔄 **浏览器兼容** - 待添加的兼容性测试
+### Edge Case Tests (Bug-Hunting Focus)
+- ✅ **Input validation** - Handling of various abnormal inputs
+- ✅ **Concurrent operations** - Race condition and concurrency handling tests
+- 🔄 **Performance limits** - Performance boundary tests to be added
+- 🔄 **Browser compatibility** - Compatibility tests to be added
 
-### 错误处理测试（稳定性验证）
-- ✅ **网络故障** - 各种网络异常的处理测试
-- 🔄 **存储故障** - 待添加的本地存储异常测试
-- 🔄 **API错误** - 待添加的API错误处理测试
+### Error Handling Tests (Stability Verification)
+- ✅ **Network failures** - Handling of various network anomalies
+- 🔄 **Storage failures** - Local storage anomaly tests to be added
+- 🔄 **API errors** - API error handling tests to be added
 
-### Bug发现测试（专业测试）
-- ✅ **UI显示故障** - 界面显示相关的Bug发现测试
-- 🔄 **数据损坏** - 待添加的数据完整性测试
-- 🔄 **内存泄漏** - 待添加的内存管理测试
-- 🔄 **竞态条件** - 待添加的深度竞态条件测试
+### Bug-Hunting Tests (Specialized Tests)
+- ✅ **UI display glitches** - Bug-hunting tests related to interface display
+- 🔄 **Data corruption** - Data integrity tests to be added
+- 🔄 **Memory leaks** - Memory management tests to be added
+- 🔄 **Race conditions** - In-depth race condition tests to be added
 
-## 🚀 使用指南
+## 🚀 Usage Guide
 
-### 对于AI自动化测试
-1. **选择测试类型**
-   - `normal-flow/` - 回归测试和基础功能验证
-   - `edge-cases/` - 边缘情况和异常场景测试
-   - `error-handling/` - 错误处理机制测试
-   - `bug-hunting/` - 专门的Bug发现测试
+### For AI Automated Testing
+1. **Choose a test type**
+   - `normal-flow/` - Regression tests and basic feature verification
+   - `edge-cases/` - Edge case and abnormal scenario tests
+   - `error-handling/` - Error handling mechanism tests
+   - `bug-hunting/` - Dedicated bug-hunting tests
 
-2. **执行测试**
-   - 读取测试文档了解测试目标
-   - 按照AI执行指导使用MCP工具
-   - 重点关注"预期发现的问题"部分
-   - 详细记录发现的Bug和异常
+2. **Execute tests**
+   - Read the test document to understand the test goals
+   - Use MCP tools following the AI execution guidance
+   - Focus on the "Expected problems to discover" section
+   - Record discovered bugs and anomalies in detail
 
-3. **报告问题**
-   - 使用提供的Bug报告模板
-   - 包含详细的复现步骤
-   - 提供截图和错误信息
-   - 评估问题的严重程度和影响
+3. **Report problems**
+   - Use the provided bug report template
+   - Include detailed reproduction steps
+   - Provide screenshots and error messages
+   - Assess the severity and impact of the problem
 
-### 对于用户
-1. **快速上手** - 阅读 `docs/user/quick-start.md`
-2. **基础使用** - 按照5分钟快速开始流程
-3. **问题解决** - 参考常见问题和故障排除部分
+### For Users
+1. **Quick start** - Read `docs/user/quick-start.md`
+2. **Basic usage** - Follow the 5-minute quick start flow
+3. **Problem solving** - Refer to the FAQ and troubleshooting sections
 
-## 📈 预期效果
+## 📈 Expected Results
 
-### 测试效率提升
-- **专注性更强** - 每个测试都有明确的Bug发现目标
-- **覆盖更全面** - 包含正常流程、边缘情况、错误处理等多个维度
-- **实用性更高** - 测试场景更贴近真实使用中可能出现的问题
+### Improved Testing Efficiency
+- **Stronger focus** - Every test has a clear bug-hunting goal
+- **More comprehensive coverage** - Covers normal flows, edge cases, error handling, and other dimensions
+- **Higher practicality** - Test scenarios are closer to problems that may occur in real use
 
-### Bug发现能力增强
-- **边缘情况** - 发现极端使用条件下的问题
-- **并发问题** - 发现多用户或多操作场景下的竞态条件
-- **错误处理** - 发现异常情况下的处理缺陷
-- **用户体验** - 发现影响用户体验的细节问题
+### Enhanced Bug Discovery
+- **Edge cases** - Discover problems under extreme usage conditions
+- **Concurrency issues** - Discover race conditions in multi-user or multi-operation scenarios
+- **Error handling** - Discover handling defects in abnormal situations
+- **User experience** - Discover detail issues that affect user experience
 
-### 文档维护简化
-- **目标明确** - 每个文档都有清晰的测试目标
-- **结构清晰** - 按测试类型和目标组织文档
-- **易于扩展** - 可以方便地添加新的测试场景
+### Simplified Documentation Maintenance
+- **Clear goals** - Every document has a clear testing goal
+- **Clear structure** - Documents are organized by test type and goal
+- **Easy to extend** - New test scenarios can be added conveniently
 
-## 🔮 后续计划
+## 🔮 Future Plans
 
-1. **完善测试覆盖** - 继续添加其他功能模块的测试文档
-2. **增强Bug发现** - 开发更多专门的Bug发现测试场景
-3. **自动化集成** - 考虑将测试集成到CI/CD流程中
-4. **工具优化** - 开发更好的测试辅助工具和报告生成器
+1. **Improve test coverage** - Continue adding test documents for other feature modules
+2. **Enhance bug discovery** - Develop more dedicated bug-hunting test scenarios
+3. **Automation integration** - Consider integrating the tests into the CI/CD flow
+4. **Tool optimization** - Develop better test helper tools and report generators
 
 ---
 
-**总结：** 这次重构将文档从"用户操作指南"转变为"专业测试工具"，更好地服务于AI自动化测试和Bug发现的目标。新的结构更加专业、实用，能够更有效地发现和定位问题。
+**Summary:** This restructuring transforms the documents from "user operation guides" into "professional testing tools", better serving the goals of AI automated testing and bug discovery. The new structure is more professional and practical, and can find and locate problems more effectively.

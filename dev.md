@@ -1,67 +1,67 @@
-# 开发指南 (Development Guide)
+# Development Guide
 
-## 目录
+## Table of Contents
 
-- [本地开发环境配置](#本地开发环境配置)
-- [Docker开发和部署](#docker开发和部署)
-- [环境变量配置](#环境变量配置)
-- [开发工作流程](#开发工作流程)
-- [项目构建和部署](#项目构建和部署)
-- [常见问题解决](#常见问题解决)
+- [Local Development Environment Setup](#local-development-environment-setup)
+- [Docker Development and Deployment](#docker-development-and-deployment)
+- [Environment Variable Configuration](#environment-variable-configuration)
+- [Development Workflow](#development-workflow)
+- [Project Build and Deployment](#project-build-and-deployment)
+- [Common Problems and Solutions](#common-problems-and-solutions)
 
-## 本地开发环境配置
+## Local Development Environment Setup
 
-### 基础环境要求
+### Basic Environment Requirements
 - Node.js >= 18
 - pnpm >= 8
 - Git >= 2.0
-- VSCode (推荐)
+- VSCode (recommended)
 
-### 开发环境设置
+### Development Environment Setup
 ```bash
-# 1. 克隆项目
+# 1. Clone the project
 git clone https://github.com/linshenkx/prompt-optimizer.git
 cd prompt-optimizer
 
-# 2. 安装依赖
+# 2. Install dependencies
 pnpm install
 
-# 3. 启动开发服务
-pnpm dev               # Web开发：构建core/ui并运行web应用
-pnpm dev:fresh         # Web开发（完整重置）：清理+重装+启动
-pnpm dev:desktop       # Desktop开发：构建core/ui，同时运行web和desktop
-pnpm dev:desktop:fresh # Desktop开发（完整重置）：清理+重装+启动
+# 3. Start the development services
+pnpm dev               # Web development: build core/ui and run the web app
+pnpm dev:fresh         # Web development (full reset): clean + reinstall + start
+pnpm dev:desktop       # Desktop development: build core/ui, run web and desktop together
+pnpm dev:desktop:fresh # Desktop development (full reset): clean + reinstall + start
 ```
 
-## Docker开发和部署
+## Docker Development and Deployment
 
-### 环境要求
+### Environment Requirements
 - Docker >= 20.10.0
 
-### Docker构建和运行
+### Docker Build and Run
 
-#### 基础构建
+#### Basic Build
 ```bash
-# 获取package.json中的版本号
+# Get the version number from package.json
 $VERSION=$(node -p "require('./package.json').version")
 
-# 构建镜像（使用动态版本号）
+# Build the image (using the dynamic version number)
 docker build -t linshen/prompt-optimizer:$VERSION .
 
-# 添加latest标签
+# Add the latest tag
 docker tag linshen/prompt-optimizer:$VERSION linshen/prompt-optimizer:latest
 
-# 运行容器
+# Run the container
 docker run -d -p 80:80 --restart unless-stopped --name prompt-optimizer -e ACCESS_PASSWORD=1234!@#$  linshen/prompt-optimizer:$VERSION
 
 
-# 推送
+# Push
 docker push linshen/prompt-optimizer:$VERSION
 docker push linshen/prompt-optimizer:latest
 
 ```
 
-docker本地构建测试
+Local Docker build test
 ```shell
 docker build -t linshen/prompt-optimizer:test .
 docker rm -f prompt-optimizer
@@ -70,37 +70,37 @@ docker run -d -p 80:80 --restart unless-stopped --name prompt-optimizer -e VITE_
 ```
 
 
-### 多阶段构建说明
+### Multi-Stage Build Notes
 
-Dockerfile使用了多阶段构建优化镜像大小：
+The Dockerfile uses a multi-stage build to optimize the image size:
 
-1. `base`: 基础Node.js环境，安装pnpm
-2. `builder`: 构建阶段，安装依赖并构建项目
-3. `production`: 最终镜像，只包含构建产物和nginx
+1. `base`: Base Node.js environment with pnpm installed
+2. `builder`: Build stage; installs dependencies and builds the project
+3. `production`: Final image; contains only the build artifacts and nginx
 
-## 环境变量配置
+## Environment Variable Configuration
 
-### 本地开发环境变量
-在项目根目录创建 `.env.local` 文件：
+### Local Development Environment Variables
+Create a `.env.local` file in the project root directory:
 
 ```env
-# OpenAI API配置
+# OpenAI API configuration
 VITE_OPENAI_API_KEY=your_openai_api_key
 
-# Gemini API配置
+# Gemini API configuration
 VITE_GEMINI_API_KEY=your_gemini_api_key
 
-# DeepSeek API配置
+# DeepSeek API configuration
 VITE_DEEPSEEK_API_KEY=your_deepseek_api_key
 
-# 自定义API配置
+# Custom API configuration
 VITE_CUSTOM_API_KEY=your_custom_api_key
 VITE_CUSTOM_API_BASE_URL=your_custom_api_base_url
 VITE_CUSTOM_API_MODEL=your_custom_model_name
 ```
 
-### Docker环境变量
-通过 `-e` 参数设置容器环境变量：
+### Docker Environment Variables
+Set container environment variables with the `-e` flag:
 
 ```bash
 docker run -d -p 80:80 \
@@ -109,444 +109,444 @@ docker run -d -p 80:80 \
   prompt-optimizer
 ```
 
-## 开发工作流程
+## Development Workflow
 
-### 代码提交规范
+### Commit Conventions
 ```bash
-# 提交格式
+# Commit format
 <type>(<scope>): <subject>
 
-# 示例
-feat(ui): 添加新的提示词编辑器组件
-fix(core): 修复API调用超时问题
+# Examples
+feat(ui): add a new prompt editor component
+fix(core): fix API call timeout issue
 ```
 
-### 测试流程
+### Testing Process
 ```bash
-# 运行所有包的测试
+# Run the tests of all packages
 pnpm test
 
-# 运行特定包的测试（直接使用pnpm workspace命令）
+# Run the tests of a specific package (use the pnpm workspace commands directly)
 pnpm -F @prompt-optimizer/core test
 pnpm -F @prompt-optimizer/ui test
 pnpm -F @prompt-optimizer/web test
 ```
 
-## 项目构建和部署
+## Project Build and Deployment
 
-### 分支管理策略
+### Branch Management Strategy
 
-#### 🌿 分支结构
-- **`main`**: 生产分支，触发 Vercel 自动部署
-- **`develop`**: 开发分支，不触发 Vercel 部署
-- **`feature/*`**: 功能分支，从 develop 分出
+#### 🌿 Branch Structure
+- **`main`**: Production branch; triggers automatic Vercel deployment
+- **`develop`**: Development branch; does not trigger Vercel deployment
+- **`feature/*`**: Feature branches, branched from develop
 
-#### 🔄 开发工作流
+#### 🔄 Development Workflow
 ```bash
-# 1. 从 develop 分支开始开发
+# 1. Start development from the develop branch
 git checkout develop
 git pull origin develop
 
-# 2. 创建功能分支
+# 2. Create a feature branch
 git checkout -b feature/new-feature
 
-# 3. 开发完成后推送到功能分支
+# 3. Push to the feature branch when development is done
 git add .
-git commit -m "feat: 添加新功能"
+git commit -m "feat: add new feature"
 git push origin feature/new-feature
 
-# 4. 合并到 develop 分支（不会触发 Vercel 部署）
+# 4. Merge into the develop branch (does not trigger Vercel deployment)
 git checkout develop
 git merge feature/new-feature
 git push origin develop
 
-# 5. 准备发布时，合并到 main 分支（触发 Vercel 部署）
+# 5. When ready to release, merge into the main branch (triggers Vercel deployment)
 git checkout main
 git merge develop
 git push origin main
 ```
 
-### 版本发布流程
+### Version Release Process
 
-#### 📋 版本号管理
-使用语义化版本控制，通过 pnpm 命令管理版本号：
+#### 📋 Version Number Management
+Use semantic versioning and manage version numbers with pnpm commands:
 
 ```bash
-# 更新版本号（不创建 tag）
+# Update the version number (without creating a tag)
 pnpm version:prepare patch   # 1.0.0 → 1.0.1
 pnpm version:prepare minor   # 1.0.0 → 1.1.0
 pnpm version:prepare major   # 1.0.0 → 2.0.0
 
-# 提交版本更改
+# Commit the version change
 git commit -m "chore: bump version to $(node -p \"require('./package.json').version\")"
 ```
 
-#### 🚀 Desktop 应用发布
-项目配置了基于 Git Tag 的自动化发布流程，支持多平台构建和自动生成 Release Notes。
+#### 🚀 Desktop App Release
+The project has an automated release process based on Git tags, supporting multi-platform builds and automatic Release Notes generation.
 
-**发布正式版本**：
+**Releasing an official version**:
 ```bash
-# 1. 在 develop 分支准备版本
+# 1. Prepare the version on the develop branch
 git checkout develop
 pnpm version:prepare minor
 git commit -m "chore: bump version to $(node -p \"require('./package.json').version\")"
 git push origin develop
 
-# 2. 合并到 main 分支（触发 Vercel 部署）
+# 2. Merge into the main branch (triggers Vercel deployment)
 git checkout main
 git merge develop
 git push origin main
 
-# 3. 创建并推送版本标签（触发 Desktop 构建）
+# 3. Create and push the version tag (triggers the Desktop build)
 pnpm run version:tag
 pnpm run version:publish
 ```
 
-**发布预览版本**：
+**Releasing a preview version**:
 ```bash
-# 在 develop 分支创建预览版本标签
+# Create a preview version tag on the develop branch
 git checkout develop
 
-# 手动创建预览版本标签
+# Manually create a preview version tag
 git tag v1.2.0-beta.1
 git push origin v1.2.0-beta.1
 
-# 或使用脚本（需要先手动修改版本号为预览格式）
-# 编辑 package.json: "version": "1.2.0-beta.1"
+# Or use the scripts (first manually change the version number to a preview format)
+# Edit package.json: "version": "1.2.0-beta.1"
 # pnpm run version:tag && pnpm run version:publish
 ```
 
-#### 📦 自动化构建特性
-- **多平台构建**：自动在 Windows、macOS、Linux 上构建对应的安装包
-- **智能 Release Notes**：自动提取两个版本间的 commit 信息
-- **版本类型识别**：自动区分正式版本和预览版本
-- **Commit 优化**：自动截断过长的 commit（80字符），限制显示数量（20个）
+#### 📦 Automated Build Features
+- **Multi-platform builds**: Automatically builds the installers on Windows, macOS, and Linux
+- **Smart Release Notes**: Automatically extracts the commit messages between two versions
+- **Version type detection**: Automatically distinguishes official versions from preview versions
+- **Commit optimization**: Automatically truncates overly long commits (80 characters) and limits the number displayed (20)
 
-#### 🎯 发布结果
-推送标签后，GitHub Actions 会自动：
-1. 在三个平台上并行构建 Desktop 应用
-2. 生成包含 commit 历史的 Release Notes
-3. 创建 GitHub Release 并上传所有构建文件
-4. 正式版本标记为 Release，预览版本标记为 Pre-release
+#### 🎯 Release Result
+After the tag is pushed, GitHub Actions will automatically:
+1. Build the Desktop app on three platforms in parallel
+2. Generate Release Notes containing the commit history
+3. Create a GitHub Release and upload all build files
+4. Mark official versions as Release and preview versions as Pre-release
 
-### 构建说明
-项目采用 monorepo 架构，包含以下子包：
-- `@prompt-optimizer/core`: 核心逻辑包
-- `@prompt-optimizer/ui`: UI组件包
-- `@prompt-optimizer/web`: Web应用
-- `@prompt-optimizer/extension`: 浏览器扩展
-- `@prompt-optimizer/desktop`: Desktop应用
+### Build Notes
+The project uses a monorepo architecture with the following sub-packages:
+- `@prompt-optimizer/core`: Core logic package
+- `@prompt-optimizer/ui`: UI component package
+- `@prompt-optimizer/web`: Web application
+- `@prompt-optimizer/extension`: Browser extension
+- `@prompt-optimizer/desktop`: Desktop application
 
-构建顺序：core → ui → (web/extension/desktop 并行)
+Build order: core → ui → (web/extension/desktop in parallel)
 
-### 本地构建
+### Local Build
 ```bash
-# 构建所有包（按依赖顺序：core → ui → web/ext/desktop并行）
+# Build all packages (in dependency order: core → ui → web/ext/desktop in parallel)
 pnpm build
 
-# 构建特定包
-pnpm build:core        # 构建核心包
-pnpm build:ui          # 构建UI组件包
-pnpm build:web         # 构建Web应用
-pnpm build:ext         # 构建浏览器扩展
-pnpm build:desktop     # 构建Desktop应用（包含打包）
+# Build a specific package
+pnpm build:core        # Build the core package
+pnpm build:ui          # Build the UI component package
+pnpm build:web         # Build the web app
+pnpm build:ext         # Build the browser extension
+pnpm build:desktop     # Build the Desktop app (including packaging)
 
-# Desktop可执行文件构建
-pnpm build:desktop             # 完整构建：core→ui→web→desktop打包
+# Build the Desktop executables
+pnpm build:desktop             # Full build: core→ui→web→desktop packaging
 ```
 
-### 手动发布（本地构建）
-如果需要本地构建和测试：
+### Manual Release (Local Build)
+If you need to build and test locally:
 
 ```bash
-# 构建所有平台（仅在对应平台上有效）
+# Build for all platforms (only works on the corresponding platform)
 pnpm build:desktop
 
-# 查看构建结果
+# View the build results
 ls packages/desktop/dist/
 ```
 
-### 版本管理最佳实践
+### Version Management Best Practices
 
-#### 📋 版本号规范
-- **正式版本**：`v1.0.0`, `v2.1.3` - 遵循语义化版本控制
-- **预览版本**：`v1.0.0-beta.1`, `v1.0.0-rc.1`, `v1.0.0-alpha.1`
+#### 📋 Version Number Conventions
+- **Official versions**: `v1.0.0`, `v2.1.3` - follow semantic versioning
+- **Preview versions**: `v1.0.0-beta.1`, `v1.0.0-rc.1`, `v1.0.0-alpha.1`
 
-#### ⚠️ electron-updater 版本号注意事项
+#### ⚠️ electron-updater Version Number Notes
 
-**重要**：electron-updater 对预发布版本的处理有特殊限制，必须使用正确的版本号格式。
+**Important**: electron-updater has special restrictions on how it handles pre-release versions, so the correct version number format must be used.
 
-**✅ 推荐格式（符合 SemVer 2.0.0 标准）**：
+**✅ Recommended format (conforms to the SemVer 2.0.0 standard)**:
 ```bash
 v1.2.6-alpha.1, v1.2.6-alpha.2, v1.2.6-alpha.3
 v1.2.6-beta.1, v1.2.6-beta.2, v1.2.6-beta.3
 v1.2.6-rc.1, v1.2.6-rc.2, v1.2.6-rc.3
 ```
 
-**❌ 避免格式（可能导致 electron-updater 检测问题）**：
+**❌ Formats to avoid (may cause electron-updater detection problems)**:
 ```bash
 v1.2.6-alpha1, v1.2.6-alpha2, v1.2.6-alpha3
 v1.2.6-beta1, v1.2.6-beta2, v1.2.6-beta3
 v1.2.6-rc1, v1.2.6-rc2, v1.2.6-rc3
 ```
 
-**问题说明**：
-- electron-updater 将预发布版本的第一部分（如 `beta2` 中的 `beta`）视为**频道标识符**
-- 使用 `beta1`, `beta2`, `beta3` 格式时，可能出现版本检测异常
-- 从 `v1.2.6-beta2` 无法正确检测到 `v1.2.6-beta3` 的更新
-- 使用点分隔格式 `beta.1`, `beta.2`, `beta.3` 可以避免此问题
+**Explanation**:
+- electron-updater treats the first part of a pre-release version (such as `beta` in `beta2`) as the **channel identifier**
+- When using the `beta1`, `beta2`, `beta3` format, version detection anomalies may occur
+- An update from `v1.2.6-beta2` to `v1.2.6-beta3` cannot be detected correctly
+- Using the dot-separated format `beta.1`, `beta.2`, `beta.3` avoids this problem
 
-**最佳实践**：
-1. 始终使用点分隔的预发布版本号格式
-2. 遵循 `<version>-<stage>.<number>` 的命名规范
-3. 如果遇到版本检测问题，考虑跳过问题版本或重新发布
+**Best practices**:
+1. Always use the dot-separated pre-release version format
+2. Follow the `<version>-<stage>.<number>` naming convention
+3. If you run into version detection problems, consider skipping the problematic version or republishing
 
-#### 🔄 完整发布流程
-1. **开发阶段**：在 `develop` 分支开发新功能
-2. **版本准备**：在 `develop` 分支使用 `pnpm version:prepare` 更新版本号
-3. **预览测试**：在 `develop` 分支创建 `beta` 标签进行测试
-4. **生产部署**：合并到 `main` 分支触发 Vercel 部署
-5. **正式发布**：在 `main` 分支创建正式版本标签
+#### 🔄 Complete Release Process
+1. **Development stage**: Develop new features on the `develop` branch
+2. **Version preparation**: Use `pnpm version:prepare` on the `develop` branch to update the version number
+3. **Preview testing**: Create a `beta` tag on the `develop` branch for testing
+4. **Production deployment**: Merge into the `main` branch to trigger the Vercel deployment
+5. **Official release**: Create the official version tag on the `main` branch
 
-#### 🐛 Bug 修复和版本覆盖
+#### 🐛 Bug Fixes and Version Overwriting
 
-**发现 bug 后的处理方案**：
+**How to handle a bug once it is found**:
 
-**方案一：覆盖现有版本（不推荐用于正式版本）**
+**Option 1: Overwrite the existing version (not recommended for official versions)**
 ```bash
-# 1. 修复 bug 并提交
+# 1. Fix the bug and commit
 git add .
-git commit -m "fix: 修复关键bug"
+git commit -m "fix: fix critical bug"
 
-# 2. 删除本地和远程 tag
-git tag -d v1.2.0                    # 删除本地 tag
-git push origin :refs/tags/v1.2.0    # 删除远程 tag
+# 2. Delete the local and remote tags
+git tag -d v1.2.0                    # Delete the local tag
+git push origin :refs/tags/v1.2.0    # Delete the remote tag
 
-# 3. 手动删除 GitHub Release
-# 访问 GitHub → Releases → 找到对应版本 → Delete
+# 3. Manually delete the GitHub Release
+# Go to GitHub → Releases → find the corresponding version → Delete
 
-# 4. 重新创建 tag 和发布
-pnpm run version:tag      # 重新创建 tag
-pnpm run version:publish  # 重新推送 tag（触发新的构建）
+# 4. Recreate the tag and release
+pnpm run version:tag      # Recreate the tag
+pnpm run version:publish  # Push the tag again (triggers a new build)
 ```
 
-**方案二：发布补丁版本（推荐）**
+**Option 2: Release a patch version (recommended)**
 ```bash
-# 1. 修复 bug
+# 1. Fix the bug
 git add .
-git commit -m "fix: 修复关键bug"
+git commit -m "fix: fix critical bug"
 
-# 2. 发布补丁版本
+# 2. Release a patch version
 pnpm version:prepare patch  # 1.2.0 → 1.2.1
 git commit -m "chore: bump version to v1.2.1"
 pnpm run version:tag
 pnpm run version:publish
 ```
 
-**预览版本覆盖（相对安全）**
+**Overwriting a preview version (relatively safe)**
 ```bash
-# 预览版本可以安全覆盖
+# A preview version can be safely overwritten
 git tag -d v1.2.0-beta.1
 git push origin :refs/tags/v1.2.0-beta.1
 
-# 修复后重新发布
+# Republish after the fix
 git tag v1.2.0-beta.1
 git push origin v1.2.0-beta.1
 ```
 
-#### ⚠️ 重要说明
-- **避免直接使用 `pnpm version`**：会自动创建 tag，可能导致意外发布
-- **使用 `pnpm version:prepare`**：只更新版本号，不创建 tag
-- **手动控制 tag 创建时机**：使用 `pnpm run version:tag` 和 `pnpm run version:publish`
-- **正式版本覆盖需谨慎**：可能影响已下载的用户
-- **推荐使用补丁版本**：而不是覆盖现有版本
-- **Vercel 部署**：只有推送到 `main` 分支才会触发
-- **Desktop 发布**：推送 Git Tag 会触发 Desktop 应用构建
+#### ⚠️ Important Notes
+- **Avoid using `pnpm version` directly**: It creates a tag automatically, which may cause an accidental release
+- **Use `pnpm version:prepare`**: It only updates the version number and does not create a tag
+- **Control when the tag is created manually**: Use `pnpm run version:tag` and `pnpm run version:publish`
+- **Be careful when overwriting official versions**: It may affect users who have already downloaded them
+- **Patch versions are recommended**: Instead of overwriting an existing version
+- **Vercel deployment**: Only pushes to the `main` branch trigger it
+- **Desktop release**: Pushing a Git tag triggers the Desktop app build
 
-#### 📝 Commit 规范
-为了生成更好的 Release Notes，建议使用规范的 commit 格式：
+#### 📝 Commit Conventions
+To generate better Release Notes, use a standardized commit format:
 ```bash
-# 功能添加
-git commit -m "feat(ui): 添加新的提示词编辑器"
+# Adding a feature
+git commit -m "feat(ui): add a new prompt editor"
 
-# 问题修复
-git commit -m "fix(core): 修复API调用超时问题"
+# Fixing an issue
+git commit -m "fix(core): fix API call timeout issue"
 
-# 文档更新
-git commit -m "docs: 更新开发指南"
+# Documentation update
+git commit -m "docs: update development guide"
 
-# 性能优化
-git commit -m "perf(web): 优化页面加载速度"
+# Performance optimization
+git commit -m "perf(web): improve page load speed"
 ```
 
-### Vercel 部署控制
+### Vercel Deployment Control
 
-#### 🎯 分支控制策略
-项目配置了基于分支的 Vercel 部署控制，简单有效。
+#### 🎯 Branch Control Strategy
+The project uses branch-based Vercel deployment control, which is simple and effective.
 
-**部署规则**：
-- ✅ **`main/master` 分支**：自动触发 Vercel 部署
-- ❌ **其他分支**：不会触发 Vercel 部署
+**Deployment rules**:
+- ✅ **`main/master` branch**: Automatically triggers Vercel deployment
+- ❌ **Other branches**: Do not trigger Vercel deployment
 
-#### 📝 手动控制构建
+#### 📝 Manually Controlling Builds
 
-**跳过 Vercel 构建**：
+**Skip the Vercel build**:
 ```bash
-# 使用 Git 标准的跳过标记
-git commit -m "docs: 更新文档 [skip ci]"
-git commit -m "fix(desktop): 修复桌面应用问题 [skip ci]"
+# Use the standard Git skip marker
+git commit -m "docs: update documentation [skip ci]"
+git commit -m "fix(desktop): fix desktop app issue [skip ci]"
 ```
 
-**正常 Vercel 构建**：
+**Normal Vercel build**:
 ```bash
-# 推送到 main 分支会自动触发构建
+# Pushing to the main branch triggers the build automatically
 git checkout main
 git merge develop
 git push origin main
 ```
 
-#### 🔧 最佳实践
-- **开发阶段**：在 `develop` 分支工作，不会触发 Vercel 部署
-- **测试阶段**：在 `develop` 分支发布预览版本测试 Desktop 应用
-- **生产部署**：合并到 `main` 分支时才触发 Vercel 部署
+#### 🔧 Best Practices
+- **Development stage**: Work on the `develop` branch; it does not trigger Vercel deployment
+- **Testing stage**: Publish preview versions on the `develop` branch to test the Desktop app
+- **Production deployment**: Vercel deployment is only triggered when merging into the `main` branch
 
-### 常用Docker命令
+### Common Docker Commands
 
 ```bash
-# 查看容器日志
+# View container logs
 docker logs -f prompt-optimizer
 
-# 进入容器
+# Enter the container
 docker exec -it prompt-optimizer sh
 
-# 容器管理
+# Container management
 docker stop prompt-optimizer
 docker start prompt-optimizer
 docker restart prompt-optimizer
 
-# 清理资源
+# Clean up resources
 docker rm prompt-optimizer
 docker rmi prompt-optimizer
 ```
 
-## 发布故障排除
+## Release Troubleshooting
 
-### 🚨 紧急修复流程
+### 🚨 Emergency Fix Process
 
-#### 场景一：正式版本有严重 bug
+#### Scenario 1: An official version has a serious bug
 ```bash
-# 1. 立即修复 bug
+# 1. Fix the bug immediately
 git checkout main
 git pull origin main
-# ... 修复代码 ...
+# ... fix the code ...
 git add .
-git commit -m "hotfix: 修复严重bug"
+git commit -m "hotfix: fix serious bug"
 
-# 2. 发布热修复版本
+# 2. Release the hotfix version
 pnpm version:prepare patch  # 1.2.0 → 1.2.1
 git commit -m "chore: hotfix version v1.2.1"
 git push origin main
 
-# 3. 发布新版本
+# 3. Release the new version
 pnpm run version:tag
 pnpm run version:publish
 
-# 4. 在 GitHub Release 中标记旧版本为 "不推荐使用"
+# 4. Mark the old version as "not recommended" in the GitHub Release
 ```
 
-#### 场景二：预览版本需要快速迭代
+#### Scenario 2: A preview version needs fast iteration
 ```bash
-# 删除现有预览版本
+# Delete the existing preview version
 git tag -d v1.2.0-beta.1
 git push origin :refs/tags/v1.2.0-beta.1
 
-# 修复后重新发布相同版本
+# Republish the same version after the fix
 git tag v1.2.0-beta.1
 git push origin v1.2.0-beta.1
 ```
 
-#### 场景三：构建失败需要重新触发
+#### Scenario 3: The build failed and needs to be re-triggered
 ```bash
-# 删除 tag 重新触发构建
+# Delete the tag to re-trigger the build
 git push origin :refs/tags/v1.2.0
 git push origin v1.2.0
 
-# 或者创建新的 patch 版本
+# Or create a new patch version
 pnpm version:prepare patch
 pnpm run version:tag
 pnpm run version:publish
 ```
 
-### 📋 GitHub Release 管理
+### 📋 GitHub Release Management
 
-#### 删除 Release
-1. 访问 GitHub 项目页面
-2. 点击 "Releases" 标签
-3. 找到要删除的版本
-4. 点击 "Edit" → "Delete this release"
-5. 确认删除
+#### Deleting a Release
+1. Go to the GitHub project page
+2. Click the "Releases" tab
+3. Find the version to delete
+4. Click "Edit" → "Delete this release"
+5. Confirm the deletion
 
-#### 编辑 Release
-1. 在 Release 页面点击 "Edit"
-2. 可以修改标题、描述、标记为预发布
-3. 可以删除或重新上传构建文件
-4. 保存更改
+#### Editing a Release
+1. Click "Edit" on the Release page
+2. You can change the title and description, or mark it as a pre-release
+3. You can delete or re-upload build files
+4. Save the changes
 
-### ⚡ 快速命令参考
+### ⚡ Quick Command Reference
 
 ```bash
-# 删除本地 tag
+# Delete the local tag
 git tag -d v1.2.0
 
-# 删除远程 tag
+# Delete the remote tag
 git push origin :refs/tags/v1.2.0
 
-# 查看所有 tag
+# List all tags
 git tag -l
 
-# 查看远程 tag
+# List the remote tags
 git ls-remote --tags origin
 
-# 强制推送 tag（覆盖远程）
+# Force-push a tag (overwrites the remote)
 git push origin v1.2.0 --force
 
-# 重新创建并推送 tag
+# Recreate and push a tag
 git tag v1.2.0
 git push origin v1.2.0
 ```
 
-## 常见问题解决
+## Common Problems and Solutions
 
-### 依赖安装问题
+### Dependency Installation Problems
 ```bash
-# 清理依赖缓存
+# Clear the dependency cache
 pnpm clean
 
-# 重新安装依赖
+# Reinstall dependencies
 pnpm install --force
 ```
 
-### 开发环境问题
+### Development Environment Problems
 ```bash
-# 完全重置Web开发环境
+# Fully reset the Web development environment
 pnpm dev:fresh
 
-# 完全重置Desktop开发环境
+# Fully reset the Desktop development environment
 pnpm dev:desktop:fresh
 
-# 清理构建缓存
+# Clear the build cache
 pnpm clean
 rm -rf node_modules
 pnpm install
 ```
 
-### 构建失败处理
-1. 检查Node.js版本是否符合要求
-2. 清理构建缓存：`pnpm clean`
-3. 重新安装依赖：`pnpm install`
-4. 查看详细构建日志：`pnpm build --debug`
+### Handling Build Failures
+1. Check that the Node.js version meets the requirements
+2. Clear the build cache: `pnpm clean`
+3. Reinstall dependencies: `pnpm install`
+4. View the detailed build log: `pnpm build --debug`
 
-### 容器运行问题
-1. 检查端口占用：`netstat -ano | findstr :80`
-2. 检查容器日志：`docker logs prompt-optimizer`
-3. 检查容器状态：`docker ps -a`
+### Container Runtime Problems
+1. Check port usage: `netstat -ano | findstr :80`
+2. Check the container logs: `docker logs prompt-optimizer`
+3. Check the container status: `docker ps -a`

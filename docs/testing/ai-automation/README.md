@@ -1,275 +1,275 @@
-# AI自动化测试系统
+# AI Automated Testing System
 
-## 🎯 目标
+## 🎯 Goals
 
-本测试系统专门设计用于AI通过MCP工具进行自动化测试，主要目标是：
-- **发现Bug** - 通过边缘情况和异常场景发现潜在问题
-- **回归测试** - 确保新功能不破坏现有功能
-- **压力测试** - 验证系统在极限条件下的稳定性
-- **用户体验验证** - 发现影响用户体验的问题
+This testing system is specifically designed for AI to perform automated testing through MCP tools. Its main goals are:
+- **Find bugs** - Discover potential problems through edge cases and abnormal scenarios
+- **Regression testing** - Ensure new features do not break existing ones
+- **Stress testing** - Verify system stability under extreme conditions
+- **User experience verification** - Discover problems that affect user experience
 
-## 📁 目录结构
+## 📁 Directory Structure
 
 ```
 ai-automation/
-├── README.md                       # 本文件
-├── electron-mcp-guide.md          # Electron MCP自动化测试指南
-├── test-scenarios/                 # 测试场景
-│   ├── normal-flow/               # 正常流程测试
+├── README.md                       # This file
+├── electron-mcp-guide.md          # Electron MCP automated testing guide
+├── test-scenarios/                 # Test scenarios
+│   ├── normal-flow/               # Normal flow tests
 │   │   ├── 01-basic-setup.md
 │   │   ├── 02-model-management.md
-│   │   ├── 02b-model-add-and-test.md  # 模型添加和连接测试
+│   │   ├── 02b-model-add-and-test.md  # Model addition and connection tests
 │   │   ├── 03-template-management.md
-│   │   ├── 04-prompt-optimization.md  # 已更新 - 包含结果展示功能测试
-│   │   ├── 04b-user-prompt-optimization.md  # 已更新 - 包含结果展示功能测试
+│   │   ├── 04-prompt-optimization.md  # Updated - includes result display feature tests
+│   │   ├── 04b-user-prompt-optimization.md  # Updated - includes result display feature tests
 │   │   ├── 05-history-management.md
 │   │   ├── 06-data-management.md
-│   │   ├── 07-ui-interaction-features.md  # 新增 - UI交互功能测试
-│   │   ├── 08-context-persistence.md      # 新增 - 上下文持久化
-│   │   ├── 09-context-variables-and-preview.md  # 新增 - 上下文变量/预览
-│   │   ├── 10-tools-management-and-advanced-context.md  # 新增 - 工具与高级上下文
-│   │   ├── 11-context-import-export.md   # 新增 - 上下文导入导出
-│   │   └── 12-advanced-context-optimization-and-testing.md  # 新增 - 高级优化与测试（变量/上下文/工具）
-│   ├── edge-cases/                # 边缘情况测试
+│   │   ├── 07-ui-interaction-features.md  # New - UI interaction feature tests
+│   │   ├── 08-context-persistence.md      # New - Context persistence
+│   │   ├── 09-context-variables-and-preview.md  # New - Context variables/preview
+│   │   ├── 10-tools-management-and-advanced-context.md  # New - Tools and advanced context
+│   │   ├── 11-context-import-export.md   # New - Context import/export
+│   │   └── 12-advanced-context-optimization-and-testing.md  # New - Advanced optimization and testing (variables/context/tools)
+│   ├── edge-cases/                # Edge case tests
 │   │   ├── input-validation.md
 │   │   ├── performance-limits.md
 │   │   ├── concurrent-operations.md
 │   │   └── browser-compatibility.md
-│   ├── error-handling/            # 错误处理测试
+│   ├── error-handling/            # Error handling tests
 │   │   ├── network-failures.md
 │   │   ├── invalid-inputs.md
 │   │   ├── storage-failures.md
 │   │   └── api-errors.md
-│   └── stress-testing/            # 压力测试
+│   └── stress-testing/            # Stress tests
 │       ├── memory-stress.md
 │       ├── rapid-operations.md
 │       └── data-volume.md
-├── bug-hunting/                   # 专门的bug发现测试
+├── bug-hunting/                   # Dedicated bug-hunting tests
 │   ├── ui-glitches.md
 │   ├── data-corruption.md
 │   ├── race-conditions.md
 │   └── memory-leaks.md
-├── regression/                    # 回归测试
+├── regression/                    # Regression tests
 │   ├── feature-regression.md
 │   └── performance-regression.md
-├── tools/                         # 测试工具和脚本
+├── tools/                         # Test tools and scripts
 │   ├── mcp-helpers.md
 │   └── test-data-generator.md
-└── reports/                       # 测试报告
+└── reports/                       # Test reports
     ├── latest/
     └── history/
 ```
 
-## 🤖 AI测试执行原则
+## 🤖 AI Test Execution Principles
 
-### 1. Bug优先原则
-- 重点关注可能出错的场景
-- 测试边界条件和极限值
-- 验证错误处理的完整性
-- 发现用户体验问题
+### 1. Bug-First Principle
+- Focus on scenarios that are likely to go wrong
+- Test boundary conditions and extreme values
+- Verify the completeness of error handling
+- Discover user experience problems
 
-### 2. 真实场景模拟
-- 模拟真实用户的使用模式
-- 包含意外操作和错误操作
-- 测试不同环境和条件
-- 考虑并发和竞态情况
+### 2. Realistic Scenario Simulation
+- Simulate real users' usage patterns
+- Include unexpected and erroneous operations
+- Test different environments and conditions
+- Consider concurrency and race conditions
 
-### 3. 系统性测试
-- 覆盖所有主要功能路径
-- 测试功能间的交互
-- 验证数据一致性
-- 检查性能和稳定性
+### 3. Systematic Testing
+- Cover all major feature paths
+- Test interactions between features
+- Verify data consistency
+- Check performance and stability
 
-## 🔍 测试分类说明
+## 🔍 Test Category Descriptions
 
-### Normal Flow（正常流程）
-- 验证基本功能的正确性
-- 确保主要用户路径可用
-- 作为回归测试的基准
-- 快速验证核心功能
+### Normal Flow
+- Verify the correctness of basic features
+- Ensure the main user paths are usable
+- Serve as the baseline for regression tests
+- Quickly verify core features
 
-### Edge Cases（边缘情况）
-- 输入验证和边界测试
-- 性能极限测试
-- 并发操作测试
-- 浏览器兼容性测试
+### Edge Cases
+- Input validation and boundary tests
+- Performance limit tests
+- Concurrent operation tests
+- Browser compatibility tests
 
-### Error Handling（错误处理）
-- 网络故障处理
-- 无效输入处理
-- 存储故障处理
-- API错误处理
+### Error Handling
+- Network failure handling
+- Invalid input handling
+- Storage failure handling
+- API error handling
 
-### Stress Testing（压力测试）
-- 内存压力测试
-- 快速操作测试
-- 大数据量测试
-- 长时间运行测试
+### Stress Testing
+- Memory stress tests
+- Rapid operation tests
+- Large data volume tests
+- Long-running tests
 
-### Bug Hunting（Bug发现）
-- UI显示问题
-- 数据损坏问题
-- 竞态条件问题
-- 内存泄漏问题
+### Bug Hunting
+- UI display issues
+- Data corruption issues
+- Race condition issues
+- Memory leak issues
 
-## 🛠️ MCP工具使用指南
+## 🛠️ MCP Tool Usage Guide
 
-### 基础工具
+### Basic Tools
 ```javascript
-// 页面操作
+// Page operations
 browser_navigate(url)
 browser_snapshot()
 browser_resize(width, height)
 
-// 元素交互
+// Element interaction
 browser_click(element, ref)
 browser_type(element, ref, text)
 browser_hover(element, ref)
 
-// 等待和验证
+// Waiting and verification
 browser_wait_for(text/textGone/time)
 browser_take_screenshot(filename)
 ```
 
-### 高级技巧
+### Advanced Techniques
 ```javascript
-// 快速连续操作（测试竞态条件）
+// Rapid consecutive operations (test race conditions)
 for (let i = 0; i < 10; i++) {
     browser_click(element, ref);
 }
 
-// 大量数据输入（测试性能）
+// Large data input (test performance)
 browser_type(element, ref, "x".repeat(10000));
 
-// 窗口大小变化（测试响应式）
-browser_resize(320, 568); // 手机尺寸
-browser_resize(1920, 1080); // 桌面尺寸
+// Window size changes (test responsiveness)
+browser_resize(320, 568); // Phone size
+browser_resize(1920, 1080); // Desktop size
 ```
 
-## 📊 测试报告格式
+## 📊 Test Report Format
 
-### Bug报告模板
+### Bug Report Template
 ```markdown
-# Bug报告 - [Bug标题]
+# Bug Report - [Bug Title]
 
-## 基本信息
-- **发现时间：** 2025-01-07 15:30:00
-- **测试场景：** [具体测试场景]
-- **严重程度：** 高/中/低
-- **影响范围：** [影响的功能或用户]
+## Basic Information
+- **Discovery time:** 2025-01-07 15:30:00
+- **Test scenario:** [Specific test scenario]
+- **Severity:** High/Medium/Low
+- **Scope of impact:** [Affected features or users]
 
-## Bug描述
-[详细描述发现的问题]
+## Bug Description
+[Detailed description of the problem found]
 
-## 复现步骤
-1. [具体步骤1]
-2. [具体步骤2]
-3. [具体步骤3]
+## Reproduction Steps
+1. [Specific step 1]
+2. [Specific step 2]
+3. [Specific step 3]
 
-## 预期行为
-[应该发生什么]
+## Expected Behavior
+[What should happen]
 
-## 实际行为
-[实际发生了什么]
+## Actual Behavior
+[What actually happened]
 
-## 环境信息
-- **浏览器：** Chrome 120.0
-- **操作系统：** Windows 11
-- **屏幕分辨率：** 1920x1080
-- **网络状况：** 正常/慢速/离线
+## Environment Information
+- **Browser:** Chrome 120.0
+- **Operating system:** Windows 11
+- **Screen resolution:** 1920x1080
+- **Network condition:** Normal/Slow/Offline
 
-## 附件
-- **截图：** bug_screenshot.png
-- **控制台日志：** console_errors.txt
-- **网络请求：** network_log.har
+## Attachments
+- **Screenshot:** bug_screenshot.png
+- **Console log:** console_errors.txt
+- **Network requests:** network_log.har
 
-## 建议解决方案
-[可能的解决方案或改进建议]
+## Suggested Solution
+[Possible solutions or improvement suggestions]
 ```
 
-## 🚀 快速开始
+## 🚀 Quick Start
 
-### 1. 选择测试场景
+### 1. Choose a Test Scenario
 ```bash
-# 正常流程验证
+# Normal flow verification
 cd test-scenarios/normal-flow/
 
-# 边缘情况测试
+# Edge case tests
 cd test-scenarios/edge-cases/
 
-# Bug发现测试
+# Bug-hunting tests
 cd bug-hunting/
 ```
 
-### 2. 执行测试
+### 2. Execute Tests
 ```bash
-# 读取测试文档
-# 按照AI执行指导进行测试
-# 记录发现的问题
-# 生成测试报告
+# Read the test document
+# Follow the AI execution guidance to test
+# Record the problems found
+# Generate the test report
 ```
 
-### 3. 报告问题
+### 3. Report Problems
 ```bash
-# 在reports/latest/目录下生成报告
-# 包含详细的复现步骤和证据
-# 提供改进建议
+# Generate the report under the reports/latest/ directory
+# Include detailed reproduction steps and evidence
+# Provide improvement suggestions
 ```
 
-## 📈 测试指标
+## 📈 Test Metrics
 
-### 覆盖率指标
-- **功能覆盖率** - 测试的功能占总功能的比例
-- **场景覆盖率** - 测试的使用场景覆盖程度
-- **边缘情况覆盖率** - 边缘情况的测试覆盖程度
+### Coverage Metrics
+- **Feature coverage** - Proportion of tested features out of all features
+- **Scenario coverage** - Degree to which usage scenarios are covered
+- **Edge case coverage** - Degree to which edge cases are covered
 
-### 质量指标
-- **Bug发现率** - 每次测试发现的Bug数量
-- **Bug严重程度分布** - 高/中/低严重程度Bug的分布
-- **回归Bug率** - 修复后再次出现的Bug比例
+### Quality Metrics
+- **Bug discovery rate** - Number of bugs found per test run
+- **Bug severity distribution** - Distribution of high/medium/low severity bugs
+- **Regression bug rate** - Proportion of bugs that reappear after being fixed
 
-### 效率指标
-- **测试执行时间** - 完成一轮测试的时间
-- **问题定位时间** - 从发现到定位问题的时间
-- **自动化程度** - 自动化测试的比例
+### Efficiency Metrics
+- **Test execution time** - Time to complete one round of testing
+- **Problem localization time** - Time from discovery to locating the problem
+- **Degree of automation** - Proportion of automated tests
 
-## 🖥️ Electron桌面应用测试
+## 🖥️ Electron Desktop App Testing
 
-### 专门指南
-详见 [`electron-mcp-guide.md`](./electron-mcp-guide.md) - Electron MCP自动化测试完整指南
+### Dedicated Guide
+See [`electron-mcp-guide.md`](./electron-mcp-guide.md) - the complete guide to Electron MCP automated testing
 
-### 关键差异
-- **启动方式**: 使用 `app_launch_circuit-electron` 而非 `browser_navigate`
-- **元素定位**: 优先使用 `click_by_text_circuit-electron`
-- **问题处理**: 善用JavaScript执行绕过UI限制
-- **状态判断**: 重视界面状态而非控制台信息
+### Key Differences
+- **Launch method**: Use `app_launch_circuit-electron` instead of `browser_navigate`
+- **Element locating**: Prefer `click_by_text_circuit-electron`
+- **Problem handling**: Make good use of JavaScript execution to work around UI limitations
+- **State judgment**: Value interface state over console information
 
-### 测试流程
-1. **构建应用**: `pnpm clean && pnpm build`
-2. **启动测试**: 使用packaged模式启动
-3. **执行场景**: 按normal-flow顺序执行
-4. **验证结果**: 关注功能按钮状态变化
+### Test Flow
+1. **Build the app**: `pnpm clean && pnpm build`
+2. **Launch the test**: Launch in packaged mode
+3. **Execute scenarios**: Execute in the normal-flow order
+4. **Verify results**: Watch for state changes of functional buttons
 
-### 成功案例
-- **测试覆盖率**: 9/9 (100%)
-- **通过率**: 100%
-- **核心验证**: 端到端AI优化流程
-- **技术积累**: 完整的Electron测试方法论
+### Success Case
+- **Test coverage**: 9/9 (100%)
+- **Pass rate**: 100%
+- **Core verification**: End-to-end AI optimization flow
+- **Technical accumulation**: A complete Electron testing methodology
 
-## 🔄 持续改进
+## 🔄 Continuous Improvement
 
-### 测试优化
-- 根据发现的问题调整测试重点
-- 增加新的边缘情况测试
-- 优化测试执行效率
-- 提高Bug发现的准确性
+### Test Optimization
+- Adjust the testing focus based on discovered problems
+- Add new edge case tests
+- Optimize test execution efficiency
+- Improve the accuracy of bug discovery
 
-### 工具改进
-- 开发更好的测试辅助工具
-- 优化MCP工具的使用方法
-- 自动化测试报告生成
-- 集成CI/CD流程
+### Tool Improvement
+- Develop better test helper tools
+- Optimize the usage of MCP tools
+- Automate test report generation
+- Integrate with the CI/CD flow
 
 ---
 
-**注意：** 本测试系统专注于通过AI自动化发现问题，而不是简单的功能验证。每个测试场景都应该设计得能够发现潜在的Bug和用户体验问题。
+**Note:** This testing system focuses on discovering problems through AI automation, rather than simple feature verification. Every test scenario should be designed to be able to discover potential bugs and user experience problems.

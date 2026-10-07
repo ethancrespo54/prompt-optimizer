@@ -1,44 +1,44 @@
-# 主题系统开发
+# Theme System Development
 
-## 📋 功能概述
+## 📋 Overview
 
-多主题功能的设计与实现，包括自定义深色主题（紫色、绿色等）的开发，以及与第三方库样式冲突的解决方案。
+Design and implementation of the multi-theme feature, including the development of custom dark themes (purple, green, etc.) and the solution to style conflicts with third-party libraries.
 
-## 🎯 核心成果
+## 🎯 Core Results
 
-- 实现了基于 `data-theme` 属性的主题系统
-- 解决了与 Tailwind Typography 的样式冲突
-- 建立了第三方库样式隔离的最佳实践
-- 形成了主题开发的标准流程
+- Implemented a theme system based on the `data-theme` attribute
+- Resolved the style conflict with Tailwind Typography
+- Established best practices for isolating third-party library styles
+- Formed a standard process for theme development
 
-## 📅 时间线
+## 📅 Timeline
 
-- **开始时间**: 2024-11-15
-- **完成时间**: 2024-12-10
-- **当前状态**: ✅ 已完成
+- **Start date**: 2024-11-15
+- **Completion date**: 2024-12-10
+- **Current status**: ✅ Completed
 
-## 🎨 主题特性
+## 🎨 Theme Features
 
-### 支持的主题
-- 默认亮色主题
-- 默认深色主题
-- 紫色深色主题
-- 绿色深色主题
+### Supported themes
+- Default light theme
+- Default dark theme
+- Purple dark theme
+- Green dark theme
 
-### 技术实现
-- 基于 `data-theme` 属性的CSS变量系统
-- 与 Tailwind CSS 的深度集成
-- 响应式主题切换
-- 第三方库样式隔离
+### Technical implementation
+- A CSS variable system based on the `data-theme` attribute
+- Deep integration with Tailwind CSS
+- Responsive theme switching
+- Third-party library style isolation
 
-## 🔧 关键解决方案
+## 🔧 Key Solutions
 
-### Tailwind Typography 冲突处理
-- **问题**: `prose` 插件的强样式主张与自定义主题冲突
-- **解决**: 彻底隔离策略，手动重建布局
-- **原则**: 禁止部分应用，完全移除 `@apply prose`
+### Handling the Tailwind Typography conflict
+- **Problem**: The strong style opinions of the `prose` plugin conflict with custom themes
+- **Solution**: A complete isolation strategy, rebuilding the layout manually
+- **Principle**: No partial application; completely remove `@apply prose`
 
-### 手动重建的 Markdown 布局
+### Manually rebuilt Markdown layout
 ```css
 .theme-markdown-content {
   @apply max-w-none;
@@ -51,19 +51,19 @@
 .theme-markdown-content p { @apply my-3 leading-relaxed; }
 ```
 
-## 📚 相关文档
+## 📚 Related Documents
 
-- [主题系统经验详解](./experience.md)
-- [第三方库冲突处理](./third-party-conflicts.md)
-- [主题开发指南](./development-guide.md)
+- [Detailed Theme System Lessons](./experience.md)
+- [Handling Third-party Library Conflicts](./third-party-conflicts.md)
+- [Theme Development Guide](./development-guide.md)
 
-## 🔗 关联功能
+## 🔗 Related Features
 
-- [105-output-display-v2](../105-output-display-v2/) - 输出显示v2
-- [108-layout-system](../108-layout-system/) - 布局系统
+- [105-output-display-v2](../105-output-display-v2/) - Output display v2
+- [108-layout-system](../108-layout-system/) - Layout system
 
 ---
 
-**状态**: ✅ 已完成  
-**负责人**: AI Assistant  
-**最后更新**: 2025-07-01
+**Status**: ✅ Completed  
+**Owner**: AI Assistant  
+**Last updated**: 2025-07-01

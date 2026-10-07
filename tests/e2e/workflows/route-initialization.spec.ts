@@ -6,9 +6,9 @@
  * - Ensure data loads correctly and avoid empty states
  *
  * Test scope:
- * - Basic 模式：basic-system, basic-user
- * - Pro 模式：pro-multi, pro-variable
- * - Image 模式：text2image, image2image
+ * - Basic mode: basic-system, basic-user
+ * - Pro mode: pro-multi, pro-variable
+ * - Image mode: text2image, image2image
  */
 import { test, expect } from '../fixtures'
 import { navigateToMode } from '../helpers/common'

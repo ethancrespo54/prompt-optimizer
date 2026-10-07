@@ -1,31 +1,31 @@
-# Pinia 重构问题修复方案
+# Pinia Refactoring Issue Fix Plan
 
-**基于 Claude + Codex 联合审查**
+**Based on the joint Claude + Codex review**
 
-## 📋 修复清单
+## 📋 Fix Checklist
 
-### 🔴 P0 - 统一服务访问入口（改动最小）
+### 🔴 P0 - Unify the Service Access Entry Point (Smallest Change)
 
-**决策**：以 `getPiniaServices()` 为唯一业务入口
+**Decision**: Make `getPiniaServices()` the only business entry point
 
-**理由**（Codex + Claude 共识）：
-- 当前代码已经全部使用 `getPiniaServices()`
-- 函数式风格更符合 Vue 3 Composition API
-- 测试更简单（无需处理 this 上下文）
-- 避免 setup store 中 this 丢失问题
-- 避免后续用法分裂/新人误用
+**Rationale** (Codex + Claude consensus):
+- The current code already uses `getPiniaServices()` everywhere
+- The functional style fits the Vue 3 Composition API better
+- Simpler to test (no need to deal with the this context)
+- Avoids the loss of this in setup stores
+- Avoids diverging usage / misuse by new team members later
 
-**修改点**：
+**Changes**:
 
-#### 1. 修改 `packages/ui/src/plugins/pinia-services-plugin.ts`
+#### 1. Modify `packages/ui/src/plugins/pinia-services-plugin.ts`
 
 ```typescript
 /**
- * Pinia 插件：注入 $services 到所有 Store
+ * Pinia plugin: injects $services into all Stores
  *
- * ⚠️ 注意：$services 仅作为调试/兼容属性，不推荐在业务代码中使用
+ * ⚠️ Note: $services is only a debug/compatibility property and is not recommended in business code
  *
- * **推荐使用**：
+ * **Recommended**:
  * ```typescript
  * import { getPiniaServices } from '../plugins/pinia'
  *
@@ -35,13 +35,13 @@
  * }
  * ```
  *
- * **不推荐使用**：
+ * **Not recommended**:
  * ```typescript
- * // ❌ 避免在 setup store 中使用 this.$services
+ * // ❌ Avoid using this.$services in setup stores
  * this.$services?.modelManager.getAllModels()
  * ```
  *
- * 使用方式：
+ * Usage:
  * pinia.use(piniaServicesPlugin(servicesRef))
  */
 
@@ -49,33 +49,33 @@ import { type PiniaPluginContext } from 'pinia'
 import type { AppServices } from '../types/services'
 
 /**
- * Pinia 服务注入插件
+ * Pinia services injection plugin
  *
- * @param servicesRef - 应用服务的响应式引用
- * @returns Pinia 插件函数
+ * @param servicesRef - reactive reference to the application services
+ * @returns the Pinia plugin function
  */
 export function piniaServicesPlugin(servicesRef: { value: AppServices | null }) {
   return (context: PiniaPluginContext) => {
-    // 注入到 store 实例
-    // 注意：直接赋值 ref，Pinia 会自动解包
-    // 访问 store.$services 时会自动返回 servicesRef.value
+    // Inject into the store instance
+    // Note: assign the ref directly; Pinia unwraps it automatically
+    // Accessing store.$services automatically returns servicesRef.value
     context.store.$services = servicesRef as any
   }
 }
 
-// TypeScript 类型扩展
+// TypeScript type extension
 declare module 'pinia' {
   export interface PiniaCustomProperties {
     /**
-     * 应用服务实例（调试/兼容属性，不推荐业务代码使用）
+     * Application services instance (debug/compatibility property, not recommended for business code)
      *
-     * ⚠️ 注意：
-     * - 实际注入的是 Ref<AppServices | null>，但 Pinia 会自动解包
-     * - 访问时直接使用 this.$services（已自动解包）
-     * - 初始化时可能为 null，使用前需检查
-     * - **推荐使用 getPiniaServices() 代替**
+     * ⚠️ Note:
+     * - What is actually injected is a Ref<AppServices | null>, but Pinia unwraps it automatically
+     * - Use this.$services directly when accessing (already unwrapped)
+     * - May be null during initialization; check before use
+     * - **Prefer getPiniaServices() instead**
      *
-     * @deprecated 推荐使用 getPiniaServices() 代替
+     * @deprecated Prefer getPiniaServices() instead
      * @see getPiniaServices
      */
     $services: AppServices | null
@@ -83,27 +83,27 @@ declare module 'pinia' {
 }
 ```
 
-#### 2. 完善 `packages/ui/src/plugins/pinia.ts`
+#### 2. Improve `packages/ui/src/plugins/pinia.ts`
 
 ```typescript
 /**
- * 获取 Pinia 服务实例
+ * Get the Pinia services instance
  *
- * 用于 Store 内部访问服务，这是**推荐的服务访问方式**
+ * Used to access services inside a Store; this is the **recommended way to access services**
  *
- * **设计说明**：
- * - 这是本项目推荐的服务访问方式（工程取舍）
- * - 基于单例模式，适用于单应用场景
- * - 测试时需要使用 setPiniaServices() 设置 mock 服务
- * - 测试后需要调用 setPiniaServices(null) 清理，避免污染
+ * **Design notes**:
+ * - This is the service access method recommended by this project (an engineering trade-off)
+ * - Based on the singleton pattern, suitable for single-app scenarios
+ * - In tests, use setPiniaServices() to set mock services
+ * - After tests, call setPiniaServices(null) to clean up and avoid pollution
  *
- * **为什么推荐使用函数而非 this.$services**：
- * - 避免 this 上下文依赖（解构调用时 this 会丢失）
- * - 更符合函数式编程风格，与 Composition API 一致
- * - 测试更简单（直接调用函数，无需 bind this）
- * - Setup Store 中不需要依赖 this，代码更清晰
+ * **Why a function is recommended over this.$services**:
+ * - Avoids dependence on the this context (this is lost when called after destructuring)
+ * - Fits a functional programming style better and is consistent with the Composition API
+ * - Simpler to test (call the function directly, no need to bind this)
+ * - Setup Stores do not need to depend on this, so the code is clearer
  *
- * **使用示例**：
+ * **Usage example**:
  * ```typescript
  * import { getPiniaServices } from '@/plugins/pinia'
  *
@@ -123,52 +123,52 @@ declare module 'pinia' {
  * })
  * ```
  *
- * @returns 应用服务实例（或 null）
+ * @returns the application services instance (or null)
  */
 export function getPiniaServices(): AppServices | null {
   return servicesRef.value
 }
 ```
 
-**时间估计**：30分钟
-**风险评估**：低（仅修改文档和注释）
+**Time estimate**: 30 minutes
+**Risk assessment**: Low (only changes documentation and comments)
 
 ---
 
-### 🟠 P1 - 标准化测试清理机制（两者结合）
+### 🟠 P1 - Standardize the Test Cleanup Mechanism (Combine Both)
 
-**决策**（Codex建议）：全局 afterEach 兜底 + helper 提供标准入口
+**Decision** (Codex's suggestion): global afterEach as a safety net + a helper that provides the standard entry point
 
-#### 1. 添加全局清理（兜底机制）
+#### 1. Add Global Cleanup (Safety Net)
 
-**文件**：`packages/ui/tests/setup.ts`（如不存在则创建）
+**File**: `packages/ui/tests/setup.ts` (create it if it doesn't exist)
 
 ```typescript
 import { afterEach } from 'vitest'
 import { setPiniaServices } from '../src/plugins/pinia'
 
 /**
- * 全局测试清理
- * 确保每个测试用例后都清理 Pinia 服务，避免测试污染
+ * Global test cleanup
+ * Ensures Pinia services are cleaned up after every test case to avoid test pollution
  */
 afterEach(() => {
   setPiniaServices(null)
 })
 ```
 
-**配置 Vitest**（`packages/ui/vitest.config.ts`）：
+**Configure Vitest** (`packages/ui/vitest.config.ts`):
 ```typescript
 export default defineConfig({
   test: {
-    setupFiles: ['./tests/setup.ts'],  // ✅ 添加这一行
-    // ... 其他配置
+    setupFiles: ['./tests/setup.ts'],  // ✅ add this line
+    // ... other configuration
   }
 })
 ```
 
-#### 2. 提供标准化 Helper
+#### 2. Provide a Standardized Helper
 
-**文件**：`packages/ui/tests/utils/pinia-test-helpers.ts`（新建）
+**File**: `packages/ui/tests/utils/pinia-test-helpers.ts` (new)
 
 ```typescript
 import { createPinia, type Pinia } from 'pinia'
@@ -179,7 +179,7 @@ import type { AppServices } from '../../src/types/services'
 import type { IPreferenceService } from '@prompt-optimizer/core'
 
 /**
- * 创建 PreferenceService stub（可复用的默认实现）
+ * Create a PreferenceService stub (a reusable default implementation)
  */
 export function createPreferenceServiceStub(
   overrides: Partial<IPreferenceService> = {}
@@ -200,9 +200,9 @@ export function createPreferenceServiceStub(
 }
 
 /**
- * 创建用于测试的 Pinia 实例和服务
+ * Create a Pinia instance and services for testing
  *
- * @param services - 可选的服务对象（默认创建基础 stub）
+ * @param services - optional services object (a basic stub is created by default)
  * @returns { pinia, services, cleanup }
  *
  * @example
@@ -218,7 +218,7 @@ export function createPreferenceServiceStub(
  *   await store.saveSession()
  *
  *   expect(services.preferenceService.set).toHaveBeenCalled()
- *   cleanup()  // 可选：手动清理（全局 afterEach 会兜底）
+ *   cleanup()  // optional: manual cleanup (the global afterEach is the safety net)
  * })
  * ```
  */
@@ -229,25 +229,25 @@ export function createTestPinia(
   services: AppServices
   cleanup: () => void
 } {
-  // 创建默认服务 stub
+  // Create the default service stub
   const defaultServices: AppServices = {
     preferenceService: createPreferenceServiceStub(),
-    // 其他服务可以按需添加默认 stub
+    // Other services can have default stubs added as needed
     ...servicesOverrides,
   } as AppServices
 
-  // 创建 Pinia 实例
+  // Create the Pinia instance
   const pinia = createPinia()
   pinia.use(piniaServicesPlugin({ value: defaultServices }))
 
-  // 创建 Vue 应用（Pinia 需要）
+  // Create the Vue app (required by Pinia)
   const app = createApp({ render: () => null })
   app.use(pinia)
 
-  // 设置全局服务（供 getPiniaServices() 使用）
+  // Set the global services (used by getPiniaServices())
   setPiniaServices(defaultServices)
 
-  // 提供清理函数
+  // Provide the cleanup function
   const cleanup = () => {
     setPiniaServices(null)
   }
@@ -260,10 +260,10 @@ export function createTestPinia(
 }
 
 /**
- * 使用 mock 服务运行测试函数（自动清理）
+ * Run a test function with mock services (cleans up automatically)
  *
- * @param servicesOverrides - 服务覆盖配置
- * @param testFn - 测试函数
+ * @param servicesOverrides - service override configuration
+ * @param testFn - the test function
  *
  * @example
  * ```typescript
@@ -280,7 +280,7 @@ export function createTestPinia(
  *       // assertions...
  *     }
  *   )
- *   // 自动清理，无需手动 cleanup
+ *   // Cleaned up automatically, no manual cleanup needed
  * })
  * ```
  */
@@ -298,16 +298,16 @@ export async function withMockPiniaServices(
 }
 ```
 
-#### 3. 更新现有测试用例（示例）
+#### 3. Update Existing Test Cases (Example)
 
-**修改前**（`packages/ui/tests/unit/pinia-services-plugin.test.ts`）：
+**Before** (`packages/ui/tests/unit/pinia-services-plugin.test.ts`):
 ```typescript
 it('allows session store to persist via preferenceService', async () => {
   const set = vi.fn<IPreferenceService['set']>().mockResolvedValue(undefined)
   const preferenceService = createPreferenceServiceStub({ set })
   const services = { preferenceService } as unknown as AppServices
 
-  setPiniaServices(services)  // ⚠️ 手动设置
+  setPiniaServices(services)  // ⚠️ set manually
 
   const servicesRef = shallowRef<AppServices | null>(services)
   const pinia = createPinia()
@@ -319,11 +319,11 @@ it('allows session store to persist via preferenceService', async () => {
   await store.saveSession()
 
   expect(set).toHaveBeenCalledTimes(1)
-  // ⚠️ 没有清理
+  // ⚠️ No cleanup
 })
 ```
 
-**修改后**（使用 helper）：
+**After** (using the helper):
 ```typescript
 import { createTestPinia, createPreferenceServiceStub } from '../utils/pinia-test-helpers'
 
@@ -339,11 +339,11 @@ it('allows session store to persist via preferenceService', async () => {
   await store.saveSession()
 
   expect(set).toHaveBeenCalledTimes(1)
-  // ✅ 全局 afterEach 会自动清理，无需手动 cleanup
+  // ✅ The global afterEach cleans up automatically, no manual cleanup needed
 })
 ```
 
-**或使用 withMockPiniaServices**（更简洁）：
+**Or use withMockPiniaServices** (more concise):
 ```typescript
 import { withMockPiniaServices, createPreferenceServiceStub } from '../utils/pinia-test-helpers'
 
@@ -360,20 +360,20 @@ it('allows session store to persist via preferenceService', async () => {
       expect(set).toHaveBeenCalledTimes(1)
     }
   )
-  // ✅ 自动清理
+  // ✅ Cleaned up automatically
 })
 ```
 
-**时间估计**：2小时
-**风险评估**：低（改进测试基础设施）
+**Time estimate**: 2 hours
+**Risk assessment**: Low (improves test infrastructure)
 
 ---
 
-### 🟡 P2 - useTemporaryVariables 依赖检查（显式错误）
+### 🟡 P2 - useTemporaryVariables Dependency Check (Explicit Error)
 
-**决策**（Codex建议）：显式检测并抛出清晰错误
+**Decision** (Codex's suggestion): detect explicitly and throw a clear error
 
-#### 修改 `packages/ui/src/composables/variable/useTemporaryVariables.ts`
+#### Modify `packages/ui/src/composables/variable/useTemporaryVariables.ts`
 
 ```typescript
 import { readonly, type Ref } from 'vue'
@@ -381,22 +381,22 @@ import { storeToRefs, getActivePinia } from 'pinia'
 import { useTemporaryVariablesStore } from '../../stores/temporaryVariables'
 
 /**
- * 临时变量管理 Composable
+ * Temporary variable management composable
  *
- * 特性：
- * - 仅内存存储（刷新丢失）
- * - 对外接口保持不变（兼容旧调用方）
- * - 底层由 Pinia store 承载状态
+ * Features:
+ * - In-memory storage only (lost on refresh)
+ * - The external interface is unchanged (compatible with old callers)
+ * - State is held by a Pinia store underneath
  *
- * ⚠️ 使用前提：
- * 必须在应用入口已执行 `installPinia(app)` 后再调用。
- * 如果在非组件上下文（如纯函数/服务层）使用，会抛出错误。
+ * ⚠️ Prerequisite:
+ * It must be called after `installPinia(app)` has been executed at the app entry point.
+ * Using it in a non-component context (such as a pure function / service layer) throws an error.
  *
- * @throws {Error} 如果 Pinia 未安装或无 active pinia instance
+ * @throws {Error} If Pinia is not installed or there is no active pinia instance
  *
  * @example
  * ```typescript
- * // ✅ 正确：在组件或 setup 函数中使用
+ * // ✅ Correct: use inside a component or setup function
  * export default defineComponent({
  *   setup() {
  *     const tempVars = useTemporaryVariables()
@@ -404,12 +404,12 @@ import { useTemporaryVariablesStore } from '../../stores/temporaryVariables'
  *   }
  * })
  *
- * // ❌ 错误：在模块顶层或纯函数中使用
- * const tempVars = useTemporaryVariables()  // 会抛出错误
+ * // ❌ Wrong: use at module top level or in a pure function
+ * const tempVars = useTemporaryVariables()  // will throw an error
  * ```
  */
 export function useTemporaryVariables(): TemporaryVariablesManager {
-  // ✅ Codex 建议：显式检测 active pinia
+  // ✅ Codex's suggestion: explicitly detect the active pinia
   const activePinia = getActivePinia()
   if (!activePinia) {
     throw new Error(
@@ -438,13 +438,13 @@ export function useTemporaryVariables(): TemporaryVariablesManager {
 }
 ```
 
-**可选升级**（如果有非组件上下文需求）：
+**Optional upgrade** (if non-component contexts are needed):
 ```typescript
 /**
- * @param pinia - 可选的 Pinia 实例（用于非组件上下文）
+ * @param pinia - optional Pinia instance (for non-component contexts)
  */
 export function useTemporaryVariables(pinia?: Pinia): TemporaryVariablesManager {
-  // 如果提供了 pinia，使用它；否则获取 active pinia
+  // If a pinia is provided, use it; otherwise get the active pinia
   const targetPinia = pinia || getActivePinia()
 
   if (!targetPinia) {
@@ -455,24 +455,24 @@ export function useTemporaryVariables(pinia?: Pinia): TemporaryVariablesManager 
   }
 
   const store = useTemporaryVariablesStore(targetPinia)
-  // ... 其余代码相同
+  // ... the rest of the code is the same
 }
 ```
 
-**时间估计**：30分钟
-**风险评估**：极低（只是增加错误检查）
+**Time estimate**: 30 minutes
+**Risk assessment**: Very low (only adds an error check)
 
 ---
 
-## 🟢 P3 - 其他改进（可选）
+## 🟢 P3 - Other Improvements (Optional)
 
-### 1. 添加 ESLint 规则（防止 barrel exports 循环依赖）
+### 1. Add an ESLint Rule (Prevent Circular Dependencies from Barrel Exports)
 
-**文件**：`.eslintrc.js` 或 `packages/ui/.eslintrc.js`
+**File**: `.eslintrc.js` or `packages/ui/.eslintrc.js`
 
 ```javascript
 module.exports = {
-  // ... 其他配置
+  // ... other configuration
   rules: {
     'no-restricted-imports': [
       'error',
@@ -480,7 +480,7 @@ module.exports = {
         patterns: [
           {
             group: ['**/stores', '**/stores/index'],
-            message: '请直接导入具体的 store 文件，避免 barrel exports 循环依赖。例如：import { useSessionManager } from "@/stores/session/useSessionManager"'
+            message: 'Please import the specific store file directly to avoid circular dependencies from barrel exports. For example: import { useSessionManager } from "@/stores/session/useSessionManager"'
           }
         ]
       }
@@ -489,43 +489,43 @@ module.exports = {
 }
 ```
 
-**时间估计**：15分钟
-**风险评估**：低
+**Time estimate**: 15 minutes
+**Risk assessment**: Low
 
-### 2. 增强 MessageChainMap 迁移逻辑
+### 2. Strengthen the MessageChainMap Migration Logic
 
-**文件**：`packages/ui/src/composables/prompt/useConversationOptimization.ts`
+**File**: `packages/ui/src/composables/prompt/useConversationOptimization.ts`
 
 ```typescript
-// ❌ 旧实现（字符串分割）
+// ❌ Old implementation (string splitting)
 const messageId = key.split(':')[1]
 
-// ✅ 新实现（正则匹配）
+// ✅ New implementation (regex matching)
 const PREFIX_PATTERN = /^(system|user):(.+)$/
 for (const [key, chainId] of Object.entries(persistedMap)) {
   const match = key.match(PREFIX_PATTERN)
   if (match) {
-    const messageId = match[2]  // ✅ 保留完整的 messageId
+    const messageId = match[2]  // ✅ keep the complete messageId
     messageChainMap.value.set(messageId, chainId)
   } else {
-    // 已经是新格式，直接使用
+    // Already in the new format, use directly
     messageChainMap.value.set(key, chainId)
   }
 }
 ```
 
-**时间估计**：30分钟
-**风险评估**：低（增加单元测试验证）
+**Time estimate**: 30 minutes
+**Risk assessment**: Low (add unit tests for verification)
 
-### 3. 引入错误监控
+### 3. Introduce Error Monitoring
 
-**文件**：`packages/ui/src/utils/error-tracker.ts`（新建）
+**File**: `packages/ui/src/utils/error-tracker.ts` (new)
 
 ```typescript
 /**
- * 错误追踪工具
+ * Error tracking utility
  *
- * 可以集成 Sentry、Bugsnag 等服务
+ * Can integrate services such as Sentry and Bugsnag
  */
 export interface ErrorContext {
   context: string
@@ -533,90 +533,90 @@ export interface ErrorContext {
 }
 
 export function captureError(error: Error | unknown, context?: ErrorContext) {
-  // 开发环境：打印到控制台
+  // Development environment: print to the console
   if (import.meta.env.DEV) {
     console.error('[ErrorTracker]', context, error)
   }
 
-  // 生产环境：发送到错误监控服务
+  // Production environment: send to the error monitoring service
   // if (import.meta.env.PROD) {
   //   Sentry.captureException(error, { extra: context })
   // }
 }
 ```
 
-**时间估计**：1天（含集成第三方服务）
-**风险评估**：低
+**Time estimate**: 1 day (including integrating a third-party service)
+**Risk assessment**: Low
 
 ---
 
-## 📅 实施计划
+## 📅 Implementation Plan
 
-### 第1天（P0 + P1）
+### Day 1 (P0 + P1)
 
-- [ ] **上午**（2小时）
-  - [ ] 修改 `pinia-services-plugin.ts` 文档（30分钟）
-  - [ ] 完善 `pinia.ts` 文档（30分钟）
-  - [ ] 创建 `tests/setup.ts` 全局清理（15分钟）
-  - [ ] 创建 `tests/utils/pinia-test-helpers.ts`（45分钟）
+- [ ] **Morning** (2 hours)
+  - [ ] Modify the `pinia-services-plugin.ts` documentation (30 minutes)
+  - [ ] Improve the `pinia.ts` documentation (30 minutes)
+  - [ ] Create the `tests/setup.ts` global cleanup (15 minutes)
+  - [ ] Create `tests/utils/pinia-test-helpers.ts` (45 minutes)
 
-- [ ] **下午**（2小时）
-  - [ ] 更新现有测试用例使用 helper（1.5小时）
-  - [ ] 运行测试验证（30分钟）
+- [ ] **Afternoon** (2 hours)
+  - [ ] Update existing test cases to use the helper (1.5 hours)
+  - [ ] Run tests to verify (30 minutes)
 
-### 第2天（P2 + P3）
+### Day 2 (P2 + P3)
 
-- [ ] **上午**（1小时）
-  - [ ] 修改 `useTemporaryVariables.ts` 添加检查（30分钟）
-  - [ ] 运行测试验证（30分钟）
+- [ ] **Morning** (1 hour)
+  - [ ] Modify `useTemporaryVariables.ts` to add the check (30 minutes)
+  - [ ] Run tests to verify (30 minutes)
 
-- [ ] **下午**（可选，1小时）
-  - [ ] 添加 ESLint 规则（15分钟）
-  - [ ] 增强迁移逻辑（30分钟）
-  - [ ] 最终测试和文档更新（15分钟）
+- [ ] **Afternoon** (optional, 1 hour)
+  - [ ] Add the ESLint rule (15 minutes)
+  - [ ] Strengthen the migration logic (30 minutes)
+  - [ ] Final testing and documentation update (15 minutes)
 
-**总计时间**：5-6小时（P0+P1+P2 必做）
-
----
-
-## ✅ 验收标准
-
-### P0 - 服务访问入口
-
-- [ ] 所有文档统一推荐 `getPiniaServices()`
-- [ ] `$services` 标记为 `@deprecated`
-- [ ] 代码审查确认无新增 `this.$services` 使用
-
-### P1 - 测试清理
-
-- [ ] 全局 `afterEach` 清理已配置
-- [ ] `pinia-test-helpers.ts` 已创建并导出
-- [ ] 至少2个测试用例已使用新 helper
-- [ ] 所有测试通过（194/194）
-
-### P2 - 依赖检查
-
-- [ ] `useTemporaryVariables` 添加 `getActivePinia()` 检查
-- [ ] 错误信息清晰友好
-- [ ] 单元测试验证错误抛出场景
-
-### P3 - 可选改进
-
-- [ ] ESLint 规则已添加（可选）
-- [ ] 迁移逻辑已增强（可选）
+**Total time**: 5-6 hours (P0+P1+P2 are mandatory)
 
 ---
 
-## 🎯 预期收益
+## ✅ Acceptance Criteria
 
-1. **消除团队困惑**：统一服务访问规范，新人不再迷惑
-2. **提升测试质量**：标准化 helper 减少重复代码，全局清理防污染
-3. **改进错误提示**：明确的错误信息加快问题排查
-4. **降低维护成本**：清晰的代码规范和工具支持
+### P0 - Service Access Entry Point
+
+- [ ] All documentation uniformly recommends `getPiniaServices()`
+- [ ] `$services` is marked `@deprecated`
+- [ ] Code review confirms no new `this.$services` usage
+
+### P1 - Test Cleanup
+
+- [ ] Global `afterEach` cleanup is configured
+- [ ] `pinia-test-helpers.ts` is created and exported
+- [ ] At least 2 test cases already use the new helper
+- [ ] All tests pass (194/194)
+
+### P2 - Dependency Check
+
+- [ ] `useTemporaryVariables` adds a `getActivePinia()` check
+- [ ] The error message is clear and friendly
+- [ ] Unit tests verify the error-throwing scenario
+
+### P3 - Optional Improvements
+
+- [ ] ESLint rule is added (optional)
+- [ ] Migration logic is strengthened (optional)
 
 ---
 
-**制定人**：Claude Code + Codex AI
-**审核人**：待定
-**实施人**：待定
-**完成日期**：建议本周内完成 P0+P1，下周完成 P2
+## 🎯 Expected Benefits
+
+1. **Eliminate team confusion**: unified service access conventions, so new members are no longer confused
+2. **Improve test quality**: a standardized helper reduces duplicated code, and global cleanup prevents pollution
+3. **Improve error messages**: explicit error messages speed up troubleshooting
+4. **Reduce maintenance cost**: clear coding conventions and tooling support
+
+---
+
+**Author**: Claude Code + Codex AI
+**Approver**: TBD
+**Implementer**: TBD
+**Completion date**: Suggested to complete P0+P1 this week and P2 next week

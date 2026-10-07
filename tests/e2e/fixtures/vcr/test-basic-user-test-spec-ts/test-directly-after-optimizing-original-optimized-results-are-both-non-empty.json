@@ -1,6 +1,6 @@
 {
   "testName": "test\\basic-user-test.spec.ts",
-  "testCase": "优化后直接测试，原始/优化结果都非空",
+  "testCase": "Test directly after optimizing; original/optimized results are both non-empty",
   "interactions": [
     {
       "provider": "deepseek",

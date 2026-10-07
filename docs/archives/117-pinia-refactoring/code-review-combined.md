@@ -1,158 +1,158 @@
-# Pinia 状态管理重构综合审查报告
+# Pinia State Management Refactoring Combined Review Report
 
-**Claude + Codex 联合审查**
+**Joint Claude + Codex Review**
 
-## 📋 审查概览
+## 📋 Review Overview
 
-**审查范围**: 3个主要提交的Pinia状态管理重构
-- `3c1ac5c` - 引入Pinia状态管理并迁移临时变量
-- `527bc35` - 创建promptDraft store为后续prompt状态迁移做准备
-- `8a1dd6b` - 解决session store的P0问题和竞态条件
+**Review scope**: Pinia state management refactoring across 3 main commits
+- `3c1ac5c` - Introduce Pinia state management and migrate temporary variables
+- `527bc35` - Create the promptDraft store in preparation for later prompt state migration
+- `8a1dd6b` - Resolve P0 issues and race conditions in the session store
 
-**代码变更统计**:
-- 总计新增文件: 17个
-- 总计修改文件: 22个
-- 新增代码行数: ~2900行
-- 删除代码行数: ~150行
-- 测试覆盖: 新增7个单元测试用例，194/194全部通过
+**Code change statistics**:
+- Total new files: 17
+- Total modified files: 22
+- Lines added: ~2900
+- Lines deleted: ~150
+- Test coverage: 7 new unit test cases, all 194/194 passed
 
-**审查人**: Claude Code + Codex AI
-**审查日期**: 2026-01-05
-
----
-
-## ⭐ 整体评价
-
-### 🏆 Claude 评分：9.2/10
-### 🏆 Codex 评价：核心收益明确，整体方向正确
-
-**核心价值（Codex总结）**：
-> 把"服务初始化（异步）"与"状态管理（Pinia）"解耦，通过"模块级 `shallowRef` + 提前安装 Pinia 插件"降低 store 创建/调用时序导致的竞态。
+**Reviewers**: Claude Code + Codex AI
+**Review date**: 2026-01-05
 
 ---
 
-## ✅ 双方一致认可的优点
+## ⭐ Overall Evaluation
 
-### 1. 架构设计优秀
+### 🏆 Claude's Score: 9.2/10
+### 🏆 Codex's Evaluation: Clear core benefits, correct overall direction
 
-**Claude观点**:
-- 清晰的三层架构：Component → Composable → Store
-- 6+1 Session管理架构（6个子模式 + 1个协调器）
-- 避免双真源，通过依赖注入消费现有状态
+**Core value (Codex's summary)**:
+> Decouples "service initialization (async)" from "state management (Pinia)", and reduces the races caused by store creation/call timing through "module-level `shallowRef` + installing the Pinia plugin early".
 
-**Codex观点**:
-- 竞态修复思路清晰：插件在 Pinia 创建后立刻安装，避免"store 先创建、插件后安装"的窗口期
-- 对外入口明确：`installPinia(app)` → 服务ready → `setPiniaServices()`
-- 服务注入时序设计合理
+---
 
-**综合评价**: ✅ 优秀（9.5/10）
+## ✅ Strengths Both Reviewers Agree On
 
-### 2. 性能优化到位
+### 1. Excellent Architecture Design
 
-**Claude + Codex 共识**:
-- ✅ 使用 `shallowRef` 避免深层代理/响应式开销
-- ✅ 符合"服务对象应视为稳定依赖"的定位
-- ✅ 并行保存所有子模式（`Promise.all`）
+**Claude's view**:
+- Clear three-layer architecture: Component → Composable → Store
+- 6+1 Session management architecture (6 sub-modes + 1 coordinator)
+- Avoids dual sources of truth and consumes existing state through dependency injection
 
-**关键代码** (`packages/ui/src/plugins/pinia.ts:19`):
+**Codex's view**:
+- The race fix approach is clear: the plugin is installed immediately after Pinia is created, avoiding the window where "the store is created first and the plugin installed later"
+- The external entry points are clear: `installPinia(app)` → services ready → `setPiniaServices()`
+- The service injection timing is well designed
+
+**Combined evaluation**: ✅ Excellent (9.5/10)
+
+### 2. Performance Optimization Done Well
+
+**Claude + Codex consensus**:
+- ✅ Uses `shallowRef` to avoid the overhead of deep proxying/reactivity
+- ✅ Fits the positioning that "service objects should be treated as stable dependencies"
+- ✅ Saves all sub-modes in parallel (`Promise.all`)
+
+**Key code** (`packages/ui/src/plugins/pinia.ts:19`):
 ```typescript
-const servicesRef = shallowRef<AppServices | null>(null)  // ✅ 避免深度代理
+const servicesRef = shallowRef<AppServices | null>(null)  // ✅ avoids deep proxying
 ```
 
-### 3. 竞态条件修复彻底
+### 3. Thorough Race Condition Fixes
 
-**Claude 详细分析**:
-- 系统性解决了6个竞态条件问题
-- 使用互斥锁（`isRestoring`）、pendingRestore机制
-- 使用 `queueMicrotask` 避免递归压力
-- 完整的错误处理和卸载守卫
+**Claude's detailed analysis**:
+- Systematically resolved 6 race condition problems
+- Uses a mutex (`isRestoring`) and a pendingRestore mechanism
+- Uses `queueMicrotask` to avoid recursion pressure
+- Complete error handling and unmount guards
 
-**Codex 补充**:
-- 插件提前安装策略避免时序窗口期
-- 最小但关键的回归测试保障
+**Codex's additions**:
+- The early plugin installation strategy avoids the timing window
+- Minimal but critical regression tests
 
-**综合评价**: ✅ 优秀（9.0/10）
+**Combined evaluation**: ✅ Excellent (9.0/10)
 
-### 4. 文档注释质量极高
+### 4. Extremely High-quality Comments and Documentation
 
-**Claude 评价**: 10/10，业界顶级水平
-- 每个文件都有清晰的模块级注释
-- 设计原则和决策说明详细
-- 包含"为什么"而非仅"是什么"
+**Claude's evaluation**: 10/10, industry-leading
+- Every file has a clear module-level comment
+- Design principles and decisions are explained in detail
+- Includes the "why" and not only the "what"
 
-**Codex 评价**:
-- 注释已明确标注依赖关系（如 `useTemporaryVariables()` 需要 Pinia active instance）
-- 时序要求清晰（`installPinia(app)` 必须在使用前完成）
+**Codex's evaluation**:
+- Comments explicitly note dependencies (e.g. `useTemporaryVariables()` requires an active Pinia instance)
+- Timing requirements are clear (`installPinia(app)` must complete before use)
 
 ---
 
-## ⚠️ 发现的关键问题（需优先解决）
+## ⚠️ Key Issues Found (Need to Be Resolved First)
 
-### 🔴 P0: 服务访问入口语义冲突（Codex首次发现）
+### 🔴 P0: Semantic Conflict in the Service Access Entry Point (First Found by Codex)
 
-**问题描述** (`packages/ui/src/plugins/pinia-services-plugin.ts:8` vs `packages/ui/src/plugins/pinia.ts:65`):
+**Description** (`packages/ui/src/plugins/pinia-services-plugin.ts:8` vs `packages/ui/src/plugins/pinia.ts:65`):
 
 ```typescript
-// ❌ 插件文档鼓励使用 this.$services
+// ❌ The plugin documentation encourages using this.$services
 /**
- * 在 Store 中访问：
+ * Access within a Store:
  * this.$services?.modelManager.getAllModels()
  */
 
-// ❌ pinia.ts 文档明确"不推荐 this.$services"
+// ❌ The pinia.ts documentation explicitly says "do not recommend this.$services"
 /**
- * **为什么不用 this.$services**：
- * - 避免 this 上下文依赖（解构调用时 this 会丢失）
- * - 更符合函数式编程风格
- * - 测试更简单（直接调用函数，无需 bind this）
+ * **Why not use this.$services**:
+ * - Avoids dependence on the this context (this is lost when called after destructuring)
+ * - Fits a functional programming style better
+ * - Simpler to test (call the function directly, no need to bind this)
  */
 ```
 
-**影响**:
-- 团队成员面临"应该用哪个？"的困惑
-- 当前生产代码几乎只用 `getPiniaServices()`
-- `$services` 更像"备用通道/测试通道"，价值不明确
+**Impact**:
+- Team members face the confusion of "which one should I use?"
+- Current production code almost exclusively uses `getPiniaServices()`
+- `$services` is more like a "backup/testing channel" with unclear value
 
-**Codex建议**（高优先级）:
-> 统一服务访问入口：二选一并写入约定（建议要么全面用 `getPiniaServices()`，并弱化/移除 `$services` 文档；要么反过来统一用 `store.$services`，并减少全局函数依赖）
+**Codex's suggestion** (high priority):
+> Unify the service access entry point: pick one of the two and write it into the conventions (either use `getPiniaServices()` everywhere and de-emphasize/remove the `$services` documentation; or do the reverse and use `store.$services` everywhere while reducing dependence on global functions)
 
-**Claude建议**:
-删除 `pinia-services-plugin.ts` 中的使用示例，统一使用 `getPiniaServices()`：
+**Claude's suggestion**:
+Remove the usage example from `pinia-services-plugin.ts` and use `getPiniaServices()` uniformly:
 
 ```typescript
 /**
- * Pinia 插件：注入 $services 到所有 Store
+ * Pinia plugin: injects $services into all Stores
  *
- * ⚠️ 注意：推荐使用 getPiniaServices() 而非 this.$services
- * 详见 pinia.ts 中的设计说明
+ * ⚠️ Note: prefer getPiniaServices() over this.$services
+ * See the design notes in pinia.ts for details
  */
 ```
 
-**修复优先级**: 🔴 P0（会导致团队混淆和代码不一致）
+**Fix priority**: 🔴 P0 (leads to team confusion and inconsistent code)
 
 ---
 
-### 🟠 P1: 全局单例的测试隔离问题（双方共同发现）
+### 🟠 P1: Test Isolation Problem with the Global Singleton (Found by Both)
 
-**问题描述** (`packages/ui/src/plugins/pinia.ts:19`、`packages/ui/src/plugins/pinia.ts:24`):
+**Description** (`packages/ui/src/plugins/pinia.ts:19`, `packages/ui/src/plugins/pinia.ts:24`):
 
 ```typescript
-// ⚠️ 模块级单例
+// ⚠️ Module-level singleton
 const servicesRef = shallowRef<AppServices | null>(null)
 export const pinia = createPinia()
 ```
 
-**Claude观点**:
-- 测试用例之间可能相互污染
-- 当前依赖手动 `setPiniaServices(null)` 清理，容易遗漏
+**Claude's view**:
+- Test cases may pollute one another
+- Currently relies on manually calling `setPiniaServices(null)` to clean up, which is easy to forget
 
-**Codex观点**:
-- 对"单应用场景"友好，但会弱化多实例/并发测试隔离
-- 测试需要持续自律避免串扰
+**Codex's view**:
+- Friendly to the "single-app scenario", but weakens isolation for multi-instance/concurrent tests
+- Tests need continued discipline to avoid cross-talk
 
-**综合改进建议**:
+**Combined improvement suggestions**:
 
-1. **短期方案** - 标准化测试 helper（Codex建议）:
+1. **Short term** - standardize a test helper (Codex's suggestion):
    ```typescript
    // test-utils/pinia.ts
    export function withMockPiniaServices(
@@ -163,12 +163,12 @@ export const pinia = createPinia()
      try {
        return testFn()
      } finally {
-       setPiniaServices(null)  // ✅ 自动清理
+       setPiniaServices(null)  // ✅ cleaned up automatically
      }
    }
    ```
 
-2. **中期方案** - Vitest 自动清理（Claude建议）:
+2. **Medium term** - automatic Vitest cleanup (Claude's suggestion):
    ```typescript
    // vitest.setup.ts
    import { setPiniaServices } from '@/plugins/pinia'
@@ -178,9 +178,9 @@ export const pinia = createPinia()
    })
    ```
 
-3. **长期方案** - 工厂化创建（Codex建议）:
+3. **Long term** - factory creation (Codex's suggestion):
    ```typescript
-   // 可工厂化，但保留默认单例
+   // Can be made into a factory while keeping the default singleton
    export function createPiniaWithServices() {
      const servicesRef = shallowRef<AppServices | null>(null)
      const pinia = createPinia()
@@ -188,36 +188,36 @@ export const pinia = createPinia()
      return { pinia, servicesRef, setPiniaServices, getPiniaServices }
    }
 
-   // 默认单例
+   // Default singleton
    export const { pinia, setPiniaServices, getPiniaServices } =
      createPiniaWithServices()
    ```
 
-**修复优先级**: 🟠 P1（影响测试可靠性）
+**Fix priority**: 🟠 P1 (affects test reliability)
 
 ---
 
-### 🟡 P2: useTemporaryVariables 依赖 Pinia Active Instance（Codex发现）
+### 🟡 P2: useTemporaryVariables Depends on the Active Pinia Instance (Found by Codex)
 
-**问题描述** (`packages/ui/src/composables/variable/useTemporaryVariables.ts:49`):
+**Description** (`packages/ui/src/composables/variable/useTemporaryVariables.ts:49`):
 
 ```typescript
 /**
- * 注意：需要在应用入口已执行 `installPinia(app)` 后再调用。
+ * Note: it must be called after `installPinia(app)` has been executed at the app entry point.
  */
 export function useTemporaryVariables(): TemporaryVariablesManager {
-  const store = useTemporaryVariablesStore()  // ⚠️ 强依赖 active instance
+  const store = useTemporaryVariablesStore()  // ⚠️ strongly depends on the active instance
   // ...
 }
 ```
 
-**影响**:
-- 比旧的"纯 composable 单例 ref"更容易在非组件/非 app 上下文误用时直接报错
-- 在单元测试中需要先设置 Pinia context
+**Impact**:
+- Compared with the old "pure composable singleton ref", it is more likely to throw directly when misused in a non-component/non-app context
+- In unit tests, the Pinia context must be set up first
 
-**改进建议**:
+**Improvement suggestions**:
 
-1. **防御性检查**:
+1. **Defensive check**:
    ```typescript
    export function useTemporaryVariables(): TemporaryVariablesManager {
      try {
@@ -233,240 +233,240 @@ export function useTemporaryVariables(): TemporaryVariablesManager {
    }
    ```
 
-2. **文档增强**:
-   在 README 中明确说明使用前置条件
+2. **Documentation enhancement**:
+   State the usage prerequisites explicitly in the README
 
-**修复优先级**: 🟡 P2（影响开发体验，但有明确错误提示）
+**Fix priority**: 🟡 P2 (affects developer experience, but there is a clear error message)
 
 ---
 
-## 🔍 其他发现的问题
+## 🔍 Other Issues Found
 
-### 1. 循环依赖风险（Claude发现）
+### 1. Circular Dependency Risk (Found by Claude)
 
-**位置**: `packages/ui/src/components/app-layout/PromptOptimizerApp.vue`
+**Location**: `packages/ui/src/components/app-layout/PromptOptimizerApp.vue`
 
-**问题**:
+**Problem**:
 ```typescript
-// ⚠️ Codex 建议：改用直接路径导入，避免 barrel exports 循环依赖
+// ⚠️ Codex suggestion: use direct path imports to avoid circular dependencies in barrel exports
 import { useSessionManager } from '../../stores/session/useSessionManager'
-// 而不是
+// instead of
 import { useSessionManager } from '../../stores'
 ```
 
-**现状**: ✅ 已修复，但需要确保其他文件也遵循
+**Current status**: ✅ Already fixed, but make sure other files follow it too
 
-**改进建议**: 添加 ESLint 规则
+**Improvement suggestion**: Add an ESLint rule
 ```javascript
 // .eslintrc.js
 rules: {
   'no-restricted-imports': ['error', {
     patterns: ['**/stores', '**/stores/index'],
-    message: '请直接导入具体的 store 文件，避免 barrel exports 循环依赖'
+    message: 'Please import the specific store file directly to avoid circular dependencies from barrel exports'
   }]
 }
 ```
 
-**优先级**: 🟢 P3（已修复，需防止回退）
+**Priority**: 🟢 P3 (already fixed; needs protection against regression)
 
 ---
 
-### 2. MessageChainMap 迁移健壮性（Claude发现）
+### 2. Robustness of the MessageChainMap Migration (Found by Claude)
 
-**位置**: `packages/ui/src/composables/prompt/useConversationOptimization.ts`
+**Location**: `packages/ui/src/composables/prompt/useConversationOptimization.ts`
 
-**问题**:
+**Problem**:
 ```typescript
-// ⚠️ 如果 messageId 本身包含冒号（如 uuid:v4:123），会被错误截断
+// ⚠️ If the messageId itself contains a colon (such as uuid:v4:123), it will be truncated incorrectly
 const messageId = key.split(':')[1]
 ```
 
-**改进建议**:
+**Improvement suggestion**:
 ```typescript
-// 更健壮的迁移
+// More robust migration
 const PREFIX_PATTERN = /^(system|user):(.+)$/
 for (const [key, chainId] of Object.entries(persistedMap)) {
   const match = key.match(PREFIX_PATTERN)
   if (match) {
-    const messageId = match[2]  // ✅ 保留完整的 messageId
+    const messageId = match[2]  // ✅ keep the complete messageId
     messageChainMap.value.set(messageId, chainId)
   } else {
-    // 已经是新格式，直接使用
+    // Already in the new format, use directly
     messageChainMap.value.set(key, chainId)
   }
 }
 ```
 
-**优先级**: 🟢 P3（边界情况，实际影响小）
+**Priority**: 🟢 P3 (edge case, small real-world impact)
 
 ---
 
-### 3. 错误处理缺少监控（Claude发现，Codex未提及）
+### 3. Error Handling Lacks Monitoring (Found by Claude, Not Mentioned by Codex)
 
-**位置**: 各个 Session Store 的错误处理
+**Location**: Error handling in each Session Store
 
-**问题**:
+**Problem**:
 ```typescript
 catch (error) {
-  console.error('[SessionManager] 保存失败:', error)
-  // ⚠️ 只打印日志，没有向上层传递或记录错误
+  console.error('[SessionManager] Save failed:', error)
+  // ⚠️ Only logs; the error is not propagated to or recorded by the upper layer
 }
 ```
 
-**改进建议**:
+**Improvement suggestion**:
 ```typescript
 import { captureError } from '@/utils/error-tracker'
 
 catch (error) {
-  console.error('[SessionManager] 保存失败:', error)
+  console.error('[SessionManager] Save failed:', error)
   captureError(error, { context: 'SessionManager.save', key })
 }
 ```
 
-**优先级**: 🟢 P3（可观测性改进）
+**Priority**: 🟢 P3 (observability improvement)
 
 ---
 
-### 4. 类型断言可以更安全（Claude发现）
+### 4. Type Assertions Could Be Safer (Found by Claude)
 
-**位置**: `packages/ui/src/plugins/pinia-services-plugin.ts:30`
+**Location**: `packages/ui/src/plugins/pinia-services-plugin.ts:30`
 
-**问题**:
+**Problem**:
 ```typescript
-context.store.$services = servicesRef as any  // ⚠️ 使用 as any
+context.store.$services = servicesRef as any  // ⚠️ uses as any
 ```
 
-**改进建议**:
+**Improvement suggestion**:
 ```typescript
 context.store.$services = servicesRef as unknown as AppServices | null
 ```
 
-**优先级**: 🟢 P3（代码质量改进）
+**Priority**: 🟢 P3 (code quality improvement)
 
 ---
 
-## 📊 量化评分对比
+## 📊 Score Comparison
 
-| 维度 | Claude评分 | Codex评价 | 综合评分 |
+| Dimension | Claude's score | Codex's evaluation | Combined score |
 |------|------------|-----------|----------|
-| 架构设计 | 9.5/10 | "整体方向正确" | 9.5/10 |
-| 竞态修复 | 9.0/10 | "思路清晰" | 9.0/10 |
-| 代码质量 | 9.5/10 | "有关键测试" | 9.5/10 |
-| 性能优化 | 8.5/10 | "shallowRef 正确" | 8.5/10 |
-| 测试覆盖 | 9.0/10 | "最小但关键" | 9.0/10 |
-| 文档注释 | 10/10 | "时序说明清晰" | 10/10 |
-| **总体评分** | **9.2/10** | **正向肯定** | **9.2/10** |
+| Architecture design | 9.5/10 | "Overall direction is correct" | 9.5/10 |
+| Race condition fixes | 9.0/10 | "Clear approach" | 9.0/10 |
+| Code quality | 9.5/10 | "Has key tests" | 9.5/10 |
+| Performance optimization | 8.5/10 | "shallowRef is correct" | 8.5/10 |
+| Test coverage | 9.0/10 | "Minimal but critical" | 9.0/10 |
+| Documentation comments | 10/10 | "Timing notes are clear" | 10/10 |
+| **Overall score** | **9.2/10** | **Positive affirmation** | **9.2/10** |
 
 ---
 
-## 🎯 优先级改进路线图
+## 🎯 Prioritized Improvement Roadmap
 
-### 🔴 P0 - 立即修复
+### 🔴 P0 - Fix Immediately
 
-1. **统一服务访问入口**
-   - 选择保留 `getPiniaServices()` 或 `this.$services` 之一
-   - 更新所有文档和注释保持一致
-   - 时间估计：2小时
-   - 负责人：技术负责人决策
+1. **Unify the service access entry point**
+   - Choose to keep either `getPiniaServices()` or `this.$services`
+   - Update all documentation and comments to be consistent
+   - Time estimate: 2 hours
+   - Owner: tech lead decision
 
-### 🟠 P1 - 本周内完成
+### 🟠 P1 - Complete This Week
 
-2. **标准化测试清理机制**
+2. **Standardize the test cleanup mechanism**
    ```typescript
-   // 方案A: 手动 helper（1天）
+   // Option A: manual helper (1 day)
    export function withMockPiniaServices()
 
-   // 方案B: Vitest 自动清理（1小时）
+   // Option B: automatic Vitest cleanup (1 hour)
    afterEach(() => setPiniaServices(null))
    ```
-   - 时间估计：1天
-   - 负责人：测试负责人
+   - Time estimate: 1 day
+   - Owner: test lead
 
-3. **增加防御性检查**
-   - 在 `useTemporaryVariables` 中添加 try-catch
-   - 提供友好的错误提示
-   - 时间估计：1小时
+3. **Add defensive checks**
+   - Add try-catch in `useTemporaryVariables`
+   - Provide friendly error messages
+   - Time estimate: 1 hour
 
-### 🟡 P2 - 本月内完成
+### 🟡 P2 - Complete This Month
 
-4. **添加 ESLint 规则**
-   - 禁止从 barrel exports 导入 stores
-   - 时间估计：1小时
+4. **Add an ESLint rule**
+   - Forbid importing stores from barrel exports
+   - Time estimate: 1 hour
 
-5. **增强迁移逻辑健壮性**
-   - 使用正则表达式替代字符串分割
-   - 时间估计：2小时
+5. **Make the migration logic more robust**
+   - Use regular expressions instead of string splitting
+   - Time estimate: 2 hours
 
-### 🟢 P3 - 长期优化
+### 🟢 P3 - Long-term Optimization
 
-6. **引入错误监控**
-   - 集成错误追踪服务
-   - 时间估计：1天
+6. **Introduce error monitoring**
+   - Integrate an error tracking service
+   - Time estimate: 1 day
 
-7. **工厂化 Pinia 创建**（可选）
-   - 支持多实例场景
-   - 时间估计：2天
+7. **Factory-style Pinia creation** (optional)
+   - Support multi-instance scenarios
+   - Time estimate: 2 days
 
 ---
 
-## 🧪 回归验证清单（Codex建议）
+## 🧪 Regression Verification Checklist (Codex's Suggestion)
 
-### 本地验证
+### Local Verification
 
 ```bash
-# 1. 运行所有测试
+# 1. Run all tests
 pnpm -F @prompt-optimizer/ui test
 
-# 2. 验证入口时序
-# 确认 installPinia(app) 在任何 store 使用之前完成
+# 2. Verify the entry timing
+# Confirm installPinia(app) completes before any store is used
 ```
 
-**关注点**:
+**Focus points**:
 - `packages/web/src/main.ts:23`
 - `packages/extension/src/main.ts:8`
 
-### CI/CD 验证
+### CI/CD Verification
 
-- ✅ 194/194 测试通过
-- ✅ 无 TypeScript 编译错误
-- ✅ 无 ESLint 警告
+- ✅ 194/194 tests passed
+- ✅ No TypeScript compilation errors
+- ✅ No ESLint warnings
 
 ---
 
-## 💡 最佳实践总结
+## 💡 Best Practices Summary
 
-### 1. 服务注入模式（值得推广）
+### 1. Service Injection Pattern (Worth Promoting)
 
 ```typescript
-// ✅ 优秀实践
+// ✅ Excellent practice
 const servicesRef = shallowRef<AppServices | null>(null)
-pinia.use(piniaServicesPlugin(servicesRef))  // 立即安装插件
+pinia.use(piniaServicesPlugin(servicesRef))  // install the plugin immediately
 ```
 
-**原则**:
-- 插件在 Pinia 创建后立即安装（避免时序窗口）
-- 使用 shallowRef 避免深度代理
-- 响应式引用解决异步初始化问题
+**Principles**:
+- Install the plugin immediately after Pinia is created (avoids the timing window)
+- Use shallowRef to avoid deep proxying
+- A reactive reference solves the async initialization problem
 
-### 2. Session 持久化模式（值得复用）
+### 2. Session Persistence Pattern (Worth Reusing)
 
 ```typescript
-// ✅ 只持久化 ID/key，不持久化对象
+// ✅ Persist only IDs/keys, not objects
 export interface SessionState {
-  selectedModelKey: string      // ✅ 只存 key
-  // ❌ 不要存: selectedModel: ModelConfig
+  selectedModelKey: string      // ✅ store the key only
+  // ❌ Do not store: selectedModel: ModelConfig
 }
 ```
 
-**原则**:
-- 避免序列化大对象
-- 恢复时从服务重新获取完整对象
-- 使用 PreferenceService 统一持久化
+**Principles**:
+- Avoid serializing large objects
+- Re-fetch the full object from the service on restore
+- Use PreferenceService for unified persistence
 
-### 3. 竞态防御模式（值得学习）
+### 3. Race Defense Pattern (Worth Learning)
 
 ```typescript
-// ✅ 互斥锁 + pending 机制 + queueMicrotask
+// ✅ Mutex + pending mechanism + queueMicrotask
 const isRestoring = ref(false)
 const pendingRestore = ref(false)
 
@@ -475,61 +475,61 @@ if (isRestoring.value) {
   return
 }
 
-// ... 在 finally 中
+// ... in finally
 if (pendingRestore.value) {
   pendingRestore.value = false
-  queueMicrotask(() => void executeRestore())  // ✅ 避免递归压力
+  queueMicrotask(() => void executeRestore())  // ✅ avoids recursion pressure
 }
 ```
 
-**原则**:
-- 互斥锁防止并发
-- Pending 机制防止请求丢失
-- queueMicrotask 避免调用栈压力
-- 卸载守卫防止无效工作
+**Principles**:
+- A mutex prevents concurrency
+- A pending mechanism prevents lost requests
+- queueMicrotask avoids call stack pressure
+- Unmount guards prevent useless work
 
 ---
 
-## 🎉 总结
+## 🎉 Summary
 
-### Claude 总结
+### Claude's Summary
 
-这次 Pinia 状态管理重构是一次**高质量的工程实践**，体现了：
+This Pinia state management refactoring was a **high-quality engineering practice**, demonstrating:
 
-1. **系统性思考** - 不仅解决当前问题，还考虑未来扩展性
-2. **工程严谨** - 测试驱动，渐进式重构，无破坏性变更
-3. **文档完善** - 设计决策、实现细节、使用示例都有详细说明
-4. **问题修复彻底** - 系统性解决6个竞态条件
+1. **Systematic thinking** - not only solved the current problem but also considered future extensibility
+2. **Engineering rigor** - test-driven, incremental refactoring, no breaking changes
+3. **Thorough documentation** - design decisions, implementation details and usage examples are all documented in detail
+4. **Thorough problem fixes** - systematically resolved 6 race conditions
 
-### Codex 总结
+### Codex's Summary
 
-核心收益明确："服务初始化（异步）"与"状态管理（Pinia）"解耦成功。整体方向正确，且补了关键单测。
+Clear core benefit: "service initialization (async)" has been successfully decoupled from "state management (Pinia)". The overall direction is correct, and the key unit tests were added.
 
-### 综合建议
+### Combined Recommendations
 
-1. **立即行动**（本周）:
-   - 统一服务访问入口（消除语义冲突）
-   - 标准化测试清理机制
+1. **Act immediately** (this week):
+   - Unify the service access entry point (eliminate the semantic conflict)
+   - Standardize the test cleanup mechanism
 
-2. **持续改进**（本月）:
-   - 添加 ESLint 规则防止循环依赖
-   - 增强迁移逻辑健壮性
+2. **Continuous improvement** (this month):
+   - Add an ESLint rule to prevent circular dependencies
+   - Make the migration logic more robust
 
-3. **长期优化**（可选）:
-   - 引入错误监控
-   - 支持工厂化创建（多实例场景）
+3. **Long-term optimization** (optional):
+   - Introduce error monitoring
+   - Support factory-style creation (multi-instance scenarios)
 
-### 最后的话
+### Closing Words
 
-**Claude**: 这次重构展现了**专业的软件工程能力**，代码不仅能工作，而且**可读、可测、可维护**。
+**Claude**: This refactor demonstrates **professional software engineering capability**. The code not only works, but is also **readable, testable and maintainable**.
 
-**Codex**: 整体方向正确，关键单测到位，建议优先解决服务访问入口的语义统一问题。
+**Codex**: The overall direction is correct and the key unit tests are in place; I suggest resolving the semantic unification of the service access entry point first.
 
-**双方共识**: 值得作为团队的代码规范参考案例！🎉
+**Shared consensus**: Worth being a reference case for the team's coding conventions! 🎉
 
 ---
 
-**审查人**: Claude Code + Codex AI
-**审查日期**: 2026-01-05
-**审查范围**: commits 3c1ac5c ~ 8a1dd6b
-**下次审查**: 建议在完成 P0/P1 修复后重新评估
+**Reviewers**: Claude Code + Codex AI
+**Review date**: 2026-01-05
+**Review scope**: commits 3c1ac5c ~ 8a1dd6b
+**Next review**: Suggested re-evaluation after the P0/P1 fixes are completed

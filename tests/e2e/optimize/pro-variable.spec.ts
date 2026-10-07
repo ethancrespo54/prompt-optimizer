@@ -9,20 +9,20 @@ import {
 
 const MODE = 'pro-variable' as const
 
-test.describe('Pro Variable - 提示词优化', () => {
-  test('优化带变量的提示词并生成优化结果', async ({ page }) => {
+test.describe('Pro Variable - Prompt Optimization', () => {
+  test('Optimize a prompt with variables and generate an optimized result', async ({ page }) => {
     test.setTimeout(180000)
 
     await navigateToMode(page, 'pro', 'variable')
 
-    const prompt = '请根据{{任务描述}}，为{{目标用户}}编写一份{{文档类型}}，要求{{质量要求}}'
+    const prompt = 'Based on {{taskDescription}}, write a {{documentType}} for {{targetUser}}, meeting {{qualityRequirements}}'
     await fillOriginalPrompt(page, MODE, prompt)
     await clickOptimizeButton(page, MODE)
 
     await expectOptimizedResultNotEmpty(page, MODE)
   })
 
-  test('验证优化按钮在没有提示词时禁用', async ({ page }) => {
+  test('Verify the optimize button is disabled when there is no prompt', async ({ page }) => {
     await navigateToMode(page, 'pro', 'variable')
     await verifyOptimizeButtonDisabledWhenEmpty(page, MODE)
   })

@@ -1,111 +1,111 @@
-# 国际化（i18n）规范指南
+# Internationalization (i18n) Guidelines
 
-## 翻译键名规范
+## Translation Key Naming Conventions
 
-为了保持翻译文件的一致性和可维护性，请遵循以下键名规范：
+To keep translation files consistent and maintainable, please follow these key naming conventions:
 
-### 1. 命名结构
+### 1. Naming Structure
 
-使用嵌套对象结构，按照以下层次组织翻译键：
+Use a nested object structure and organize translation keys in the following hierarchy:
 
 ```
 {
-  "模块名": {
-    "子模块或功能": {
-      "具体文本": "翻译内容"
+  "moduleName": {
+    "submoduleOrFeature": {
+      "specificText": "Translated content"
     }
   }
 }
 ```
 
-### 2. 模块划分
+### 2. Module Division
 
-- `common`: 通用文本，如按钮文本、常见操作等
-- 具体功能模块: 如 `promptOptimizer`, `settings`, `modelManager` 等
+- `common`: Common text, such as button labels and common actions
+- Feature-specific modules: such as `promptOptimizer`, `settings`, `modelManager`, etc.
 
-### 3. 参数化文本
+### 3. Parameterized Text
 
-对于包含变量的文本，使用花括号标记参数：
+For text that contains variables, use curly braces to mark parameters:
 
 ```typescript
-// 定义
+// Definition
 "version": "V{version}"
 
-// 使用
+// Usage
 t('common.version', { version: '1.0.0' })
 ```
 
-### 4. 示例结构
+### 4. Example Structure
 
 ```typescript
 export default {
-  // 通用文本
+  // Common text
   common: {
     buttons: {
-      save: '保存',
-      cancel: '取消',
-      confirm: '确认',
+      save: 'Save',
+      cancel: 'Cancel',
+      confirm: 'Confirm',
     },
     labels: {
-      createdAt: '创建于',
-      lastModified: '最后修改',
+      createdAt: 'Created at',
+      lastModified: 'Last modified',
     },
     messages: {
-      loading: '加载中...',
-      noData: '暂无数据',
+      loading: 'Loading...',
+      noData: 'No data',
     },
   },
   
-  // 功能模块
+  // Feature modules
   promptOptimizer: {
-    title: '提示词优化器',
+    title: 'Prompt Optimizer',
     form: {
-      inputPlaceholder: '请输入需要优化的prompt...',
-      templateLabel: '优化提示词',
+      inputPlaceholder: 'Enter the prompt to optimize...',
+      templateLabel: 'Optimization prompt',
     },
     actions: {
-      optimize: '开始优化 →',
-      save: '保存提示词',
-      share: '分享',
+      optimize: 'Start Optimization →',
+      save: 'Save Prompt',
+      share: 'Share',
     },
   },
   
-  // 设置模块
+  // Settings module
   settings: {
-    title: '设置',
+    title: 'Settings',
     sections: {
-      language: '语言设置',
-      theme: '主题设置',
-      api: 'API设置',
+      language: 'Language Settings',
+      theme: 'Theme Settings',
+      api: 'API Settings',
     },
   },
 }
 ```
 
-## 最佳实践
+## Best Practices
 
-1. **保持一致性**: 同类型的文本应使用相同的键名结构
-2. **避免重复**: 通用文本应放在 `common` 下，避免在多个模块中重复定义
-3. **描述性键名**: 键名应清晰描述文本的用途，而不是直接使用翻译内容
-4. **模块化**: 按功能模块组织翻译，便于维护和查找
-5. **注释**: 对于复杂或特殊用途的文本，添加注释说明
+1. **Stay consistent**: Text of the same type should use the same key structure
+2. **Avoid duplication**: Common text should live under `common` and should not be defined repeatedly in multiple modules
+3. **Descriptive keys**: Key names should clearly describe the purpose of the text rather than reuse the translated content directly
+4. **Modularity**: Organize translations by feature module for easier maintenance and lookup
+5. **Comments**: Add comments for complex or special-purpose text
 
-## 添加新语言
+## Adding a New Language
 
-添加新语言时，请确保：
+When adding a new language, make sure to:
 
-1. 在 `locales` 目录下创建对应的语言文件，如 `ja-JP.ts`
-2. 复制现有语言文件的结构，确保键名完全一致
-3. 在 `packages/ui/src/plugins/i18n.ts` 中：
-   - 导入新语言文件
-   - 添加到 `SupportedLocale` 类型
-   - 添加到 `SUPPORTED_LOCALES` 数组
-   - 配置 fallback 规则
-   - 添加到 `messages` 对象
+1. Create the corresponding locale file under the `locales` directory, such as `ja-JP.ts`
+2. Copy the structure of an existing locale file and make sure the key names are exactly the same
+3. In `packages/ui/src/plugins/i18n.ts`:
+   - Import the new locale file
+   - Add it to the `SupportedLocale` type
+   - Add it to the `SUPPORTED_LOCALES` array
+   - Configure the fallback rules
+   - Add it to the `messages` object
 4. Add a language switch component (the previous `LanguageSwitchDropdown.vue` was removed)
-5. 测试所有页面在新语言下的显示效果
+5. Test how all pages are displayed in the new language
 
-## 当前支持的语言
+## Currently Supported Languages
 
 - **English (en-US)**: the only supported language (default)
 

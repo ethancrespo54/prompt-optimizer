@@ -1,29 +1,29 @@
-# Prompt Garden -> Prompt Optimizer 导入契约（External Import Contract）
+# Prompt Garden -> Prompt Optimizer Import Contract (External Import Contract)
 
-本文档定义 Prompt Garden 与 Prompt Optimizer 之间的“外部导入”契约。
+This document defines the "external import" contract between Prompt Garden and Prompt Optimizer.
 
-设计目标：
+Design goals:
 
-- URL 只携带最少信息（`importCode` + 可选 `subModeKey`）
-- Prompt Optimizer 固定从 `VITE_PROMPT_GARDEN_BASE_URL` 拉取内容
-- Garden API 返回格式在所有子模式下保持一致（这是插件契约的核心）
-- 仅支持 **v1 schema** 返回（不需要兼容旧版 `{ content, title }` 回退协议）
+- The URL carries minimal information (`importCode` + optional `subModeKey`)
+- Prompt Optimizer always fetches content from `VITE_PROMPT_GARDEN_BASE_URL`
+- The Garden API response format is consistent across all sub-modes (this is the core of the plugin contract)
+- Only the **v1 schema** response is supported (no need to be compatible with the legacy `{ content, title }` fallback protocol)
 
-## 1. Prompt Optimizer 侧：导入触发与参数
+## 1. Prompt Optimizer Side: Import Trigger and Parameters
 
-Prompt Optimizer 在启动后检查当前路由 query：
+After startup, Prompt Optimizer checks the current route query:
 
-- 如果存在 `importCode`，则触发一次导入
-- 导入成功后会清理 query（避免刷新重复导入）
+- If `importCode` is present, an import is triggered once
+- After a successful import, the query is cleared (to avoid repeated imports on refresh)
 
-### 1.1 URL 参数（最小集合）
+### 1.1 URL Parameters (Minimal Set)
 
-- `importCode`（必填）
-  - 外部提示词的唯一标识（例如 `NB-001`）
-- `subModeKey`（可选）
-  - 明确指定导入目标工作区（不再兼容 `mode`）
+- `importCode` (required)
+  - The unique identifier of the external prompt (for example `NB-001`)
+- `subModeKey` (optional)
+  - Explicitly specifies the target workspace for the import (`mode` is no longer supported)
 
-可选 `subModeKey` 取值：
+Allowed `subModeKey` values:
 
 - `basic-system`
 - `basic-user`
@@ -32,40 +32,40 @@ Prompt Optimizer 在启动后检查当前路由 query：
 - `image-text2image`
 - `image-image2image`
 
-说明：
+Notes:
 
-- `subModeKey` 仅用于覆盖导入目标工作区。
-- 推荐优先使用“打开对应工作区路由”的方式触发导入（见 1.2），避免依赖 query。
+- `subModeKey` is only used to override the import target workspace.
+- It is recommended to trigger the import by "opening the corresponding workspace route" (see 1.2) rather than relying on the query.
 
-### 1.2 URL 示例（推荐 Garden 直接打开非根路由）
+### 1.2 URL Examples (Recommended: Garden Opens a Non-Root Route Directly)
 
-- 导入到 basic-system（最简）：
+- Import into basic-system (simplest):
   - `https://prompt.example.com/#/basic/system?importCode=NB-001`
 
-- 导入到 image-text2image（最简）：
+- Import into image-text2image (simplest):
   - `https://prompt.example.com/#/image/text2image?importCode=NB-001`
 
-- 若希望由 query 指定目标工作区（可选）：
+- If you want the query to specify the target workspace (optional):
   - `https://prompt.example.com/#/basic/system?importCode=NB-001&subModeKey=basic-system`
 
-## 2. Prompt Garden 侧：必须提供的 API
+## 2. Prompt Garden Side: Required API
 
-Prompt Optimizer 会调用：
+Prompt Optimizer will call:
 
 `GET {gardenBaseUrl}/api/prompt-source/{encodeURIComponent(importCode)}`
 
-其中：
+Where:
 
-- `gardenBaseUrl` 固定来自 Prompt Optimizer 的环境变量 `VITE_PROMPT_GARDEN_BASE_URL`
-- `{encodeURIComponent(importCode)}` 用于安全拼接
+- `gardenBaseUrl` always comes from Prompt Optimizer's environment variable `VITE_PROMPT_GARDEN_BASE_URL`
+- `{encodeURIComponent(importCode)}` is used for safe concatenation
 
-## 3. API 返回格式（契约重点：跨子模式一致）
+## 3. API Response Format (Key Point of the Contract: Consistent Across Sub-Modes)
 
-无论导入到哪个 `subModeKey`，API 的返回格式必须一致。
+Regardless of which `subModeKey` is being imported into, the API response format must be the same.
 
-### 3.1 成功响应（HTTP 200）
+### 3.1 Success Response (HTTP 200)
 
-推荐 `Content-Type: application/json`，返回 **v1 schema** JSON：
+`Content-Type: application/json` is recommended, returning **v1 schema** JSON:
 
 ```json
 {
@@ -87,27 +87,27 @@ Prompt Optimizer 会调用：
 }
 ```
 
-字段约束（v1）：
+Field constraints (v1):
 
-- `schema`：必填，固定为 `prompt-garden.prompt.v1`
-- `schemaVersion`：必填，固定为 `1`
-- `optimizerTarget`：必填
-  - `optimizerTarget.subModeKey`：必填，导入目标工作区，取值见 1.1
-- `prompt`：必填
-  - `prompt.format`：必填，可选值：`text` / `messages`
-  - `prompt.text`：当 `format=text` 时必填，且必须为非空字符串
-  - `prompt.messages`：当 `format=messages` 时必填，为消息数组（见 3.2）
-- `variables`：必填（允许为空数组 `[]`），用于向目标工作区注入临时变量（见 3.3）
+- `schema`: required, fixed to `prompt-garden.prompt.v1`
+- `schemaVersion`: required, fixed to `1`
+- `optimizerTarget`: required
+  - `optimizerTarget.subModeKey`: required, the import target workspace; see 1.1 for allowed values
+- `prompt`: required
+  - `prompt.format`: required, allowed values: `text` / `messages`
+  - `prompt.text`: required when `format=text`, and must be a non-empty string
+  - `prompt.messages`: required when `format=messages`, a message array (see 3.2)
+- `variables`: required (an empty array `[]` is allowed), used to inject temporary variables into the target workspace (see 3.3)
 
-子模式差异说明：
+Sub-mode differences:
 
-- `optimizerTarget.subModeKey` 只影响 **写入哪个 session store**
-- API 返回不需要区分子模式（返回结构固定）
-- 图像模式下：导入只写入提示词与变量；不导入 input image（image2image 的 input image 需要用户在 Optimizer 中自行选择/上传）
+- `optimizerTarget.subModeKey` only affects **which session store is written to**
+- The API response does not need to distinguish sub-modes (the response structure is fixed)
+- In image mode: the import only writes the prompt and variables; it does not import the input image (the input image for image2image must be chosen/uploaded by the user in the Optimizer)
 
-### 3.2 prompt.messages 定义（format=messages）
+### 3.2 prompt.messages Definition (format=messages)
 
-`prompt.messages` 为数组，每项为：
+`prompt.messages` is an array, and each item is:
 
 ```json
 {
@@ -118,16 +118,16 @@ Prompt Optimizer 会调用：
 }
 ```
 
-字段约束：
+Field constraints:
 
-- `role`：必填，可选值：`system` / `user` / `assistant` / `tool`
-- `content`：必填，非空字符串
-- `id`：建议提供（字符串），用于让 Prompt Optimizer 在导入后可以稳定选中消息
-- `originalContent`：可选；若不提供，可与 `content` 相同
+- `role`: required, allowed values: `system` / `user` / `assistant` / `tool`
+- `content`: required, a non-empty string
+- `id`: recommended (a string), so that Prompt Optimizer can stably select the message after import
+- `originalContent`: optional; if not provided, it may be the same as `content`
 
-### 3.3 variables 定义
+### 3.3 variables Definition
 
-`variables` 为数组，每项为：
+`variables` is an array, and each item is:
 
 ```json
 {
@@ -136,75 +136,75 @@ Prompt Optimizer 会调用：
 }
 ```
 
-字段约束：
+Field constraints:
 
-- `name`：必填，必须符合 Prompt Optimizer 的变量命名规则（建议：`[a-zA-Z_][a-zA-Z0-9_]*`）
-- `defaultValue`：可选，字符串
+- `name`: required, must conform to Prompt Optimizer's variable naming rules (recommended: `[a-zA-Z_][a-zA-Z0-9_]*`)
+- `defaultValue`: optional, a string
 
-说明：
+Notes:
 
-- Prompt Optimizer 导入时会把 `variables` 写入对应子模式的“临时变量”（temporaryVariables）存储。
-- 如果导入前该变量已经存在，导入不会覆盖既有值（避免破坏用户当前变量设置）。
+- On import, Prompt Optimizer writes `variables` into the "temporary variables" (temporaryVariables) store of the corresponding sub-mode.
+- If the variable already exists before the import, the import will not overwrite the existing value (to avoid breaking the user's current variable settings).
 
-### 3.4 占位符语法（强制）
+### 3.4 Placeholder Syntax (Mandatory)
 
-Prompt Optimizer 仅支持 Mustache 变量占位符：
+Prompt Optimizer only supports Mustache variable placeholders:
 
 - ✅ `{{variable_name}}`
-- ✅ `{{ variable_name }}`（允许花括号内两侧空格）
-- ❌ `{variable_name}`（不支持；不会被自动转换）
+- ✅ `{{ variable_name }}` (spaces on both sides inside the braces are allowed)
+- ❌ `{variable_name}` (not supported; will not be converted automatically)
 
-约束：
+Constraints:
 
-- `prompt.text` / `prompt.messages[].content` 中出现的变量占位符必须使用 `{{...}}`。
-- Prompt Garden 不应返回 `{var}` 风格的占位符；Prompt Optimizer 不做兼容与归一化。
+- Variable placeholders appearing in `prompt.text` / `prompt.messages[].content` must use `{{...}}`.
+- Prompt Garden should not return `{var}`-style placeholders; Prompt Optimizer does no compatibility handling or normalization.
 
-### 3.5 失败响应
+### 3.5 Failure Responses
 
-建议语义：
+Suggested semantics:
 
-- `404`：`importCode` 不存在
-- `400`：`importCode` 非法
-- `500`：服务端错误
+- `404`: `importCode` does not exist
+- `400`: `importCode` is invalid
+- `500`: server error
 
-对 Prompt Optimizer 而言：
+For Prompt Optimizer:
 
-- 任意非 2xx 都会视为导入失败，并提示用户
+- Any non-2xx response is treated as an import failure and the user is notified
 
-## 4. CORS / 安全建议
+## 4. CORS / Security Recommendations
 
-由于 Prompt Optimizer（Web）是纯前端应用，跨域 fetch 需要 Prompt Garden 正确配置 CORS。
+Because Prompt Optimizer (Web) is a pure frontend application, cross-origin fetch requires Prompt Garden to configure CORS correctly.
 
-建议：
+Recommendations:
 
-- `/api/prompt-source/*` 返回：
-  - `Access-Control-Allow-Origin: https://prompt.example.com`（或你的实际部署域名）
-  - 开发环境可临时使用 `*` 以便联调
+- `/api/prompt-source/*` should return:
+  - `Access-Control-Allow-Origin: https://prompt.example.com` (or your actual deployment domain)
+  - In development, `*` can be used temporarily to ease integration testing
 
-## 5. 环境变量
+## 5. Environment Variables
 
-Prompt Optimizer 侧：
+Prompt Optimizer side:
 
-- `VITE_ENABLE_PROMPT_GARDEN_IMPORT=1`（或 `true`）
-  - 默认禁用；启用后才会注册导入逻辑
+- `VITE_ENABLE_PROMPT_GARDEN_IMPORT=1` (or `true`)
+  - Disabled by default; the import logic is registered only when enabled
 - `VITE_PROMPT_GARDEN_BASE_URL=http://localhost:3000`
-  - Prompt Garden 的固定 base URL（不接受 URL 参数覆盖）
+  - The fixed base URL of Prompt Garden (cannot be overridden via URL parameters)
 
-## 6. 可选集成（Integrations）机制
+## 6. Optional Integrations Mechanism
 
-Prompt Optimizer 使用“可选集成”机制来实现低入侵扩展：
+Prompt Optimizer uses an "optional integrations" mechanism to implement low-intrusion extensions:
 
-- 集成模块位于：`packages/ui/src/integrations/`
-- 文件命名为：`*.integration.ts`
-- 每个模块导出：`integration` 对象，并通过 `envFlag` 控制是否启用
-- App 只调用一次：`registerOptionalIntegrations(...)`
+- Integration modules are located at: `packages/ui/src/integrations/`
+- Files are named: `*.integration.ts`
+- Each module exports an `integration` object and uses `envFlag` to control whether it is enabled
+- App calls only once: `registerOptionalIntegrations(...)`
 
-Prompt Garden 是其中一个可选集成，文件为：
+Prompt Garden is one of the optional integrations, with the file:
 
 - `packages/ui/src/integrations/prompt-garden.integration.ts`
 
-## 7. 参考实现
+## 7. Reference Implementation
 
-Prompt Optimizer 侧导入逻辑：
+Prompt Optimizer side import logic:
 
 - `packages/ui/src/composables/app/useAppPromptGardenImport.ts`

@@ -1,7 +1,7 @@
 import { expect, type Page } from '@playwright/test'
 
 /**
- * 工作区模式类型
+ * Workspace mode type
  */
 export type WorkspaceMode =
   | 'basic-system'
@@ -12,20 +12,20 @@ export type WorkspaceMode =
   | 'pro-variable'
 
 /**
- * 评估类型
- * - 'prompt-only': 仅提示词评估（分析功能）
- * - 'original': 原始提示词评估
- * - 'optimized': 优化后提示词评估
+ * Evaluation type
+ * - 'prompt-only': prompt-only evaluation (analysis feature)
+ * - 'original': evaluation of the original prompt
+ * - 'optimized': evaluation of the optimized prompt
  */
 export type EvaluationType = 'prompt-only' | 'original' | 'optimized'
 
 /**
- * 获取指定模式的工作区容器
- * 使用 data-testid 和 data-mode 精确定位
+ * Get the workspace container for the given mode
+ * Locate precisely using data-testid and data-mode
  *
- * @param page Playwright Page 对象
- * @param mode 工作区模式（'basic-system' | 'basic-user'）
- * @returns 工作区定位器
+ * @param page Playwright Page object
+ * @param mode Workspace mode ('basic-system' | 'basic-user')
+ * @returns Workspace locator
  *
  * @example
  * ```typescript
@@ -37,16 +37,16 @@ export function getWorkspace(page: Page, mode: WorkspaceMode) {
 }
 
 /**
- * 填写原始提示词
- * 使用 data-testid 精确定位输入框，不依赖文本内容
+ * Fill in the original prompt
+ * Locate the input precisely via data-testid, without relying on text content
  *
- * @param page Playwright Page 对象
- * @param mode 工作区模式
- * @param value 提示词内容
+ * @param page Playwright Page object
+ * @param mode Workspace mode
+ * @param value Prompt content
  *
  * @example
  * ```typescript
- * await fillOriginalPrompt(page, 'basic-system', '写一个排序算法')
+ * await fillOriginalPrompt(page, 'basic-system', 'Write a sorting algorithm')
  * ```
  */
 export async function fillOriginalPrompt(
@@ -56,14 +56,14 @@ export async function fillOriginalPrompt(
 ): Promise<void> {
   const workspace = getWorkspace(page, mode)
 
-  // 使用 testIdPrefix 动态生成的 data-testid 精确定位
+  // Locate precisely via the data-testid generated dynamically from testIdPrefix
   const input = workspace.locator(`[data-testid="${mode}-input"]`)
   await expect(input).toBeVisible({ timeout: 15000 })
 
-  // 支持两种输入方式：CodeMirror 和 NInput
+  // Two input methods are supported: CodeMirror and NInput
   const cmContent = input.locator('.cm-content')
   if ((await cmContent.count()) > 0) {
-    // CodeMirror 输入
+    // CodeMirror input
     await cmContent.click()
     await page.keyboard.press(process.platform === 'darwin' ? 'Meta+A' : 'Control+A')
     await page.keyboard.type(value)
@@ -73,17 +73,17 @@ export async function fillOriginalPrompt(
     await textarea.fill(value)
   }
 
-  // 等待 v-model 更新：分析按钮由禁用变为可用
+  // Wait for the v-model update: the analyze button goes from disabled to enabled
   const analyzeButton = workspace.locator(`[data-testid="${mode}-analyze-button"]`)
   await expect(analyzeButton).toBeEnabled({ timeout: 15000 })
 }
 
 /**
- * 点击分析按钮
- * 使用 data-testid 精确定位，不依赖按钮文本
+ * Click the analyze button
+ * Locate precisely via data-testid, without relying on button text
  *
- * @param page Playwright Page 对象
- * @param mode 工作区模式
+ * @param page Playwright Page object
+ * @param mode Workspace mode
  *
  * @example
  * ```typescript
@@ -96,7 +96,7 @@ export async function clickAnalyzeButton(
 ): Promise<void> {
   const workspace = getWorkspace(page, mode)
 
-  // 使用 testIdPrefix 动态生成的 data-testid 精确定位
+  // Locate precisely via the data-testid generated dynamically from testIdPrefix
   const button = workspace.locator(`[data-testid="${mode}-analyze-button"]`)
   await expect(button).toBeVisible({ timeout: 15000 })
   await expect(button).toBeEnabled({ timeout: 15000 })
@@ -105,19 +105,19 @@ export async function clickAnalyzeButton(
 }
 
 /**
- * 获取评估分数
- * 使用组合 data-testid 精确定位（score-badge-{type}）
+ * Get the evaluation score
+ * Locate precisely via the combined data-testid (score-badge-{type})
  *
- * @param page Playwright Page 对象
- * @param mode 工作区模式
- * @param evalType 评估类型（默认为 'prompt-only'，即分析功能）
- * @returns 分数（0-100）
+ * @param page Playwright Page object
+ * @param mode Workspace mode
+ * @param evalType Evaluation type (defaults to 'prompt-only', i.e. the analysis feature)
+ * @returns Score (0-100)
  *
  * @example
  * ```typescript
- * // 分析功能（默认）
+ * // Analysis feature (default)
  * const score = await getEvaluationScore(page, 'basic-system')
- * // 优化功能
+ * // Optimization feature
  * const score = await getEvaluationScore(page, 'basic-system', 'optimized')
  * ```
  */
@@ -128,21 +128,21 @@ export async function getEvaluationScore(
 ): Promise<number> {
   const workspace = getWorkspace(page, mode)
 
-  // 使用组合 testid 精确定位：score-badge-analysis, score-badge-original
+  // Locate precisely via the combined testid: score-badge-analysis, score-badge-original
   const scoreBadge = workspace.locator(`[data-testid="score-badge-${evalType}"]`)
   await expect(scoreBadge).toBeVisible({ timeout: 90000 })
 
-  // 等待加载完成
+  // Wait for loading to finish
   await expect(scoreBadge).not.toHaveClass(/loading/, { timeout: 60000 })
 
-  // 获取分数值
+  // Get the score value
   const scoreValue = scoreBadge.locator('[data-testid="score-value"]')
   await expect(scoreValue).toBeVisible({ timeout: 10000 })
 
   const scoreText = await scoreValue.textContent()
   const score = parseInt(scoreText?.trim() || '0')
 
-  // 验证分数范围
+  // Validate the score range
   expect(score).toBeGreaterThan(0)
   expect(score).toBeLessThanOrEqual(100)
 
@@ -150,10 +150,10 @@ export async function getEvaluationScore(
 }
 
 /**
- * 验证分析按钮在输入为空时禁用
+ * Verify the analyze button is disabled when the input is empty
  *
- * @param page Playwright Page 对象
- * @param mode 工作区模式
+ * @param page Playwright Page object
+ * @param mode Workspace mode
  */
 export async function verifyAnalyzeButtonDisabledWhenEmpty(
   page: Page,

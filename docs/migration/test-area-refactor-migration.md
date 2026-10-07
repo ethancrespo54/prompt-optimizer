@@ -1,61 +1,61 @@
-# 测试区域重构迁移指南
+# Test Area Refactor Migration Guide
 
-## 概述
+## Overview
 
-TestPanel.vue 和基于条件的 AdvancedTestPanel 使用已被新的统一 TestAreaPanel 组件替代。本指南帮助您迁移现有代码。
+TestPanel.vue and the condition-based use of AdvancedTestPanel have been replaced by the new unified TestAreaPanel component. This guide helps you migrate your existing code.
 
-## 主要变化
+## Key Changes
 
-### 1. 组件统一
-- **旧方式**: TestPanelUI (基础模式) + AdvancedTestPanel (高级模式)
-- **新方式**: TestAreaPanel (统一组件，自动处理模式差异)
+### 1. Component Unification
+- **Old approach**: TestPanelUI (basic mode) + AdvancedTestPanel (advanced mode)
+- **New approach**: TestAreaPanel (a unified component that handles mode differences automatically)
 
-### 2. 接口简化
-- **移除冗余**: showTestInput 属性已移除，自动从 optimizationMode 推导
-- **响应式**: 自动适配不同屏幕尺寸
-- **统一样式**: 严格遵循 Naive UI 设计规范
+### 2. Interface Simplification
+- **Redundancy removed**: The showTestInput prop has been removed and is now derived automatically from optimizationMode
+- **Responsive**: Automatically adapts to different screen sizes
+- **Unified styling**: Strictly follows the Naive UI design guidelines
 
-## 迁移步骤
+## Migration Steps
 
-### Web 包 (已完成)
-packages/web/src/App.vue 已经完成迁移，作为参考示例。
+### Web Package (completed)
+packages/web/src/App.vue has already been migrated and serves as a reference example.
 
-### Extension 包 (已完成)
-packages/extension/src/App.vue 已经完成迁移到新的TestAreaPanel统一组件。
+### Extension Package (completed)
+packages/extension/src/App.vue has been migrated to the new unified TestAreaPanel component.
 
-主要变更：
-- 移除了条件渲染的TestPanelUI和AdvancedTestPanel
-- 采用统一的TestAreaPanel组件，自动处理模式差异
-- 添加了响应式布局配置和测试模式配置
-- 实现了新的事件处理机制
+Main changes:
+- Removed the conditionally rendered TestPanelUI and AdvancedTestPanel
+- Adopted the unified TestAreaPanel component, which handles mode differences automatically
+- Added responsive layout configuration and test mode configuration
+- Implemented the new event handling mechanism
 
-#### 1. 更新导入语句
+#### 1. Update import statements
 ```vue
-// 旧代码
+// Old code
 import { TestPanelUI, AdvancedTestPanel } from '@prompt-optimizer/ui'
 
-// 新代码  
+// New code  
 import { TestAreaPanel, useResponsiveTestLayout, useTestModeConfig } from '@prompt-optimizer/ui'
 ```
 
-#### 2. 添加状态管理
+#### 2. Add state management
 ```vue
-// 新增测试内容状态
+// New test content state
 const testContent = ref('')
 const isCompareMode = ref(true)
 
-// 新增响应式配置
+// New responsive configuration
 const responsiveLayout = useResponsiveTestLayout()
 const testModeConfig = useTestModeConfig(selectedOptimizationMode)
 ```
 
-#### 3. 替换模板代码
+#### 3. Replace template code
 ```vue
-<!-- 旧代码 -->
+<!-- Old code -->
 <TestPanelUI v-if="!advancedModeEnabled" ... />
 <AdvancedTestPanel v-else ... />
 
-<!-- 新代码 -->
+<!-- New code -->
 <TestAreaPanel
   :optimization-mode="selectedOptimizationMode"
   :advanced-mode-enabled="advancedModeEnabled"
@@ -67,14 +67,14 @@ const testModeConfig = useTestModeConfig(selectedOptimizationMode)
   @test="handleTestAreaTest"
   @compare-toggle="handleTestAreaCompareToggle"
 >
-  <!-- 插槽内容 -->
+  <!-- Slot content -->
 </TestAreaPanel>
 ```
 
-#### 4. 添加事件处理函数
+#### 4. Add event handler functions
 ```vue
 const handleTestAreaTest = async () => {
-  // 测试逻辑
+  // Test logic
 }
 
 const handleTestAreaCompareToggle = () => {
@@ -82,55 +82,55 @@ const handleTestAreaCompareToggle = () => {
 }
 ```
 
-## 关键优势
+## Key Benefits
 
-### 1. 消除接口冗余
-- showTestInput 自动从 optimizationMode 推导
-- 统一的组件接口，减少条件判断
+### 1. Eliminated Interface Redundancy
+- showTestInput is derived automatically from optimizationMode
+- Unified component interface with fewer conditional checks
 
-### 2. 响应式支持  
-- 自动屏幕尺寸适配
-- 智能布局模式切换
-- 防抖窗口监听
+### 2. Responsive Support  
+- Automatic screen size adaptation
+- Smart layout mode switching
+- Debounced window listeners
 
-### 3. 样式统一
-- 完全遵循 Naive UI 设计系统
-- 移除所有硬编码 CSS
-- 与左侧优化区域视觉一致
+### 3. Unified Styling
+- Fully follows the Naive UI design system
+- All hard-coded CSS removed
+- Visually consistent with the optimization area on the left
 
-### 4. 类型安全
-- 完整的 TypeScript 类型定义
-- IDE 智能提示支持
-- 编译时类型检查
+### 4. Type Safety
+- Complete TypeScript type definitions
+- IDE IntelliSense support
+- Compile-time type checking
 
-## 向后兼容性
+## Backward Compatibility
 
-### 保留的组件
-- AdvancedTestPanel.vue 暂时保留，供其他包使用
-- TestPanel.vue 已重命名为 TestPanel.vue.backup
+### Retained Components
+- AdvancedTestPanel.vue is temporarily retained for use by other packages
+- TestPanel.vue has been renamed to TestPanel.vue.backup
 
-### 导出更新
-- TestPanelUI 导出已移除
-- 新增 TestAreaPanel 导出
-- 新增相关 composables 和类型导出
+### Export Updates
+- The TestPanelUI export has been removed
+- The TestAreaPanel export has been added
+- Related composables and type exports have been added
 
-## 测试建议
+## Testing Recommendations
 
-1. **功能测试**: 确保测试、对比模式、模型选择等功能正常
-2. **响应式测试**: 在不同屏幕尺寸下测试布局
-3. **兼容性测试**: 确保高级模式和基础模式切换正常
-4. **样式测试**: 验证与现有 UI 的视觉一致性
+1. **Functional testing**: Make sure testing, compare mode, model selection, and other features work correctly
+2. **Responsive testing**: Test the layout at different screen sizes
+3. **Compatibility testing**: Make sure switching between advanced mode and basic mode works correctly
+4. **Style testing**: Verify visual consistency with the existing UI
 
-## 注意事项
+## Notes
 
-1. **渐进迁移**: 建议逐个包进行迁移，确保稳定性
-2. **测试充分**: 迁移后进行完整的功能测试
-3. **备份文件**: 旧组件文件已备份，可在需要时恢复
-4. **文档更新**: 更新相关文档和使用说明
+1. **Incremental migration**: Migrate one package at a time to ensure stability
+2. **Thorough testing**: Run full functional tests after migration
+3. **Backup files**: The old component files have been backed up and can be restored if needed
+4. **Documentation updates**: Update related documentation and usage instructions
 
-## 支持
+## Support
 
-如果在迁移过程中遇到问题，请参考：
-- Web 包的 App.vue 作为完整示例
-- 组件类型定义：`packages/ui/src/components/types/test-area.ts`
-- 样式规范：`docs/components/test-area-style-guide.md`
+If you run into problems during migration, refer to:
+- The Web package's App.vue as a complete example
+- Component type definitions: `packages/ui/src/components/types/test-area.ts`
+- Style guidelines: `docs/components/test-area-style-guide.md`

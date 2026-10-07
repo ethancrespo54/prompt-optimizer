@@ -1,6 +1,6 @@
 {
   "testName": "test\\image-image2image-generate.spec.ts",
-  "testCase": "上传输入图并在对比模式下生成 original+optimized 两张图",
+  "testCase": "Upload an input image and generate original+optimized images in compare mode",
   "interactions": [
     {
       "provider": "deepseek",

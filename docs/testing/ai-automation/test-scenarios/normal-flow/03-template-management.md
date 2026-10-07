@@ -1,340 +1,340 @@
-# 模板管理正常流程测试
+# Template Management Normal Flow Test
 
-## 📖 测试概述
-验证模板管理功能的基本流程，确保用户能够正常查看、创建、编辑和管理优化模板。
+## 📖 Test Overview
+Verify the basic flow of the template management feature, ensuring users can normally view, create, edit, and manage optimization templates.
 
-## 🎯 测试目标
-- 验证模板管理界面正常打开
-- 验证模板浏览和查看功能
-- 验证模板创建和编辑功能
-- 验证模板分类和管理功能
-- 验证内置模板语言切换功能
+## 🎯 Test Goals
+- Verify that the template management interface opens normally
+- Verify the template browsing and viewing features
+- Verify the template creation and editing features
+- Verify the template category and management features
+- Verify the built-in template language switching feature
 
-## 📋 前置条件
-- [ ] 应用已启动并加载完成
-- [ ] 用户界面显示正常
-- [ ] 了解基本的模板概念
-
----
-
-## 🔧 测试步骤
-
-### 步骤1：打开模板管理器
-
-**AI执行指导：**
-- 使用 `browser_snapshot` 获取页面当前状态
-- 查找包含"📝"图标和"功能提示词"文字的按钮
-- 使用 `browser_click` 点击该按钮
-
-**预期结果：**
-- 弹出模板管理对话框
-- 对话框标题显示"模板管理"或"功能提示词"
-- 界面显示现有模板列表和管理选项
-
-**验证点：**
-- [ ] 模板管理弹窗已显示
-- [ ] 弹窗标题正确显示
-- [ ] 可以看到模板列表或分类选项
-- [ ] 界面包含添加、编辑等操作按钮
+## 📋 Prerequisites
+- [ ] The application has started and finished loading
+- [ ] The user interface displays correctly
+- [ ] Basic template concepts are understood
 
 ---
 
-### 步骤2：浏览现有模板
+## 🔧 Test Steps
 
-**AI执行指导：**
-- 使用 `browser_snapshot` 查看模板列表内容
-- 查找模板分类标签或过滤选项
-- 点击不同分类查看模板变化
-- 选择一个模板项目查看详情
+### Step 1: Open the Template Manager
 
-**预期结果：**
-- 模板按分类正确显示
-- 每个模板显示名称、描述等基本信息
-- 点击分类标签能够过滤显示相应模板
-- 选择模板能够查看详细内容
+**AI execution guidance:**
+- Use `browser_snapshot` to get the current page state
+- Find the button containing the "📝" icon and the "Templates" text
+- Use `browser_click` to click that button
 
-**验证点：**
-- [ ] 模板列表正确显示
-- [ ] 分类过滤功能正常
-- [ ] 模板信息显示完整
-- [ ] 模板选择功能正常
+**Expected results:**
+- The template management dialog pops up
+- The dialog title shows "Template Management" or "Templates"
+- The interface shows the existing template list and management options
 
----
-
-### 步骤3：查看模板详情
-
-**AI执行指导：**
-- 选择一个现有模板
-- 查看模板的详细信息
-- 检查模板内容、描述、类型等信息
-- 测试模板预览功能（如果有）
-
-**预期结果：**
-- 模板详细信息完整显示
-- 模板内容格式正确
-- 模板类型和描述准确
-- 预览功能正常工作（如果支持）
-
-**验证点：**
-- [ ] 模板详情正确显示
-- [ ] 模板内容格式正确
-- [ ] 类型和描述准确
-- [ ] 预览功能正常（如果有）
+**Verification points:**
+- [ ] The template management popup is displayed
+- [ ] The popup title is displayed correctly
+- [ ] The template list or category options are visible
+- [ ] The interface includes operation buttons such as add and edit
 
 ---
 
-### 步骤4：创建新模板（模拟）
+### Step 2: Browse Existing Templates
 
-**AI执行指导：**
-- 查找"添加"、"新建"、"创建"等按钮
-- 使用 `browser_click` 点击添加按钮
-- 选择模板类型（如果有选择器）
-- 检查模板创建界面的布局
+**AI execution guidance:**
+- Use `browser_snapshot` to view the template list content
+- Find the template category tabs or filter options
+- Click different categories to see how the templates change
+- Select a template item to view its details
 
-**预期结果：**
-- 打开模板创建/编辑界面
-- 显示模板类型选择选项
-- 提供名称、描述、内容等输入字段
-- 界面布局清晰，字段标识明确
+**Expected results:**
+- Templates are displayed correctly by category
+- Each template shows basic information such as name and description
+- Clicking a category tab filters the display to the corresponding templates
+- Selecting a template shows its detailed content
 
-**验证点：**
-- [ ] 模板创建界面正确打开
-- [ ] 模板类型选择功能可用
-- [ ] 所有必要的输入字段存在
-- [ ] 界面响应正常
+**Verification points:**
+- [ ] The template list is displayed correctly
+- [ ] The category filter feature works normally
+- [ ] Template information is displayed completely
+- [ ] The template selection feature works normally
 
 ---
 
-### 步骤5：填写模板信息（模拟）
+### Step 3: View Template Details
 
-**AI执行指导：**
-- 查找模板名称输入框
-- 使用 `browser_type` 输入测试名称
-- 查找描述输入框并输入描述
-- 查找模板内容编辑区域
+**AI execution guidance:**
+- Select an existing template
+- View the template's detailed information
+- Check the template content, description, type, and other information
+- Test the template preview feature (if available)
 
-**测试数据：**
+**Expected results:**
+- The template's detailed information is fully displayed
+- The template content is correctly formatted
+- The template type and description are accurate
+- The preview feature works normally (if supported)
+
+**Verification points:**
+- [ ] The template details are displayed correctly
+- [ ] The template content format is correct
+- [ ] The type and description are accurate
+- [ ] The preview feature works normally (if available)
+
+---
+
+### Step 4: Create a New Template (Simulated)
+
+**AI execution guidance:**
+- Find buttons such as "Add", "New", or "Create"
+- Use `browser_click` to click the add button
+- Select the template type (if there is a selector)
+- Check the layout of the template creation interface
+
+**Expected results:**
+- The template creation/editing interface opens
+- Template type selection options are displayed
+- Input fields such as name, description, and content are provided
+- The interface layout is clear and the fields are clearly labeled
+
+**Verification points:**
+- [ ] The template creation interface opens correctly
+- [ ] The template type selection feature is available
+- [ ] All necessary input fields exist
+- [ ] The interface responds normally
+
+---
+
+### Step 5: Fill In Template Information (Simulated)
+
+**AI execution guidance:**
+- Find the template name input box
+- Use `browser_type` to enter a test name
+- Find the description input box and enter a description
+- Find the template content editing area
+
+**Test data:**
 ```
-模板名称：测试模板
-模板描述：这是一个用于测试的模板
-模板类型：系统优化（或用户优化）
-```
-
-**预期结果：**
-- 名称和描述输入正常
-- 模板类型选择正常
-- 内容编辑区域可用
-- 输入验证正常工作
-
-**验证点：**
-- [ ] 名称输入功能正常
-- [ ] 描述输入功能正常
-- [ ] 类型选择功能正常
-- [ ] 输入验证正确
-
----
-
-### 步骤6：编写模板内容（模拟）
-
-**AI执行指导：**
-- 查找模板内容编辑区域（通常是大的文本框）
-- 使用 `browser_type` 输入测试模板内容
-- 查找模式切换选项（简单/高级）
-- 检查编辑器的功能和响应
-
-**测试数据：**
-```
-模板内容：
-你是一个专业的提示词优化专家。
-请帮助用户优化以下提示词：
-{原始提示词}
-
-优化要求：
-1. 使提示词更加清晰明确
-2. 增加必要的上下文信息
-3. 改进语言表达
+Template name: Test Template
+Template description: This is a template used for testing
+Template type: System optimization (or user optimization)
 ```
 
-**预期结果：**
-- 模板内容正确输入到编辑区域
-- 编辑器支持多行文本输入
-- 模式切换功能正常（如果存在）
-- 编辑器响应流畅
+**Expected results:**
+- Name and description are entered normally
+- Template type selection works normally
+- The content editing area is available
+- Input validation works normally
 
-**验证点：**
-- [ ] 模板内容成功输入
-- [ ] 编辑器功能正常
-- [ ] 模式切换工作正常（如果有）
-- [ ] 编辑器响应流畅
-
----
-
-### 步骤7：保存模板（模拟）
-
-**AI执行指导：**
-- 检查模板信息的完整性
-- 查找"保存"、"确定"、"提交"等按钮
-- 使用 `browser_click` 点击保存按钮
-- 等待保存完成并检查结果
-
-**预期结果：**
-- 保存按钮响应正常
-- 显示保存成功的提示信息
-- 返回模板列表界面
-- 新创建的模板出现在相应分类中
-
-**验证点：**
-- [ ] 保存按钮功能正常
-- [ ] 显示保存成功提示
-- [ ] 返回模板列表界面
-- [ ] 新模板正确显示在列表中
+**Verification points:**
+- [ ] The name input feature works normally
+- [ ] The description input feature works normally
+- [ ] The type selection feature works normally
+- [ ] Input validation is correct
 
 ---
 
-### 步骤8：编辑现有模板（模拟）
+### Step 6: Write Template Content (Simulated)
 
-**AI执行指导：**
-- 在模板列表中选择一个现有模板
-- 查找"编辑"按钮或尝试双击模板
-- 检查编辑界面是否正确加载
-- 验证现有信息是否正确显示
+**AI execution guidance:**
+- Find the template content editing area (usually a large text box)
+- Use `browser_type` to enter test template content
+- Find the mode switching option (simple/advanced)
+- Check the editor's features and responsiveness
 
-**预期结果：**
-- 打开模板编辑界面
-- 现有模板信息正确加载到编辑器中
-- 可以修改所有可编辑字段
-- 编辑界面功能完整
+**Test data:**
+```
+Template content:
+You are a professional prompt optimization expert.
+Please help the user optimize the following prompt:
+{original prompt}
 
-**验证点：**
-- [ ] 编辑界面正确打开
-- [ ] 现有信息正确加载
-- [ ] 修改功能正常工作
-- [ ] 编辑界面功能完整
+Optimization requirements:
+1. Make the prompt clearer and more explicit
+2. Add necessary context information
+3. Improve the language expression
+```
 
----
+**Expected results:**
+- The template content is entered correctly into the editing area
+- The editor supports multi-line text input
+- The mode switching feature works normally (if present)
+- The editor responds smoothly
 
-### 步骤9：测试模板分类
-
-**AI执行指导：**
-- 查找模板分类标签或过滤器
-- 点击不同的分类选项
-- 观察模板列表的变化
-- 验证分类过滤的准确性
-
-**预期结果：**
-- 分类标签清晰可见
-- 点击分类能够过滤模板
-- 过滤结果准确
-- 分类切换流畅
-
-**验证点：**
-- [ ] 分类标签功能正常
-- [ ] 分类过滤准确
-- [ ] 过滤结果正确
-- [ ] 分类切换流畅
+**Verification points:**
+- [ ] The template content is entered successfully
+- [ ] The editor features work normally
+- [ ] Mode switching works normally (if available)
+- [ ] The editor responds smoothly
 
 ---
 
-### 步骤10：测试内置模板语言切换
+### Step 7: Save the Template (Simulated)
 
-**AI执行指导：**
-- 查找模板管理界面中的语言切换按钮（通常显示"中文"或"EN"）
-- 使用 `browser_click` 点击语言切换按钮
-- 观察内置模板名称的变化
-- 验证模板内容语言是否相应改变
+**AI execution guidance:**
+- Check the completeness of the template information
+- Find buttons such as "Save", "OK", or "Submit"
+- Use `browser_click` to click the save button
+- Wait for the save to complete and check the result
 
-**预期结果：**
-- 语言切换按钮响应正常
-- 内置模板名称从中文切换为英文（或反之）
-- 模板内容语言相应改变
-- 界面显示切换成功的提示
+**Expected results:**
+- The save button responds normally
+- A save success message is displayed
+- The view returns to the template list interface
+- The newly created template appears in the corresponding category
 
-**验证点：**
-- [ ] 语言切换按钮功能正常
-- [ ] 内置模板名称语言正确切换
-- [ ] 模板内容语言相应改变
-- [ ] 显示切换成功提示
-
-**注意事项：**
-- 内置模板语言切换不同于界面语言切换
-- 内置模板语言影响模板名称和内容的显示语言
-- 切换后应该能看到如"通用优化"变为"General Optimization"
+**Verification points:**
+- [ ] The save button works normally
+- [ ] A save success message is displayed
+- [ ] The view returns to the template list interface
+- [ ] The new template is displayed correctly in the list
 
 ---
 
-## ⚠️ 常见问题检查
+### Step 8: Edit an Existing Template (Simulated)
 
-### 界面显示问题
-- 模板管理弹窗无法打开
-- 模板列表显示异常
-- 编辑界面布局错乱
-- 分类标签显示问题
+**AI execution guidance:**
+- Select an existing template in the template list
+- Find the "Edit" button or try double-clicking the template
+- Check whether the edit interface loads correctly
+- Verify that the existing information is displayed correctly
 
-### 功能操作问题
-- 模板创建功能异常
-- 编辑功能不可用
-- 保存操作失败
-- 分类过滤不准确
+**Expected results:**
+- The template edit interface opens
+- The existing template information is loaded correctly into the editor
+- All editable fields can be modified
+- The edit interface is fully functional
 
-### 数据管理问题
-- 模板信息丢失
-- 保存后内容异常
-- 分类信息错误
-- 模板加载失败
+**Verification points:**
+- [ ] The edit interface opens correctly
+- [ ] The existing information is loaded correctly
+- [ ] The modification feature works normally
+- [ ] The edit interface is fully functional
 
 ---
 
-## 🤖 AI验证执行模板
+### Step 9: Test Template Categories
+
+**AI execution guidance:**
+- Find the template category tabs or filters
+- Click different category options
+- Observe changes in the template list
+- Verify the accuracy of the category filtering
+
+**Expected results:**
+- Category tabs are clearly visible
+- Clicking a category filters the templates
+- The filter results are accurate
+- Category switching is smooth
+
+**Verification points:**
+- [ ] The category tab feature works normally
+- [ ] Category filtering is accurate
+- [ ] The filter results are correct
+- [ ] Category switching is smooth
+
+---
+
+### Step 10: Test Built-in Template Language Switching
+
+**AI execution guidance:**
+- Find the language toggle button in the template management interface (usually shows "中文" or "EN")
+- Use `browser_click` to click the language toggle button
+- Observe changes in the built-in template names
+- Verify that the template content language changes accordingly
+
+**Expected results:**
+- The language toggle button responds normally
+- Built-in template names switch from Chinese to English (or vice versa)
+- The template content language changes accordingly
+- The interface shows a switch success message
+
+**Verification points:**
+- [ ] The language toggle button works normally
+- [ ] The built-in template name language switches correctly
+- [ ] The template content language changes accordingly
+- [ ] A switch success message is displayed
+
+**Notes:**
+- Built-in template language switching is different from interface language switching
+- The built-in template language affects the display language of template names and content
+- After switching, you should see the template names change language accordingly (for example, the Chinese "General Optimization" template becomes "General Optimization" in English)
+
+---
+
+## ⚠️ Common Problem Checks
+
+### Interface Display Problems
+- The template management popup cannot be opened
+- The template list displays abnormally
+- The edit interface layout is disordered
+- Category tab display problems
+
+### Feature Operation Problems
+- The template creation feature is abnormal
+- The edit feature is unavailable
+- The save operation fails
+- Category filtering is inaccurate
+
+### Data Management Problems
+- Template information is lost
+- Content is abnormal after saving
+- Category information is wrong
+- Template loading fails
+
+---
+
+## 🤖 AI Verification Execution Template
 
 ```javascript
-// 1. 打开应用
+// 1. Open the application
 browser_navigate("http://localhost:18181/")
 
-// 2. 获取初始状态
+// 2. Get the initial state
 browser_snapshot()
 
-// 3. 打开模板管理
-browser_click(element="模板管理按钮", ref="template_management_button")
+// 3. Open template management
+browser_click(element="Template management button", ref="template_management_button")
 browser_snapshot()
 
-// 4. 浏览现有模板
+// 4. Browse existing templates
 browser_snapshot()
 
-// 5. 查看模板详情
-browser_click(element="模板项", ref="template_item")
+// 5. View template details
+browser_click(element="Template item", ref="template_item")
 browser_snapshot()
 
-// 6. 创建新模板
-browser_click(element="添加模板按钮", ref="add_template_button")
+// 6. Create a new template
+browser_click(element="Add template button", ref="add_template_button")
 browser_snapshot()
 
-// 7. 填写模板信息
-browser_type(element="模板名称输入框", ref="template_name_input", text="测试模板")
-browser_type(element="模板描述输入框", ref="template_desc_input", text="测试描述")
+// 7. Fill in template information
+browser_type(element="Template name input box", ref="template_name_input", text="Test Template")
+browser_type(element="Template description input box", ref="template_desc_input", text="Test description")
 browser_snapshot()
 
-// 8. 编写模板内容
-browser_type(element="模板内容编辑器", ref="template_content_editor", text="测试模板内容")
+// 8. Write template content
+browser_type(element="Template content editor", ref="template_content_editor", text="Test template content")
 browser_snapshot()
 
-// 9. 保存模板
-browser_click(element="保存按钮", ref="save_button")
+// 9. Save the template
+browser_click(element="Save button", ref="save_button")
 browser_snapshot()
 
-// 10. 测试分类过滤
-browser_click(element="分类标签", ref="category_tab")
+// 10. Test category filtering
+browser_click(element="Category tab", ref="category_tab")
 browser_snapshot()
 
-// 11. 测试内置模板语言切换
-browser_click(element="内置模板语言切换按钮", ref="builtin_language_toggle")
+// 11. Test built-in template language switching
+browser_click(element="Built-in template language toggle button", ref="builtin_language_toggle")
 browser_snapshot()
 ```
 
-**成功标准：**
-- 模板管理界面正常打开和操作
-- 模板浏览和查看功能正常
-- 模板创建和编辑功能正常
-- 模板分类和过滤功能正常
-- 内置模板语言切换功能正常
-- 所有操作响应及时准确
-- 无错误提示或异常状态
+**Success criteria:**
+- The template management interface opens and operates normally
+- The template browsing and viewing features work normally
+- The template creation and editing features work normally
+- The template category and filter features work normally
+- The built-in template language switching feature works normally
+- All operations respond promptly and accurately
+- No error messages or abnormal states

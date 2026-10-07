@@ -1,94 +1,94 @@
-# Web 与插件端架构重构计划
+# Web and Extension Architecture Refactor Plan
 
-## 1. 当前状态与问题
+## 1. Current Status and Problems
 
-**最新状态 (2024-12-29):** 底层与上层应用重构均已完成。
+**Latest status (2024-12-29):** Both the underlying and upper-level application refactors are complete.
 
-- **已完成**: `@prompt-optimizer/core` 和 `@prompt-optimizer/ui` 包已成功移除所有单例服务。
-- **已解决**: Web 应用 (`@prompt-optimizer/web`) 和浏览器插件 (`@prompt-optimizer/extension`) 的入口文件 (`App.vue`) 已完成适配，应用**能够正常启动和运行**。
+- **Done**: The `@prompt-optimizer/core` and `@prompt-optimizer/ui` packages have successfully removed all singleton services.
+- **Resolved**: The entry files (`App.vue`) of the web app (`@prompt-optimizer/web`) and the browser extension (`@prompt-optimizer/extension`) have been adapted, and the applications **start and run normally**.
 
-本计划旨在记录并总结 `App.vue` 的适配过程。
+This plan aims to record and summarize the adaptation of `App.vue`.
 
-## 2. 重构目标
+## 2. Refactor Goals
 
-- **修复应用启动失败问题**，使其能正常运行。
-- **完全对齐上层应用与底层服务架构**，采用统一的 `useAppInitializer` 进行服务初始化。
-- **简化 `App.vue`**，使其只负责布局和初始化，将业务逻辑完全委托给 Composables。
-- **采用最新的 Composable 架构**，消费返回 `reactive` 对象而不是多个 `ref` 的 Composable。
+- **Fix the application startup failure** so that it runs normally.
+- **Fully align the upper-level apps with the underlying service architecture**, using the unified `useAppInitializer` for service initialization.
+- **Simplify `App.vue`** so that it handles only layout and initialization, delegating business logic entirely to Composables.
+- **Adopt the latest Composable architecture**, consuming Composables that return a `reactive` object instead of multiple `ref`s.
 
-## 3. 实施计划
+## 3. Implementation Plan
 
-### 阶段一：净化 UI 包 (已完成) ✅
+### Phase 1: Clean up the UI package (Completed) ✅
 
-1.  **文件**: `packages/ui/src/index.ts`
-    -   **任务**: 移除所有从 `@prompt-optimizer/core` 重新导出的服务实例。
-    -   **状态**: ✅ **已完成**。UI 包现在只导出组件、Composables、工厂函数和类型。
+1.  **File**: `packages/ui/src/index.ts`
+    -   **Task**: Remove all service instances re-exported from `@prompt-optimizer/core`.
+    -   **Status**: ✅ **Completed**. The UI package now exports only components, Composables, factory functions, and types.
 
-### 阶段二：创建统一的应用初始化器 (已完成) ✅
+### Phase 2: Create a unified application initializer (Completed) ✅
 
-1.  **文件**: `packages/ui/src/composables/useAppInitializer.ts` (新建)
-    -   **任务**: 创建一个 Vue Composable，根据环境（Web/Electron）创建并返回所有必要服务的实例。
-    -   **状态**: ✅ **已完成**。
+1.  **File**: `packages/ui/src/composables/useAppInitializer.ts` (new)
+    -   **Task**: Create a Vue Composable that creates and returns instances of all necessary services depending on the environment (Web/Electron).
+    -   **Status**: ✅ **Completed**.
 
-### 阶段三：重构应用入口 (已完成) ✅
+### Phase 3: Refactor the application entry (Completed) ✅
 
-此阶段是本次重构的核心，现已**圆满完成**。
+This phase is the core of this refactor and has now been **successfully completed**.
 
-1.  **文件**: `packages/web/src/App.vue` 和 `packages/extension/src/App.vue`
-    -   **状态**: ✅ **已完成**。应用已能正常启动。
-    -   **最终实现方案**:
-        1.  **[x] 清理无效导入**:
-            -   在 `<script setup>` 中，删除了所有对单例服务 (`modelManager`, `templateManager` 等) 的直接导入。
-        2.  **[x] 依赖 `useAppInitializer`**:
-            -   在顶层调用 `const { services, isInitializing } = useAppInitializer()` 作为获取所有服务的唯一来源。
-        3.  **[x] 在顶层调用所有业务 Composable**:
-            -   遵循 [Composable 重构计划](./composables-refactor-plan.md) 的成果，所有业务逻辑 Composable (如 `usePromptOptimizer`, `useModelManager`) 都在 `<script setup>` 的顶层被调用。
-            -   这些 Composable 接收 `services` ref 作为参数，并返回一个单一的 `reactive` 对象。
-            -   **示例代码**:
+1.  **Files**: `packages/web/src/App.vue` and `packages/extension/src/App.vue`
+    -   **Status**: ✅ **Completed**. The application now starts normally.
+    -   **Final implementation**:
+        1.  **[x] Clean up invalid imports**:
+            -   In `<script setup>`, removed all direct imports of singleton services (`modelManager`, `templateManager`, etc.).
+        2.  **[x] Depend on `useAppInitializer`**:
+            -   Call `const { services, isInitializing } = useAppInitializer()` at the top level as the sole source of all services.
+        3.  **[x] Call all business Composables at the top level**:
+            -   Following the outcome of the [Composable refactor plan](./composables-refactor-plan.md), all business-logic Composables (such as `usePromptOptimizer` and `useModelManager`) are called at the top level of `<script setup>`.
+            -   These Composables accept the `services` ref as a parameter and return a single `reactive` object.
+            -   **Example code**:
                 ```typescript
                 // App.vue
                 const { services, isInitializing, error } = useAppInitializer();
                 
-                // 在顶层直接调用，传入 services ref
+                // Call directly at the top level, passing the services ref
                 const modelManagerState = useModelManager(services);
                 const templateManagerState = useTemplateManager(services);
                 const optimizerState = usePromptOptimizer(services);
-                // ... 其他 Composable
+                // ... other Composables
                 ```
-        4.  **[x] 更新模板 (`<template>`)**:
-            -   模板中的所有数据绑定和事件处理，现在都链接到 Composable 返回的 `reactive` 对象的属性上 (e.g., `optimizerState.isIterating`)。
-            -   这解决了之前因传递 `ref` 对象而导致的 prop 类型验证失败问题。
-        5.  **[x] 修复 `computed` 和类型错误**:
-            -   修正了 `App.vue` 中的 `computed` 属性，使其不再错误地访问 `.value`。
-            -   添加了缺失的 i18n 翻译条目，如 `promptOptimizer.originalPromptPlaceholder`。
-            -   通过 `provide` 正确传递了 `templateLanguageService` 等深层依赖。
-        6.  **[x] 推广 `provide`/`inject`**:
-            -   保留了 `provide('services', services)`，并鼓励子组件（如 `ModelSelect.vue`, `DataManager.vue`）通过 `inject` 获取服务，减少了 props 传递。
+        4.  **[x] Update the template (`<template>`)**:
+            -   All data bindings and event handlers in the template now link to properties of the `reactive` objects returned by the Composables (e.g., `optimizerState.isIterating`).
+            -   This resolved the earlier prop type validation failures caused by passing `ref` objects.
+        5.  **[x] Fix `computed` and type errors**:
+            -   Corrected the `computed` properties in `App.vue` so that they no longer incorrectly access `.value`.
+            -   Added missing i18n translation entries, such as `promptOptimizer.originalPromptPlaceholder`.
+            -   Correctly passed deep dependencies such as `templateLanguageService` via `provide`.
+        6.  **[x] Promote `provide`/`inject`**:
+            -   Kept `provide('services', services)` and encouraged child components (such as `ModelSelect.vue` and `DataManager.vue`) to obtain services via `inject`, reducing props passing.
 
-## 4. 预期成果 (已达成)
+## 4. Expected Outcomes (Achieved)
 
-- [x] Web 端和插件端应用恢复正常，功能与重构前一致。
-- [x] `App.vue` 代码变得极为简洁，只负责"初始化"和"布局"。
-- [x] 整个应用的启动流程清晰、健壮，完全遵循依赖注入和响应式数据流的最佳实践。
-- [x] 为未来在所有平台（Web/插件/桌面）添加新功能打下坚实的基础。 
+- [x] The web and extension apps are back to normal, with the same functionality as before the refactor.
+- [x] The `App.vue` code is extremely concise, responsible only for "initialization" and "layout".
+- [x] The whole application startup flow is clear and robust, fully following best practices of dependency injection and reactive data flow.
+- [x] Lays a solid foundation for adding new features on all platforms (web/extension/desktop) in the future. 
 
-## 5. 最新进展：净化 UI 子组件 (已完成) ✅
+## 5. Latest Progress: Cleaning Up UI Child Components (Completed) ✅
 
-**背景**: 在 `App.vue` 完成对 `useAppInitializer` 的适配后，发现其下属的多个 UI 组件 (`@prompt-optimizer/ui/components/*`) 仍然直接从 `@prompt-optimizer/core` 导入单例服务，这违反了新的依赖注入架构，并可能导致潜在的 bug 和测试难题。
+**Background**: After `App.vue` finished adapting to `useAppInitializer`, we found that several UI components under it (`@prompt-optimizer/ui/components/*`) still imported singleton services directly from `@prompt-optimizer/core`. This violates the new dependency injection architecture and could lead to potential bugs and testing difficulties.
 
-**任务**: 彻底移除 UI 组件层对服务单例的直接依赖，改为通过 `props` 接收服务实例。
+**Task**: Completely remove the UI component layer's direct dependency on service singletons and receive service instances through `props` instead.
 
-**实施清单**:
-- [x] **`TemplateSelect.vue`**: 移除对 `templateManager` 的直接导入，改为 props 传入。
-- [x] **`ModelSelect.vue`**: 移除对 `modelManager` 的直接导入，改为 props 传入。
-- [x] **`OutputDisplayCore.vue`**: 移除对 `compareService` 的直接导入，改为 props 传入。
-- [x] **`HistoryDrawer.vue`**: 移除对 `historyManager` 的直接导入（该组件已通过 props 接收数据，只需清理无用导入）。
-- [x] **`BuiltinTemplateLanguageSwitch.vue`**: 移除对 `templateManager` 和 `templateLanguageService` 的直接导入，改为 props 传入。
-- [x] **`DataManager.vue`**: 移除对 `dataManager` 的直接导入，改为 props 传入或从 `services` inject。
-- [x] **`TemplateManager.vue`**: 确保从 `services` 注入中获取 `templateManager` 和 `templateLanguageService`，并正确传递给子组件。
+**Implementation checklist**:
+- [x] **`TemplateSelect.vue`**: Removed the direct import of `templateManager`; now passed in via props.
+- [x] **`ModelSelect.vue`**: Removed the direct import of `modelManager`; now passed in via props.
+- [x] **`OutputDisplayCore.vue`**: Removed the direct import of `compareService`; now passed in via props.
+- [x] **`HistoryDrawer.vue`**: Removed the direct import of `historyManager` (the component already receives data via props, so only the unused import needed cleaning up).
+- [x] **`BuiltinTemplateLanguageSwitch.vue`**: Removed the direct imports of `templateManager` and `templateLanguageService`; now passed in via props.
+- [x] **`DataManager.vue`**: Removed the direct import of `dataManager`; now passed in via props or injected from `services`.
+- [x] **`TemplateManager.vue`**: Ensured `templateManager` and `templateLanguageService` are obtained from the `services` injection and passed correctly to child components.
 
-**成果**:
-- 所有核心 UI 展示组件均已与服务层解耦。
-- 组件的复用性和可测试性得到显著提升。
-- 整个前端架构更加符合"依赖于接口而非实现"的原则。
-- 项目的架构一致性得到保障，为后续的维护和迭代清除了障碍。 
+**Results**:
+- All core UI display components are now decoupled from the service layer.
+- Component reusability and testability improved significantly.
+- The whole frontend architecture better follows the principle of "depend on interfaces, not implementations".
+- The project's architectural consistency is safeguarded, clearing the way for future maintenance and iteration.

@@ -1,33 +1,33 @@
-# 104-test-panel-refactor - 测试面板重构
+# 104-test-panel-refactor - Test Panel Refactor
 
-## 概述
-测试面板功能的重构和优化，提升测试体验和功能完整性。
+## Overview
+Refactor and optimization of the test panel feature to improve the testing experience and functional completeness.
 
-## 时间线
-- 开始时间：2024-12-30
-- 完成时间：待定
-- 状态：📋 计划中
+## Timeline
+- Start date: 2024-12-30
+- Completion date: TBD
+- Status: 📋 Planned
 
-## 相关开发者
-- 主要开发者：项目团队
-- 代码审查：项目团队
+## Contributors
+- Main developer: Project team
+- Code review: Project team
 
-## 文档清单
-- [x] `guide.md` - 测试面板重构指南
-- [ ] `experience.md` - 重构实施经验
+## Document List
+- [x] `guide.md` - Test panel refactor guide
+- [ ] `experience.md` - Refactor implementation lessons
 
-## 相关代码变更
-- 影响包：@prompt-optimizer/ui, @prompt-optimizer/web
-- 主要变更：
-  - 测试面板UI重构
-  - 测试功能增强
-  - 用户体验优化
+## Related Code Changes
+- Affected packages: @prompt-optimizer/ui, @prompt-optimizer/web
+- Main changes:
+  - Test panel UI refactor
+  - Enhanced testing features
+  - User experience optimization
 
-## 后续影响
-- 提升测试效率
-- 改善开发者体验
-- 增强产品质量保证
+## Follow-up Impact
+- Improves testing efficiency
+- Improves the developer experience
+- Strengthens product quality assurance
 
-## 相关功能点
-- 前置依赖：103-desktop-architecture
-- 后续功能：105-output-display-v2
+## Related Features
+- Prerequisites: 103-desktop-architecture
+- Follow-up work: 105-output-display-v2

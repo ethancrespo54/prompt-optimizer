@@ -1,37 +1,37 @@
-# Naive UI 重构组件使用指南
+# Naive UI Refactored Components Usage Guide
 
-## 快速开始
+## Quick Start
 
-### 安装
+### Installation
 
 ```bash
-# 通过pnpm安装（推荐）
+# Install with pnpm (recommended)
 pnpm add @prompt-optimizer/ui
 
-# 或通过npm安装
+# Or install with npm
 npm install @prompt-optimizer/ui
 ```
 
-### 基础用法
+### Basic Usage
 
 ```vue
 <template>
   <div>
-    <!-- 上下文编辑器 -->
+    <!-- Context editor -->
     <ContextEditor
       v-model:visible="showEditor"
       :state="contextState"
       @save="handleSave"
     />
     
-    <!-- 工具调用显示 -->
+    <!-- Tool call display -->
     <ToolCallDisplay
       :tool-calls="toolCalls"
       :collapsed="false"
     />
     
-    <!-- 可访问性支持 - 使用 composable 方式 -->
-    <!-- <ScreenReaderSupport> 组件已移除，请使用 useAccessibility -->
+    <!-- Accessibility support - using the composable approach -->
+    <!-- The <ScreenReaderSupport> component has been removed, please use useAccessibility -->
     <!--
     <ScreenReaderSupport
       :enhanced="true" 
@@ -46,16 +46,16 @@ import { ref } from 'vue'
 import {
   ContextEditor,
   ToolCallDisplay,
-  // ScreenReaderSupport, // 已移除，使用 useAccessibility composable
+  // ScreenReaderSupport, // Removed, use the useAccessibility composable
   useAccessibility,
   type ContextState,
   type ToolCall
 } from '@prompt-optimizer/ui'
 
-// 引入样式
+// Import styles
 import '@prompt-optimizer/ui/dist/style.css'
 
-// 上下文状态
+// Context state
 const showEditor = ref(false)
 const contextState = ref<ContextState>({
   messages: [
@@ -68,7 +68,7 @@ const contextState = ref<ContextState>({
   mode: 'edit'
 })
 
-// 工具调用数据
+// Tool call data
 const toolCalls = ref<ToolCall[]>([
   {
     id: 'call_1',
@@ -80,74 +80,74 @@ const toolCalls = ref<ToolCall[]>([
   }
 ])
 
-// 可访问性支持
+// Accessibility support
 const { announce } = useAccessibility('MyApp')
 
 const handleSave = (context: ContextState) => {
   console.log('Context saved:', context)
-  announce('上下文已保存', 'polite')
+  announce('Context saved', 'polite')
   showEditor.value = false
 }
 </script>
 ```
 
-## 主要特性
+## Key Features
 
-### 🎯 完整的可访问性支持
-- WCAG 2.1 AA/AAA 标准合规
-- 完整的键盘导航
-- 屏幕阅读器优化
-- 高对比度模式支持
+### 🎯 Complete Accessibility Support
+- WCAG 2.1 AA/AAA compliance
+- Complete keyboard navigation
+- Screen reader optimization
+- High contrast mode support
 
-### 📱 响应式设计
-- 移动端优先
-- 自适应布局
-- 触摸友好的交互
+### 📱 Responsive Design
+- Mobile first
+- Adaptive layout
+- Touch-friendly interactions
 
-### ⚡ 性能优化
-- 虚拟滚动
-- 懒加载
-- 防抖节流
-- 代码分割
+### ⚡ Performance Optimization
+- Virtual scrolling
+- Lazy loading
+- Debounce and throttle
+- Code splitting
 
-### 🌍 国际化支持
-- 多语言切换
-- 本地化格式
-- RTL语言支持
+### 🌍 Internationalization Support
+- Language switching
+- Localized formats
+- RTL language support
 
-## 组件概览
+## Component Overview
 
-| 组件名 | 用途 | 主要特性 |
+| Component | Purpose | Key Features |
 |--------|------|----------|
-| `ContextEditor` | 上下文编辑 | 消息管理、变量处理、工具配置 |
-| `ToolCallDisplay` | 工具调用显示 | 折叠面板、状态显示、错误处理 |
-| `ScreenReaderSupport` | 屏幕阅读器支持 | 实时通知、键盘快捷键、导航提示 |
+| `ContextEditor` | Context editing | Message management, variable handling, tool configuration |
+| `ToolCallDisplay` | Tool call display | Collapsible panel, status display, error handling |
+| `ScreenReaderSupport` | Screen reader support | Live announcements, keyboard shortcuts, navigation hints |
 
 ## Composables
 
-| 函数名 | 用途 | 返回值 |
+| Function | Purpose | Returns |
 |--------|------|--------|
-| `useAccessibility` | 可访问性支持 | 键盘导航、ARIA管理、消息通知 |
-| `useFocusManager` | 焦点管理 | 焦点陷阱、键盘导航、自动恢复 |
-| `useAccessibilityTesting` | 可访问性测试 | WCAG合规检查、问题报告 |
+| `useAccessibility` | Accessibility support | Keyboard navigation, ARIA management, message announcements |
+| `useFocusManager` | Focus management | Focus trap, keyboard navigation, automatic restoration |
+| `useAccessibilityTesting` | Accessibility testing | WCAG compliance checks, issue reports |
 
-## 最佳实践
+## Best Practices
 
-### 1. 可访问性优先
+### 1. Accessibility First
 
 ```vue
 <template>
   <div>
-    <!-- ✅ 正确：提供ARIA标签 -->
+    <!-- ✅ Correct: provide an ARIA label -->
     <button
-      :aria-label="aria.getLabel('save', '保存')"
+      :aria-label="aria.getLabel('save', 'Save')"
       @click="handleSave"
     >
-      保存
+      Save
     </button>
     
-    <!-- ❌ 错误：缺少语义化标签 -->
-    <div @click="handleSave">保存</div>
+    <!-- ❌ Wrong: missing semantic label -->
+    <div @click="handleSave">Save</div>
   </div>
 </template>
 
@@ -157,18 +157,18 @@ import { useAccessibility } from '@prompt-optimizer/ui'
 const { aria, announce } = useAccessibility('MyComponent')
 
 const handleSave = () => {
-  // 保存逻辑
-  announce('内容已保存', 'polite')
+  // Save logic
+  announce('Content saved', 'polite')
 }
 </script>
 ```
 
-### 2. 响应式设计
+### 2. Responsive Design
 
 ```vue
 <template>
   <div class="responsive-container">
-    <!-- 使用响应式组件属性 -->
+    <!-- Use responsive component props -->
     <ContextEditor
       v-model:visible="showEditor"
       :size="isMobile ? 'small' : 'large'"
@@ -185,12 +185,12 @@ const { isMobile, isTablet, modalWidth } = useResponsive()
 
 <style scoped>
 .responsive-container {
-  /* 移动端 */
+  /* Mobile */
   @media (max-width: 767px) {
     padding: 8px;
   }
   
-  /* 桌面端 */
+  /* Desktop */
   @media (min-width: 1024px) {
     padding: 24px;
   }
@@ -198,23 +198,23 @@ const { isMobile, isTablet, modalWidth } = useResponsive()
 </style>
 ```
 
-### 3. 性能优化
+### 3. Performance Optimization
 
 ```vue
 <template>
   <div>
-    <!-- 大量数据使用虚拟滚动 -->
+    <!-- Use virtual scrolling for large amounts of data -->
     <ToolCallDisplay
       :tool-calls="largeDataset"
       :max-items="100"
       virtual-scroll
     />
     
-    <!-- 使用防抖搜索 -->
+    <!-- Use debounced search -->
     <NInput
       :value="searchQuery"
       @input="debouncedSearch"
-      placeholder="搜索..."
+      placeholder="Search..."
     />
   </div>
 </template>
@@ -225,11 +225,11 @@ import { useDebounceThrottle } from '@prompt-optimizer/ui'
 
 const { debounce } = useDebounceThrottle()
 const searchQuery = ref('')
-const largeDataset = ref([]) // 假设有大量数据
+const largeDataset = ref([]) // Assume a large amount of data
 
 const handleSearch = (query: string) => {
-  // 执行搜索逻辑
-  console.log('搜索:', query)
+  // Perform the search logic
+  console.log('Search:', query)
 }
 
 const debouncedSearch = debounce((value: string) => {
@@ -239,22 +239,22 @@ const debouncedSearch = debounce((value: string) => {
 </script>
 ```
 
-## 常见问题
+## FAQ
 
-### Q: 如何启用可访问性模式？
+### Q: How do I enable accessibility mode?
 
-A: 使用 `useAccessibility` composable：
+A: Use the `useAccessibility` composable:
 
 ```typescript
 const { isAccessibilityMode } = useAccessibility()
 
-// 自动检测或手动启用
+// Detect automatically or enable manually
 isAccessibilityMode.value = true
 ```
 
-### Q: 如何处理大量数据的性能问题？
+### Q: How do I handle performance problems with large amounts of data?
 
-A: 使用虚拟化和分页：
+A: Use virtualization and pagination:
 
 ```vue
 <template>
@@ -266,9 +266,9 @@ A: 使用虚拟化和分页：
 </template>
 ```
 
-### Q: 如何自定义主题？
+### Q: How do I customize the theme?
 
-A: 通过CSS变量覆盖默认主题：
+A: Override the default theme with CSS variables:
 
 ```css
 :root {
@@ -278,45 +278,45 @@ A: 通过CSS变量覆盖默认主题：
 }
 ```
 
-### Q: 如何添加国际化支持？
+### Q: How do I add internationalization support?
 
-A: 配置i18n实例：
+A: Configure the i18n instance:
 
 ```typescript
 import { createI18n } from 'vue-i18n'
 
 const i18n = createI18n({
-  locale: 'zh-CN',
+  locale: 'en-US',
   messages: {
-    'zh-CN': { /* 中文消息 */ },
-    'en-US': { /* 英文消息 */ }
+    'en-US': { /* English messages */ }
+    // Add more locales here
   }
 })
 ```
 
-## 升级指南
+## Upgrade Guide
 
-### 从传统组件升级到Naive UI版本
+### Upgrading from the legacy components to the Naive UI version
 
-1. **更新导入语句**：
+1. **Update import statements**:
 ```typescript
-// 旧版本
+// Old version
 import ContextEditor from './components/ContextEditor.vue'
 
-// 新版本
+// New version
 import { ContextEditor } from '@prompt-optimizer/ui'
 ```
 
-2. **更新Props**：
+2. **Update Props**:
 ```vue
-<!-- 旧版本 -->
+<!-- Old version -->
 <ContextEditor :dialogVisible="visible" />
 
-<!-- 新版本 -->
+<!-- New version -->
 <ContextEditor v-model:visible="visible" />
 ```
 
-3. **添加可访问性支持**：
+3. **Add accessibility support**:
 ```vue
 <template>
   <div>
@@ -326,11 +326,11 @@ import { ContextEditor } from '@prompt-optimizer/ui'
 </template>
 ```
 
-## 开发工具
+## Developer Tools
 
-### TypeScript支持
+### TypeScript Support
 
-完整的TypeScript类型定义：
+Complete TypeScript type definitions:
 
 ```typescript
 import type {
@@ -341,51 +341,51 @@ import type {
 } from '@prompt-optimizer/ui'
 ```
 
-### 开发时调试
+### Debugging During Development
 
-启用调试模式：
+Enable debug mode:
 
 ```typescript
 import { setDebugMode } from '@prompt-optimizer/ui'
 
-// 开发环境下启用
+// Enable in the development environment
 if (process.env.NODE_ENV === 'development') {
   setDebugMode(true)
 }
 ```
 
-### 测试工具
+### Testing Tools
 
-使用内置的测试工具：
+Use the built-in testing tools:
 
 ```typescript
 import { useAccessibilityTesting } from '@prompt-optimizer/ui'
 
 const { runTest } = useAccessibilityTesting()
 
-// 运行可访问性测试
+// Run accessibility tests
 const result = await runTest({
   wcagLevel: 'AA',
   scope: document.body
 })
 ```
 
-## 贡献指南
+## Contributing
 
-欢迎贡献代码和改进建议！
+Contributions and suggestions for improvement are welcome!
 
-1. Fork 项目仓库
-2. 创建特性分支 (`git checkout -b feature/amazing-feature`)
-3. 提交更改 (`git commit -m 'Add some amazing feature'`)
-4. 推送到分支 (`git push origin feature/amazing-feature`)
-5. 创建Pull Request
+1. Fork the project repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Create a Pull Request
 
-## 支持
+## Support
 
-- 📖 [完整API文档](./COMPONENT_API.md)
-- 🐛 [问题反馈](https://github.com/your-repo/issues)
-- 💬 [讨论区](https://github.com/your-repo/discussions)
+- 📖 [Complete API Documentation](./COMPONENT_API.md)
+- 🐛 [Issue Tracker](https://github.com/your-repo/issues)
+- 💬 [Discussions](https://github.com/your-repo/discussions)
 
 ---
 
-*最后更新: 2024年XX月XX日*
+*Last updated: XX/XX/2024*

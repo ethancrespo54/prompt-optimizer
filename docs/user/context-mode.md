@@ -1,147 +1,146 @@
-# 上下文模式（Context Mode）使用指南
+# Context Mode Usage Guide
 
-本文档解释 Prompt Optimizer 的「上下文模式」怎么用、什么时候用、以及常见踩坑。
+This document explains how to use Prompt Optimizer's "Context Mode", when to use it, and common pitfalls.
 
-上下文模式在界面上对应顶部功能模式里的「上下文」，并提供两个子模式：
+In the UI, Context Mode corresponds to "Context" in the top-level function mode selector, and it provides two sub-modes:
 
-- 多消息（Multi-message）：面向多轮对话/多条消息的“消息级优化”
-- 变量（Variable）：面向单条用户提示词的“变量与工具驱动优化”
+- Multi-message: "message-level optimization" for multi-turn conversations/multiple messages
+- Variable: "variable- and tool-driven optimization" for a single user prompt
 
-## 1. 一句话理解：上下文模式解决什么问题？
+## 1. In One Sentence: What Problem Does Context Mode Solve?
 
-当你发现“单条提示词优化”不够稳定时，往往缺的是上下文信息（前置约束、示例、工具可用性、变量值等）。
+When you find that "single prompt optimization" is not stable enough, what is usually missing is context information (upfront constraints, examples, tool availability, variable values, etc.).
 
-上下文模式的核心价值是：
+The core value of Context Mode is:
 
-- 在优化时，把你配置的「对话消息 / 变量 / 工具」一并作为上下文交给模型
-- 让优化结果更贴合真实运行环境（而不是只看一段孤立文字）
+- During optimization, the "conversation messages / variables / tools" you configured are handed to the model together as context
+- The optimization result fits the real runtime environment better (instead of looking at an isolated piece of text only)
 
-## 2. 先选对模式：多消息 vs 变量
+## 2. Pick the Right Mode First: Multi-message vs Variable
 
-用下面这张表快速判断：
+Use the table below to decide quickly:
 
-| 你现在要做的事 | 推荐子模式 |
+| What you are doing | Recommended sub-mode |
 | --- | --- |
-| 你在做角色扮演/多轮对话，想优化某一条 system/user 消息，让风格与上下文一致 | 多消息 |
-| 你在写“一条用户提示词”，但里面有大量可复用参数（如人名、日期、规格、输出格式），想用 {{var}} 管理与测试 | 变量 |
-| 你想配置/管理工具（Function Calling），并在测试时验证工具调用行为 | 变量（更匹配 UI 行为） |
+| You are doing role-play/multi-turn conversation and want to optimize one system/user message so its style stays consistent with the context | Multi-message |
+| You are writing "a single user prompt" that contains many reusable parameters (such as names, dates, specs, output format), and want to manage and test them with {{var}} | Variable |
+| You want to configure/manage tools (Function Calling) and verify tool-calling behavior during testing | Variable (matches the UI behavior better) |
 
-提示：两种子模式都支持右侧“测试区”用多列对比跑不同变量/不同版本。
+Tip: both sub-modes support running different variables/different versions side by side in multiple columns in the test area on the right.
 
-## 3. 多消息（Multi-message）快速上手
+## 3. Multi-message Quick Start
 
-适合：优化对话中的某一条 system/user 消息（不是让模型回答）。
+Suited for: optimizing one system/user message in a conversation (not asking the model to answer).
 
-### Step 0：进入多消息模式
+### Step 0: Enter Multi-message Mode
 
-1. 顶部功能模式选择「上下文」
-2. 子模式选择「多消息」
+1. Select "Context" in the top function mode selector
+2. Select "Multi-message" as the sub-mode
 
-### Step 1：准备对话上下文
+### Step 1: Prepare the Conversation Context
 
-在左侧的会话管理区域添加/编辑消息：
+Add/edit messages in the conversation management area on the left:
 
-- system/user/assistant/tool 都可以存在于上下文中
-- 但“可被优化的目标”通常是 system 或 user 消息
+- system/user/assistant/tool messages can all exist in the context
+- But the "target that can be optimized" is usually a system or user message
 
-### Step 2：选中你要优化的那条消息
+### Step 2: Select the Message You Want to Optimize
 
-关键点：必须选中一条 system/user 消息，否则“优化”按钮会不可用。
+Key point: you must select a system/user message, otherwise the "Optimize" button will be unavailable.
 
-### Step 3：选择模型与模板
+### Step 3: Choose a Model and Template
 
-推荐先从内置模板开始：
+We recommend starting with the built-in templates:
 
-- 通用消息优化（推荐）：适用于绝大多数对话场景
+- General Message Optimization (recommended): suitable for the vast majority of conversation scenarios
 
-它的核心规则是：
+Its core rules are:
 
-- 优化 != 回复（只改写那条消息本身）
-- 保持原消息角色不变（system 还是 system、user 还是 user）
-- 保留所有 {{变量占位符}} 原样
+- Optimizing != replying (only rewrite that message itself)
+- Keep the original message role unchanged (system stays system, user stays user)
+- Keep all {{variable placeholders}} exactly as they are
 
-### Step 4：点击“优化”并理解 V0/V1
+### Step 4: Click "Optimize" and Understand V0/V1
 
-多消息模式的优化是“消息级版本链”：
+Optimization in multi-message mode is a "message-level version chain":
 
-- V0：原始内容（首次创建时保存，用于回退）
-- V1：优化后的内容（默认会应用回对话）
+- V0: the original content (saved when first created, used for rollback)
+- V1: the optimized content (applied back to the conversation by default)
 
-如果你觉得“优化后反而变差”，正确做法是：
+If you feel the result got worse after optimization, the right approach is:
 
-- 切换版本回到 V0 或其它版本（而不是手动复制粘贴回退）
+- Switch the version back to V0 or another version (rather than copying and pasting to roll back manually)
 
-### Step 5：用右侧测试区验证效果
+### Step 5: Verify the Result in the Test Area on the Right
 
-建议把测试当成“验收步骤”：
+We recommend treating testing as an "acceptance step":
 
-1. 在测试区填变量（如果对话中用到了 {{var}}）
-2. 运行测试（可以用多列对比不同变量组合/不同版本）
-3. 看输出是否满足你期望的格式、语气和约束
+1. Fill in variables in the test area (if the conversation uses {{var}})
+2. Run the test (you can compare different variable combinations/different versions side by side in multiple columns)
+3. Check whether the output meets your expected format, tone, and constraints
 
-## 4. 变量（Variable）快速上手
+## 4. Variable Quick Start
 
-适合：优化“一条用户提示词”，并把其中的可变信息抽成变量，方便复用与测试。
+Suited for: optimizing "a single user prompt" and extracting its variable information into variables for easier reuse and testing.
 
-### Step 0：进入变量模式
+### Step 0: Enter Variable Mode
 
-1. 顶部功能模式选择「上下文」
-2. 子模式选择「变量」
+1. Select "Context" in the top function mode selector
+2. Select "Variable" as the sub-mode
 
-### Step 1：用 {{var}} 写提示词
+### Step 1: Write the Prompt with {{var}}
 
-你可以把可复用参数写成双花括号变量，例如：
+You can write reusable parameters as double-curly-brace variables, for example:
 
 ```text
-请你根据 {{product_name}} 的需求，输出一份 {{output_format}} 格式的方案。
-约束：预算 {{budget}}，交付时间 {{deadline}}。
+Based on the requirements of {{product_name}}, produce a plan in {{output_format}} format.
+Constraints: budget {{budget}}, delivery time {{deadline}}.
 ```
 
-小技巧：输入 `{{}}` 通常可以触发变量自动补全。
+Tip: typing `{{}}` usually triggers variable autocomplete.
 
-### Step 2：管理变量值（让测试可复现）
+### Step 2: Manage Variable Values (Make Testing Reproducible)
 
-变量模式会提示缺失变量，并提供预览：
+Variable mode flags missing variables and provides a preview:
 
-- 缺失变量：先补齐变量值，再看优化/测试结果
-- 预览：确认最终渲染出来的提示词是否符合预期（占位符是否被正确替换）
+- Missing variables: fill in the variable values first, then look at the optimization/test results
+- Preview: confirm that the final rendered prompt matches expectations (whether placeholders were replaced correctly)
 
-### Step 3：可选：配置工具（Function Calling）
+### Step 3: Optional: Configure Tools (Function Calling)
 
-如果你希望提示词在“可调用工具”的环境运行：
+If you want the prompt to run in an environment where tools can be called:
 
-1. 在工具管理里维护工具定义（名称、描述、参数等）
-2. 在测试时验证模型是否会按预期触发工具
+1. Maintain tool definitions (name, description, parameters, etc.) in tool management
+2. During testing, verify whether the model triggers tools as expected
 
-### Step 4：选择模板并开始优化
+### Step 4: Choose a Template and Start Optimizing
 
-变量模式对应的模板通常会强调：
+The templates for variable mode usually emphasize:
 
-- 在上下文/工具约束下，把原始用户提示词改写得更明确、可执行、可验证
-- 必须保留所有 {{var}} 占位符
+- Under context/tool constraints, rewrite the original user prompt to be clearer, more actionable, and more verifiable
+- All {{var}} placeholders must be kept
 
-推荐先从“上下文版·用户提示词基础优化”开始。
+We recommend starting with "Context Edition - Basic User Prompt Optimization".
 
-## 5. 常见问题（高频踩坑）
+## 5. FAQ (Frequent Pitfalls)
 
-### Q1：为什么我感觉“上下文模式”输出像在回答我？
+### Q1: Why does the output of "Context Mode" feel like it is answering me?
 
-多消息模式的推荐模板明确要求“只输出优化后的消息”，不是生成回复。
-如果你换了自定义模板，请检查模板里是否混入了“回答任务”的指令。
+The recommended template for multi-message mode explicitly requires "output only the optimized message", not a generated reply.
+If you switched to a custom template, check whether the template contains "answer the task" instructions.
 
-### Q2：为什么优化按钮是灰的？
+### Q2: Why is the Optimize button grayed out?
 
-多消息模式下通常是因为：
+In multi-message mode this is usually because:
 
-- 没有选中要优化的 system/user 消息
-- 没选模型或没选模板
+- No system/user message to optimize is selected
+- No model or no template is selected
 
-### Q3：优化后内容直接改了原消息，是 bug 吗？
+### Q3: The optimized content directly changed the original message. Is that a bug?
 
-不是。多消息模式默认会把 V1 应用回会话，方便你继续在“真实上下文”里测试。
-如果不满意，应该通过版本切换回到 V0。
+No. Multi-message mode applies V1 back to the conversation by default, so you can continue testing in the "real context".
+If you are not satisfied, switch the version back to V0.
 
-### Q4：变量没替换/预览里还有 {{var}} 怎么办？
+### Q4: What if a variable is not replaced / the preview still shows {{var}}?
 
-说明该变量没有赋值。补齐变量值后再预览或测试。
-
+It means the variable has no value assigned. Fill in the variable value, then preview or test again.

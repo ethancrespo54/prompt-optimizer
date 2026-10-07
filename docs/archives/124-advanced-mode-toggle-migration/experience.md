@@ -1,122 +1,122 @@
-# AdvancedModeToggle 迁移经验教训总结
+# AdvancedModeToggle Migration: Lessons Learned Summary
 
-## 🎯 关键成功经验
+## 🎯 Key Success Factors
 
-### 1. 系统化迁移方法论
+### 1. Systematic Migration Methodology
 
-**成功实践**: 使用MCP Spec Workflow进行结构化迁移
-- **需求分析** → **设计规划** → **任务分解** → **逐步实施**
-- 每个阶段都有明确的交付物和验证标准
-- 避免了传统"边改边试"的混乱开发模式
+**Successful practice**: Use the MCP Spec Workflow for a structured migration
+- **Requirements analysis** → **Design planning** → **Task breakdown** → **Step-by-step implementation**
+- Every phase has clear deliverables and verification criteria
+- Avoids the chaotic "change and try" development pattern
 
-**价值体现**:
+**Value demonstrated**:
 ```
-传统方式: 直接修改 → 发现问题 → 回滚重试 → 反复调试
-系统化方式: 分析 → 规划 → 实施 → 验证 → 一次成功
+Traditional approach: modify directly → find problems → roll back and retry → debug repeatedly
+Systematic approach: analyze → plan → implement → verify → succeed the first time
 ```
 
-**推广建议**: 所有UI框架迁移都应采用类似的系统化方法
+**Recommendation**: All UI framework migrations should adopt a similar systematic approach
 
-### 2. 向后兼容性设计原则
+### 2. Backward Compatibility Design Principle
 
-**核心理念**: 外部接口保持不变，内部实现完全重构
+**Core idea**: Keep the external interface unchanged while completely refactoring the internal implementation
 
-**具体实践**:
+**Concrete practice**:
 ```typescript
-// Props接口完全保持不变
+// The Props interface remains completely unchanged
 interface Props {
   enabled?: boolean
   disabled?: boolean  
   loading?: boolean
 }
 
-// Events接口完全保持不变
+// The Events interface remains completely unchanged
 const emit = defineEmits<{
   'update:enabled': [boolean]
   'change': [boolean]
 }>()
 ```
 
-**经验价值**: 零破坏性迁移，无需修改任何调用方代码，降低迁移风险
+**Value of the lesson**: A zero-breaking-change migration that requires no changes to any caller code, lowering migration risk
 
-### 3. 响应式设计的现代化升级
+### 3. Modernizing Responsive Design
 
-**从手动CSS到工具类**:
+**From manual CSS to utility classes**:
 ```css
-/* 迁移前：手动媒体查询 */
+/* Before migration: manual media query */
 @media (max-width: 768px) {
   .text { display: none; }
 }
 
-/* 迁移后：语义化工具类 */
+/* After migration: semantic utility class */
 <span class="text-sm max-md:hidden">...</span>
 ```
 
-**关键优势**:
-- 代码可读性提升：`max-md:hidden` 一目了然
-- 维护成本降低：无需手动管理断点
-- 一致性保证：使用项目统一的响应式标准
+**Key advantages**:
+- Improved readability: `max-md:hidden` is self-explanatory
+- Lower maintenance cost: no need to manage breakpoints manually
+- Guaranteed consistency: uses the project's unified responsive standard
 
-### 4. 渐进式功能增强
+### 4. Progressive Feature Enhancement
 
-**策略**: 在迁移过程中适当添加新功能，提升用户体验
+**Strategy**: Add new features where appropriate during migration to improve the user experience
 ```typescript
-// 新增loading状态管理
+// New loading state management
 const loading = ref(false)
 const handleToggle = async () => {
   loading.value = true
   try {
-    // 原有逻辑
+    // Original logic
   } finally {
-    loading.value = false  // 防重复点击
+    loading.value = false  // Prevents repeated clicks
   }
 }
 ```
 
-**效果**: 不仅完成迁移，还改善了用户交互体验
+**Effect**: Not only completed the migration, but also improved the user interaction experience
 
-## ⚠️ 重要问题与解决方案
+## ⚠️ Important Problems and Solutions
 
-### 1. 依赖导出的连锁问题
+### 1. Cascading Problems from Dependency Exports
 
-**问题发现**: 在迁移测试中发现 `NFlex` 组件无法正常导入
+**Problem found**: During migration testing, the `NFlex` component could not be imported correctly
 
-**根本原因分析**:
+**Root cause analysis**:
 ```typescript
-// packages/ui/src/index.ts 缺少关键导出
-// 导致其他组件无法正确引用NFlex
-import { NFlex } from '@prompt-optimizer/ui' // ❌ 失败
+// packages/ui/src/index.ts was missing a key export
+// so other components could not reference NFlex correctly
+import { NFlex } from '@prompt-optimizer/ui' // ❌ Fails
 ```
 
-**解决方案**:
+**Solution**:
 ```typescript
-// 补充导出
+// Add the export
 export { NFlex } from 'naive-ui'
 ```
 
-**深层教训**: 
-- UI库迁移不是孤立的组件替换，而是整个组件生态的系统性变更
-- 每个组件迁移都需要检查其对整个导出系统的影响
-- 建立完整的组件导出检查清单，避免遗漏
+**Deeper lessons**: 
+- A UI library migration is not an isolated component replacement but a systematic change to the entire component ecosystem
+- Every component migration needs to check its impact on the whole export system
+- Build a complete component export checklist to avoid omissions
 
-**预防措施**:
-1. 建立组件导出自动化测试
-2. 迁移前先检查所有相关组件的依赖关系
-3. 使用TypeScript类型检查提前发现导入问题
+**Preventive measures**:
+1. Build automated tests for component exports
+2. Before migrating, check the dependencies of all related components
+3. Use TypeScript type checking to catch import problems early
 
-### 2. 上下文初始化的时序问题
+### 2. Timing Problems in Context Initialization
 
-**问题场景**: Toast组件出现 inject() 上下文错误，影响用户反馈显示
+**Problem scenario**: The Toast component produced an inject() context error, affecting the display of user feedback
 
-**技术根因**:
+**Technical root cause**:
 ```typescript
-// 问题：在错误的Vue上下文中初始化MessageAPI
-const message = inject('n-message') // ❌ 上下文不存在
+// Problem: MessageAPI initialized in the wrong Vue context
+const message = inject('n-message') // ❌ Context does not exist
 ```
 
-**根本解决**:
+**Fundamental fix**:
 ```typescript
-// 采用全局单例模式，确保正确初始化
+// Use a global singleton pattern to ensure correct initialization
 let globalMessageApi: MessageApi | null = null
 
 export const useToast = () => {
@@ -127,23 +127,23 @@ export const useToast = () => {
 }
 ```
 
-**架构改进**:
-1. **MessageApiInitializer组件**: 在正确上下文中初始化
-2. **快速失败原则**: 明确错误信息，避免静默降级
-3. **集中管理**: 全局单例避免重复初始化
+**Architecture improvements**:
+1. **MessageApiInitializer component**: Initializes in the correct context
+2. **Fail-fast principle**: Clear error messages, avoiding silent fallback
+3. **Centralized management**: A global singleton avoids repeated initialization
 
-**经验价值**:
-- Naive UI等现代UI库对Vue上下文有严格要求
-- 迁移时需要重新审视全局状态管理架构
-- 建立清晰的初始化顺序和错误处理机制
+**Value of the lesson**:
+- Modern UI libraries such as Naive UI have strict requirements on the Vue context
+- During migration, the global state management architecture must be re-examined
+- Establish a clear initialization order and error handling mechanism
 
-### 3. 主题系统集成的复杂性
+### 3. Complexity of Theme System Integration
 
-**挑战**: 从自定义主题变量转换到Naive UI主题系统
+**Challenge**: Converting from custom theme variables to the Naive UI theme system
 
-**原有实现的问题**:
+**Problems with the original implementation**:
 ```css
-/* 依赖大量CSS变量，维护复杂 */
+/* Depends on many CSS variables, complex to maintain */
 .button {
   background-color: var(--color-bg-hover);
   color: var(--color-text-primary);
@@ -151,116 +151,116 @@ export const useToast = () => {
 }
 ```
 
-**现代化解决方案**:
+**Modern solution**:
 ```vue
-<!-- 利用Naive UI内置主题能力 -->
+<!-- Leverage Naive UI's built-in theming capability -->
 <NButton :type="buttonType" :ghost="!enabled">
 ```
 
-**核心优势**:
-- **零维护**: 主题切换完全自动化
-- **一致性**: 与其他组件保持完美统一
-- **扩展性**: 支持未来添加更多主题
+**Core advantages**:
+- **Zero maintenance**: Theme switching is fully automatic
+- **Consistency**: Perfectly unified with the other components
+- **Extensibility**: Supports adding more themes in the future
 
-## 🚨 踩坑记录与避坑指南
+## 🚨 Pitfall Log and Avoidance Guide
 
-### 坑1: 组件属性映射的微妙差异
+### Pitfall 1: Subtle Differences in Component Property Mapping
 
-**踩坑过程**:
+**How we stepped in it**:
 ```typescript
-// 直觉的错误映射
-:disabled="props.disabled"  // ❌ 忽略了loading状态
+// Intuitive but wrong mapping
+:disabled="props.disabled"  // ❌ Ignores the loading state
 
-// 正确的复合映射  
-:disabled="props.disabled || loading"  // ✅ 考虑所有状态
+// Correct composite mapping  
+:disabled="props.disabled || loading"  // ✅ Considers all states
 ```
 
-**避坑指南**: 迁移时需要考虑原有逻辑的所有状态组合，不能简单1:1映射
+**Avoidance guide**: When migrating, consider every state combination of the original logic; do not simply map 1:1
 
-### 坑2: CSS类名的语义化陷阱
+### Pitfall 2: The Semantic Trap of CSS Class Names
 
-**踩坑过程**:
+**How we stepped in it**:
 ```vue
-<!-- 错误的Tailwind类名组合 -->
-<div class="absolute -top-1 -right-1 w-3 h-3"> <!-- ❌ 尺寸偏大 -->
+<!-- Wrong combination of Tailwind class names -->
+<div class="absolute -top-1 -right-1 w-3 h-3"> <!-- ❌ Size is too large -->
 
-<!-- 精确的像素级控制 -->  
-<div class="absolute -top-0.5 -right-0.5 w-2 h-2"> <!-- ✅ 视觉完美 -->
+<!-- Precise pixel-level control -->  
+<div class="absolute -top-0.5 -right-0.5 w-2 h-2"> <!-- ✅ Visually perfect -->
 ```
 
-**避坑指南**: Tailwind的数值系统需要精确理解，0.5 = 2px，1 = 4px
+**Avoidance guide**: Tailwind's numeric scale must be understood precisely: 0.5 = 2px, 1 = 4px
 
-### 坑3: Vue模板的slot语法变化
+### Pitfall 3: Changes in Vue Template Slot Syntax
 
-**踩坑记录**:
+**Pitfall record**:
 ```vue
-<!-- 直觉的错误写法 -->
+<!-- Intuitive but wrong way -->
 <NButton>
-  <svg>...</svg>  <!-- ❌ 图标位置不对 -->
+  <svg>...</svg>  <!-- ❌ Icon is in the wrong position -->
 </NButton>
 
-<!-- 正确的slot写法 -->
+<!-- Correct slot usage -->
 <NButton>
-  <template #icon><svg>...</svg></template>  <!-- ✅ 专门的图标slot -->
+  <template #icon><svg>...</svg></template>  <!-- ✅ Dedicated icon slot -->
 </NButton>
 ```
 
-**经验总结**: Naive UI的slot设计更加精细化，需要按照组件API正确使用
+**Takeaway**: Naive UI's slot design is more fine-grained and must be used according to the component API
 
-## 💡 最佳实践提炼
+## 💡 Distilled Best Practices
 
-### 1. 迁移前的准备清单
-- [ ] 完整分析现有组件的Props和Events接口
-- [ ] 研究目标UI框架的对应组件能力
-- [ ] 检查相关组件的导出和依赖关系  
-- [ ] 准备完整的测试用例覆盖
+### 1. Pre-migration Preparation Checklist
+- [ ] Fully analyze the Props and Events interface of the existing component
+- [ ] Research the corresponding component capabilities of the target UI framework
+- [ ] Check the exports and dependencies of related components  
+- [ ] Prepare complete test case coverage
 
-### 2. 迁移过程的质量控制
-- [ ] 保持外部接口100%向后兼容
-- [ ] 逐步验证每个功能点的正确性
-- [ ] 在多个主题下测试视觉效果
-- [ ] 验证响应式行为的一致性
+### 2. Quality Control During Migration
+- [ ] Keep the external interface 100% backward compatible
+- [ ] Verify the correctness of each feature point step by step
+- [ ] Test the visual effect under multiple themes
+- [ ] Verify the consistency of responsive behavior
 
-### 3. 迁移后的巩固措施
-- [ ] 清理所有废弃的CSS和代码
-- [ ] 更新相关文档和注释
-- [ ] 建立自动化测试防止回归
-- [ ] 总结经验为后续迁移提供参考
+### 3. Post-migration Consolidation Measures
+- [ ] Clean up all deprecated CSS and code
+- [ ] Update related documentation and comments
+- [ ] Build automated tests to prevent regressions
+- [ ] Summarize lessons to serve as a reference for later migrations
 
-## 🔮 未来迁移项目的建议
+## 🔮 Recommendations for Future Migration Projects
 
-### 技术选型建议
-1. **优先选择**: 与现有技术栈高度兼容的UI框架
-2. **重点评估**: 主题系统的完整性和扩展性
-3. **深度调研**: 框架的上下文管理和全局状态处理
+### Technology Selection Recommendations
+1. **Prefer**: UI frameworks highly compatible with the existing tech stack
+2. **Evaluate closely**: The completeness and extensibility of the theme system
+3. **Investigate in depth**: The framework's context management and global state handling
 
-### 项目管理建议
-1. **分批迁移**: 不要试图一次性迁移所有组件
-2. **建立标准**: 第一个组件迁移后立即总结标准流程
-3. **持续测试**: 每完成一个组件就进行完整的回归测试
+### Project Management Recommendations
+1. **Migrate in batches**: Do not try to migrate all components at once
+2. **Establish standards**: Summarize the standard process right after the first component is migrated
+3. **Test continuously**: Run a full regression test after each component is completed
 
-### 团队协作建议
-1. **知识共享**: 及时分享踩坑经验和解决方案
-2. **代码审查**: 建立专门的迁移代码审查流程
-3. **文档同步**: 迁移的同时更新所有相关文档
+### Team Collaboration Recommendations
+1. **Knowledge sharing**: Share pitfall experiences and solutions promptly
+2. **Code review**: Establish a dedicated review process for migration code
+3. **Documentation sync**: Update all related documentation alongside the migration
 
-## 🏆 项目价值总结
+## 🏆 Project Value Summary
 
-### 技术层面
-- **代码质量**: 从142行优化到87行，减少38.7%
-- **维护成本**: CSS维护工作量减少87.8%
-- **一致性**: 实现100% UI框架统一性
+### Technical
+- **Code quality**: Reduced from 142 to 87 lines, a 38.7% reduction
+- **Maintenance cost**: CSS maintenance effort reduced by 87.8%
+- **Consistency**: Achieved 100% UI framework uniformity
 
-### 业务层面  
-- **用户体验**: 添加loading状态，防止重复操作
-- **响应式**: 移动端显示优化，适配性更好
-- **稳定性**: 消除自定义CSS的浏览器兼容性风险
+### Business  
+- **User experience**: Added a loading state to prevent repeated actions
+- **Responsive**: Optimized mobile display for better adaptability
+- **Stability**: Eliminated the browser compatibility risks of custom CSS
 
-### 团队层面
-- **开发效率**: 后续开发无需关注混合UI框架问题
-- **学习成本**: 新成员只需学习Naive UI一套体系
-- **技术债务**: 完成UI现代化改造的最后一环
+### Team
+- **Development efficiency**: Future development no longer has to deal with mixed UI frameworks
+- **Learning cost**: New members only need to learn the single Naive UI system
+- **Technical debt**: Completed the last step of the UI modernization
 
 ---
 
-**总结**: 这次迁移不仅是技术升级，更是一次系统化工程实践的成功案例。通过结构化方法、向后兼容设计、问题快速解决，最终实现了技术目标和业务价值的双重成功。这些经验对未来的类似项目具有重要的参考价值。
+**Summary**: This migration was not just a technical upgrade but also a successful case of systematic engineering practice. Through a structured approach, backward-compatible design, and quick problem resolution, it achieved both its technical goals and its business value. These lessons are a valuable reference for similar future projects.

@@ -27,8 +27,8 @@ async function openSelectAndWaitForVisibleOptions(page: any, select: any) {
 }
 
 async function selectOption(page: any, select: any, matcher?: RegExp) {
-  // Naive UI 下拉选项存在动画/重渲染，直接 click 可能卡在“not stable / not visible”重试直到 test 超时。
-  // 这里做两次尝试：失败则收起下拉并重开；第二次使用 force click。
+  // Naive UI dropdown options animate/re-render, so a direct click may get stuck retrying on "not stable / not visible" until the test times out.
+  // Make two attempts here: on failure, collapse the dropdown and reopen it; the second attempt uses a force click.
   for (let attempt = 0; attempt < 2; attempt++) {
     const options = await openSelectAndWaitForVisibleOptions(page, select)
 
@@ -39,7 +39,7 @@ async function selectOption(page: any, select: any, matcher?: RegExp) {
 
     const target = options.filter({ hasText: matcher }).first()
     if ((await target.count()) === 0) {
-      // 明确失败：图像模型必须命中 SiliconFlow，否则会导致 VCR requestHash 不匹配。
+      // Fail explicitly: the image model must hit SiliconFlow, otherwise the VCR requestHash will not match.
       await page.keyboard.press('Escape').catch(() => {})
       throw new Error(`[E2E] selectOption: option not found for matcher: ${String(matcher)}`)
     }
@@ -54,13 +54,13 @@ async function selectOption(page: any, select: any, matcher?: RegExp) {
   }
 }
 
-test.describe('Image Image2Image - 生成（SiliconFlow）', () => {
-  test('上传输入图并在对比模式下生成 original+optimized 两张图', async ({ page }) => {
+test.describe('Image Image2Image - Generation (SiliconFlow)', () => {
+  test('Upload an input image and generate original+optimized images in compare mode', async ({ page }) => {
     test.setTimeout(900000)
 
     await navigateToMode(page, 'image', 'image2image')
 
-    // 1) 打开上传弹窗并上传输入图
+    // 1) Open the upload dialog and upload the input image
     await page.getByTestId('image-image2image-open-upload').click()
 
     const upload = page.getByTestId('image-image2image-upload')
@@ -69,37 +69,37 @@ test.describe('Image Image2Image - 生成（SiliconFlow）', () => {
     const seedPath = path.join(process.cwd(), 'tests/e2e/fixtures/images/text2image-output.png')
     await fileInput.setInputFiles(seedPath)
 
-    // 等待缩略图出现，说明 session 已注入 inputImage
+    // Wait for the thumbnail to appear, which means the session has injected inputImage
     await expect(page.getByTestId('image-image2image-input-preview')).toBeVisible({ timeout: 30000 })
 
-    // 关闭 modal：不强依赖具体 DOM 结构，尽量退回到主界面继续
+    // Close the modal: do not rely strongly on the exact DOM structure; just get back to the main UI and continue
     await page.keyboard.press('Escape').catch(() => {})
 
-    // 等待上传弹窗彻底关闭，避免残留遮罩层/动画拦截后续点击
+    // Wait for the upload dialog to close completely so leftover overlays/animations do not intercept later clicks
     await expect(page.getByTestId('image-image2image-upload-modal')).toBeHidden({ timeout: 20000 })
 
-    // 2) 选择文本模型（用于优化）
+    // 2) Select the text model (used for optimization)
     const textModelSelect = page.getByTestId('image-image2image-text-model-select')
     await expect(textModelSelect).toBeVisible({ timeout: 20000 })
     await selectOption(page, textModelSelect)
 
-    // 3) 选择优化模板（跳过）
-    // 这里不强依赖具体模板（模板列表可能变化，且 focus 会触发刷新导致下拉抖动），
-    // 只验证主流程：上传 → 优化 → 对比生成两张图。
+    // 3) Select the optimization template (skipped)
+    // We do not rely on a specific template here (the template list may change, and focus triggers a refresh that makes the dropdown jitter),
+    // and only verify the main flow: upload -> optimize -> generate two images in compare mode.
 
-    // 4) 填写提示词（复用 helper：支持 textarea/CodeMirror，并在输入后等待 optimize-button 可用）
+    // 4) Fill in the prompt (reuses the helper: supports textarea/CodeMirror and waits for optimize-button to be enabled after input)
     await fillOriginalPrompt(page, MODE, 'make it watercolor style')
 
-    // 5) 点击优化并等待优化输出非空
+    // 5) Click optimize and wait for the optimized output to be non-empty
     await clickOptimizeButton(page, MODE)
     await expectOptimizedResultNotEmpty(page, MODE)
 
-    // 6) 确保列数为 2（避免默认列数变化导致额外请求，影响 VCR fixture 匹配）
+    // 6) Ensure the column count is 2 (avoids extra requests from default column count changes, which would break VCR fixture matching)
     const workspace = page.locator('[data-testid="workspace"][data-mode="image-image2image"]').first()
-    // Naive UI 的 radio button 真实可点元素是 label；若 value=2 已默认选中，click 会因拦截重试而超时。
+    // The truly clickable element of a Naive UI radio button is the label; if value=2 is already selected by default, click would retry on interception and time out.
     await workspace.getByRole('radio', { name: '2' }).check()
 
-    // 7) 选择图像模型：A/B 两列都设置为 SiliconFlow，保证请求与 fixture 匹配
+    // 7) Select the image model: set both A/B columns to SiliconFlow so requests match the fixture
     const originalModelSelect = page.getByTestId('image-image2image-test-original-model-select')
     const optimizedModelSelect = page.getByTestId('image-image2image-test-optimized-model-select')
     await expect(originalModelSelect).toBeVisible({ timeout: 20000 })
@@ -107,10 +107,10 @@ test.describe('Image Image2Image - 生成（SiliconFlow）', () => {
     await selectOption(page, originalModelSelect, /siliconflow/i)
     await selectOption(page, optimizedModelSelect, /siliconflow/i)
 
-    // 8) 运行两列生成（original + optimized）
+    // 8) Run generation for both columns (original + optimized)
     await page.getByTestId('image-image2image-test-run-all').click()
 
-    // 9) 断言两张结果图都非空
+    // 9) Assert both result images are non-empty
     const originalImg = page.getByTestId('image-image2image-original-image').locator('img')
     const optimizedImg = page.getByTestId('image-image2image-optimized-image').locator('img')
 

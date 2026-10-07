@@ -1,42 +1,42 @@
-# 子模式持久化 - 经验总结
+# Sub-mode Persistence - Lessons Learned
 
-## 💡 核心经验
+## 💡 Core Lessons
 
-### 1. 状态隔离的重要性
+### 1. The Importance of State Isolation
 
-**关键洞察（来自用户）**:
-> "基础模式也应该有自己的存储，这个也应该分开...因为这两个功能模式本质上控制的是不同的，只是当前他们的子模式碰巧都叫 系统/用户提示词优化而已。"
+**Key insight (from the user)**:
+> "Basic mode should also have its own storage, and this should be separate too... because these two function modes essentially control different things; it just happens that their sub-modes are both called System/User Prompt Optimization."
 
-**经验总结**:
-- ✅ **名称相同 ≠ 状态共享**: 即使子模式名称相同（如都叫"系统/用户"），也应该独立存储
-- ✅ **功能模式是第一维度**: 不同的功能模式代表不同的使用场景
-- ✅ **用户心智模型**: 用户期望每个功能模式"记住"自己上次的选择
+**Takeaways**:
+- ✅ **Same name ≠ shared state**: Even if the sub-mode names are the same (e.g. both called "System/User"), they should be stored independently
+- ✅ **Function mode is the first dimension**: Different function modes represent different usage scenarios
+- ✅ **User mental model**: Users expect each function mode to "remember" its own last choice
 
-**反模式**:
+**Anti-pattern**:
 ```typescript
-// ❌ 错误: 共享状态
+// ❌ Wrong: shared state
 const selectedOptimizationMode = ref<'system' | 'user'>('system')
 
-// 基础模式和上下文模式都使用同一个变量
-// 导致切换功能模式时状态混乱
+// Basic mode and Context mode both use the same variable
+// causing state confusion when switching function modes
 ```
 
-**最佳实践**:
+**Best practice**:
 ```typescript
-// ✅ 正确: 完全独立的状态
+// ✅ Correct: fully independent state
 const { basicSubMode } = useBasicSubMode(services)
 const { proSubMode } = useProSubMode(services)
 
-// 各自独立存储，互不影响
+// Each is stored independently and does not affect the other
 ```
 
 ---
 
-### 2. 单例模式的正确使用
+### 2. Correct Use of the Singleton Pattern
 
-**问题背景**: Composable可能被多次调用，如何确保状态唯一？
+**Background**: A Composable may be called multiple times; how do we ensure the state is unique?
 
-**解决方案**:
+**Solution**:
 ```typescript
 let singleton: {
   mode: Ref<SubModeType>
@@ -56,42 +56,42 @@ export function useSubMode(services: Ref<AppServices | null>) {
 }
 ```
 
-**关键点**:
-1. **模块级变量**: `singleton` 在模块作用域，确保全局唯一
-2. **惰性初始化**: 首次调用时创建
-3. **状态共享**: 后续调用返回同一个状态引用
+**Key points**:
+1. **Module-level variable**: `singleton` lives in module scope, ensuring global uniqueness
+2. **Lazy initialization**: Created on the first call
+3. **Shared state**: Subsequent calls return the same state reference
 
-**常见陷阱**:
+**Common pitfall**:
 ```typescript
-// ❌ 错误: 每次调用都创建新状态
+// ❌ Wrong: creates new state on every call
 export function useSubMode() {
-  const mode = ref('default')  // 每次都是新的！
+  const mode = ref('default')  // New every time!
   // ...
 }
 ```
 
 ---
 
-### 3. 异步初始化的防抖处理
+### 3. Debouncing Asynchronous Initialization
 
-**问题**: 如果多个组件同时调用 `ensureInitialized()`，会导致重复读取存储。
+**Problem**: If multiple components call `ensureInitialized()` at the same time, storage is read repeatedly.
 
-**解决方案**:
+**Solution**:
 ```typescript
 const ensureInitialized = async () => {
-  // 第一层防护：已初始化
+  // First layer of protection: already initialized
   if (singleton!.initialized) return
   
-  // 第二层防护：正在初始化（防抖）
+  // Second layer of protection: currently initializing (debounce)
   if (singleton!.initializing) {
     await singleton!.initializing
     return
   }
   
-  // 记录初始化Promise
+  // Record the initialization Promise
   singleton!.initializing = (async () => {
     try {
-      // 实际初始化逻辑
+      // Actual initialization logic
     } finally {
       singleton!.initialized = true
       singleton!.initializing = null
@@ -102,29 +102,29 @@ const ensureInitialized = async () => {
 }
 ```
 
-**关键机制**:
-1. **双重检查**: `initialized` + `initializing`
-2. **Promise共享**: 多个调用者等待同一个Promise
-3. **finally保证**: 无论成功失败都清理状态
+**Key mechanisms**:
+1. **Double check**: `initialized` + `initializing`
+2. **Shared Promise**: Multiple callers wait on the same Promise
+3. **finally guarantee**: State is cleaned up whether it succeeds or fails
 
 ---
 
-### 4. 只读状态暴露模式
+### 4. The Read-only State Exposure Pattern
 
-**为什么需要只读?**
-- 防止外部直接修改状态
-- 强制通过setter进行更新（便于持久化）
-- 更好的代码可维护性
+**Why read-only?**
+- Prevents external code from modifying state directly
+- Forces updates through the setter (convenient for persistence)
+- Better code maintainability
 
-**实现方式**:
+**Implementation**:
 ```typescript
 import { readonly } from 'vue'
 
 return {
-  // ✅ 只读: 外部不能直接修改
+  // ✅ Read-only: cannot be modified directly from outside
   basicSubMode: readonly(singleton.mode) as Ref<BasicSubMode>,
   
-  // ✅ 修改器: 通过setter更新并持久化
+  // ✅ Mutator: update and persist through the setter
   setBasicSubMode: async (mode: BasicSubMode) => {
     singleton!.mode.value = mode
     await setPreference(STORAGE_KEY, mode)
@@ -132,45 +132,45 @@ return {
 }
 ```
 
-**避免的陷阱**:
+**Pitfall avoided**:
 ```typescript
-// ❌ 错误: 直接暴露可写状态
+// ❌ Wrong: exposing writable state directly
 return {
-  basicSubMode: singleton.mode,  // 外部可以直接修改！
+  basicSubMode: singleton.mode,  // External code can modify it directly!
   // ...
 }
 
-// 导致问题:
-basicSubMode.value = 'user'  // 修改了状态但没有持久化！
+// Resulting problem:
+basicSubMode.value = 'user'  // State changed but not persisted!
 ```
 
 ---
 
-### 5. 跨组件通信策略
+### 5. Cross-component Communication Strategy
 
-**场景**: 导航栏的选择器在 App.vue，但 ImageWorkspace 内部需要知道切换事件。
+**Scenario**: The navigation bar selectors live in App.vue, but ImageWorkspace needs to know about the switch event internally.
 
-**方案对比**:
+**Comparison of approaches**:
 
-| 方案 | 优点 | 缺点 | 适用场景 |
+| Approach | Pros | Cons | Applicable scenario |
 |------|------|------|----------|
-| Props传递 | 简单直接 | 组件耦合高 | 父子组件 |
-| Provide/Inject | 解耦 | 需要共同父组件 | 深层嵌套 |
-| 自定义事件 | 完全解耦 | 需要手动管理 | 跨层级通信 |
-| Composable共享 | 类型安全 | 需要单例模式 | 全局状态 |
+| Props passing | Simple and direct | High component coupling | Parent-child components |
+| Provide/Inject | Decoupled | Requires a common ancestor | Deep nesting |
+| Custom events | Fully decoupled | Must be managed manually | Cross-level communication |
+| Shared Composable | Type safe | Requires the singleton pattern | Global state |
 
-**本项目选择**:
-- **导航栏→App.vue**: Composable共享状态
-- **App.vue→ImageWorkspace**: 自定义事件
+**Choices in this project**:
+- **Navigation bar → App.vue**: Shared Composable state
+- **App.vue → ImageWorkspace**: Custom events
 
-**自定义事件实现**:
+**Custom event implementation**:
 ```typescript
-// 发送端（App.vue）
+// Sender (App.vue)
 window.dispatchEvent(new CustomEvent("image-submode-changed", { 
   detail: { mode } 
 }))
 
-// 接收端（ImageWorkspace.vue）
+// Receiver (ImageWorkspace.vue)
 const handleImageSubModeChanged = (e: CustomEvent) => {
   const { mode } = e.detail
   if (mode && mode !== imageMode.value) {
@@ -189,31 +189,31 @@ onBeforeUnmount(() => {
 
 ---
 
-### 6. 双层状态同步问题
+### 6. The Two-layer State Synchronization Problem
 
-**问题发现**: 图像模式刷新后文件上传按钮不显示
+**Problem found**: The file upload button was not displayed after refreshing in Image mode
 
-**原因分析**:
+**Cause analysis**:
 ```
-导航栏层 (App.vue + useImageSubMode)
-  ✅ 从 UI_SETTINGS_KEYS.IMAGE_SUB_MODE 恢复
-  ✅ 导航栏显示正确
+Navigation bar layer (App.vue + useImageSubMode)
+  ✅ Restored from UI_SETTINGS_KEYS.IMAGE_SUB_MODE
+  ✅ Navigation bar displays correctly
   
-组件内部层 (ImageWorkspace + useImageWorkspace)
-  ❌ 没有从存储恢复
-  ❌ 始终使用硬编码默认值 'text2image'
-  ❌ v-if="imageMode === 'image2image'" 永远为 false
+Component internal layer (ImageWorkspace + useImageWorkspace)
+  ❌ Did not restore from storage
+  ❌ Always used the hard-coded default 'text2image'
+  ❌ v-if="imageMode === 'image2image'" was always false
 ```
 
-**解决方案**: 两层都从同一个存储键恢复
+**Solution**: Both layers restore from the same storage key
 ```typescript
 // useImageWorkspace.ts
 const restoreSelections = async () => {
-  // ... 其他恢复 ...
+  // ... other restores ...
   
-  // ✅ 从全局存储恢复
+  // ✅ Restore from global storage
   const savedImageMode = await getPreference(
-    UI_SETTINGS_KEYS.IMAGE_SUB_MODE,  // 与导航栏使用同一个键！
+    UI_SETTINGS_KEYS.IMAGE_SUB_MODE,  // Same key as the navigation bar!
     "text2image",
   )
   if (savedImageMode === "text2image" || savedImageMode === "image2image") {
@@ -222,96 +222,96 @@ const restoreSelections = async () => {
 }
 ```
 
-**经验教训**:
-- ✅ **统一数据源**: 所有层级都从同一个存储键读取
-- ✅ **初始化检查**: 确保所有使用状态的地方都正确初始化
-- ✅ **日志追踪**: 在初始化和切换时输出日志，便于发现问题
+**Lessons**:
+- ✅ **Single data source**: All layers read from the same storage key
+- ✅ **Initialization checks**: Make sure everywhere that uses the state initializes it correctly
+- ✅ **Log tracing**: Output logs during initialization and switching to make problems easier to spot
 
 ---
 
-### 7. 向后兼容策略
+### 7. Backward Compatibility Strategy
 
-**挑战**: 现有代码大量使用 `selectedOptimizationMode` 和 `contextMode`
+**Challenge**: Existing code makes heavy use of `selectedOptimizationMode` and `contextMode`
 
-**策略**: 保留旧变量，与新Composable同步
+**Strategy**: Keep the legacy variables and synchronize them with the new Composables
 
 ```typescript
-// 新状态
+// New state
 const { basicSubMode, setBasicSubMode } = useBasicSubMode(services)
 const { proSubMode, setProSubMode } = useProSubMode(services)
 
-// 旧变量（保留兼容）
+// Legacy variable (kept for compatibility)
 const selectedOptimizationMode = ref<OptimizationMode>("system")
 
-// 切换时同步
+// Synchronize on switch
 const handleBasicSubModeChange = async (mode: OptimizationMode) => {
   await setBasicSubMode(mode as BasicSubMode)
-  selectedOptimizationMode.value = mode  // ✅ 同步旧变量
+  selectedOptimizationMode.value = mode  // ✅ Synchronize the legacy variable
 }
 ```
 
-**优点**:
-1. 降低重构风险
-2. 平滑升级
-3. 避免大范围改动
+**Advantages**:
+1. Lowers refactoring risk
+2. Smooth upgrade
+3. Avoids wide-ranging changes
 
-**长期计划**:
-- 逐步迁移使用处到新API
-- 最终废弃旧变量
-
----
-
-## 🎯 设计模式总结
-
-### 1. 单例模式 (Singleton Pattern)
-**用途**: 确保全局唯一状态  
-**实现**: 模块级变量 + 惰性初始化
-
-### 2. 代理模式 (Proxy Pattern)
-**用途**: 控制状态访问  
-**实现**: readonly() 包装 + setter方法
-
-### 3. 观察者模式 (Observer Pattern)
-**用途**: 跨组件通信  
-**实现**: 自定义事件 + addEventListener
-
-### 4. 策略模式 (Strategy Pattern)
-**用途**: 根据功能模式选择不同处理  
-**实现**: if-else分支 + 独立的Composable
+**Long-term plan**:
+- Gradually migrate usages to the new API
+- Eventually deprecate the legacy variable
 
 ---
 
-## 🚫 常见陷阱
+## 🎯 Design Pattern Summary
 
-### 陷阱1: 忘记初始化
+### 1. Singleton Pattern
+**Purpose**: Ensure globally unique state  
+**Implementation**: Module-level variable + lazy initialization
+
+### 2. Proxy Pattern
+**Purpose**: Control state access  
+**Implementation**: readonly() wrapper + setter methods
+
+### 3. Observer Pattern
+**Purpose**: Cross-component communication  
+**Implementation**: Custom events + addEventListener
+
+### 4. Strategy Pattern
+**Purpose**: Choose different handling according to the function mode  
+**Implementation**: if-else branches + independent Composables
+
+---
+
+## 🚫 Common Pitfalls
+
+### Pitfall 1: Forgetting to Initialize
 ```typescript
-// ❌ 错误
+// ❌ Wrong
 const { basicSubMode, setBasicSubMode } = useBasicSubMode(services)
-setBasicSubMode('user')  // 可能在初始化前调用！
+setBasicSubMode('user')  // May be called before initialization!
 
-// ✅ 正确
+// ✅ Correct
 const { basicSubMode, setBasicSubMode, ensureInitialized } = useBasicSubMode(services)
-await ensureInitialized()  // 先初始化
+await ensureInitialized()  // Initialize first
 await setBasicSubMode('user')
 ```
 
-### 陷阱2: 直接修改只读状态
+### Pitfall 2: Modifying Read-only State Directly
 ```typescript
-// ❌ 错误
-basicSubMode.value = 'user'  // TypeScript会报错！
+// ❌ Wrong
+basicSubMode.value = 'user'  // TypeScript will report an error!
 
-// ✅ 正确
+// ✅ Correct
 await setBasicSubMode('user')
 ```
 
-### 陷阱3: 忘记清理事件监听
+### Pitfall 3: Forgetting to Clean Up Event Listeners
 ```typescript
-// ❌ 错误: 只注册不清理
+// ❌ Wrong: registered but never cleaned up
 onMounted(() => {
   window.addEventListener("event", handler)
 })
 
-// ✅ 正确: 清理避免内存泄漏
+// ✅ Correct: clean up to avoid memory leaks
 onMounted(() => {
   window.addEventListener("event", handler)
 })
@@ -320,133 +320,133 @@ onBeforeUnmount(() => {
 })
 ```
 
-### 陷阱4: 状态类型混淆
+### Pitfall 4: Confusing State Types
 ```typescript
-// ❌ 错误: 类型混用
-const mode: ProSubMode = basicSubMode.value  // 类型不匹配！
+// ❌ Wrong: mixing types
+const mode: ProSubMode = basicSubMode.value  // Type mismatch!
 
-// ✅ 正确: 类型转换
+// ✅ Correct: type conversion
 const mode = basicSubMode.value as OptimizationMode
 ```
 
 ---
 
-## 📊 性能考虑
+## 📊 Performance Considerations
 
-### 1. 初始化性能
-- ✅ **异步加载**: 不阻塞应用启动
-- ✅ **防抖机制**: 避免重复读取
-- ✅ **单次读取**: localStorage读取很快，无需缓存
+### 1. Initialization Performance
+- ✅ **Asynchronous loading**: Does not block application startup
+- ✅ **Debounce mechanism**: Avoids repeated reads
+- ✅ **Single read**: localStorage reads are fast, so no caching is needed
 
-### 2. 切换性能
-- ✅ **响应式更新**: Vue自动处理，几乎无开销
-- ✅ **局部更新**: 只更新相关组件
-- ✅ **异步持久化**: 不阻塞UI
+### 2. Switching Performance
+- ✅ **Reactive updates**: Handled automatically by Vue with almost no overhead
+- ✅ **Partial updates**: Only the relevant components update
+- ✅ **Asynchronous persistence**: Does not block the UI
 
-### 3. 内存占用
-- ✅ **单例模式**: 只有一个状态实例
-- ✅ **轻量数据**: 只存储字符串值
-- ✅ **事件清理**: 避免内存泄漏
-
----
-
-## 🧪 测试经验
-
-### 测试策略
-1. **单元测试**: Composable的核心逻辑
-2. **集成测试**: App.vue的初始化和切换
-3. **手动测试**: 实际使用场景验证
-
-### 关键测试场景
-1. ✅ 首次使用（无存储数据）
-2. ✅ 刷新页面后状态保持
-3. ✅ 功能模式切换时各自恢复
-4. ✅ 独立性验证（基础/上下文不互相影响）
-5. ✅ 历史记录恢复
-6. ✅ 收藏恢复
-
-### 调试技巧
-1. **日志输出**: 每个关键操作都输出日志
-2. **localStorage检查**: 浏览器开发工具查看存储
-3. **响应式追踪**: Vue DevTools查看状态变化
+### 3. Memory Usage
+- ✅ **Singleton pattern**: Only one state instance
+- ✅ **Lightweight data**: Only string values are stored
+- ✅ **Event cleanup**: Avoids memory leaks
 
 ---
 
-## 📝 文档化经验
+## 🧪 Testing Lessons
 
-### 1. 渐进式文档
-- **v1.0**: 初始设计（仅上下文模式）
-- **v2.0**: 添加基础模式
-- **v3.0**: 添加图像模式
-- **v4.0**: 完成并归档
+### Testing Strategy
+1. **Unit tests**: Core logic of the Composables
+2. **Integration tests**: Initialization and switching in App.vue
+3. **Manual tests**: Verification in real usage scenarios
 
-### 2. 记录决策
-- 用户的关键洞察要高亮
-- 技术决策要说明理由
-- 遇到的问题要记录原因和解决方案
+### Key Test Scenarios
+1. ✅ First use (no stored data)
+2. ✅ State is preserved after refreshing the page
+3. ✅ Each function mode restores its own state when switching
+4. ✅ Independence verification (Basic/Context do not affect each other)
+5. ✅ History record restore
+6. ✅ Favorites restore
 
-### 3. 代码示例
-- 提供完整的代码片段
-- 标注关键行
-- 对比正确和错误的写法
-
----
-
-## 🎓 可复用经验
-
-### 适用场景
-本架构适用于以下场景:
-1. **多模式应用**: 有多个独立的功能模式
-2. **状态持久化**: 需要记住用户选择
-3. **全局状态**: 需要在多个组件间共享
-4. **类型安全**: TypeScript项目
-
-### 扩展建议
-添加新功能模式时:
-1. 在 `storage-keys.ts` 添加存储键
-2. 在 `types.ts` 定义类型
-3. 创建对应的 `useXxxSubMode.ts`
-4. 在 App.vue 中集成
-5. 添加测试验证
+### Debugging Tips
+1. **Log output**: Log every key operation
+2. **localStorage inspection**: Check storage in the browser dev tools
+3. **Reactive tracing**: Use Vue DevTools to watch state changes
 
 ---
 
-## 💡 关键建议
+## 📝 Documentation Lessons
 
-### 给开发者
-1. ✅ **状态隔离优于共享**: 默认独立存储，除非有明确的共享需求
-2. ✅ **单例模式解决重复**: 需要全局状态时使用单例模式
-3. ✅ **异步初始化**: 避免阻塞应用启动
-4. ✅ **只读状态**: 防止意外修改，强制通过setter
-5. ✅ **完善日志**: 便于调试和问题排查
+### 1. Progressive Documentation
+- **v1.0**: Initial design (Context mode only)
+- **v2.0**: Added Basic mode
+- **v3.0**: Added Image mode
+- **v4.0**: Completed and archived
 
-### 给架构师
-1. ✅ **用户心智模型第一**: 技术实现要符合用户直觉
-2. ✅ **向后兼容**: 重构时保留旧接口，平滑升级
-3. ✅ **防御式编程**: 完善的错误处理和回退机制
-4. ✅ **文档跟进**: 及时记录设计决策和演进过程
+### 2. Recording Decisions
+- Highlight key insights from the user
+- Explain the rationale behind technical decisions
+- Record the cause and solution of problems encountered
 
----
-
-## 🔮 未来改进
-
-### 短期（已完成）
-- ✅ 三种模式全部独立持久化
-- ✅ 统一的导航栏UI
-- ✅ 修复图像模式初始化问题
-
-### 中期（待讨论）
-- 🔄 废弃 `selectedOptimizationMode` 变量
-- 🔄 统一 `contextMode` 和 `proSubMode`
-- 🔄 术语统一（OptimizationMode → SubMode）
-
-### 长期（可选）
-- 💡 支持更多功能模式
-- 💡 子模式配置化（通过配置文件定义）
-- 💡 更细粒度的持久化控制
+### 3. Code Examples
+- Provide complete code snippets
+- Mark key lines
+- Contrast correct and incorrect ways of writing
 
 ---
 
-**文档版本**: v1.0  
-**最后更新**: 2025-10-22  
-**贡献者**: Claude & 用户
+## 🎓 Reusable Lessons
+
+### Applicable Scenarios
+This architecture is suitable for the following scenarios:
+1. **Multi-mode applications**: Several independent function modes
+2. **State persistence**: Need to remember user choices
+3. **Global state**: Need to share across multiple components
+4. **Type safety**: TypeScript projects
+
+### Extension Suggestions
+When adding a new function mode:
+1. Add a storage key in `storage-keys.ts`
+2. Define the type in `types.ts`
+3. Create the corresponding `useXxxSubMode.ts`
+4. Integrate it in App.vue
+5. Add test verification
+
+---
+
+## 💡 Key Recommendations
+
+### For Developers
+1. ✅ **Isolation over sharing**: Store independently by default unless there is a clear sharing need
+2. ✅ **Singleton to avoid duplication**: Use the singleton pattern when global state is needed
+3. ✅ **Asynchronous initialization**: Avoid blocking application startup
+4. ✅ **Read-only state**: Prevent accidental modification and force use of the setter
+5. ✅ **Thorough logging**: Easy debugging and troubleshooting
+
+### For Architects
+1. ✅ **User mental model first**: Technical implementation should match user intuition
+2. ✅ **Backward compatibility**: Keep legacy interfaces during refactoring for a smooth upgrade
+3. ✅ **Defensive programming**: Robust error handling and fallback mechanisms
+4. ✅ **Keep documentation current**: Record design decisions and evolution promptly
+
+---
+
+## 🔮 Future Improvements
+
+### Short-term (completed)
+- ✅ All three modes persist independently
+- ✅ Unified navigation bar UI
+- ✅ Fixed the Image mode initialization problem
+
+### Mid-term (to be discussed)
+- 🔄 Deprecate the `selectedOptimizationMode` variable
+- 🔄 Unify `contextMode` and `proSubMode`
+- 🔄 Unify terminology (OptimizationMode → SubMode)
+
+### Long-term (optional)
+- 💡 Support more function modes
+- 💡 Make sub-modes configurable (defined via configuration files)
+- 💡 Finer-grained persistence control
+
+---
+
+**Document version**: v1.0  
+**Last updated**: 2025-10-22  
+**Contributors**: Claude & the user

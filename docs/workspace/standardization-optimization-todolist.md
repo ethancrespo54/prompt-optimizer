@@ -1,28 +1,28 @@
-# 标准化优化待办清单
+# Standardization and Optimization To-Do List
 
-本文档记录代码质量和工程规范相关的待优化事项。
+This document records pending optimization items related to code quality and engineering standards.
 
-## 代码格式化标准化
+## Code Formatting Standardization
 
 ### Prettier 配置
 
-**优先级**: P2 - 代码质量提升
-**预估工作量**: 1-2 小时
-**负责人**: 待分配
-**状态**: 待开始
+**Priority**: P2 - Code quality improvement
+**Estimated effort**: 1-2 hours
+**Owner**: Unassigned
+**Status**: Not started
 
-#### 任务描述
+#### Task Description
 
-引入 Prettier 作为代码格式化工具，统一团队代码风格，减少 Code Review 中的格式争议。
+Introduce Prettier as the code formatting tool to unify the team's code style and reduce formatting disputes in Code Review.
 
-#### 实施步骤
+#### Implementation Steps
 
-1. **安装依赖**
+1. **Install dependencies**
    ```bash
    pnpm add -D prettier eslint-config-prettier eslint-plugin-prettier
    ```
 
-2. **创建配置文件** `.prettierrc.json`
+2. **Create the configuration file** `.prettierrc.json`
    ```json
    {
      "semi": false,
@@ -36,7 +36,7 @@
    }
    ```
 
-3. **创建忽略文件** `.prettierignore`
+3. **Create the ignore file** `.prettierignore`
    ```
    dist/
    node_modules/
@@ -45,7 +45,7 @@
    pnpm-lock.yaml
    ```
 
-4. **更新 ESLint 配置** `.eslintrc.json`
+4. **Update the ESLint configuration** `.eslintrc.json`
    ```json
    {
      "extends": [
@@ -55,7 +55,7 @@
    }
    ```
 
-5. **添加 npm 脚本** `package.json`
+5. **Add npm scripts** `package.json`
    ```json
    {
      "scripts": {
@@ -65,7 +65,7 @@
    }
    ```
 
-6. **配置 VS Code 自动格式化** `.vscode/settings.json`
+6. **Configure VS Code auto-formatting** `.vscode/settings.json`
    ```json
    {
      "editor.defaultFormatter": "esbenp.prettier-vscode",
@@ -79,54 +79,54 @@
    }
    ```
 
-7. **（可选）集成 Git Hooks**
+7. **(Optional) Integrate Git Hooks**
    ```bash
    pnpm add -D husky lint-staged
    pnpm exec husky init
    ```
 
-#### 验收标准
+#### Acceptance Criteria
 
-- [ ] 所有配置文件已创建
-- [ ] `pnpm format` 可以正常运行
-- [ ] VS Code 保存时自动格式化生效
-- [ ] 所有现有代码已格式化（无 linting 错误）
-- [ ] 团队成员已配置 IDE 自动格式化
+- [ ] All configuration files are created
+- [ ] `pnpm format` runs correctly
+- [ ] VS Code format-on-save works
+- [ ] All existing code is formatted (no linting errors)
+- [ ] Team members have configured IDE auto-formatting
 
-#### 注意事项
+#### Notes
 
-- 首次引入需要格式化所有现有代码，建议单独提交一次"Format all code with Prettier"
-- 确保 CI/CD 中添加 `format:check` 检查
-- 通知团队成员更新本地 IDE 配置
+- The first introduction requires formatting all existing code; it is recommended to make a separate "Format all code with Prettier" commit
+- Make sure to add the `format:check` check in CI/CD
+- Notify team members to update their local IDE configuration
 
 ---
 
-## 日志系统标准化
+## Logging System Standardization
 
-### 统一日志组件
+### Unified Logging Component
 
-**优先级**: P2 - 开发体验优化
-**预估工作量**: 4-6 小时
-**负责人**: 待分配
-**状态**: 待开始
+**Priority**: P2 - Developer experience improvement
+**Estimated effort**: 4-6 hours
+**Owner**: Unassigned
+**Status**: Not started
 
-#### 任务描述
+#### Task Description
 
-创建统一的日志工具，替换项目中散落的 `console.log`，提供结构化日志、日志级别控制、性能监控等功能。
+Create a unified logging utility to replace the scattered `console.log` calls in the project, providing structured logging, log level control, performance monitoring, and more.
 
-#### 需求分析
+#### Requirements Analysis
 
-当前问题：
-- 项目中大量使用裸 `console.log`，生产环境无法控制
-- 无法按模块/功能域过滤日志
-- 缺少性能监控（函数执行时间、API 调用耗时）
-- 调试困难（无法快速定位日志来源）
+Current problems:
+- The project uses bare `console.log` extensively, which cannot be controlled in production
+- Logs cannot be filtered by module/feature domain
+- No performance monitoring (function execution time, API call latency)
+- Debugging is difficult (the source of a log cannot be located quickly)
 
-#### 技术方案
+#### Technical Options
 
-##### 方案 A：轻量级封装（推荐）
+##### Option A: Lightweight Wrapper (Recommended)
 
-创建 `packages/ui/src/utils/logger.ts`：
+Create `packages/ui/src/utils/logger.ts`:
 
 ```typescript
 enum LogLevel {
@@ -161,42 +161,42 @@ class Logger {
   warn(message: string, ...args: unknown[]) { /* ... */ }
   error(message: string, ...args: unknown[]) { /* ... */ }
 
-  // 性能监控
+  // Performance monitoring
   time(label: string) { /* ... */ }
   timeEnd(label: string) { /* ... */ }
 
-  // 创建子 logger
+  // Create a child logger
   child(prefix: string): Logger { /* ... */ }
 }
 
-// 使用示例
+// Usage example
 const logger = new Logger({ prefix: '[SessionManager]' })
-logger.info('切换模式', { from: 'basic-system', to: 'pro-user' })
+logger.info('Switching mode', { from: 'basic-system', to: 'pro-user' })
 ```
 
-**优点**：
-- 零依赖，轻量级
-- 开发环境全日志，生产环境只显示警告和错误
-- 支持按模块创建子 logger
+**Pros**:
+- Zero dependencies, lightweight
+- Full logs in development; only warnings and errors in production
+- Supports creating child loggers per module
 
-##### 方案 B：使用第三方库
+##### Option B: Use a Third-Party Library
 
-推荐库：
-- **pino** - 高性能，JSON 格式（适合后端日志聚合）
-- **consola** - 美观，支持浏览器和 Node.js
-- **debug** - 经典轻量级，npm 下载量最高
+Recommended libraries:
+- **pino** - High performance, JSON format (suited for backend log aggregation)
+- **consola** - Good-looking output, supports browsers and Node.js
+- **debug** - A classic lightweight option with the highest npm downloads
 
-**不推荐**：winston（体积大，主要用于 Node.js 后端）
+**Not recommended**: winston (large size, mainly used for Node.js backends)
 
-#### 实施步骤
+#### Implementation Steps
 
-1. **创建 logger 工具类**
-   - 实现日志级别过滤
-   - 支持按模块分组（prefix）
-   - 添加时间戳和堆栈跟踪
-   - 开发/生产环境自动适配
+1. **Create the logger utility class**
+   - Implement log level filtering
+   - Support grouping by module (prefix)
+   - Add timestamps and stack traces
+   - Automatically adapt to development/production environments
 
-2. **创建预设 logger 实例**
+2. **Create preset logger instances**
    ```typescript
    // packages/ui/src/utils/loggers.ts
    export const sessionLogger = logger.child('[SessionManager]')
@@ -204,67 +204,67 @@ logger.info('切换模式', { from: 'basic-system', to: 'pro-user' })
    export const storageLogger = logger.child('[Storage]')
    ```
 
-3. **逐步迁移现有代码**
-   - 优先迁移关键模块（SessionManager, Router, Storage）
-   - 使用 ESLint 规则禁止直接使用 `console.log`
+3. **Gradually migrate existing code**
+   - Migrate key modules first (SessionManager, Router, Storage)
+   - Use an ESLint rule to forbid direct use of `console.log`
 
-4. **添加性能监控**
+4. **Add performance monitoring**
    ```typescript
    logger.time('session-restore')
    await restoreAllSessions()
-   logger.timeEnd('session-restore')  // 输出: session-restore: 145ms
+   logger.timeEnd('session-restore')  // Output: session-restore: 145ms
    ```
 
-5. **配置生产环境**
-   - 生产环境只输出 WARN 和 ERROR
-   - 可选：集成错误监控平台（Sentry）
+5. **Configure the production environment**
+   - Output only WARN and ERROR in production
+   - Optional: integrate an error monitoring platform (Sentry)
 
-#### 验收标准
+#### Acceptance Criteria
 
-- [ ] logger 工具类已实现并测试
-- [ ] 关键模块已迁移到新 logger
-- [ ] ESLint 规则已添加（禁止 `console.log`）
-- [ ] 生产环境日志级别正确
-- [ ] 文档已更新（开发者指南）
+- [ ] The logger utility class is implemented and tested
+- [ ] Key modules are migrated to the new logger
+- [ ] The ESLint rule is added (forbidding `console.log`)
+- [ ] The production log level is correct
+- [ ] Documentation is updated (developer guide)
 
-#### 注意事项
+#### Notes
 
-- 日志迁移应逐步进行，避免一次性大范围修改
-- 保留必要的 `console.error`（如 try-catch 中的关键错误）
-- 考虑添加日志采样（避免性能敏感场景的过量日志）
-
----
-
-## 其他待规划优化
-
-### 单元测试覆盖率提升
-
-**优先级**: P3
-**状态**: 待规划
-
-- 为关键 composables 添加单元测试
-- 目标：核心业务逻辑测试覆盖率 > 80%
-
-### JSDoc 注释规范
-
-**优先级**: P3
-**状态**: 待规划
-
-- 为公开 API 添加 JSDoc 注释
-- 集成 TypeDoc 自动生成 API 文档
-
-### 组件库文档
-
-**优先级**: P3
-**状态**: 待规划
-
-- 使用 Storybook 或 VitePress 构建组件文档
-- 提供交互式示例和最佳实践
+- Log migration should proceed gradually to avoid large one-time changes
+- Keep necessary `console.error` calls (such as critical errors in try-catch)
+- Consider adding log sampling (to avoid excessive logs in performance-sensitive scenarios)
 
 ---
 
-## 更新日志
+## Other Optimizations to Plan
 
-| 日期 | 操作 | 说明 |
+### Improve Unit Test Coverage
+
+**Priority**: P3
+**Status**: To be planned
+
+- Add unit tests for key composables
+- Goal: core business logic test coverage > 80%
+
+### JSDoc Comment Conventions
+
+**Priority**: P3
+**Status**: To be planned
+
+- Add JSDoc comments to public APIs
+- Integrate TypeDoc to generate API documentation automatically
+
+### Component Library Documentation
+
+**Priority**: P3
+**Status**: To be planned
+
+- Use Storybook or VitePress to build component documentation
+- Provide interactive examples and best practices
+
+---
+
+## Changelog
+
+| Date | Action | Description |
 |------|------|------|
-| 2025-01-08 | 创建文档 | 初始化标准化优化待办清单 |
+| 2025-01-08 | Document created | Initialized the standardization and optimization to-do list |

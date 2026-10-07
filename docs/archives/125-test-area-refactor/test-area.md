@@ -1,28 +1,28 @@
-# TestArea组件系统
+# TestArea Component System
 
-测试区域重构后的模块化组件系统，提供统一的AI提示词测试界面。包含输入、控制、结果显示等功能的完整解决方案。
+A modular component system produced by the test area refactor, providing a unified AI prompt testing interface. It is a complete solution covering input, controls, result display, and more.
 
-## 概述
+## Overview
 
-TestArea组件系统采用模块化架构，由以下核心组件组成：
-- **TestAreaPanel** - 主容器组件，统一管理布局和状态
-- **TestInputSection** - 测试内容输入组件
-- **TestControlBar** - 测试控制栏组件  
-- **TestResultSection** - 测试结果展示组件
-- **ConversationSection** - 会话管理包装组件
+The TestArea component system uses a modular architecture composed of the following core components:
+- **TestAreaPanel** - Main container component that manages layout and state in a unified way
+- **TestInputSection** - Test content input component
+- **TestControlBar** - Test control bar component  
+- **TestResultSection** - Test result display component
+- **ConversationSection** - Conversation management wrapper component
 
-## 主要特性
+## Key Features
 
-✅ **统一设计风格** - 基于Naive UI设计系统，确保视觉一致性  
-✅ **响应式布局** - 自动适配不同屏幕尺寸和设备类型  
-✅ **主题兼容性** - 完全兼容亮色/暗色主题切换  
-✅ **模式切换** - 支持系统提示词/用户提示词模式  
-✅ **对比测试** - 支持原始vs优化提示词的并行对比  
-✅ **类型安全** - 完整的TypeScript类型定义  
+✅ **Unified design style** - Based on the Naive UI design system to ensure visual consistency  
+✅ **Responsive layout** - Automatically adapts to different screen sizes and device types  
+✅ **Theme compatibility** - Fully compatible with light/dark theme switching  
+✅ **Mode switching** - Supports system prompt / user prompt modes  
+✅ **Comparison testing** - Supports side-by-side comparison of original vs optimized prompts  
+✅ **Type safety** - Complete TypeScript type definitions  
 
-## 快速开始
+## Quick Start
 
-### 基础用法
+### Basic Usage
 
 ```vue
 <template>
@@ -59,7 +59,7 @@ const handleCompareToggle = () => {
 const handleTest = async () => {
   isTestRunning.value = true
   try {
-    // 执行测试逻辑
+    // Run the test logic
   } finally {
     isTestRunning.value = false
   }
@@ -67,7 +67,7 @@ const handleTest = async () => {
 </script>
 ```
 
-### 高级配置
+### Advanced Configuration
 
 ```vue
 <template>
@@ -86,7 +86,7 @@ const handleTest = async () => {
     @compare-toggle="handleCompareToggle"
     @test="handleTest"
   >
-    <!-- 模型选择插槽 -->
+    <!-- Model selection slot -->
     <template #model-select>
       <ModelSelectUI 
         v-model="selectedModel" 
@@ -94,17 +94,17 @@ const handleTest = async () => {
       />
     </template>
     
-    <!-- 原始结果插槽 -->
+    <!-- Original result slot -->
     <template #original-result>
       <OutputDisplay :content="originalResult" />
     </template>
     
-    <!-- 优化结果插槽 -->
+    <!-- Optimized result slot -->
     <template #optimized-result>
       <OutputDisplay :content="optimizedResult" />
     </template>
     
-    <!-- 单一结果插槽 -->
+    <!-- Single result slot -->
     <template #single-result>
       <OutputDisplay :content="singleResult" />
     </template>
@@ -120,7 +120,7 @@ import {
   useResponsiveTestLayout 
 } from '@prompt-optimizer/ui'
 
-// 响应式布局配置
+// Responsive layout configuration
 const { 
   inputMode, 
   controlBarLayout, 
@@ -128,7 +128,7 @@ const {
   isMobile 
 } = useResponsiveTestLayout()
 
-// 状态管理
+// State management
 const optimizationMode = ref<OptimizationMode>('system')
 const isTestRunning = ref(false)
 const advancedModeEnabled = ref(false)
@@ -136,55 +136,55 @@ const testContent = ref('')
 const isCompareMode = ref(true)
 const selectedModel = ref('gpt-4')
 
-// 结果数据
+// Result data
 const originalResult = ref('')
 const optimizedResult = ref('')
 const singleResult = computed(() => optimizedResult.value)
 
-// 根据屏幕尺寸动态配置
+// Dynamic configuration based on screen size
 const enableCompareMode = computed(() => !isMobile.value)
 </script>
 ```
 
-## API参考
+## API Reference
 
 ### TestAreaPanel Props
 
-| 属性名 | 类型 | 默认值 | 描述 |
+| Prop | Type | Default | Description |
 |--------|------|--------|------|
-| `optimizationMode` | `OptimizationMode` | `'system'` | 优化模式：'system' 或 'user' |
-| `isTestRunning` | `boolean` | `false` | 测试是否正在进行中 |
-| `advancedModeEnabled` | `boolean` | `false` | 是否启用高级模式 |
-| `testContent` | `string` | `''` | 测试内容（v-model支持） |
-| `isCompareMode` | `boolean` | `false` | 是否为对比模式 |
-| `enableCompareMode` | `boolean` | `true` | 是否允许切换到对比模式 |
-| `enableFullscreen` | `boolean` | `true` | 是否启用全屏编辑功能 |
-| `inputMode` | `'default' \| 'compact'` | `'default'` | 输入框显示模式 |
-| `controlBarLayout` | `'default' \| 'compact'` | `'default'` | 控制栏布局模式 |
-| `buttonSize` | `'small' \| 'medium' \| 'large'` | `'medium'` | 按钮尺寸 |
+| `optimizationMode` | `OptimizationMode` | `'system'` | Optimization mode: 'system' or 'user' |
+| `isTestRunning` | `boolean` | `false` | Whether a test is currently running |
+| `advancedModeEnabled` | `boolean` | `false` | Whether advanced mode is enabled |
+| `testContent` | `string` | `''` | Test content (v-model supported) |
+| `isCompareMode` | `boolean` | `false` | Whether it is in compare mode |
+| `enableCompareMode` | `boolean` | `true` | Whether switching to compare mode is allowed |
+| `enableFullscreen` | `boolean` | `true` | Whether fullscreen editing is enabled |
+| `inputMode` | `'default' \| 'compact'` | `'default'` | Input box display mode |
+| `controlBarLayout` | `'default' \| 'compact'` | `'default'` | Control bar layout mode |
+| `buttonSize` | `'small' \| 'medium' \| 'large'` | `'medium'` | Button size |
 
 ### TestAreaPanel Events
 
-| 事件名 | 参数 | 描述 |
+| Event | Parameters | Description |
 |--------|------|------|
-| `update:testContent` | `(value: string)` | 测试内容变化 |
-| `compare-toggle` | `()` | 对比模式切换 |
-| `test` | `()` | 开始测试 |
+| `update:testContent` | `(value: string)` | Test content changed |
+| `compare-toggle` | `()` | Compare mode toggled |
+| `test` | `()` | Start the test |
 
 ### TestAreaPanel Slots
 
-| 插槽名 | 描述 | 示例 |
+| Slot | Description | Example |
 |--------|------|------|
-| `model-select` | 模型选择组件 | `<ModelSelectUI v-model="model" />` |
-| `original-result` | 原始测试结果显示 | `<OutputDisplay :content="result" />` |
-| `optimized-result` | 优化测试结果显示 | `<OutputDisplay :content="result" />` |
-| `single-result` | 单一模式结果显示 | `<OutputDisplay :content="result" />` |
+| `model-select` | Model selection component | `<ModelSelectUI v-model="model" />` |
+| `original-result` | Original test result display | `<OutputDisplay :content="result" />` |
+| `optimized-result` | Optimized test result display | `<OutputDisplay :content="result" />` |
+| `single-result` | Single mode result display | `<OutputDisplay :content="result" />` |
 
-## 子组件说明
+## Sub-component Reference
 
 ### TestInputSection
 
-测试内容输入组件，支持智能高度调整和全屏编辑。
+Test content input component with smart height adjustment and fullscreen editing.
 
 ```vue
 <TestInputSection
@@ -198,17 +198,17 @@ const enableCompareMode = computed(() => !isMobile.value)
 ```
 
 **Props:**
-- `modelValue: string` - 输入内容
-- `label: string` - 输入框标签
-- `placeholder: string` - 占位符文本
-- `helpText: string` - 帮助文本
-- `disabled: boolean` - 是否禁用
-- `mode: 'default' | 'compact'` - 显示模式
-- `enableFullscreen: boolean` - 是否启用全屏
+- `modelValue: string` - Input content
+- `label: string` - Input box label
+- `placeholder: string` - Placeholder text
+- `helpText: string` - Help text
+- `disabled: boolean` - Whether disabled
+- `mode: 'default' | 'compact'` - Display mode
+- `enableFullscreen: boolean` - Whether fullscreen is enabled
 
 ### TestControlBar
 
-测试控制栏组件，提供模型选择和测试控制功能。
+Test control bar component providing model selection and test control features.
 
 ```vue
 <TestControlBar
@@ -231,7 +231,7 @@ const enableCompareMode = computed(() => !isMobile.value)
 
 ### TestResultSection
 
-测试结果展示组件，支持对比模式和单一模式布局。
+Test result display component supporting compare mode and single mode layouts.
 
 ```vue
 <TestResultSection
@@ -256,7 +256,7 @@ const enableCompareMode = computed(() => !isMobile.value)
 
 ### ConversationSection
 
-会话管理包装组件，控制高级模式下的会话管理面板显示。
+Conversation management wrapper component that controls the display of the conversation management panel in advanced mode.
 
 ```vue
 <ConversationSection
@@ -273,71 +273,71 @@ const enableCompareMode = computed(() => !isMobile.value)
 
 ### useResponsiveTestLayout
 
-响应式布局管理hook，根据屏幕尺寸自动调整组件配置。
+Responsive layout management hook that automatically adjusts component configuration based on screen size.
 
 ```ts
 import { useResponsiveTestLayout } from '@prompt-optimizer/ui'
 
 const {
-  isMobile,           // 是否为移动端
-  isTablet,           // 是否为平板
-  currentBreakpoint,  // 当前断点
-  inputMode,          // 推荐的输入模式
-  controlBarLayout,   // 推荐的控制栏布局
-  buttonSize,         // 推荐的按钮尺寸
-  responsiveHeights   // 响应式高度配置
+  isMobile,           // Whether it is mobile
+  isTablet,           // Whether it is a tablet
+  currentBreakpoint,  // Current breakpoint
+  inputMode,          // Recommended input mode
+  controlBarLayout,   // Recommended control bar layout
+  buttonSize,         // Recommended button size
+  responsiveHeights   // Responsive height configuration
 } = useResponsiveTestLayout()
 ```
 
 ### useTestModeConfig
 
-测试模式配置管理hook，处理不同优化模式下的显示逻辑。
+Test mode configuration management hook that handles display logic under different optimization modes.
 
 ```ts
 import { useTestModeConfig } from '@prompt-optimizer/ui'
 
 const {
-  currentModeConfig,      // 当前模式配置
-  showTestInput,          // 是否显示测试输入
-  requiresTestContent,    // 是否需要测试内容
-  inputLabel,             // 输入框标签
-  canStartTest,           // 是否可以开始测试
-  enableCompareMode,      // 是否启用对比模式
-  showConversationManager, // 是否显示会话管理
-  getDynamicButtonText,   // 获取动态按钮文本
-  validateTestSetup       // 验证测试配置
+  currentModeConfig,      // Current mode configuration
+  showTestInput,          // Whether to show the test input
+  requiresTestContent,    // Whether test content is required
+  inputLabel,             // Input box label
+  canStartTest,           // Whether the test can start
+  enableCompareMode,      // Whether compare mode is enabled
+  showConversationManager, // Whether to show conversation management
+  getDynamicButtonText,   // Get the dynamic button text
+  validateTestSetup       // Validate the test setup
 } = useTestModeConfig(optimizationMode)
 ```
 
-## 样式规范
+## Style Guidelines
 
-所有TestArea组件遵循[测试区域组件样式规范](./test-area-style-guide.md)：
+All TestArea components follow the [Test Area Component Style Guide](./test-area-style-guide.md):
 
-- 使用Naive UI设计系统组件
-- 禁止硬编码像素值和Tailwind CSS类
-- 统一的间距和文本样式系统
-- 完整的响应式布局支持
-- 主题兼容性要求
+- Use Naive UI design system components
+- Hard-coded pixel values and Tailwind CSS classes are prohibited
+- Unified spacing and text style system
+- Complete responsive layout support
+- Theme compatibility requirements
 
-## 最佳实践
+## Best Practices
 
-### 1. 响应式设计
+### 1. Responsive Design
 
 ```vue
 <script setup>
-// 使用响应式布局hook
+// Use the responsive layout hook
 const { inputMode, controlBarLayout, buttonSize, isMobile } = useResponsiveTestLayout()
 
-// 根据屏幕尺寸动态调整功能
+// Dynamically adjust features based on screen size
 const enableAdvancedFeatures = computed(() => !isMobile.value)
 </script>
 ```
 
-### 2. 状态管理
+### 2. State Management
 
 ```vue
 <script setup>
-// 集中管理测试相关状态
+// Manage test-related state centrally
 const testState = reactive({
   mode: 'system' as OptimizationMode,
   content: '',
@@ -349,17 +349,17 @@ const testState = reactive({
   }
 })
 
-// 使用计算属性处理复杂逻辑
+// Use computed properties for complex logic
 const canStartTest = computed(() => {
   if (testState.mode === 'system') {
     return testState.content.length > 0
   }
-  return true // 用户模式不需要额外输入
+  return true // User mode needs no extra input
 })
 </script>
 ```
 
-### 3. 错误处理
+### 3. Error Handling
 
 ```vue
 <script setup>
@@ -373,19 +373,19 @@ const handleTest = async () => {
       selectedModel.value,
       {
         onToken: (token) => {
-          // 处理流式token
+          // Handle streaming tokens
         },
         onComplete: () => {
-          // 测试完成
+          // Test complete
         },
         onError: (error) => {
-          console.error('测试失败:', error)
-          // 显示错误提示
+          console.error('Test failed:', error)
+          // Show an error message
         }
       }
     )
   } catch (error) {
-    console.error('测试请求失败:', error)
+    console.error('Test request failed:', error)
   } finally {
     testState.isRunning = false
   }
@@ -393,13 +393,13 @@ const handleTest = async () => {
 </script>
 ```
 
-### 4. 国际化支持
+### 4. Internationalization Support
 
 ```vue
 <template>
   <TestAreaPanel
     :optimization-mode="optimizationMode"
-    <!-- 其他props -->
+    <!-- Other props -->
   >
     <template #model-select>
       <ModelSelectUI 
@@ -415,7 +415,7 @@ import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
 
-// 动态计算标签文本
+// Dynamically compute the label text
 const inputLabel = computed(() => {
   return optimizationMode.value === 'system' 
     ? t('test.content')
@@ -424,79 +424,79 @@ const inputLabel = computed(() => {
 </script>
 ```
 
-## 测试
+## Testing
 
-### 单元测试
+### Unit Tests
 
-TestArea组件提供完整的测试覆盖：
+The TestArea components have complete test coverage:
 
 ```bash
-# 运行组件单元测试
+# Run component unit tests
 pnpm -F @prompt-optimizer/ui test -- tests/unit/components/TestAreaPanel.spec.ts
 
-# 运行集成测试
+# Run integration tests
 pnpm -F @prompt-optimizer/ui test -- tests/unit/components/test-area-integration.spec.ts
 
-# 运行端到端测试
+# Run end-to-end tests
 pnpm -F @prompt-optimizer/ui test -- tests/unit/components/test-area-e2e.spec.ts
 ```
 
-### 测试用例
+### Test Cases
 
 ```ts
 import { mount } from '@vue/test-utils'
 import { TestAreaPanel } from '@prompt-optimizer/ui'
 
 describe('TestAreaPanel', () => {
-  it('应该正确处理模式切换', async () => {
+  it('should handle mode switching correctly', async () => {
     const wrapper = mount(TestAreaPanel, {
       props: {
         optimizationMode: 'system',
-        testContent: '测试内容',
+        testContent: 'Test content',
         isCompareMode: true
       }
     })
 
-    // 验证初始状态
+    // Verify the initial state
     expect(wrapper.find('[data-testid="test-input-section"]').exists()).toBe(true)
     
-    // 切换到用户模式
+    // Switch to user mode
     await wrapper.setProps({ optimizationMode: 'user' })
     
-    // 验证状态更新
+    // Verify the state update
     expect(wrapper.find('[data-testid="test-input-section"]').exists()).toBe(false)
   })
 })
 ```
 
-## 故障排查
+## Troubleshooting
 
-### 常见问题
+### Common Issues
 
-**Q: 组件样式显示异常？**  
-A: 检查是否正确导入了Naive UI的NConfigProvider，确保主题系统正常工作。
+**Q: The component styles look wrong?**  
+A: Check that Naive UI's NConfigProvider is imported correctly and that the theme system is working.
 
-**Q: 响应式布局不生效？**  
-A: 确认是否使用了useResponsiveTestLayout hook，并正确传递了布局配置props。
+**Q: The responsive layout does not take effect?**  
+A: Confirm that the useResponsiveTestLayout hook is used and the layout configuration props are passed correctly.
 
-**Q: 测试功能无法正常工作？**  
-A: 检查services是否正确通过provide/inject机制注入，确保promptService可用。
+**Q: The test feature does not work correctly?**  
+A: Check that the services are injected correctly through the provide/inject mechanism and that promptService is available.
 
-**Q: TypeScript类型错误？**  
-A: 确认导入了正确的类型定义，检查@prompt-optimizer/core和@prompt-optimizer/ui的版本兼容性。
+**Q: TypeScript type errors?**  
+A: Confirm that the correct type definitions are imported, and check the version compatibility of @prompt-optimizer/core and @prompt-optimizer/ui.
 
-### 调试工具
+### Debugging Tools
 
 ```vue
 <script setup>
-// 开发模式下启用调试
+// Enable debugging in development mode
 if (import.meta.env.DEV) {
-  // 监听状态变化
+  // Watch state changes
   watch(() => testState, (newState) => {
-    console.log('TestArea状态变化:', newState)
+    console.log('TestArea state changed:', newState)
   }, { deep: true })
   
-  // 暴露组件状态到全局
+  // Expose the component state globally
   window.__testAreaDebug = {
     state: testState,
     config: useTestModeConfig(optimizationMode),
@@ -506,18 +506,18 @@ if (import.meta.env.DEV) {
 </script>
 ```
 
-## 更新日志
+## Changelog
 
 ### v1.0.0 (2025-01-20)
-- ✨ 初始发布TestArea组件系统
-- ✨ 支持系统/用户提示词模式
-- ✨ 完整的响应式布局系统
-- ✨ 对比测试功能
-- ✨ 主题兼容性
-- ✨ 完整的TypeScript类型支持
+- ✨ Initial release of the TestArea component system
+- ✨ Supports system/user prompt modes
+- ✨ Complete responsive layout system
+- ✨ Comparison testing feature
+- ✨ Theme compatibility
+- ✨ Complete TypeScript type support
 
 ---
 
-**文档更新时间：** 2025-01-20  
-**组件版本：** v1.0.0  
-**兼容性：** Vue 3.x, Naive UI 2.x
+**Document last updated:** 2025-01-20  
+**Component version:** v1.0.0  
+**Compatibility:** Vue 3.x, Naive UI 2.x

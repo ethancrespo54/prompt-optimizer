@@ -1,129 +1,129 @@
-## Vercel 部署说明
+## Vercel Deployment Guide
 
-### 部署方式对比
+### Deployment Method Comparison
 
-| 部署方式 | 优点 | 缺点 |
+| Method | Pros | Cons |
 |---------|------|------|
-| 一键部署 | 快速简便，无需额外设置 | 无法自动同步源项目更新 |
-| Fork后导入 | 可跟踪源项目更新，更易维护 | 第一次部署需要手动修复根目录设置以启用Vercel代理功能 |
+| One-click deploy | Quick and easy, no extra setup | Cannot automatically sync updates from the source project |
+| Fork then import | Can track source project updates, easier to maintain | The first deployment requires manually fixing the root directory setting to enable the Vercel proxy feature |
 
-### 推荐方式：Fork项目后导入到Vercel（推荐）
+### Recommended: Fork the Project and Import into Vercel (Recommended)
 
-这种方式可以让你跟踪项目更新，便于后续同步最新功能和bug修复。
+This method lets you track project updates, making it easy to sync the latest features and bug fixes later.
 
-1. **Fork项目到自己的GitHub**
-   - 访问[prompt-optimizer项目](https://github.com/linshenkx/prompt-optimizer)
-   - 点击右上角的"Fork"按钮
-   - 完成fork操作后，你将在自己的GitHub账号下拥有此项目的副本
+1. **Fork the project to your own GitHub**
+   - Visit the [prompt-optimizer project](https://github.com/linshenkx/prompt-optimizer)
+   - Click the "Fork" button in the top right corner
+   - After forking, you will have a copy of this project under your own GitHub account
 
-2. **导入项目到Vercel**
-   - 登录[Vercel平台](https://vercel.com/)
-   - 点击"Add New..."→"Project"
-   - 在"Import Git Repository"部分找到你fork的项目并点击"Import"
-   - 配置项目（**注意**：此处虽然可以设置根目录，但对多模块项目无效，仍需后续手动修复）
-   - 点击"Deploy"开始部署
+2. **Import the project into Vercel**
+   - Log in to the [Vercel platform](https://vercel.com/)
+   - Click "Add New..." → "Project"
+   - In the "Import Git Repository" section, find the project you forked and click "Import"
+   - Configure the project (**Note**: you can set a root directory here, but it has no effect for multi-module projects, so you still need to fix it manually later)
+   - Click "Deploy" to start the deployment
 
-   ![导入项目到Vercel](../images/vercel/import.png)
+   ![Import the project into Vercel](../images/vercel/import.png)
 
-3. **修复根目录设置（强烈建议）**
-   - 通过导入部署时，虽然项目的`vercel.json`文件已包含相关修复可以让基本功能正常工作
-   - 但若要启用**Vercel代理功能**（解决跨域问题的关键功能），则需手动修复根目录：
+3. **Fix the root directory setting (strongly recommended)**
+   - When deploying through import, the project's `vercel.json` file already contains the relevant fixes so basic functionality works
+   - But to enable the **Vercel proxy feature** (the key feature for solving cross-origin issues), you need to fix the root directory manually:
    
-   a. 在项目部署完成后，进入项目设置
+   a. After the project has been deployed, go to the project settings
    
-   b. 点击左侧菜单中的"Build and Deployment"
+   b. Click "Build and Deployment" in the left menu
    
-   c. 在"Root Directory"部分，将输入框中的内容**清空**
+   c. In the "Root Directory" section, **clear** the contents of the input box
    
-   d. 点击"Save"保存设置
+   d. Click "Save" to save the settings
    
-   ![清空根目录设置](../images/vercel/setting.png)
+   ![Clear the root directory setting](../images/vercel/setting.png)
 
-4. **配置环境变量（可选）**
-   - 部署完成后，进入项目设置
-   - 点击"Environment Variables"
-   - 添加需要的API密钥（例如`VITE_OPENAI_API_KEY`）
-   - 如需添加访问限制功能：
-     - 添加名为`ACCESS_PASSWORD`的环境变量
-     - 设置一个安全的密码作为其值
-   - 保存环境变量设置
+4. **Configure environment variables (optional)**
+   - After deployment, go to the project settings
+   - Click "Environment Variables"
+   - Add the API keys you need (for example `VITE_OPENAI_API_KEY`)
+   - To enable access restriction:
+     - Add an environment variable named `ACCESS_PASSWORD`
+     - Set a secure password as its value
+   - Save the environment variable settings
 
-5. **重新部署项目**
-   - 设置保存后，需要手动触发重新部署以使修复和环境变量生效
-   - 点击顶部导航栏中的"Deployments"
-   - 在最新的部署记录右侧，点击"..."按钮
-   - 选择"Redeploy"选项触发重新部署
+5. **Redeploy the project**
+   - After saving the settings, you need to manually trigger a redeployment for the fixes and environment variables to take effect
+   - Click "Deployments" in the top navigation bar
+   - On the right side of the latest deployment record, click the "..." button
+   - Select the "Redeploy" option to trigger a redeployment
    
-   ![重新部署项目](../images/vercel/redeploy.png)
+   ![Redeploy the project](../images/vercel/redeploy.png)
 
-6. **同步上游更新**
-   - 在GitHub上打开你fork的项目
-   - 如果有更新，会显示"This branch is X commits behind linshenkx:main"
-   - 点击"Sync fork"按钮同步最新更改
-   - Vercel会自动检测到代码变更并重新部署
+6. **Sync upstream updates**
+   - Open your forked project on GitHub
+   - If there are updates, it will show "This branch is X commits behind linshenkx:main"
+   - Click the "Sync fork" button to sync the latest changes
+   - Vercel will automatically detect the code change and redeploy
 
-### 替代方式：一键部署到Vercel
+### Alternative: One-Click Deploy to Vercel
 
-如果你只需要快速部署而不关心后续更新，可以使用一键部署方式：
+If you only need a quick deployment and do not care about later updates, you can use the one-click deployment:
 
-1. 点击以下按钮直接部署到Vercel
-   [![部署到 Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Flinshenkx%2Fprompt-optimizer)
+1. Click the button below to deploy directly to Vercel
+   [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Flinshenkx%2Fprompt-optimizer)
 
-2. 按照Vercel的引导完成部署流程
+2. Follow Vercel's guide to complete the deployment process
    
-   **优势：** 一键部署方式Vercel能自动正确识别根目录，无需手动修复，所有功能（包括Vercel代理）均可正常使用。
+   **Advantage:** With one-click deployment, Vercel automatically identifies the root directory correctly, so no manual fix is needed, and all features (including the Vercel proxy) work normally.
 
-### 关于Vercel代理功能
+### About the Vercel Proxy Feature
 
-Prompt Optimizer在Vercel部署时支持使用Edge Runtime代理解决跨域问题。
+When deployed on Vercel, Prompt Optimizer supports using an Edge Runtime proxy to solve cross-origin issues.
 
-1. **确认代理功能可用**
-   - 如使用一键部署：代理功能应直接可用
-   - 如使用导入部署：需完成上述"修复根目录设置"和"重新部署"步骤
-   - 在应用中打开"模型管理"
-   - 选择目标模型->"编辑"，此时应该可以看到"使用Vercel代理"选项
-   - 如果没有看到此选项，说明Vercel Function未正确部署，请检查根目录设置
+1. **Confirm the proxy feature is available**
+   - With one-click deployment: the proxy feature should work directly
+   - With import deployment: complete the "Fix the root directory setting" and "Redeploy the project" steps above
+   - Open "Model Management" in the app
+   - Select the target model -> "Edit"; you should now see the "Use Vercel Proxy" option
+   - If you do not see this option, the Vercel Function was not deployed correctly; please check the root directory setting
 
-2. **启用代理功能**
-   - 勾选"使用Vercel代理"选项
-   - 保存配置
+2. **Enable the proxy feature**
+   - Check the "Use Vercel Proxy" option
+   - Save the configuration
 
-3. **代理原理**
-   - 请求流向：浏览器→Vercel Edge Runtime→模型服务提供商
-   - 解决了浏览器直接访问API时的跨域限制
-   - 代理功能基于Vercel Function实现，依赖于`/api`路径
+3. **How the proxy works**
+   - Request flow: Browser → Vercel Edge Runtime → model provider
+   - It solves the cross-origin restriction when the browser accesses APIs directly
+   - The proxy feature is implemented with a Vercel Function and depends on the `/api` path
 
-4. **注意事项**
-   - 部分模型服务提供商可能会限制来自Vercel的请求
-   - 如遇限制，建议使用自部署的API中转服务
+4. **Notes**
+   - Some model providers may restrict requests coming from Vercel
+   - If you run into restrictions, we recommend using a self-hosted API relay service
 
-### 密码保护访问
+### Password-Protected Access
 
-当配置了`ACCESS_PASSWORD`环境变量后，您的站点将启用密码保护功能：
-- 访问站点时会显示密码验证页面
-- 输入正确密码后可访问应用
-- 系统会设置Cookie记住用户，一段时间内无需重复输入密码
+After the `ACCESS_PASSWORD` environment variable is configured, your site will have password protection enabled:
+- A password verification page is shown when accessing the site
+- After entering the correct password you can access the app
+- The system sets a cookie to remember the user, so the password does not need to be re-entered for a period of time
 
-### 常见问题
+### FAQ
 
-1. **部署后页面空白或报错**
-   - 检查是否正确配置了环境变量
-   - 查看Vercel部署日志寻找错误原因
+1. **Blank page or errors after deployment**
+   - Check whether the environment variables are configured correctly
+   - Check the Vercel deployment logs to find the cause of the error
 
-2. **无法连接到模型API**
-   - 确认API密钥已正确配置
-   - 尝试启用Vercel代理功能
-   - 检查模型服务提供商是否限制了Vercel请求
+2. **Cannot connect to the model API**
+   - Confirm the API key is configured correctly
+   - Try enabling the Vercel proxy feature
+   - Check whether the model provider restricts Vercel requests
 
-3. **"使用Vercel代理"选项未显示**
-   - 如使用导入部署：检查是否已清空根目录设置并重新部署
-   - 查看部署日志中是否有关于Function的错误信息
+3. **The "Use Vercel Proxy" option is not displayed**
+   - With import deployment: check that you have cleared the root directory setting and redeployed
+   - Check the deployment logs for Function-related error messages
 
-4. **如何更新已部署的项目**
-   - 如果是fork后导入：同步fork并等待自动部署
-   - 如果是一键部署：需要重新部署新版本（无法自动跟踪源项目更新）
+4. **How do I update an already deployed project?**
+   - If you forked then imported: sync the fork and wait for the automatic deployment
+   - If you used one-click deployment: you need to redeploy the new version (it cannot automatically track source project updates)
 
-5. **如何添加自定义域名**
-   - 在Vercel项目设置中选择"Domains"
-   - 添加并验证你的域名
-   - 按照指引配置DNS记录
+5. **How do I add a custom domain?**
+   - Select "Domains" in the Vercel project settings
+   - Add and verify your domain
+   - Configure the DNS records following the instructions

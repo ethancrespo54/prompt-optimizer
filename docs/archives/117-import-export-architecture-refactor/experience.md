@@ -1,25 +1,25 @@
-# 开发经验总结
+# Development Lessons Learned
 
-## 🎯 核心经验
+## 🎯 Core Lessons
 
-### 大型架构重构的系统性方法
+### A Systematic Approach to Large Architecture Refactors
 
-#### 1. 问题识别要深入根因
-**经验**: 表面问题往往指向更深层的架构问题
-- **现象**: 数据导出只有4个设置项而不是8个
-- **表面原因**: PreferenceService返回数据不完整
-- **根本原因**: 存储键的双重用途设计不清晰
-- **架构问题**: 集中式DataManager承担过多职责
+#### 1. Dig into Root Causes When Identifying Problems
+**Lesson**: Surface problems often point to deeper architectural problems
+- **Symptom**: The data export had only 4 settings instead of 8
+- **Surface cause**: PreferenceService returned incomplete data
+- **Root cause**: The dual-purpose design of storage keys was unclear
+- **Architectural problem**: The centralized DataManager took on too many responsibilities
 
-**最佳实践**: 
-- 不要急于修复表面问题
-- 深入分析问题的系统性原因
-- 考虑是否需要架构层面的改进
+**Best practices**:
+- Don't rush to fix surface problems
+- Analyze the systemic causes of the problem in depth
+- Consider whether architecture-level improvements are needed
 
-#### 2. 接口优先的设计原则
-**经验**: 先设计接口，再实现具体功能
+#### 2. Interface-first Design Principle
+**Lesson**: Design the interface first, then implement the functionality
 ```typescript
-// 先定义清晰的接口
+// Define a clear interface first
 export interface IImportExportable {
   exportData(): Promise<any>;
   importData(data: any): Promise<void>;
@@ -28,194 +28,194 @@ export interface IImportExportable {
 }
 ```
 
-**收益**:
-- 强制思考职责边界
-- 便于并行开发
-- 提高代码可测试性
-- 支持依赖注入
+**Benefits**:
+- Forces you to think about responsibility boundaries
+- Facilitates parallel development
+- Improves code testability
+- Supports dependency injection
 
-#### 3. 渐进式重构策略
-**经验**: 大型重构要分阶段进行，保持功能连续性
+#### 3. Incremental Refactoring Strategy
+**Lesson**: Large refactors should be done in phases, preserving functional continuity
 
-**实施步骤**:
-1. **接口定义** - 创建新接口，避免循环依赖
-2. **服务改造** - 逐个服务实现新接口
-3. **协调层重构** - 最后修改DataManager
-4. **测试验证** - 每个阶段都要有测试覆盖
+**Implementation steps**:
+1. **Interface definition** - create new interfaces, avoiding circular dependencies
+2. **Service refactoring** - implement the new interface service by service
+3. **Coordination layer refactor** - modify DataManager last
+4. **Test verification** - every phase needs test coverage
 
-**关键原则**:
-- 保持现有API接口不变
-- 新旧系统并存一段时间
-- 充分测试后再移除旧代码
+**Key principles**:
+- Keep the existing API unchanged
+- Let the old and new systems coexist for a while
+- Remove old code only after thorough testing
 
-## 🛠️ 技术实现经验
+## 🛠️ Technical Implementation Lessons
 
-### 存储键架构设计
+### Storage Key Architecture Design
 
-#### 双重用途的清晰分离
-**问题**: 存储键既用于物理存储又用于JSON导出，容易混淆
+#### Clearly Separating the Dual Purposes
+**Problem**: Storage keys are used both for physical storage and JSON export, which is easy to confuse
 
-**解决方案**:
+**Solution**:
 ```typescript
-// 物理存储键（带前缀）
+// Physical storage key (with prefix)
 'pref:app:settings:ui:theme-id'
 
-// 逻辑JSON键（无前缀）  
+// Logical JSON key (no prefix)  
 'app:settings:ui:theme-id'
 ```
 
-**设计原则**:
-- 在服务内部处理前缀转换
-- 对外暴露统一的逻辑键名
-- 文档化两种用途的映射关系
+**Design principles**:
+- Handle prefix conversion inside the service
+- Expose unified logical key names externally
+- Document the mapping between the two purposes
 
-#### 统一存储键管理
-**经验**: 消除重复定义，建立单一数据源
-- 将storage-keys.ts从UI包移动到Core包
-- 所有模块引用同一个定义文件
-- 避免魔法字符串分散在代码中
+#### Unified Storage Key Management
+**Lesson**: Eliminate duplicate definitions and establish a single source of truth
+- Move storage-keys.ts from the UI package to the Core package
+- All modules reference the same definition file
+- Avoid scattering magic strings throughout the code
 
-### Electron IPC架构
+### Electron IPC Architecture
 
-#### 序列化问题处理
-**问题**: Vue reactive对象无法通过IPC传输
+#### Handling Serialization Problems
+**Problem**: Vue reactive objects cannot be transferred over IPC
 
-**解决方案**:
+**Solution**:
 ```typescript
-// 在proxy层进行深度序列化
+// Deep serialization in the proxy layer
 async exportData(): Promise<any> {
   const result = await window.electronAPI.service.exportData();
   return JSON.parse(JSON.stringify(result));
 }
 ```
 
-**最佳实践**:
-- 在IPC边界进行数据序列化
-- 使用TypeScript类型确保数据结构正确
-- 考虑大数据量的性能影响
+**Best practices**:
+- Serialize data at the IPC boundary
+- Use TypeScript types to ensure correct data structures
+- Consider the performance impact of large data volumes
 
-#### 代理层设计模式
-**经验**: 代理类应该只负责IPC通信，不实现业务逻辑
+#### Proxy Layer Design Pattern
+**Lesson**: A proxy class should only handle IPC communication and not implement business logic
 ```typescript
-// ✅ 正确：只负责转发
+// ✅ Correct: only forwards
 async getDataType(): Promise<string> {
   return await window.electronAPI.service.getDataType();
 }
 
-// ❌ 错误：在代理层实现逻辑
+// ❌ Wrong: implementing logic in the proxy layer
 async getDataType(): Promise<string> {
-  return 'hardcoded-value'; // 应该调用IPC
+  return 'hardcoded-value'; // should call IPC
 }
 ```
 
-### 测试策略
+### Testing Strategy
 
-#### 分层测试体系
-**单元测试**: 每个服务的导入导出功能
-**集成测试**: 多服务协调工作
-**端到端测试**: MCP浏览器自动化测试
+#### Layered Testing System
+**Unit tests**: each service's import/export functionality
+**Integration tests**: coordinated work across multiple services
+**End-to-end tests**: MCP browser automation tests
 
-#### AI自动化测试框架
-**创新点**: 使用MCP工具进行浏览器自动化测试
-- 模拟真实用户操作
-- 验证UI交互和数据流
-- 可重复执行的测试用例
+#### AI Automated Testing Framework
+**Innovation**: browser automation testing using MCP tools
+- Simulates real user operations
+- Verifies UI interaction and data flow
+- Repeatable test cases
 
-**价值**:
-- 快速发现回归问题
-- 验证架构一致性
-- 提高测试覆盖率
+**Value**:
+- Quickly detects regressions
+- Verifies architectural consistency
+- Improves test coverage
 
-## 🚫 避坑指南
+## 🚫 Pitfall Guide
 
-### 架构设计陷阱
+### Architecture Design Traps
 
-#### 1. 过度集中化
-**陷阱**: 让一个类承担过多职责
-**表现**: DataManager既协调又实现具体逻辑
-**后果**: 代码难以维护，扩展困难
+#### 1. Over-centralization
+**Trap**: letting one class take on too many responsibilities
+**Manifestation**: DataManager both coordinated and implemented concrete logic
+**Consequence**: code is hard to maintain and hard to extend
 
-**避免方法**:
-- 遵循单一职责原则
-- 使用接口分离关注点
-- 定期重构过大的类
+**How to avoid**:
+- Follow the Single Responsibility Principle
+- Use interfaces to separate concerns
+- Refactor oversized classes regularly
 
-#### 2. 接口设计不一致
-**陷阱**: 不同服务使用不同的方法签名
-**表现**: 有些返回Promise，有些同步返回
-**后果**: 调用方需要特殊处理每个服务
+#### 2. Inconsistent Interface Design
+**Trap**: different services use different method signatures
+**Manifestation**: some return a Promise, others return synchronously
+**Consequence**: callers need special handling for each service
 
-**避免方法**:
-- 统一接口设计
-- 使用TypeScript强制类型检查
-- 代码审查时关注接口一致性
+**How to avoid**:
+- Unify the interface design
+- Use TypeScript to enforce type checking
+- Pay attention to interface consistency during code review
 
-#### 3. 存储抽象泄漏
-**陷阱**: 存储层的实现细节暴露到业务层
-**表现**: 业务代码需要知道存储键前缀
-**后果**: 存储层变更影响业务逻辑
+#### 3. Storage Abstraction Leaks
+**Trap**: storage layer implementation details are exposed to the business layer
+**Manifestation**: business code needs to know the storage key prefix
+**Consequence**: storage layer changes affect business logic
 
-**避免方法**:
-- 在服务层封装存储细节
-- 使用逻辑键名对外暴露
-- 建立清晰的抽象边界
+**How to avoid**:
+- Encapsulate storage details in the service layer
+- Expose logical key names externally
+- Establish clear abstraction boundaries
 
-### 重构过程陷阱
+### Refactoring Process Traps
 
-#### 1. 破坏性变更
-**陷阱**: 修改现有API接口
-**后果**: 影响现有调用代码，引入回归问题
+#### 1. Breaking Changes
+**Trap**: modifying existing API interfaces
+**Consequence**: affects existing callers and introduces regressions
 
-**避免方法**:
-- 保持现有接口签名不变
-- 内部重构，外部兼容
-- 充分的回归测试
+**How to avoid**:
+- Keep existing interface signatures unchanged
+- Refactor internally, stay compatible externally
+- Thorough regression testing
 
-#### 2. 测试覆盖不足
-**陷阱**: 重构时没有足够的测试保护
-**后果**: 引入难以发现的bug
+#### 2. Insufficient Test Coverage
+**Trap**: refactoring without enough test protection
+**Consequence**: introduces hard-to-find bugs
 
-**避免方法**:
-- 重构前先补充测试
-- 每个阶段都要有测试验证
-- 使用多层次测试策略
+**How to avoid**:
+- Add tests before refactoring
+- Every phase needs test verification
+- Use a multi-level testing strategy
 
-#### 3. 文档滞后
-**陷阱**: 代码重构了但文档没有更新
-**后果**: 团队成员理解不一致，维护困难
+#### 3. Lagging Documentation
+**Trap**: the code was refactored but the documentation was not updated
+**Consequence**: team members' understanding diverges and maintenance becomes difficult
 
-**避免方法**:
-- 重构的同时更新文档
-- 创建架构决策记录(ADR)
-- 定期审查文档的准确性
+**How to avoid**:
+- Update documentation alongside the refactor
+- Create Architecture Decision Records (ADR)
+- Review documentation accuracy regularly
 
-## 🔄 架构设计经验
+## 🔄 Architecture Design Lessons
 
-### 分布式服务架构
+### Distributed Service Architecture
 
-#### 设计原则
-1. **单一职责**: 每个服务只负责自己的数据
-2. **接口统一**: 所有服务实现相同接口
-3. **松耦合**: 服务间通过接口交互，不直接依赖
-4. **可扩展**: 新增服务只需实现接口
+#### Design Principles
+1. **Single responsibility**: each service is only responsible for its own data
+2. **Unified interface**: all services implement the same interface
+3. **Loose coupling**: services interact through interfaces rather than depending on each other directly
+4. **Extensible**: a new service only needs to implement the interface
 
-#### 实施要点
-- 先设计接口，再实现服务
-- 使用依赖注入管理服务关系
-- 建立统一的错误处理机制
-- 提供完整的测试覆盖
+#### Implementation Points
+- Design the interface first, then implement the service
+- Use dependency injection to manage service relationships
+- Establish a unified error handling mechanism
+- Provide complete test coverage
 
-### 数据一致性保证
+### Data Consistency Guarantees
 
-#### 导入导出的原子性
-**挑战**: 多个服务的数据需要保持一致性
-**解决方案**: 
-- 先验证所有数据格式
-- 再执行实际的导入操作
-- 出错时提供回滚机制
+#### Atomicity of Import/Export
+**Challenge**: data across multiple services needs to stay consistent
+**Solution**: 
+- Validate all data formats first
+- Then perform the actual import
+- Provide a rollback mechanism on errors
 
-#### 版本兼容性
-**设计**: 在JSON中包含版本信息
+#### Version Compatibility
+**Design**: include version information in the JSON
 ```json
 {
   "version": 1,
@@ -224,47 +224,47 @@ async getDataType(): Promise<string> {
 }
 ```
 
-**价值**: 支持未来的数据格式升级
+**Value**: supports future data format upgrades
 
-### 性能优化经验
+### Performance Optimization Lessons
 
-#### 减少不必要的数据传输
-- 在服务层进行数据过滤
-- 避免在协调层聚合大量数据
-- 使用流式处理处理大文件
+#### Reduce Unnecessary Data Transfer
+- Filter data in the service layer
+- Avoid aggregating large amounts of data in the coordination layer
+- Use streaming to process large files
 
-#### 并发处理
-- 各服务的导出可以并行执行
-- 使用Promise.all提高效率
-- 注意IPC调用的并发限制
+#### Concurrent Processing
+- Each service's export can run in parallel
+- Use Promise.all to improve efficiency
+- Mind the concurrency limits of IPC calls
 
-## 💡 创新点总结
+## 💡 Summary of Innovations
 
-### AI自动化测试框架
-**创新**: 使用MCP工具进行端到端测试
-**价值**: 验证真实用户场景，提高测试可靠性
+### AI Automated Testing Framework
+**Innovation**: end-to-end testing using MCP tools
+**Value**: verifies real user scenarios and improves test reliability
 
-### 存储键双重用途设计
-**创新**: 明确分离物理存储键和逻辑JSON键
-**价值**: 解决架构不一致问题，提高系统清晰度
+### Dual-purpose Storage Key Design
+**Innovation**: explicitly separate physical storage keys from logical JSON keys
+**Value**: resolves architectural inconsistency and improves system clarity
 
-### 分布式导入导出架构
-**创新**: 从集中式改为分布式服务自管理
-**价值**: 提高代码可维护性和扩展性
+### Distributed Import/Export Architecture
+**Innovation**: moved from centralized to self-managing distributed services
+**Value**: improves code maintainability and extensibility
 
-## 🔮 未来改进方向
+## 🔮 Future Improvement Directions
 
-### 架构演进
-- 考虑实现统一的缓存层
-- 支持增量导入导出
-- 添加数据压缩和加密
+### Architecture Evolution
+- Consider implementing a unified cache layer
+- Support incremental import/export
+- Add data compression and encryption
 
-### 开发体验
-- 建立更完善的类型系统
-- 提供开发者工具支持
-- 增强错误诊断能力
+### Developer Experience
+- Build a more complete type system
+- Provide developer tooling support
+- Strengthen error diagnostics
 
-### 测试自动化
-- 扩展AI测试框架覆盖更多场景
-- 建立性能回归测试
-- 实现持续集成中的自动化测试
+### Test Automation
+- Extend the AI testing framework to cover more scenarios
+- Establish performance regression tests
+- Implement automated testing in continuous integration

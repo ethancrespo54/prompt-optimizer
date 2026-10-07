@@ -1,344 +1,344 @@
-# 提示词优化正常流程测试
+# Prompt Optimization Normal Flow Test
 
-## 📖 测试概述
-验证提示词优化功能的基本流程，确保用户能够正常进行提示词优化操作。
+## 📖 Test Overview
+Verify the basic flow of the prompt optimization feature, ensuring users can perform prompt optimization normally.
 
-## 🎯 测试目标
-- 验证提示词输入和优化流程
-- 确认模板和模型选择功能
-- 验证优化结果显示和迭代功能
-- 检查版本管理和切换功能
+## 🎯 Test Goals
+- Verify the prompt input and optimization flow
+- Confirm the template and model selection features
+- Verify the optimization result display and iteration features
+- Check the version management and switching features
 
-## 📋 前置条件
-- [ ] 应用已启动并加载完成
-- [ ] 至少配置了一个AI模型（OpenAI/Claude/Gemini等）
-- [ ] 存在可用的优化模板
-- [ ] 网络连接正常
-
----
-
-## 🔧 测试步骤
-
-### 步骤1：输入原始提示词
-
-**AI执行指导：**
-- 使用 `browser_snapshot` 获取页面当前状态
-- 查找标有"输入提示词"、"原始提示词"或类似标签的文本框
-- 使用 `browser_type` 输入测试用的提示词内容
-
-**测试数据：**
-```
-正常测试：请帮我写一个关于人工智能发展历史的文章
-```
-
-**预期结果：**
-- 文本框显示已输入的提示词内容
-- 输入框下方可能显示字符计数
-- 优化按钮变为可点击状态
-
-**验证点：**
-- [ ] 提示词已成功输入到文本框
-- [ ] 文本框显示完整内容
-- [ ] 优化相关按钮可用
-- [ ] 没有输入错误提示
+## 📋 Prerequisites
+- [ ] The application has started and finished loading
+- [ ] At least one AI model is configured (OpenAI/Claude/Gemini, etc.)
+- [ ] Available optimization templates exist
+- [ ] The network connection is normal
 
 ---
 
-### 步骤2：选择优化模式和模板
+## 🔧 Test Steps
 
-**AI执行指导：**
-- 使用 `browser_snapshot` 查看当前页面的选择器状态
-- 查找优化模式选择器（通常是单选按钮或下拉框）
-- 使用 `browser_click` 选择优化模式
-- 查找模板选择下拉框并选择合适的模板
+### Step 1: Enter the Original Prompt
 
-**测试数据：**
+**AI execution guidance:**
+- Use `browser_snapshot` to get the current page state
+- Find the text box labeled "Enter prompt", "Original Prompt", or a similar label
+- Use `browser_type` to enter the test prompt content
+
+**Test data:**
 ```
-优化模式：系统提示词优化
-模板选择：通用优化
+Normal test: Please help me write an article about the history of artificial intelligence
 ```
 
-**预期结果：**
-- 优化模式已选中（显示选中状态）
-- 模板选择框显示已选择的模板名称
-- 模板描述区域显示相应的模板说明
+**Expected results:**
+- The text box shows the entered prompt content
+- A character count may be displayed below the input box
+- The optimize button becomes clickable
 
-**验证点：**
-- [ ] 优化模式已正确选择
-- [ ] 模板已成功选择
-- [ ] 模板描述显示正确
-- [ ] 选择器状态更新正常
-
----
-
-### 步骤3：选择优化模型
-
-**AI执行指导：**
-- 查找模型选择下拉框（通常在页面右上角区域）
-- 使用 `browser_click` 打开模型选择下拉框
-- 选择一个可用的模型（状态显示为正常的）
-- 确认模型选择成功
-
-**预期结果：**
-- 模型选择框显示已选择的模型名称
-- 模型状态指示器显示为可用状态
-- 优化按钮完全激活
-
-**验证点：**
-- [ ] 模型已成功选择
-- [ ] 模型状态显示正常
-- [ ] 优化按钮可点击
-- [ ] 没有模型配置错误提示
+**Verification points:**
+- [ ] The prompt was successfully entered into the text box
+- [ ] The text box shows the complete content
+- [ ] Optimization-related buttons are available
+- [ ] There is no input error prompt
 
 ---
 
-### 步骤4：执行提示词优化
+### Step 2: Select the Optimization Mode and Template
 
-**AI执行指导：**
-- 查找并点击"优化提示词"、"开始优化"或类似的主要操作按钮
-- 使用 `browser_wait_for` 等待优化过程开始（按钮变为加载状态）
-- 等待优化完成（加载状态消失，结果显示）
-- 使用 `browser_snapshot` 检查优化结果
+**AI execution guidance:**
+- Use `browser_snapshot` to view the state of the selectors on the current page
+- Find the optimization mode selector (usually radio buttons or a dropdown)
+- Use `browser_click` to select the optimization mode
+- Find the template selection dropdown and select an appropriate template
 
-**预期结果：**
-- 优化按钮显示加载状态（如旋转图标）
-- 右侧面板开始显示优化后的提示词
-- 推理过程逐步显示（如果启用）
-- 优化完成后按钮恢复正常状态
-
-**验证点：**
-- [ ] 优化过程成功启动
-- [ ] 右侧显示优化后的提示词
-- [ ] 推理过程内容合理
-- [ ] 优化过程正常完成
-- [ ] 没有错误提示信息
-
----
-
-### 步骤5：查看和评估优化结果
-
-**AI执行指导：**
-- 使用 `browser_snapshot` 获取优化结果面板的完整内容
-- 检查优化后提示词是否显示完整
-- 验证推理过程是否存在且内容合理
-- 确认结果面板的各个功能按钮可用
-
-**预期结果：**
-- 优化后的提示词完整显示在右侧面板
-- 推理过程详细说明了优化的原因和改进点
-- 可以看到复制、编辑、全屏等操作按钮
-- 版本信息正确显示
-
-**验证点：**
-- [ ] 优化后提示词完整显示
-- [ ] 推理过程内容详细合理
-- [ ] 操作按钮（复制、编辑等）可用
-- [ ] 版本信息显示正确
-- [ ] 内容格式显示正常
-
----
-
-### 步骤6：进行迭代优化
-
-**AI执行指导：**
-- 查找迭代输入框（通常在优化结果下方）
-- 使用 `browser_type` 输入迭代改进要求
-- 选择迭代模板（如果有选择器）
-- 点击迭代优化按钮
-
-**测试数据：**
+**Test data:**
 ```
-迭代要求：请增加更多关于深度学习和神经网络发展的具体技术细节，并添加时间线结构
+Optimization mode: System Prompt Optimization
+Template selection: General Optimization
 ```
 
-**预期结果：**
-- 迭代输入框显示改进要求
-- 开始新的优化过程
-- 生成新版本的优化结果
-- 版本历史中增加新版本
+**Expected results:**
+- The optimization mode is selected (shows the selected state)
+- The template selection box shows the selected template name
+- The template description area shows the corresponding template description
 
-**验证点：**
-- [ ] 迭代要求成功输入
-- [ ] 迭代优化过程正常启动
-- [ ] 生成新的优化版本
-- [ ] 版本切换功能正常
-- [ ] 迭代结果质量有改进
+**Verification points:**
+- [ ] The optimization mode is selected correctly
+- [ ] The template is selected successfully
+- [ ] The template description is displayed correctly
+- [ ] The selector state updates normally
 
 ---
 
-### 步骤7：测试版本切换
+### Step 3: Select the Optimization Model
 
-**AI执行指导：**
-- 查找版本切换按钮（V1、V2等）
-- 使用 `browser_click` 切换不同版本
-- 验证内容是否正确切换
-- 测试复制功能
+**AI execution guidance:**
+- Find the model selection dropdown (usually in the upper-right area of the page)
+- Use `browser_click` to open the model selection dropdown
+- Select an available model (one whose status shows as normal)
+- Confirm the model was selected successfully
 
-**预期结果：**
-- 能够在不同版本间自由切换
-- 每个版本的内容正确显示
-- 复制功能正常工作
+**Expected results:**
+- The model selection box shows the selected model name
+- The model status indicator shows an available state
+- The optimize button is fully activated
 
-**验证点：**
-- [ ] 版本切换功能正常
-- [ ] 版本内容正确显示
-- [ ] 复制功能工作正常
-- [ ] 界面状态更新正确
-
----
-
-### 步骤8：测试结果展示功能 ⭐ 新增
-
-**AI执行指导：**
-- 在优化完成后，继续测试结果展示相关功能
-- 验证用户在获得优化结果后的各种操作体验
-
-#### 8.1 视图切换功能测试
-
-**AI执行指导：**
-- 使用 `browser_click` 点击"Source"按钮
-- 使用 `browser_snapshot` 验证内容变为Markdown源码格式
-- 使用 `browser_click` 点击"Render"按钮
-- 使用 `browser_snapshot` 验证内容变为HTML渲染格式
-
-**预期结果：**
-- 渲染视图：显示格式化的HTML（标题、段落、列表等）
-- 源码视图：显示原始的Markdown文本（**标记、*列表等）
-- 按钮状态正确更新（当前视图按钮disabled）
-
-**验证点：**
-- [ ] 视图切换响应正常
-- [ ] 内容格式正确转换
-- [ ] 按钮状态正确更新
-- [ ] 内容完整性保持
-
-#### 8.2 复制功能测试
-
-**AI执行指导：**
-- 使用 `browser_click` 点击"Copy"按钮
-- 观察是否出现成功提示
-
-**预期结果：**
-- 出现"Copied to clipboard"提示
-- 提示自动消失或可手动关闭
-
-**验证点：**
-- [ ] 复制按钮响应正常
-- [ ] 成功提示正确显示
-- [ ] 用户反馈及时清晰
-
-#### 8.3 全屏查看功能测试
-
-**AI执行指导：**
-- 使用 `browser_click` 点击"Fullscreen"按钮
-- 使用 `browser_snapshot` 验证全屏界面
-- 测试全屏模式下的视图切换
-- 使用 `browser_click` 关闭全屏
-
-**预期结果：**
-- 打开独立的全屏内容查看器
-- 全屏模式有完整的功能控制
-- 可以正常关闭回到原界面
-
-**验证点：**
-- [ ] 全屏界面正确打开
-- [ ] 全屏模式功能完整
-- [ ] 视图控制正常工作
-- [ ] 关闭功能正常
-
-#### 8.4 智能对比功能测试
-
-**AI执行指导：**
-- 使用 `browser_click` 点击"Compare"按钮
-- 使用 `browser_snapshot` 观察对比显示效果
-
-**预期结果：**
-- 智能识别原始提示词和优化结果的差异
-- 分段显示不同部分（原始、共同、优化扩展）
-- Compare按钮状态更新为disabled
-
-**验证点：**
-- [ ] 对比模式正确激活
-- [ ] 文本差异正确识别
-- [ ] 分段显示清晰
-- [ ] 按钮状态正确更新
-
-#### 8.5 展开编辑功能测试
-
-**AI执行指导：**
-- 使用 `browser_click` 点击"Expand"按钮
-- 使用 `browser_snapshot` 验证全屏编辑界面
-- 测试输入功能
-- 使用 `browser_click` 关闭编辑界面
-
-**预期结果：**
-- 打开全屏编辑模式
-- 有独立的编辑窗口和关闭按钮
-- 输入功能正常工作
-
-**验证点：**
-- [ ] 全屏编辑界面正确打开
-- [ ] 输入功能正常
-- [ ] 关闭功能正常
-- [ ] 内容保持一致
+**Verification points:**
+- [ ] The model is selected successfully
+- [ ] The model status is displayed normally
+- [ ] The optimize button is clickable
+- [ ] There is no model configuration error prompt
 
 ---
 
-## ⚠️ 常见问题检查
+### Step 4: Execute Prompt Optimization
 
-### 网络相关问题
-- 优化过程中断或超时
-- API调用失败
-- 模型连接异常
+**AI execution guidance:**
+- Find and click the main action button such as "Optimize Prompt", "Start Optimization", or similar
+- Use `browser_wait_for` to wait for the optimization process to start (the button turns to a loading state)
+- Wait for the optimization to complete (the loading state disappears and the result is displayed)
+- Use `browser_snapshot` to check the optimization result
 
-### 界面交互问题
-- 按钮无响应
-- 内容显示异常
-- 版本切换失败
+**Expected results:**
+- The optimize button shows a loading state (such as a spinning icon)
+- The right panel starts displaying the optimized prompt
+- The reasoning process is displayed progressively (if enabled)
+- The button returns to its normal state after optimization completes
 
-### 数据处理问题
-- 输入验证失败
-- 结果格式错误
-- 版本管理异常
+**Verification points:**
+- [ ] The optimization process starts successfully
+- [ ] The optimized prompt is displayed on the right
+- [ ] The reasoning process content is reasonable
+- [ ] The optimization process completes normally
+- [ ] There is no error message
 
 ---
 
-## 🤖 AI验证执行模板
+### Step 5: View and Evaluate the Optimization Result
+
+**AI execution guidance:**
+- Use `browser_snapshot` to get the full content of the optimization result panel
+- Check whether the optimized prompt is fully displayed
+- Verify that the reasoning process exists and its content is reasonable
+- Confirm that the function buttons of the result panel are available
+
+**Expected results:**
+- The optimized prompt is fully displayed in the right panel
+- The reasoning process explains in detail the reasons for the optimization and the improvements
+- Operation buttons such as copy, edit, and fullscreen are visible
+- Version information is displayed correctly
+
+**Verification points:**
+- [ ] The optimized prompt is fully displayed
+- [ ] The reasoning process content is detailed and reasonable
+- [ ] Operation buttons (copy, edit, etc.) are available
+- [ ] Version information is displayed correctly
+- [ ] The content format is displayed normally
+
+---
+
+### Step 6: Perform Iterative Optimization
+
+**AI execution guidance:**
+- Find the iteration input box (usually below the optimization result)
+- Use `browser_type` to enter the iteration improvement requirements
+- Select the iteration template (if there is a selector)
+- Click the iterative optimization button
+
+**Test data:**
+```
+Iteration requirement: Please add more specific technical details about the development of deep learning and neural networks, and add a timeline structure
+```
+
+**Expected results:**
+- The iteration input box shows the improvement requirements
+- A new optimization process starts
+- A new version of the optimization result is generated
+- A new version is added to the version history
+
+**Verification points:**
+- [ ] The iteration requirements are entered successfully
+- [ ] The iterative optimization process starts normally
+- [ ] A new optimized version is generated
+- [ ] The version switching feature works normally
+- [ ] The quality of the iteration result is improved
+
+---
+
+### Step 7: Test Version Switching
+
+**AI execution guidance:**
+- Find the version switch buttons (V1, V2, etc.)
+- Use `browser_click` to switch between versions
+- Verify that the content switches correctly
+- Test the copy feature
+
+**Expected results:**
+- Versions can be freely switched
+- The content of each version is displayed correctly
+- The copy feature works normally
+
+**Verification points:**
+- [ ] The version switching feature works normally
+- [ ] The version content is displayed correctly
+- [ ] The copy feature works normally
+- [ ] The interface state updates correctly
+
+---
+
+### Step 8: Test Result Display Features ⭐ New
+
+**AI execution guidance:**
+- After optimization completes, continue testing the result display features
+- Verify the various operation experiences available to the user after obtaining the optimization result
+
+#### 8.1 View Switching Test
+
+**AI execution guidance:**
+- Use `browser_click` to click the "Source" button
+- Use `browser_snapshot` to verify the content changes to Markdown source format
+- Use `browser_click` to click the "Render" button
+- Use `browser_snapshot` to verify the content changes to HTML rendered format
+
+**Expected results:**
+- Render view: shows formatted HTML (headings, paragraphs, lists, etc.)
+- Source view: shows the original Markdown text (** markers, * lists, etc.)
+- Button states update correctly (the button of the current view is disabled)
+
+**Verification points:**
+- [ ] View switching responds normally
+- [ ] The content format converts correctly
+- [ ] Button states update correctly
+- [ ] Content integrity is maintained
+
+#### 8.2 Copy Feature Test
+
+**AI execution guidance:**
+- Use `browser_click` to click the "Copy" button
+- Observe whether a success prompt appears
+
+**Expected results:**
+- A "Copied to clipboard" prompt appears
+- The prompt disappears automatically or can be closed manually
+
+**Verification points:**
+- [ ] The copy button responds normally
+- [ ] The success prompt is displayed correctly
+- [ ] User feedback is timely and clear
+
+#### 8.3 Fullscreen View Test
+
+**AI execution guidance:**
+- Use `browser_click` to click the "Fullscreen" button
+- Use `browser_snapshot` to verify the fullscreen interface
+- Test view switching in fullscreen mode
+- Use `browser_click` to close fullscreen
+
+**Expected results:**
+- A standalone fullscreen content viewer opens
+- Fullscreen mode has complete function controls
+- It can be closed normally to return to the original interface
+
+**Verification points:**
+- [ ] The fullscreen interface opens correctly
+- [ ] Fullscreen mode features are complete
+- [ ] View controls work normally
+- [ ] The close feature works normally
+
+#### 8.4 Smart Compare Feature Test
+
+**AI execution guidance:**
+- Use `browser_click` to click the "Compare" button
+- Use `browser_snapshot` to observe the comparison display
+
+**Expected results:**
+- Differences between the original prompt and the optimized result are intelligently identified
+- Different parts are displayed in segments (original, common, optimized extension)
+- The Compare button state updates to disabled
+
+**Verification points:**
+- [ ] Compare mode is activated correctly
+- [ ] Text differences are identified correctly
+- [ ] Segmented display is clear
+- [ ] Button states update correctly
+
+#### 8.5 Expand Editing Feature Test
+
+**AI execution guidance:**
+- Use `browser_click` to click the "Expand" button
+- Use `browser_snapshot` to verify the fullscreen editing interface
+- Test the input feature
+- Use `browser_click` to close the editing interface
+
+**Expected results:**
+- Fullscreen editing mode opens
+- There is an independent editing window and a close button
+- The input feature works normally
+
+**Verification points:**
+- [ ] The fullscreen editing interface opens correctly
+- [ ] The input feature works normally
+- [ ] The close feature works normally
+- [ ] The content stays consistent
+
+---
+
+## ⚠️ Common Problem Checks
+
+### Network-Related Problems
+- The optimization process is interrupted or times out
+- API calls fail
+- Abnormal model connection
+
+### Interface Interaction Problems
+- Buttons do not respond
+- Abnormal content display
+- Version switching fails
+
+### Data Processing Problems
+- Input validation fails
+- Result format errors
+- Abnormal version management
+
+---
+
+## 🤖 AI Verification Execution Template
 
 ```javascript
-// 1. 打开应用
+// 1. Open the application
 browser_navigate("http://localhost:18181/")
 
-// 2. 获取初始状态
+// 2. Get the initial state
 browser_snapshot()
 
-// 3. 输入提示词
-browser_type(element="原始提示词输入框", ref="e54", text="请帮我写一个关于人工智能发展历史的文章")
+// 3. Enter the prompt
+browser_type(element="Original prompt input box", ref="e54", text="Please help me write an article about the history of artificial intelligence")
 
-// 4. 执行优化
-browser_click(element="开始优化按钮", ref="e78")
+// 4. Execute optimization
+browser_click(element="Start optimization button", ref="e78")
 
-// 5. 等待完成
-browser_wait_for(text="优化成功")
+// 5. Wait for completion
+browser_wait_for(text="Optimization successful")
 
-// 6. 验证结果
+// 6. Verify the result
 browser_snapshot()
 
-// 7. 测试迭代
-browser_click(element="继续优化按钮", ref="e178")
-browser_type(element="迭代输入框", ref="e284", text="请增加更多技术细节")
-browser_click(element="确认优化按钮", ref="e287")
+// 7. Test iteration
+browser_click(element="Continue optimize button", ref="e178")
+browser_type(element="Iteration input box", ref="e284", text="Please add more technical details")
+browser_click(element="Confirm optimization button", ref="e287")
 
-// 8. 验证版本切换
-browser_click(element="V1按钮", ref="e177")
-browser_click(element="V2按钮", ref="e288")
+// 8. Verify version switching
+browser_click(element="V1 button", ref="e177")
+browser_click(element="V2 button", ref="e288")
 
-// 9. 测试复制功能
-browser_click(element="复制按钮", ref="e93")
+// 9. Test the copy feature
+browser_click(element="Copy button", ref="e93")
 ```
 
-**成功标准：**
-- 所有步骤执行成功
-- 所有验证点通过
-- 功能按预期工作
-- 无错误提示或异常
+**Success criteria:**
+- All steps execute successfully
+- All verification points pass
+- Features work as expected
+- No error messages or exceptions

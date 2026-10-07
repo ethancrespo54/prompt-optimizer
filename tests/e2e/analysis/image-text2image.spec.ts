@@ -8,53 +8,53 @@ import {
 } from '../helpers/analysis'
 
 /**
- * Image Text2Image 模式 - 提示词分析测试
+ * Image Text2Image mode - prompt analysis tests
  *
- * ✨ 最佳范式示例：
- * - 使用 data-testid 精确定位，不依赖文本内容
- * - 容器隔离：通过 data-mode 区分不同工作区
- * - 类型安全：使用 TypeScript 类型定义
+ * ✨ Best-practice example:
+ * - Locate precisely with data-testid, without relying on text content
+ * - Container isolation: distinguish workspaces via data-mode
+ * - Type safety: use TypeScript type definitions
  *
- * 功能：分析图像生成提示词并显示评估分数
+ * Feature: analyze the image generation prompt and display the evaluation score
  *
- * 前提：
- * - .env.local 已配置 API keys
- * - 实际调用 LLM API（会产生费用）
+ * Prerequisites:
+ * - API keys are configured in .env.local
+ * - Real LLM API calls are made (this incurs costs)
  *
- * 测试流程：
- * 1. 导航到 image-text2image 工作区
- * 2. 填写图像生成提示词
- * 3. 点击"分析"按钮
- * 4. 等待 LLM 响应
- * 5. 验证评估结果和分数显示
+ * Test flow:
+ * 1. Navigate to image-text2image workspace
+ * 2. Fill in the image generation prompt
+ * 3. Click the "Analyze" button
+ * 4. Wait for the LLM response
+ * 5. Verify the evaluation result and score display
  */
 
 const MODE = 'image-text2image' as const
 
-test.describe('Image Text2Image - 提示词分析', () => {
-  test('分析提示词并显示评估结果', async ({ page }) => {
-    test.setTimeout(180000) // 3分钟超时
+test.describe('Image Text2Image - Prompt Analysis', () => {
+  test('Analyze the prompt and display the evaluation result', async ({ page }) => {
+    test.setTimeout(180000) // 3-minute timeout
 
-    // 1. 导航到 image-text2image 工作区
+    // 1. Navigate to image-text2image workspace
     await navigateToMode(page, 'image', 'text2image')
 
-    // 2. 等待服务和组件完全初始化
+    // 2. Wait for services and components to fully initialize
 
-    // 3. 填写图像生成提示词（使用 data-testid 定位）
+    // 3. Fill in the image generation prompt (located via data-testid)
     const testPrompt = 'A beautiful sunset over the ocean with palm trees, golden hour lighting, photorealistic'
     await fillOriginalPrompt(page, MODE, testPrompt)
 
-    // 4. 点击分析按钮（使用 data-testid 定位）
+    // 4. Click the analyze button (located via data-testid)
     await clickAnalyzeButton(page, MODE)
 
-    // 5. 验证评估分数（使用 data-testid 定位）
+    // 5. Verify the evaluation score (located via data-testid)
     const score = await getEvaluationScore(page, MODE)
   })
 
-  test('验证分析按钮在没有提示词时禁用', async ({ page }) => {
+  test('Verify the analyze button is disabled when there is no prompt', async ({ page }) => {
     await navigateToMode(page, 'image', 'text2image')
 
-    // 分析按钮应该在没有输入时禁用
+    // The analyze button should be disabled when there is no input
     await verifyAnalyzeButtonDisabledWhenEmpty(page, MODE)
   })
 })

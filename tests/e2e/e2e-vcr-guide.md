@@ -1,35 +1,35 @@
-# E2E 测试 VCR 集成指南
+# E2E Test VCR Integration Guide
 
-## 问题分析
+## Problem Analysis
 
-当前 E2E 测试每次都发送真实的 LLM 请求：
-- ⏱️ 测试速度慢（等待 LLM 响应 20-60 秒）
-- 💰 费用问题（API 调用成本）
-- ⚠️ 不稳定（网络问题、API 限流）
+E2E tests currently send real LLM requests every time:
+- ⏱️ Slow tests (waiting 20-60 seconds for LLM responses)
+- 💰 Cost (API call fees)
+- ⚠️ Instability (network problems, API rate limiting)
 
-## 解决方案
+## Solutions
 
-### 方案 A：Playwright 网络拦截（推荐）
+### Option A: Playwright network interception (recommended)
 
-使用 Playwright 的 `route` 功能拦截 LLM API 请求，返回预设的响应。
+Use Playwright's `route` feature to intercept LLM API requests and return preset responses.
 
-#### 实施步骤
+#### Implementation steps
 
-**1. 创建 VCR fixtures 目录**
+**1. Create the VCR fixtures directory**
 
 ```bash
 mkdir -p tests/e2e/fixtures/llm-responses
 ```
 
-**2. 创建 Playwright VCR 辅助工具**
+**2. Create the Playwright VCR helper**
 
-创建文件：`tests/e2e/helpers/vcr.ts`
+Create the file: `tests/e2e/helpers/vcr.ts`
 
 ```typescript
 import { type Page, type Route } from '@playwright/test'
 
 /**
- * LLM API 响应 fixture
+ * LLM API response fixture
  */
 interface LLMResponseFixture {
   scenarioName: string
@@ -42,15 +42,15 @@ interface LLMResponseFixture {
 }
 
 /**
- * VCR 模式
+ * VCR mode
  */
 type VCRMode = 'auto' | 'record' | 'replay' | 'live'
 
 /**
- * 为 E2E 测试启用 VCR
+ * Enable VCR for E2E tests
  *
- * @param page Playwright Page 对象
- * @param options VCR 选项
+ * @param page Playwright Page object
+ * @param options VCR options
  */
 export async function setupE2EVCR(
   page: Page,
@@ -64,29 +64,29 @@ export async function setupE2EVCR(
     fixtureDir = 'tests/e2e/fixtures/llm-responses'
   } = options
 
-  // 在 replay 模式下拦截 API 请求
+  // Intercept API requests in replay mode
   if (mode === 'replay' || mode === 'auto') {
     await page.route('**/api/**/evaluate', async (route: Route) => {
       const fixtureName = getFixtureNameFromRequest(route.request())
 
       try {
-        // 尝试读取 fixture
+        // Try to read the fixture
         const response = await loadFixture(fixtureName, fixtureDir)
 
         if (response) {
           console.log(`[VCR] Replaying fixture: ${fixtureName}`)
-          // 返回 mock 响应
+          // Return the mock response
           await route.fulfill({
             status: 200,
             contentType: 'application/json',
             body: JSON.stringify(response)
           })
         } else if (mode === 'auto') {
-          // auto 模式：fixture 不存在时调用真实 API
+          // auto mode: call the real API when the fixture does not exist
           console.log(`[VCR] Fixture not found: ${fixtureName}, calling real API`)
           await route.continue()
         } else {
-          // replay 模式：fixture 不存在时失败
+          // replay mode: fail when the fixture does not exist
           throw new Error(
             `Fixture not found: ${fixtureName}\n` +
             `Run with E2E_VCR_MODE=record to create it.`
@@ -99,20 +99,20 @@ export async function setupE2EVCR(
     })
   }
 
-  // 在 record 模式下记录响应
+  // Record responses in record mode
   if (mode === 'record') {
     await page.route('**/api/**/evaluate', async (route: Route) => {
-      // 调用真实 API
+      // Call the real API
       const response = await route.fetch()
 
-      // 保存响应
+      // Save the response
       const fixtureName = getFixtureNameFromRequest(route.request())
       const responseData = await response.json()
 
       await saveFixture(fixtureName, responseData, fixtureDir)
       console.log(`[VCR] Recorded fixture: ${fixtureName}`)
 
-      // 返回真实响应
+      // Return the real response
       await route.fulfill({
         status: response.status(),
         contentType: response.headers()['content-type'],
@@ -121,20 +121,20 @@ export async function setupE2EVCR(
     })
   }
 
-  // live 模式：直接调用真实 API（不拦截）
+  // live mode: call the real API directly (no interception)
   if (mode === 'live') {
     console.log('[VCR] Live mode: calling real API')
   }
 }
 
 /**
- * 从请求生成 fixture 名称
+ * Generate the fixture name from the request
  */
 function getFixtureNameFromRequest(request: any): string {
   const url = new URL(request.url())
   const pathname = url.pathname
 
-  // 解析路径，例如：/api/evaluate/basic-system/prompt-only
+  // Parse the path, e.g. /api/evaluate/basic-system/prompt-only
   const parts = pathname.split('/')
   const mode = parts[3] // basic-system
   const type = parts[4] // prompt-only
@@ -143,7 +143,7 @@ function getFixtureNameFromRequest(request: any): string {
 }
 
 /**
- * 加载 fixture
+ * Load a fixture
  */
 async function loadFixture(
   fixtureName: string,
@@ -163,7 +163,7 @@ async function loadFixture(
 }
 
 /**
- * 保存 fixture
+ * Save a fixture
  */
 async function saveFixture(
   fixtureName: string,
@@ -175,10 +175,10 @@ async function saveFixture(
 
   const fixturePath = path.join(fixtureDir, fixtureName)
 
-  // 确保目录存在
+  // Make sure the directory exists
   await fs.mkdir(path.dirname(fixturePath), { recursive: true })
 
-  // 保存 fixture
+  // Save the fixture
   await fs.writeFile(
     fixturePath,
     JSON.stringify(data, null, 2),
@@ -187,9 +187,9 @@ async function saveFixture(
 }
 ```
 
-**3. 更新测试 fixture**
+**3. Update the test fixture**
 
-修改 `tests/e2e/fixtures.ts`：
+Modify `tests/e2e/fixtures.ts`:
 
 ```typescript
 import { test as base, expect, type ConsoleMessage, type Page } from '@playwright/test'
@@ -197,9 +197,9 @@ import { setupE2EVCR } from './helpers/vcr'
 
 export const test = base.extend<{ page: Page }>({
   page: async ({ page }, use, testInfo) => {
-    // ... 现有的 console/page error 监听代码 ...
+    // ... existing console/page error listener code ...
 
-    // 🔧 设置 VCR
+    // 🔧 Set up VCR
     await setupE2EVCR(page, {
       mode: process.env.E2E_VCR_MODE as any || 'auto'
     })
@@ -207,15 +207,15 @@ export const test = base.extend<{ page: Page }>({
     try {
       await use(page)
     } finally {
-      // ... 清理代码 ...
+      // ... cleanup code ...
     }
   }
 })
 ```
 
-**4. 创建示例 fixtures**
+**4. Create example fixtures**
 
-创建文件：`tests/e2e/fixtures/llm-responses/basic-system-prompt-only.json`
+Create the file: `tests/e2e/fixtures/llm-responses/basic-system-prompt-only.json`
 
 ```json
 {
@@ -227,17 +227,17 @@ export const test = base.extend<{ page: Page }>({
       "overall": {
         "score": 45,
         "level": "poor",
-        "summary": "提示词结构简单，缺少具体要求",
+        "summary": "The prompt structure is simple and lacks specific requirements",
         "dimensions": [
           {
             "name": "Clarity",
             "score": 50,
-            "feedback": "表达不够清晰"
+            "feedback": "The wording is not clear enough"
           },
           {
             "name": "Specificity",
             "score": 40,
-            "feedback": "缺少具体细节"
+            "feedback": "Lacks specific details"
           }
         ]
       }
@@ -246,7 +246,7 @@ export const test = base.extend<{ page: Page }>({
 }
 ```
 
-创建文件：`tests/e2e/fixtures/llm-responses/basic-user-prompt-only.json`
+Create the file: `tests/e2e/fixtures/llm-responses/basic-user-prompt-only.json`
 
 ```json
 {
@@ -258,17 +258,17 @@ export const test = base.extend<{ page: Page }>({
       "overall": {
         "score": 65,
         "level": "acceptable",
-        "summary": "提示词结构基本合理",
+        "summary": "The prompt structure is basically reasonable",
         "dimensions": [
           {
             "name": "Clarity",
             "score": 70,
-            "feedback": "表达较清晰"
+            "feedback": "The wording is fairly clear"
           },
           {
             "name": "Completeness",
             "score": 60,
-            "feedback": "包含基本要素"
+            "feedback": "Contains the basic elements"
           }
         ]
       }
@@ -277,57 +277,57 @@ export const test = base.extend<{ page: Page }>({
 }
 ```
 
-**5. 使用方法**
+**5. Usage**
 
 ```bash
-# 首次运行：录制模式（创建 fixtures）
+# First run: record mode (creates fixtures)
 E2E_VCR_MODE=record pnpm exec playwright test tests/e2e/analysis/basic-system.spec.ts
 
-# 后续运行：回放模式（使用 fixtures，快速）
+# Later runs: replay mode (uses fixtures, fast)
 E2E_VCR_MODE=replay pnpm exec playwright test tests/e2e/analysis/basic-system.spec.ts
 
-# 自动模式（有 fixture 则回放，无则录制）
+# Auto mode (replay if a fixture exists, otherwise record)
 E2E_VCR_MODE=auto pnpm exec playwright test tests/e2e/analysis/basic-system.spec.ts
 
-# Live 模式（始终调用真实 API）
+# Live mode (always calls the real API)
 E2E_VCR_MODE=live pnpm exec playwright test tests/e2e/analysis/basic-system.spec.ts
 ```
 
 ---
 
-### 方案 B：Mock Service Worker（更强大，但更复杂）
+### Option B: Mock Service Worker (more powerful, but more complex)
 
-使用 MSW (Mock Service Worker) 在浏览器端拦截请求。
+Use MSW (Mock Service Worker) to intercept requests in the browser.
 
-**优点**：
-- 更强大的 mock 能力
-- 支持 fixture 管理
-- 可以模拟网络延迟、错误等
+**Pros**:
+- More powerful mocking capabilities
+- Supports fixture management
+- Can simulate network latency, errors, etc.
 
-**缺点**：
-- 需要额外依赖
-- 配置更复杂
+**Cons**:
+- Requires extra dependencies
+- More complex configuration
 
-**如果需要，可以后续实施。**
-
----
-
-## 推荐实施顺序
-
-1. ✅ **Phase 1**: 创建 `tests/e2e/helpers/vcr.ts`
-2. ✅ **Phase 2**: 更新 `tests/e2e/fixtures.ts` 集成 VCR
-3. ✅ **Phase 3**: 创建示例 fixtures
-4. ⏸️ **Phase 4**: 在 `.env.local` 或 CI 配置中添加 `E2E_VCR_MODE=auto`
-5. ⏸️ **Phase 5**: 运行测试验证
+**Can be implemented later if needed.**
 
 ---
 
-## 测试速度对比
+## Recommended Implementation Order
 
-| 模式 | 单个测试时长 | 4 个测试总时长 | API 调用次数 |
+1. ✅ **Phase 1**: Create `tests/e2e/helpers/vcr.ts`
+2. ✅ **Phase 2**: Update `tests/e2e/fixtures.ts` to integrate VCR
+3. ✅ **Phase 3**: Create example fixtures
+4. ⏸️ **Phase 4**: Add `E2E_VCR_MODE=auto` to `.env.local` or the CI config
+5. ⏸️ **Phase 5**: Run the tests to verify
+
+---
+
+## Test Speed Comparison
+
+| Mode | Time per test | Total time for 4 tests | API calls |
 |------|------------|--------------|------------|
-| Live (当前) | ~20s | ~80s | 4 次 |
-| Replay (VCR) | ~3s | ~12s | 0 次 |
-| Record (首次) | ~20s | ~80s | 4 次（创建 fixtures）|
+| Live (current) | ~20s | ~80s | 4 |
+| Replay (VCR) | ~3s | ~12s | 0 |
+| Record (first run) | ~20s | ~80s | 4 (creates fixtures) |
 
-**使用 VCR 后，测试速度提升 6-7 倍！**
+**With VCR, tests are 6-7x faster!**

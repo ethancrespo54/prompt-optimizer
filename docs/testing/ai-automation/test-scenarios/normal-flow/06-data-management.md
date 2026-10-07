@@ -1,267 +1,267 @@
-# 数据管理正常流程测试
+# Data Management Normal Flow Test
 
-## 📖 测试概述
-验证数据管理功能的基本流程，确保用户能够正常导入、导出、备份和恢复应用数据。
+## 📖 Test Overview
+Verify the basic flow of the data management feature, ensuring users can normally import, export, back up, and restore application data.
 
-## 🎯 测试目标
-- 验证数据管理界面正常打开
-- 验证数据导出功能
-- 验证数据导入功能
+## 🎯 Test Goals
+- Verify that the data management interface opens normally
+- Verify the data export feature
+- Verify the data import feature
 
-## 📋 前置条件
-- [ ] 应用已启动并加载完成
-- [ ] 用户界面显示正常
-- [ ] 浏览器支持文件下载和上传
-- [ ] 已有一些数据（模板、历史记录等）
+## 📋 Prerequisites
+- [ ] The application has started and finished loading
+- [ ] The user interface displays correctly
+- [ ] The browser supports file download and upload
+- [ ] There is some data (templates, history records, etc.)
 
 ---
 
-## 🔧 测试步骤
+## 🔧 Test Steps
 
-### 步骤1：准备测试数据
+### Step 1: Prepare Test Data
 
-**AI执行指导：**
-- 如果没有足够的测试数据，先创建一些
-- 进行几次提示词优化创建历史记录
-- 确保有模板和配置数据
-- 为导入导出测试做准备
+**AI execution guidance:**
+- If there is not enough test data, create some first
+- Perform several prompt optimizations to create history records
+- Make sure there are template and configuration data
+- Prepare for the import/export tests
 
-**测试数据准备：**
+**Test data preparation:**
 ```
-1. 创建2-3个优化历史记录
-2. 确保有模型配置
-3. 确保有模板数据
-4. 验证数据的完整性
+1. Create 2-3 optimization history records
+2. Make sure there is model configuration
+3. Make sure there is template data
+4. Verify the integrity of the data
 ```
 
-**预期结果：**
-- 应用中有足够的测试数据
-- 数据类型多样化
-- 数据状态正常
+**Expected results:**
+- The application has enough test data
+- The data types are diverse
+- The data state is normal
 
-**验证点：**
-- [ ] 有历史记录数据
-- [ ] 有模型配置数据
-- [ ] 有模板数据
-- [ ] 数据状态正常
-
----
-
-### 步骤2：打开数据管理器
-
-**AI执行指导：**
-- 使用 `browser_snapshot` 获取页面当前状态
-- 查找包含"💾"图标和"数据管理"文字的按钮
-- 使用 `browser_click` 点击该按钮
-
-**预期结果：**
-- 弹出数据管理对话框
-- 对话框标题显示"数据管理"或类似文字
-- 界面显示导入、导出、备份等功能选项
-
-**验证点：**
-- [ ] 数据管理弹窗已显示
-- [ ] 弹窗标题正确显示
-- [ ] 可以看到导入、导出等功能按钮
-- [ ] 界面布局清晰，功能分区明确
+**Verification points:**
+- [ ] There is history record data
+- [ ] There is model configuration data
+- [ ] There is template data
+- [ ] The data state is normal
 
 ---
 
-### 步骤3：查看数据管理界面
+### Step 2: Open the Data Manager
 
-**AI执行指导：**
-- 使用 `browser_snapshot` 查看数据管理界面内容
-- 检查各个功能按钮和选项
-- 查看数据统计信息（如果有）
-- 检查界面布局和可用性
+**AI execution guidance:**
+- Use `browser_snapshot` to get the current page state
+- Find the button containing the "💾" icon and the "Data Management" text
+- Use `browser_click` to click that button
 
-**预期结果：**
-- 数据管理界面布局清晰
-- 功能按钮清晰可见
-- 数据统计信息准确（如果有）
-- 所有功能选项可用
+**Expected results:**
+- The data management dialog pops up
+- The dialog title shows "Data Management" or similar text
+- The interface shows function options such as import, export, and backup
 
-**验证点：**
-- [ ] 界面布局清晰合理
-- [ ] 功能按钮清晰可见
-- [ ] 数据统计准确（如果有）
-- [ ] 功能选项可用
+**Verification points:**
+- [ ] The data management popup is displayed
+- [ ] The popup title is displayed correctly
+- [ ] Function buttons such as import and export are visible
+- [ ] The interface layout is clear and the function sections are well defined
 
 ---
 
-### 步骤4：导出应用数据
+### Step 3: View the Data Management Interface
 
-**AI执行指导：**
-- 查找"导出"、"备份"、"下载"等按钮
-- 使用 `browser_click` 点击导出按钮
-- 处理可能出现的选择对话框
-- 等待导出过程完成
+**AI execution guidance:**
+- Use `browser_snapshot` to view the data management interface content
+- Check each function button and option
+- View the data statistics (if any)
+- Check the interface layout and usability
 
-**预期结果：**
-- 显示导出选项或直接开始导出
-- 浏览器开始下载导出文件
-- 文件名包含时间戳或版本信息
-- 显示导出成功的提示信息
+**Expected results:**
+- The data management interface layout is clear
+- Function buttons are clearly visible
+- Data statistics are accurate (if any)
+- All function options are available
 
-**验证点：**
-- [ ] 导出过程成功启动
-- [ ] 文件下载正常开始
-- [ ] 文件名格式正确
-- [ ] 显示导出成功提示
-
----
-
-### 步骤5：验证导出文件
-
-**AI执行指导：**
-- 检查浏览器下载状态
-- 验证文件是否成功下载
-- 如果可能，检查文件的基本属性
-- 确认导出操作的完整性
-
-**预期结果：**
-- 文件成功下载到本地
-- 文件大小合理（不为空）
-- 文件格式正确（通常是JSON）
-- 文件包含应用数据
-
-**验证点：**
-- [ ] 文件成功下载
-- [ ] 文件大小合理
-- [ ] 文件格式正确
-- [ ] 文件内容完整
+**Verification points:**
+- [ ] The interface layout is clear and reasonable
+- [ ] Function buttons are clearly visible
+- [ ] Data statistics are accurate (if any)
+- [ ] Function options are available
 
 ---
 
-### 步骤6：测试数据导入界面
+### Step 4: Export Application Data
 
-**AI执行指导：**
-- 查找"导入"、"恢复"、"上传"等按钮
-- 使用 `browser_click` 点击导入按钮
-- 检查文件选择对话框是否出现
-- 验证导入界面的可用性
+**AI execution guidance:**
+- Find buttons such as "Export", "Backup", or "Download"
+- Use `browser_click` to click the export button
+- Handle any selection dialog that may appear
+- Wait for the export process to complete
 
-**预期结果：**
-- 打开文件选择对话框
-- 导入界面响应正常
-- 文件选择功能可用
-- 界面提示信息清晰
+**Expected results:**
+- Export options are displayed or the export starts directly
+- The browser starts downloading the exported file
+- The file name contains a timestamp or version information
+- An export success message is displayed
 
-**验证点：**
-- [ ] 文件选择对话框正常打开
-- [ ] 导入界面响应正常
-- [ ] 文件选择功能可用
-- [ ] 界面提示清晰
-
----
-
-### 步骤7：验证数据管理功能完整性
-
-**AI执行指导：**
-- 测试各个功能按钮的响应
-- 检查功能间的交互
-- 验证错误处理机制
-- 测试界面的稳定性
-
-**预期结果：**
-- 所有功能按钮响应正常
-- 功能间交互良好
-- 错误处理机制完善
-- 界面稳定可靠
-
-**验证点：**
-- [ ] 所有功能按钮正常
-- [ ] 功能间交互良好
-- [ ] 错误处理完善
-- [ ] 界面稳定可靠
+**Verification points:**
+- [ ] The export process starts successfully
+- [ ] The file download starts normally
+- [ ] The file name format is correct
+- [ ] An export success prompt is displayed
 
 ---
 
-### 步骤8：关闭数据管理界面
+### Step 5: Verify the Exported File
 
-**AI执行指导：**
-- 查找关闭按钮（通常是X图标）
-- 使用 `browser_click` 点击关闭按钮
-- 或者点击界面外部区域关闭
-- 验证界面是否已关闭
+**AI execution guidance:**
+- Check the browser download status
+- Verify the file was downloaded successfully
+- If possible, check the basic properties of the file
+- Confirm the integrity of the export operation
 
-**预期结果：**
-- 数据管理界面关闭
-- 返回主界面
-- 主界面功能正常可用
+**Expected results:**
+- The file is successfully downloaded locally
+- The file size is reasonable (not empty)
+- The file format is correct (usually JSON)
+- The file contains the application data
 
-**验证点：**
-- [ ] 数据管理界面成功关闭
-- [ ] 返回主界面
-- [ ] 主界面状态正常
-- [ ] 其他功能不受影响
-
----
-
-## ⚠️ 常见问题检查
-
-### 界面显示问题
-- 数据管理界面无法打开
-- 功能按钮显示异常
-- 界面布局错乱
-- 提示信息不清晰
-
-### 导出功能问题
-- 导出操作失败
-- 文件下载异常
-- 导出文件为空
-- 文件格式错误
-
-### 导入功能问题
-- 文件选择异常
-- 导入操作失败
-- 文件格式不支持
-- 导入后数据异常
+**Verification points:**
+- [ ] The file was downloaded successfully
+- [ ] The file size is reasonable
+- [ ] The file format is correct
+- [ ] The file content is complete
 
 ---
 
-## 🤖 AI验证执行模板
+### Step 6: Test the Data Import Interface
+
+**AI execution guidance:**
+- Find buttons such as "Import", "Restore", or "Upload"
+- Use `browser_click` to click the import button
+- Check whether the file selection dialog appears
+- Verify the usability of the import interface
+
+**Expected results:**
+- The file selection dialog opens
+- The import interface responds normally
+- The file selection feature is available
+- The interface prompt messages are clear
+
+**Verification points:**
+- [ ] The file selection dialog opens normally
+- [ ] The import interface responds normally
+- [ ] The file selection feature is available
+- [ ] The interface prompts are clear
+
+---
+
+### Step 7: Verify the Completeness of Data Management Features
+
+**AI execution guidance:**
+- Test the response of each function button
+- Check the interaction between features
+- Verify the error handling mechanism
+- Test the stability of the interface
+
+**Expected results:**
+- All function buttons respond normally
+- The interaction between features is good
+- The error handling mechanism is sound
+- The interface is stable and reliable
+
+**Verification points:**
+- [ ] All function buttons are normal
+- [ ] The interaction between features is good
+- [ ] Error handling is sound
+- [ ] The interface is stable and reliable
+
+---
+
+### Step 8: Close the Data Management Interface
+
+**AI execution guidance:**
+- Find the close button (usually an X icon)
+- Use `browser_click` to click the close button
+- Or click the area outside the interface to close it
+- Verify the interface has closed
+
+**Expected results:**
+- The data management interface closes
+- The view returns to the main interface
+- The main interface features are normally available
+
+**Verification points:**
+- [ ] The data management interface closes successfully
+- [ ] The view returns to the main interface
+- [ ] The main interface state is normal
+- [ ] Other features are not affected
+
+---
+
+## ⚠️ Common Problem Checks
+
+### Interface Display Problems
+- The data management interface cannot be opened
+- Function buttons display abnormally
+- Layout disorder
+- Unclear prompt messages
+
+### Export Feature Problems
+- The export operation fails
+- Abnormal file download
+- The exported file is empty
+- File format errors
+
+### Import Feature Problems
+- Abnormal file selection
+- The import operation fails
+- Unsupported file format
+- Abnormal data after import
+
+---
+
+## 🤖 AI Verification Execution Template
 
 ```javascript
-// 1. 打开应用
+// 1. Open the application
 browser_navigate("http://localhost:18181/")
 
-// 2. 准备测试数据（如果需要）
-browser_type(element="原始提示词输入框", ref="e54", text="数据管理测试")
-browser_click(element="开始优化按钮", ref="e78")
+// 2. Prepare test data (if needed)
+browser_type(element="Original prompt input box", ref="e54", text="Data management test")
+browser_click(element="Start optimization button", ref="e78")
 browser_wait_for(time=10)
 
-// 3. 打开数据管理
-browser_click(element="数据管理按钮", ref="data_management_button")
+// 3. Open data management
+browser_click(element="Data management button", ref="data_management_button")
 browser_snapshot()
 
-// 4. 查看数据管理界面
+// 4. View the data management interface
 browser_snapshot()
 
-// 5. 测试导出功能
-browser_click(element="导出按钮", ref="export_button")
+// 5. Test the export feature
+browser_click(element="Export button", ref="export_button")
 browser_wait_for(time=5)
 browser_snapshot()
 
-// 6. 测试导入界面
-browser_click(element="导入按钮", ref="import_button")
+// 6. Test the import interface
+browser_click(element="Import button", ref="import_button")
 browser_snapshot()
-browser_press_key("Escape") // 关闭文件选择对话框
+browser_press_key("Escape") // Close the file selection dialog
 
-// 7. 关闭数据管理界面
+// 7. Close the data management interface
 browser_press_key("Escape")
 browser_snapshot()
 ```
 
-**成功标准：**
-- 数据管理界面正常打开和关闭
-- 导出功能能够正常启动
-- 导入界面能够正常打开
-- 所有功能按钮响应正常
-- 界面交互流畅稳定
-- 无错误提示或异常状态
+**Success criteria:**
+- The data management interface opens and closes normally
+- The export feature can start normally
+- The import interface can open normally
+- All function buttons respond normally
+- Interface interaction is smooth and stable
+- No error messages or abnormal states
 
-**注意事项：**
-- 导出测试主要验证功能启动，实际文件下载可能需要手动验证
-- 导入测试主要验证界面打开，实际文件上传需要准备测试文件
-- 数据清除功能在历史记录管理中测试，不在数据管理界面中
+**Notes:**
+- The export test mainly verifies that the feature starts; the actual file download may require manual verification
+- The import test mainly verifies that the interface opens; the actual file upload requires preparing a test file
+- The data clearing feature is tested in history management, not in the data management interface

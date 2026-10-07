@@ -1,54 +1,54 @@
-# 任务计划：测试区版本/模型选择（basic-user 优先）
+# Task Plan: Test Area Version/Model Selection (basic-user first)
 
-## 目标
+## Goal
 
-在 `/basic/user` 中，让右侧测试区不再读取编辑区 textarea，而是从当前 session 的版本链（`v0..vn`）选择输入，并支持：
+In `/basic/user`, make the right-hand test area stop reading the editor textarea and instead choose its input from the current session's version chain (`v0..vn`), supporting:
 
-- 每个结果面板独立选择提示词版本（`v0 / v1..vn / latest`）
-- 每个结果面板独立选择测试模型（左右可以不同）
+- Independent prompt version selection for each result panel (`v0 / v1..vn / latest`)
+- Independent test model selection for each result panel (left and right can differ)
 
-默认对比：`v0` vs `latest(vn)`，对比测试需要并行执行。
+Default comparison: `v0` vs `latest(vn)`; compare tests must run in parallel.
 
-## 当前阶段
+## Current Phase
 
-Phase 5（验证与交付）
+Phase 5 (Verification and Delivery)
 
-## 阶段与状态
+## Phases and Status
 
-### Phase 1：需求与现状梳理（已完成）
+### Phase 1: Requirements and Current State Review (Completed)
 
-- [x] 与用户确认需求与约束（basic-user first、session-scoped、无草稿选项）
-- [x] 识别版本链/测试执行的现有数据流与关键文件
-- [x] 将关键约束记录到 `findings.md`
+- [x] Confirm requirements and constraints with the user (basic-user first, session-scoped, no draft option)
+- [x] Identify the existing data flow and key files for version chains / test execution
+- [x] Record key constraints in `findings.md`
 
-### Phase 2：方案设计（已完成）
+### Phase 2: Solution Design (Completed)
 
-- [x] 设计 session 持久化数据模型：`testPanels.{original,optimized}.{version,modelKey}`
-- [x] 设计版本解析规则：`v0` / 固定 `vN` / `latest` 跟随
-- [x] 设计 UI 集成：结果卡片 header 注入选择器（slot）
-- [x] 编写设计文档：`docs/architecture/test-area-version-model-selection.md`
+- [x] Design the session persistence data model: `testPanels.{original,optimized}.{version,modelKey}`
+- [x] Design the version resolution rules: `v0` / fixed `vN` / `latest` following
+- [x] Design the UI integration: inject selectors into the result card header (slot)
+- [x] Write the design document: `docs/architecture/test-area-version-model-selection.md`
 
-### Phase 3：实现（basic-user）（已完成）
+### Phase 3: Implementation (basic-user) (Completed)
 
-- [x] Session store：新增 `testPanels` 并做旧数据迁移（继承 `selectedTestModelKey`）
-- [x] 组件扩展：`TestResultSection` 增加 header-extra slots；`TestAreaPanel` 透传
-- [x] `BasicUserWorkspace`：加入每面板 version+model 选择器；测试改用解析后的 prompt；compare 并行
-- [x] Evaluation：使用所选 prompt/结果进行评估（original/optimized/compare）
+- [x] Session store: add `testPanels` and migrate old data (inherit `selectedTestModelKey`)
+- [x] Component extension: add header-extra slots to `TestResultSection`; pass through in `TestAreaPanel`
+- [x] `BasicUserWorkspace`: add per-panel version+model selectors; tests use the resolved prompt; compare runs in parallel
+- [x] Evaluation: evaluate using the selected prompt/results (original/optimized/compare)
 
-### Phase 4：UI/布局优化（已完成）
+### Phase 4: UI/Layout Optimization (Completed)
 
-- [x] 解决 header 溢出：允许 header/actions 换行；限制 version/model 选择器宽度
+- [x] Resolve header overflow: allow header/actions to wrap; constrain version/model selector widths
 
-### Phase 5：验证与交付（进行中）
+### Phase 5: Verification and Delivery (In progress)
 
 - [x] `pnpm -F @prompt-optimizer/ui lint`
 - [x] `pnpm -F @prompt-optimizer/ui typecheck`
 - [x] `pnpm -F @prompt-optimizer/ui test`
-- [ ]（可选）补充 e2e：覆盖 basic-user 的新选择器与并行对比行为
-- [ ] 与用户确认是否提交代码变更与文档（`docs/workspace` + `docs/architecture`）
+- [ ] (Optional) Add e2e: cover the new selectors and parallel compare behavior in basic-user
+- [ ] Confirm with the user whether to commit the code changes and docs (`docs/workspace` + `docs/architecture`)
 
-## 关键决策（摘要）
+## Key Decisions (Summary)
 
-- 将 `testPanels` 持久化在 session store 中，保证刷新/重启后选择稳定。
-- `version` 使用 `0 | number | 'latest'` 持久化，既易绑定又能支持 `latest` 跟随。
-- 选择器放在每个结果卡 header，A/B 归属更直观；header 已做响应式换行避免溢出。
+- Persist `testPanels` in the session store so selections remain stable across refreshes/restarts.
+- Persist `version` as `0 | number | 'latest'`, which is easy to bind and supports `latest` following.
+- Place the selectors in each result card header so A/B attribution is more intuitive; the header wraps responsively to avoid overflow.

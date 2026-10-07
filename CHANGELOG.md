@@ -2,56 +2,56 @@
 
 ## [2.1.0] - 2025-01-19
 
-### 🎉 Added - 收藏管理重构 (Favorite Management Refactor)
+### 🎉 Added - Favorite Management Refactor
 
-#### 🏗️ 核心架构改进
-- **三层分类体系**:
-  - `functionMode`: `basic | context | image` (必填)
-  - `optimizationMode`: `system | user` (basic模式)
-  - `imageSubMode`: `text2image | image2image` (image模式)
-  - **Category**: 主题分类 (学习研究、日常助手等)
-- **元数据重组**: `originalContent` 和 `sourceHistoryId` 移至 `metadata` 对象
-- **TypeMapper 工具类**: 自动从历史记录类型推断功能模式
+#### 🏗️ Core Architecture Improvements
+- **Three-level classification system**:
+  - `functionMode`: `basic | context | image` (required)
+  - `optimizationMode`: `system | user` (basic mode)
+  - `imageSubMode`: `text2image | image2image` (image mode)
+  - **Category**: Topic categories (learning and research, daily assistant, etc.)
+- **Metadata reorganization**: `originalContent` and `sourceHistoryId` moved into the `metadata` object
+- **TypeMapper utility class**: Automatically infers the function mode from the history record type
 
-#### 🏷️ 独立标签库系统
-- **标签全生命周期管理**: 重命名、合并、删除、统计
-- **智能标签自动完成**: 基于使用频率的建议排序
-- **独立标签存储**: 支持零使用次数的标签
+#### 🏷️ Independent Tag Library System
+- **Full tag lifecycle management**: Rename, merge, delete, statistics
+- **Smart tag autocomplete**: Suggestions sorted by usage frequency
+- **Independent tag storage**: Supports tags with zero usage
 
-#### 📁 分类管理增强
-- **分类排序**: 支持上移/下移调整顺序
-- **使用统计**: 计算每个分类的收藏数量
-- **删除保护**: 有收藏的分类无法删除
-- **颜色标识**: 支持自定义分类颜色
+#### 📁 Category Management Enhancements
+- **Category ordering**: Supports moving up/down to adjust order
+- **Usage statistics**: Counts the favorites in each category
+- **Deletion protection**: Categories that contain favorites cannot be deleted
+- **Color labels**: Supports custom category colors
 
-#### 🎨 UI 组件重构
-- **SaveFavoriteDialog**: 统一的创建/编辑对话框，支持功能模式选择
-- **TagManager**: 完整的标签管理界面
-- **CategoryManager**: 分类管理界面，支持颜色选择和排序
-- **标签自动完成**: `useTagSuggestions` + `NAutoComplete` 集成
+#### 🎨 UI Component Refactor
+- **SaveFavoriteDialog**: Unified create/edit dialog with function mode selection
+- **TagManager**: Complete tag management interface
+- **CategoryManager**: Category management interface with color selection and ordering
+- **Tag autocomplete**: `useTagSuggestions` + `NAutoComplete` integration
 
-#### 🔄 向后兼容性
-- **数据迁移**: 自动检测和迁移旧数据
-- **渐进式迁移**: 保留现有分类，不强制迁移
+#### 🔄 Backward Compatibility
+- **Data migration**: Automatically detects and migrates old data
+- **Progressive migration**: Existing categories are preserved; migration is not forced
 
 ### 💔 Breaking Changes
-- **移除 `isPublic` 字段**: 单机应用中无意义的公开字段
-- **`FavoritePrompt` 接口变更**: `functionMode` 变为必填，`metadata` 结构重组
+- **Removed the `isPublic` field**: A public flag is meaningless in a standalone application
+- **`FavoritePrompt` interface change**: `functionMode` is now required, and the `metadata` structure was reorganized
 
 ### 📝 Migration Guide
-系统会自动检测旧数据并迁移，所有现有收藏保持不变，向后兼容。
+The system automatically detects old data and migrates it. All existing favorites remain unchanged and backward compatible.
 
 ### 🐛 Bug Fixes
-- 修复导入导出数据完整性问题
-- 修复标签计数不准确问题
-- 修复E2E测试中遮罩层拦截点击问题
+- Fixed import/export data integrity issues
+- Fixed inaccurate tag counts
+- Fixed an E2E test issue where the overlay intercepted clicks
 
 ---
 
 ## [2.0.0] - 2025-01-XX
 
 ### 🎉 Initial Release
-- 基础收藏管理功能
-- 优化历史集成
-- 标签和分类基础支持
-- 导入导出功能
+- Basic favorite management features
+- Optimization history integration
+- Basic tag and category support
+- Import/export functionality

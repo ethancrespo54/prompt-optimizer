@@ -1,25 +1,25 @@
 # @prompt-optimizer/ui
 
-Prompt Optimizer的Vue 3用户界面组件库，基于Naive UI设计系统构建的现代化UI组件集合。
+Vue 3 user interface component library for Prompt Optimizer, a modern collection of UI components built on the Naive UI design system.
 
-## 特性
+## Features
 
-✅ **Vue 3 + TypeScript** - 完整的类型安全支持  
-✅ **Naive UI基础** - 基于成熟的设计系统  
-✅ **主题系统** - 支持亮色/暗色主题无缝切换  
-✅ **响应式设计** - 自动适配不同屏幕尺寸  
-✅ **国际化支持** - 多语言界面支持  
-✅ **模块化架构** - 可独立使用的组件  
+✅ **Vue 3 + TypeScript** - Full type-safety support  
+✅ **Built on Naive UI** - Based on a mature design system  
+✅ **Theme system** - Seamless switching between light and dark themes  
+✅ **Responsive design** - Automatically adapts to different screen sizes  
+✅ **Internationalization support** - i18n-ready interface  
+✅ **Modular architecture** - Components that can be used independently  
 
-## 安装
+## Installation
 
 ```bash
 pnpm add @prompt-optimizer/ui @prompt-optimizer/core naive-ui
 ```
 
-## 快速开始
+## Quick Start
 
-### 基础设置
+### Basic Setup
 
 ```typescript
 import { createApp } from 'vue'
@@ -28,13 +28,13 @@ import App from './App.vue'
 
 const app = createApp(App)
 
-// 安装国际化
+// Install internationalization
 installI18n(app)
 
 app.mount('#app')
 ```
 
-### 主题配置
+### Theme Configuration
 
 ```vue
 <template>
@@ -53,11 +53,11 @@ const { naiveTheme, themeOverrides } = useNaiveTheme()
 </script>
 ```
 
-## 核心组件
+## Core Components
 
-### TestArea组件系统
+### TestArea Component System
 
-现代化的AI提示词测试界面，支持系统/用户提示词模式和对比测试功能。
+A modern AI prompt testing interface that supports system/user prompt modes and comparison testing.
 
 ```vue
 <template>
@@ -82,18 +82,18 @@ const { naiveTheme, themeOverrides } = useNaiveTheme()
 </template>
 ```
 
-**包含组件：**
-- `TestAreaPanel` - 主容器组件
-- `TestInputSection` - 测试内容输入
-- `TestControlBar` - 测试控制栏
-- `TestResultSection` - 测试结果展示
-- `ConversationSection` - 会话管理包装
+**Included components:**
+- `TestAreaPanel` - Main container component
+- `TestInputSection` - Test content input
+- `TestControlBar` - Test control bar
+- `TestResultSection` - Test result display
+- `ConversationSection` - Conversation management wrapper
 
-### 模型管理
+### Model Management
 
 ```vue
 <template>
-  <!-- 模型选择器 -->
+  <!-- Model selector -->
   <SelectWithConfig
     v-model="selectedModel"
     :options="modelOptions"
@@ -101,40 +101,40 @@ const { naiveTheme, themeOverrides } = useNaiveTheme()
     :getValue="(o) => o.value"
   />
   
-  <!-- 模型管理器 -->
+  <!-- Model manager -->
   <ModelManagerUI @model-updated="handleModelUpdate" />
 </template>
 ```
 
-### 模板系统
+### Template System
 
 ```vue
 <template>
-  <!-- 模板选择器 -->
+  <!-- Template selector -->
   <TemplateSelectUI v-model="selectedTemplate" />
   
-  <!-- 模板管理器 -->
+  <!-- Template manager -->
   <TemplateManagerUI @template-saved="handleTemplateSave" />
 </template>
 ```
 
-### 输入输出
+### Input and Output
 
 ```vue
 <template>
-  <!-- 输入面板 -->
+  <!-- Input panel -->
   <InputPanelUI 
     v-model="inputContent"
     :placeholder="placeholder"
   />
   
-  <!-- 输出显示 -->
+  <!-- Output display -->
   <OutputDisplay 
     :content="outputContent"
     :enable-fullscreen="true"
   />
   
-  <!-- 全屏输出显示 -->
+  <!-- Fullscreen output display -->
   <OutputDisplayFullscreen 
     v-model:visible="showFullscreen"
     :content="content"
@@ -142,11 +142,11 @@ const { naiveTheme, themeOverrides } = useNaiveTheme()
 </template>
 ```
 
-### 布局组件
+### Layout Components
 
 ```vue
 <template>
-  <!-- 主布局 -->
+  <!-- Main layout -->
   <MainLayoutUI>
     <template #header>
       <YourHeader />
@@ -157,24 +157,24 @@ const { naiveTheme, themeOverrides } = useNaiveTheme()
     <YourContent />
   </MainLayoutUI>
   
-  <!-- 内容卡片 -->
+  <!-- Content card -->
   <ContentCardUI :title="cardTitle">
     <YourContent />
   </ContentCardUI>
 </template>
 ```
 
-### 数据管理
+### Data Management
 
 ```vue
 <template>
-  <!-- 数据管理器 -->
+  <!-- Data manager -->
   <DataManagerUI 
     @data-imported="handleImport"
     @data-exported="handleExport"
   />
   
-  <!-- 变量管理 -->
+  <!-- Variable management -->
   <VariableManager 
     v-model="variables"
     @variable-updated="handleVariableUpdate"
@@ -184,79 +184,79 @@ const { naiveTheme, themeOverrides } = useNaiveTheme()
 
 ## Composables
 
-### 主题管理
+### Theme Management
 
 ```typescript
 import { useNaiveTheme } from '@prompt-optimizer/ui'
 
 const {
-  naiveTheme,       // Naive UI主题对象
-  themeOverrides,   // 主题覆盖配置
-  currentTheme,     // 当前主题ID
-  switchTheme,      // 切换主题
-  initTheme         // 初始化主题
+  naiveTheme,       // Naive UI theme object
+  themeOverrides,   // Theme override configuration
+  currentTheme,     // Current theme ID
+  switchTheme,      // Switch theme
+  initTheme         // Initialize theme
 } = useNaiveTheme()
 ```
 
-### 响应式布局
+### Responsive Layout
 
 ```typescript
 import { useResponsiveTestLayout } from '@prompt-optimizer/ui'
 
 const {
-  isMobile,           // 是否为移动端
-  isTablet,           // 是否为平板
-  currentBreakpoint,  // 当前断点
-  inputMode,          // 推荐的输入模式
-  controlBarLayout,   // 推荐的控制栏布局
-  buttonSize,         // 推荐的按钮尺寸
-  responsiveHeights   // 响应式高度配置
+  isMobile,           // Whether it is a mobile device
+  isTablet,           // Whether it is a tablet
+  currentBreakpoint,  // Current breakpoint
+  inputMode,          // Recommended input mode
+  controlBarLayout,   // Recommended control bar layout
+  buttonSize,         // Recommended button size
+  responsiveHeights   // Responsive height configuration
 } = useResponsiveTestLayout()
 ```
 
-### 测试模式配置
+### Test Mode Configuration
 
 ```typescript
 import { useTestModeConfig } from '@prompt-optimizer/ui'
 
 const {
-  showTestInput,          // 是否显示测试输入
-  requiresTestContent,    // 是否需要测试内容
-  canStartTest,           // 是否可以开始测试
-  enableCompareMode,      // 是否启用对比模式
-  getDynamicButtonText,   // 获取动态按钮文本
-  validateTestSetup       // 验证测试配置
+  showTestInput,          // Whether to show the test input
+  requiresTestContent,    // Whether test content is required
+  canStartTest,           // Whether the test can be started
+  enableCompareMode,      // Whether to enable compare mode
+  getDynamicButtonText,   // Get the dynamic button text
+  validateTestSetup       // Validate the test setup
 } = useTestModeConfig(optimizationMode)
 ```
 
-## 组件导出
+## Component Exports
 
-### UI组件
+### UI Components
 
 ```typescript
-// 核心组件
+// Core components
 export { default as ToastUI } from './components/Toast.vue'
 export { default as ModalUI } from './components/Modal.vue'
 export { default as PanelUI } from './components/Panel.vue'
 
-// 布局组件
+// Layout components
 export { default as MainLayoutUI } from './components/MainLayout.vue'
 export { default as ContentCardUI } from './components/ContentCard.vue'
 
-// TestArea组件系统
+// TestArea component system
 export { default as TestAreaPanel } from './components/TestAreaPanel.vue'
 export { default as TestInputSection } from './components/TestInputSection.vue'
 export { default as TestControlBar } from './components/TestControlBar.vue'
 export { default as TestResultSection } from './components/TestResultSection.vue'
 export { default as ConversationSection } from './components/ConversationSection.vue'
 
-// 输入输出组件
+// Input/output components
 export { default as InputPanelUI } from './components/InputPanel.vue'
 export { default as OutputDisplay } from './components/OutputDisplay.vue'
 export { default as OutputDisplayFullscreen } from './components/OutputDisplayFullscreen.vue'
 export { default as OutputDisplayCore } from './components/OutputDisplayCore.vue'
 
-// 管理组件
+// Management components
 export { default as ModelManagerUI } from './components/ModelManager.vue'
 export { default as TemplateManagerUI } from './components/TemplateManager.vue'
 export { default as TemplateSelectUI } from './components/TemplateSelect.vue'
@@ -264,7 +264,7 @@ export { default as DataManagerUI } from './components/DataManager.vue'
 export { default as VariableManager } from './components/VariableManager.vue'
 export { default as FunctionModelManagerUI } from './components/FunctionModelManager.vue'
 
-// 功能组件
+// Feature components
 export { default as ActionButtonUI } from './components/ActionButton.vue'
 export { default as ThemeToggleUI } from './components/ThemeToggleUI.vue'
 export { default as LanguageSwitchDropdown } from './components/LanguageSwitchDropdown.vue'
@@ -272,7 +272,7 @@ export { default as OptimizationModeSelectorUI } from './components/Optimization
 export { default as TextDiffUI } from './components/TextDiff.vue'
 export { default as MarkdownRenderer } from './components/MarkdownRenderer.vue'
 
-// 高级组件
+// Advanced components
 export { default as AdvancedTestPanel } from './components/AdvancedTestPanel.vue'
 export { default as ConversationManager } from './components/ConversationManager.vue'
 export { default as VariableEditor } from './components/VariableEditor.vue'
@@ -282,19 +282,19 @@ export { default as HistoryDrawerUI } from './components/HistoryDrawer.vue'
 ### Composables
 
 ```typescript
-// 导出所有composables
+// Export all composables
 export * from './composables'
 
-// 主要composables
+// Main composables
 export { useNaiveTheme } from './composables/useNaiveTheme'
 export { useResponsiveTestLayout } from './composables/useResponsiveTestLayout'
 export { useTestModeConfig } from './composables/useTestModeConfig'
 ```
 
-### 主题系统
+### Theme System
 
 ```typescript
-// 主题配置
+// Theme configuration
 export { 
   currentNaiveTheme as naiveTheme,
   currentThemeOverrides as themeOverrides, 
@@ -306,10 +306,10 @@ export {
 } from './config/naive-theme'
 ```
 
-### 国际化
+### Internationalization
 
 ```typescript
-// I18n系统
+// I18n system
 export { 
   installI18n, 
   installI18nOnly, 
@@ -319,9 +319,9 @@ export {
 } from './plugins/i18n'
 ```
 
-## 类型系统
+## Type System
 
-### 核心类型
+### Core Types
 
 ```typescript
 import type { 
@@ -334,7 +334,7 @@ import type {
   IPromptService
 } from '@prompt-optimizer/core'
 
-// TestArea组件类型
+// TestArea component types
 export interface TestAreaConfig {
   optimizationMode: OptimizationMode
   inputMode: 'default' | 'compact'
@@ -349,98 +349,98 @@ export interface TestControlLayout {
 }
 ```
 
-## 样式规范
+## Style Guidelines
 
-UI组件遵循严格的设计规范：
+UI components follow strict design guidelines:
 
-- **无硬编码像素值** - 使用Naive UI的size系统
-- **无Tailwind CSS类** - 纯Naive UI组件实现
-- **统一间距系统** - 基于16px基准的间距规范
-- **响应式设计** - 支持xs/sm/md/lg/xl/xxl断点
-- **主题兼容性** - 完全兼容亮色/暗色主题
+- **No hard-coded pixel values** - Use Naive UI's size system
+- **No Tailwind CSS classes** - Implemented purely with Naive UI components
+- **Unified spacing system** - Spacing guidelines based on a 16px baseline
+- **Responsive design** - Supports the xs/sm/md/lg/xl/xxl breakpoints
+- **Theme compatibility** - Fully compatible with light/dark themes
 
-详见：[测试区域组件样式规范](../docs/components/test-area-style-guide.md)
+See: [Test Area Component Style Guide](../docs/components/test-area-style-guide.md)
 
-## 开发
+## Development
 
-### 本地开发
+### Local Development
 
 ```bash
-# 安装依赖
+# Install dependencies
 pnpm install
 
-# 开发模式
+# Development mode
 pnpm dev
 
-# 构建UI包
+# Build the UI package
 pnpm -F @prompt-optimizer/ui build
 
-# 运行测试
+# Run tests
 pnpm -F @prompt-optimizer/ui test
 
-# 类型检查
+# Type check
 pnpm -F @prompt-optimizer/ui exec tsc --noEmit
 ```
 
-### 测试
+### Testing
 
 ```bash
-# 运行所有测试
+# Run all tests
 pnpm -F @prompt-optimizer/ui test
 
-# 运行特定组件测试
+# Run tests for a specific component
 pnpm -F @prompt-optimizer/ui test -- TestAreaPanel
 
-# 运行集成测试
+# Run integration tests
 pnpm -F @prompt-optimizer/ui test -- test-area-integration
 
-# 运行端到端测试  
+# Run end-to-end tests  
 pnpm -F @prompt-optimizer/ui test -- test-area-e2e
 ```
 
-### 组件开发指南
+### Component Development Guide
 
-1. **使用Naive UI组件** - 基于NButton、NInput、NFlex等
-2. **遵循TypeScript规范** - 完整的类型定义
-3. **支持主题切换** - 使用主题变量而非硬编码颜色
-4. **响应式设计** - 适配不同屏幕尺寸
-5. **国际化支持** - 所有文本使用i18n
-6. **单元测试** - 为每个组件编写测试用例
+1. **Use Naive UI components** - Based on NButton, NInput, NFlex, etc.
+2. **Follow TypeScript conventions** - Complete type definitions
+3. **Support theme switching** - Use theme variables instead of hard-coded colors
+4. **Responsive design** - Adapt to different screen sizes
+5. **Internationalization support** - Use i18n for all text
+6. **Unit tests** - Write test cases for every component
 
-## 依赖
+## Dependencies
 
-### 核心依赖
+### Core Dependencies
 
-- **Vue 3.x** - 渐进式JavaScript框架
-- **Naive UI 2.x** - Vue 3设计系统组件库
-- **@prompt-optimizer/core** - 核心业务逻辑
-- **Vue I18n** - Vue国际化插件
+- **Vue 3.x** - Progressive JavaScript framework
+- **Naive UI 2.x** - Vue 3 design system component library
+- **@prompt-optimizer/core** - Core business logic
+- **Vue I18n** - Vue internationalization plugin
 
-### 开发依赖
+### Development Dependencies
 
-- **TypeScript 5.x** - 类型系统
-- **Vitest** - 单元测试框架
-- **@vue/test-utils** - Vue组件测试工具
-- **Vite** - 现代化构建工具
+- **TypeScript 5.x** - Type system
+- **Vitest** - Unit testing framework
+- **@vue/test-utils** - Vue component testing utilities
+- **Vite** - Modern build tool
 
-## 兼容性
+## Compatibility
 
 - **Vue**: 3.0+
 - **Node.js**: 18.0+
-- **浏览器**: Chrome 88+, Firefox 85+, Safari 14+
+- **Browsers**: Chrome 88+, Firefox 85+, Safari 14+
 - **Naive UI**: 2.34+
 
-## 许可证
+## License
 
 GNU Affero General Public License v3.0 (AGPL-3.0-only)
 
-## 文档
+## Documentation
 
-- [完整组件文档](../docs/components/test-area.md)
-- [样式规范指南](../docs/components/test-area-style-guide.md)
-- [开发者指南](../docs/developer/technical-development-guide.md)
+- [Complete Component Documentation](../docs/components/test-area.md)
+- [Style Guide](../docs/components/test-area-style-guide.md)
+- [Developer Guide](../docs/developer/technical-development-guide.md)
 
 ---
 
-**最后更新：** 2025-01-20  
-**版本：** 1.4.4
+**Last updated:** 2025-01-20  
+**Version:** 1.4.4

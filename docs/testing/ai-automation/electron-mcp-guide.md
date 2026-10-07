@@ -1,53 +1,53 @@
-# Electron MCP自动化测试指南
+# Electron MCP Automated Testing Guide
 
-## 📖 概述
+## 📖 Overview
 
-本指南总结了使用MCP (Model Context Protocol) 对Electron桌面应用进行AI自动化测试的最佳实践和关键技巧。
+This guide summarizes best practices and key techniques for AI automated testing of Electron desktop applications using MCP (Model Context Protocol).
 
-## 🚀 启动和连接
+## 🚀 Launching and Connecting
 
-### Electron应用启动
+### Launching the Electron App
 ```javascript
-// 1. 确保应用已构建
-// 执行: pnpm clean && pnpm build
+// 1. Make sure the app is built
+// Run: pnpm clean && pnpm build
 
-// 2. 启动Electron应用
+// 2. Launch the Electron app
 app_launch_circuit-electron({
   app: "/path/to/project/packages/desktop/dist/win-unpacked/YourApp.exe",
-  mode: "packaged",  // 关键：使用packaged模式
+  mode: "packaged",  // Key: use packaged mode
   includeSnapshots: true,
   timeout: 60000
 })
 ```
 
-### 与浏览器测试的区别
-- **浏览器**: `browser_navigate` 到URL
-- **Electron**: `app_launch_circuit-electron` 启动可执行文件
-- **构建要求**: Electron需要先构建才能测试
+### Differences from Browser Testing
+- **Browser**: `browser_navigate` to a URL
+- **Electron**: `app_launch_circuit-electron` launches the executable
+- **Build requirement**: Electron must be built before it can be tested
 
-## 🎯 元素定位策略
+## 🎯 Element Locating Strategy
 
-### 优先级顺序（重要！）
-1. **click_by_text_circuit-electron** (最优先，最稳定)
-2. **smart_click_circuit-electron** (自动检测策略)
-3. **click_circuit-electron** (CSS选择器)
-4. **evaluate_circuit-electron** (JavaScript执行，最后手段)
+### Priority Order (Important!)
+1. **click_by_text_circuit-electron** (highest priority, most stable)
+2. **smart_click_circuit-electron** (automatic strategy detection)
+3. **click_circuit-electron** (CSS selector)
+4. **evaluate_circuit-electron** (JavaScript execution, last resort)
 
-### 最佳实践示例
+### Best Practice Examples
 ```javascript
-// ✅ 优先：文本点击
+// ✅ Preferred: text click
 click_by_text_circuit-electron({
   sessionId: "session-id",
   text: "⚙️ Model Manager"
 })
 
-// ⚠️ 备选：CSS选择器
+// ⚠️ Alternative: CSS selector
 click_circuit-electron({
   sessionId: "session-id", 
   selector: "button:nth-child(4)"
 })
 
-// 🔧 最后手段：JavaScript执行
+// 🔧 Last resort: JavaScript execution
 evaluate_circuit-electron({
   sessionId: "session-id",
   script: `
@@ -62,20 +62,20 @@ evaluate_circuit-electron({
 })
 ```
 
-## ⚠️ 常见问题解决
+## ⚠️ Solving Common Problems
 
-### 1. 元素遮挡问题
-**症状**: `Error: <element> intercepts pointer events`
+### 1. Element Obstruction
+**Symptom**: `Error: <element> intercepts pointer events`
 
-**解决方案**:
+**Solutions**:
 ```javascript
-// 方案1: 使用Escape键关闭遮挡元素
+// Option 1: Use the Escape key to close the obstructing element
 key_circuit-electron({ sessionId: "session-id", key: "Escape" })
 
-// 方案2: 点击空白区域
+// Option 2: Click a blank area
 evaluate_circuit-electron({ script: "document.body.click();" })
 
-// 方案3: JavaScript绕过遮挡
+// Option 3: Bypass the obstruction with JavaScript
 evaluate_circuit-electron({
   script: `
     const button = document.querySelector('button[text="Target"]');
@@ -86,15 +86,15 @@ evaluate_circuit-electron({
 })
 ```
 
-### 2. 语言切换后元素失效
-**问题**: 语言切换后，文本选择器失效
+### 2. Elements Stop Working After Language Switch
+**Problem**: After switching the language, text selectors stop working
 
-**解决方案**:
+**Solution**:
 ```javascript
-// ❌ 硬编码文本
+// ❌ Hard-coded text
 click_by_text_circuit-electron({ text: "Model Manager" })
 
-// ✅ 使用包含匹配
+// ✅ Use contains matching
 evaluate_circuit-electron({
   script: `
     const buttons = document.querySelectorAll('button');
@@ -109,22 +109,22 @@ evaluate_circuit-electron({
 })
 ```
 
-### 3. 控制台错误信息误导
-**重要**: 不要仅依赖控制台错误信息判断功能状态
+### 3. Misleading Console Error Messages
+**Important**: Do not rely solely on console error messages to judge feature state
 
-**正确做法**:
+**Correct approach**:
 ```javascript
-// ✅ 关注界面状态变化
-// - 检查V1、V2按钮的出现
-// - 检查Continue Optimize按钮的激活
-// - 检查disabled/pressed/focused状态
+// ✅ Focus on interface state changes
+// - Check the appearance of the V1 and V2 buttons
+// - Check the activation of the Continue Optimize button
+// - Check disabled/pressed/focused states
 
-// ❌ 错误做法：仅依赖控制台错误信息
+// ❌ Wrong approach: relying only on console error messages
 ```
 
-## 🛠️ 输入和等待策略
+## 🛠️ Input and Waiting Strategies
 
-### 文本输入最佳实践
+### Text Input Best Practices
 ```javascript
 evaluate_circuit-electron({
   script: `
@@ -141,16 +141,16 @@ evaluate_circuit-electron({
 })
 ```
 
-### 等待策略
+### Waiting Strategies
 ```javascript
-// 基础等待
+// Basic wait
 wait_for_load_state_circuit-electron({
   sessionId: "session-id",
   state: "load",
   timeout: 5000
 })
 
-// AI请求等待（重要：AI请求需要更长时间）
+// Waiting for AI requests (important: AI requests take longer)
 wait_for_load_state_circuit-electron({
   sessionId: "session-id", 
   state: "networkidle",
@@ -158,29 +158,29 @@ wait_for_load_state_circuit-electron({
 })
 ```
 
-### 超时设置建议
-- **基础操作**: 3-5秒
-- **AI请求**: 10-20秒  
-- **文件操作**: 5-10秒
-- **应用启动**: 60秒
+### Timeout Recommendations
+- **Basic operations**: 3-5 seconds
+- **AI requests**: 10-20 seconds  
+- **File operations**: 5-10 seconds
+- **App launch**: 60 seconds
 
-## 🔍 状态检查和调试
+## 🔍 State Checking and Debugging
 
-### 界面状态检查
+### Interface State Checking
 ```javascript
-// 使用snapshot检查界面状态
+// Use snapshot to check interface state
 snapshot_circuit-electron({ sessionId: "session-id" })
 
-// 关键状态指标：
-// - pressed状态 (按钮激活)
-// - disabled状态 (按钮可用性)
-// - focused状态 (当前焦点)
-// - value字段 (输入内容)
+// Key state indicators:
+// - pressed state (button activated)
+// - disabled state (button availability)
+// - focused state (current focus)
+// - value field (input content)
 ```
 
-### 调试技巧
+### Debugging Tips
 ```javascript
-// 调试元素可见性
+// Debug element visibility
 evaluate_circuit-electron({
   script: `
     const elements = document.querySelectorAll('button');
@@ -193,15 +193,15 @@ evaluate_circuit-electron({
 })
 ```
 
-## 🚨 会话管理
+## 🚨 Session Management
 
-### 处理会话断开
+### Handling Session Disconnection
 ```javascript
 try {
   click_by_text_circuit-electron({ sessionId, text: "button" })
 } catch (error) {
   if (error.message.includes('page has been closed')) {
-    // 重新启动应用
+    // Relaunch the app
     sessionId = app_launch_circuit-electron({ 
       app: appPath,
       mode: "packaged",
@@ -211,87 +211,87 @@ try {
 }
 ```
 
-## 📊 测试执行流程
+## 📊 Test Execution Flow
 
-### 1. 准备阶段
+### 1. Preparation Phase
 ```bash
-# 构建应用
+# Build the app
 pnpm clean && pnpm build
 
-# 确保外部服务运行（如需要）
-# 例如：启动Ollama服务
+# Make sure external services are running (if needed)
+# For example: start the Ollama service
 ```
 
-### 2. 测试执行
+### 2. Test Execution
 ```javascript
-// 启动应用
+// Launch the app
 const sessionId = app_launch_circuit-electron({...})
 
-// 获取初始状态
+// Get the initial state
 snapshot_circuit-electron({ sessionId })
 
-// 执行测试步骤
+// Execute test steps
 // ...
 
-// 关闭应用
+// Close the app
 close_circuit-electron({ sessionId })
 ```
 
-### 3. 结果验证
-- 重点关注界面状态变化
-- 验证功能按钮的激活状态
-- 检查数据持久化效果
+### 3. Result Verification
+- Focus on interface state changes
+- Verify the activation state of functional buttons
+- Check data persistence effects
 
-## 🎯 Electron特有优势
+## 🎯 Electron-Specific Advantages
 
-### 1. 真实应用环境
-- 测试真实的桌面应用体验
-- 验证文件系统操作
-- 测试系统集成功能
+### 1. Real Application Environment
+- Test the real desktop app experience
+- Verify file system operations
+- Test system integration features
 
-### 2. 持久化测试
-- 应用重启后配置保持
-- 数据持久化验证
-- 真实的用户工作流程
+### 2. Persistence Testing
+- Configuration is retained after app restart
+- Data persistence verification
+- Real user workflows
 
-### 3. 完整功能测试
-- 端到端的用户体验
-- 真实的性能表现
-- 系统级别的集成测试
+### 3. Complete Feature Testing
+- End-to-end user experience
+- Real performance
+- System-level integration tests
 
-## 📝 测试场景模板
+## 📝 Test Scenario Templates
 
-### 基础功能测试
+### Basic Feature Test
 ```javascript
-// 1. 启动应用
-// 2. 检查初始状态
-// 3. 执行功能操作
-// 4. 验证结果
-// 5. 检查持久化
+// 1. Launch the app
+// 2. Check the initial state
+// 3. Perform the feature operation
+// 4. Verify the result
+// 5. Check persistence
 ```
 
-### AI功能测试
+### AI Feature Test
 ```javascript
-// 1. 配置模型
-// 2. 输入测试数据
-// 3. 执行AI操作
-// 4. 等待AI响应
-// 5. 验证结果质量
+// 1. Configure the model
+// 2. Enter test data
+// 3. Perform the AI operation
+// 4. Wait for the AI response
+// 5. Verify result quality
 ```
 
-## 🏆 成功标准
+## 🏆 Success Criteria
 
-### 技术指标
-- 所有测试场景通过
-- 无崩溃或异常
-- 响应时间合理
+### Technical Metrics
+- All test scenarios pass
+- No crashes or exceptions
+- Reasonable response times
 
-### 用户体验
-- 操作流程流畅
-- 错误处理得当
-- 数据安全可靠
+### User Experience
+- Smooth operation flow
+- Proper error handling
+- Safe and reliable data
 
 ---
 
-**最后更新：** 2025-01-09  
-**适用范围：** Electron桌面应用AI自动化测试
+**Last updated:** 2025-01-09  
+**Scope:** AI automated testing of Electron desktop applications

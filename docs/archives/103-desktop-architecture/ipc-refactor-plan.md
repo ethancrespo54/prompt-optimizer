@@ -1,78 +1,78 @@
-# 高层服务代理IPC模型重构计划
+# High-Level Service Proxy IPC Model Refactor Plan
 
-## 📋 任务概述
+## 📋 Task Overview
 
-解决当前底层 `fetch` 代理方案因模拟不完善导致的脆弱性和兼容性问题。建立一个稳定、可维护、职责清晰的桌面端应用架构，将主进程作为后端服务提供者，渲染进程作为纯粹的前端消费者。
+Resolve the fragility and compatibility problems caused by the incomplete emulation in the current low-level `fetch` proxy approach. Establish a stable, maintainable desktop application architecture with clear responsibilities, in which the main process is the backend service provider and the renderer process is a pure frontend consumer.
 
-## 🎯 目标
+## 🎯 Goals
 
-- 废弃底层 `fetch` 代理，切换到高层服务接口代理
-- 建立稳定的 IPC 通信协议
-- 实现主进程的服务提供者角色
-- 提高系统的可维护性和稳定性
+- Deprecate the low-level `fetch` proxy and switch to a high-level service interface proxy
+- Establish a stable IPC communication protocol
+- Implement the service provider role of the main process
+- Improve the system's maintainability and stability
 
-## 📅 计划时间线
+## 📅 Planned Timeline
 
-- **开始时间**: 2024-07-25
-- **当前状态**: 📋 计划阶段
-- **预计完成**: 待定
+- **Start date**: 2024-07-25
+- **Current status**: 📋 Planning phase
+- **Expected completion**: TBD
 
-## 🔧 计划步骤
+## 🔧 Planned Steps
 
-### 1. 清理 `core` 包
-- [ ] 移除所有特定于 Electron 的逻辑（如 `isRunningInElectron` 和 `fetch` 注入）
-- [ ] 使其回归为一个纯粹、平台无关的核心业务逻辑库
-- [ ] 确保 core 包可以在任何 JavaScript 环境中运行
+### 1. Clean up the `core` package
+- [ ] Remove all Electron-specific logic (such as `isRunningInElectron` and `fetch` injection)
+- [ ] Return it to being a pure, platform-independent core business logic library
+- [ ] Ensure the core package can run in any JavaScript environment
 
-### 2. 改造 `main.js`
-- [ ] 使其成为服务提供者
-- [ ] 通过 `require('@prompt-optimizer/core')` 直接消费 `core` 包
-- [ ] 在主进程中实例化 `LLMService` 等核心服务
-- [ ] 建立服务管理和生命周期控制
+### 2. Rework `main.js`
+- [ ] Make it a service provider
+- [ ] Consume the `core` package directly via `require('@prompt-optimizer/core')`
+- [ ] Instantiate core services such as `LLMService` in the main process
+- [ ] Establish service management and lifecycle control
 
-### 3. 实现主进程存储方案
-- [ ] 为 `main.js` 中的服务提供一个适合 Node.js 环境的存储方案
-- [ ] 第一阶段先实现一个临时的 `MemoryStorageProvider`
-- [ ] 后续实现文件持久化存储
+### 3. Implement main process storage
+- [ ] Provide a storage solution suited to the Node.js environment for the services in `main.js`
+- [ ] In the first phase, implement a temporary `MemoryStorageProvider`
+- [ ] Later, implement file-based persistent storage
 
-### 4. 重构 IPC 通信协议
-- [ ] 废弃底层的 `api-fetch` 代理
-- [ ] 在 `main.js` 和 `preload.js` 中建立基于 `ILLMService` 公共方法的高层 IPC 接口
-- [ ] 实现方法级别的 IPC 调用（如 `testConnection`, `sendMessageStream`）
+### 4. Refactor the IPC communication protocol
+- [ ] Deprecate the low-level `api-fetch` proxy
+- [ ] Establish a high-level IPC interface based on the public methods of `ILLMService` in `main.js` and `preload.js`
+- [ ] Implement method-level IPC calls (such as `testConnection`, `sendMessageStream`)
 
-### 5. 创建渲染进程代理
-- [ ] 在 `core` 包中创建一个 `ElectronLLMProxy` 类
-- [ ] 该类实现 `ILLMService` 接口
-- [ ] 内部方法通过 `window.electronAPI.llm.*` 调用 IPC 接口
+### 5. Create the renderer process proxy
+- [ ] Create an `ElectronLLMProxy` class in the `core` package
+- [ ] The class implements the `ILLMService` interface
+- [ ] Its internal methods call the IPC interface via `window.electronAPI.llm.*`
 
-### 6. 改造服务初始化逻辑
-- [ ] 修改 `useServiceInitializer.ts`
-- [ ] 使其能够根据当前环境（Web 或 Electron）判断
-- [ ] 为应用提供真实的 `LLMService` 实例或 `ElectronLLMProxy` 代理实例
+### 6. Rework the service initialization logic
+- [ ] Modify `useServiceInitializer.ts`
+- [ ] Make it detect the current environment (Web or Electron)
+- [ ] Provide the application with either a real `LLMService` instance or an `ElectronLLMProxy` proxy instance
 
-## 🚨 问题分析
+## 🚨 Problem Analysis
 
-### 当前架构问题
-1. **底层代理的脆弱性**: 
-   - `fetch` 代理导致 `AbortSignal`、`Headers` 等对象在跨IPC传输时出现序列化和实例类型不匹配的问题
-   - 导致应用崩溃且难以维护
+### Problems with the current architecture
+1. **Fragility of the low-level proxy**: 
+   - The `fetch` proxy causes serialization and instance type mismatch problems for objects such as `AbortSignal` and `Headers` when they are transferred across IPC
+   - This crashes the application and is hard to maintain
 
-2. **关注点分离违反**:
-   - 试图模拟一个复杂且不稳定的底层Web API
-   - 违反了关注点分离原则
+2. **Violation of separation of concerns**:
+   - It tries to emulate a complex and unstable low-level Web API
+   - This violates the separation of concerns principle
 
-3. **维护困难**:
-   - 底层对象的模拟不完善
-   - 调试和错误排查困难
+3. **Hard to maintain**:
+   - The emulation of low-level objects is incomplete
+   - Debugging and troubleshooting are difficult
 
-### 解决方案优势
-1. **稳定的接口**: 代理我们自己定义的高层、稳定的服务接口
-2. **简单的数据结构**: 基于稳定、简单、可序列化的数据结构和接口
-3. **清晰的职责**: 主进程专注于服务提供，渲染进程专注于UI
+### Advantages of the solution
+1. **Stable interface**: Proxy the high-level, stable service interfaces we define ourselves
+2. **Simple data structures**: Based on stable, simple, serializable data structures and interfaces
+3. **Clear responsibilities**: The main process focuses on providing services and the renderer process focuses on the UI
 
-## 🏗️ 新架构设计
+## 🏗️ New Architecture Design
 
-### 主进程架构
+### Main process architecture
 ```javascript
 // main.js
 const { LLMService, StorageProvider } = require('@prompt-optimizer/core');
@@ -94,17 +94,17 @@ class MainProcessServices {
 
 const services = new MainProcessServices();
 
-// IPC 处理器
+// IPC handlers
 ipcMain.handle('llm:testConnection', async (event, config) => {
   return await services.testConnection(config);
 });
 
 ipcMain.handle('llm:sendMessageStream', async (event, messages, config) => {
-  // 处理流式响应的特殊逻辑
+  // Special logic for handling streaming responses
 });
 ```
 
-### 渲染进程代理
+### Renderer process proxy
 ```typescript
 // ElectronLLMProxy.ts
 export class ElectronLLMProxy implements ILLMService {
@@ -122,7 +122,7 @@ export class ElectronLLMProxy implements ILLMService {
 }
 ```
 
-### 环境检测和初始化
+### Environment detection and initialization
 ```typescript
 // useServiceInitializer.ts
 export function useServiceInitializer() {
@@ -142,28 +142,28 @@ export function useServiceInitializer() {
 }
 ```
 
-## 📋 里程碑
+## 📋 Milestones
 
-- [ ] 完成方案设计与文档同步
-- [ ] 完成代码重构
-- [ ] 桌面应用在新架构下成功运行
-- [ ] 实现主进程的文件持久化存储
+- [ ] Finish the design and documentation sync
+- [ ] Finish the code refactor
+- [ ] The desktop application runs successfully on the new architecture
+- [ ] Implement file-based persistent storage in the main process
 
-## 💡 核心经验
+## 💡 Key Lessons
 
-1. **跨进程通信原则**: 应基于稳定、简单、可序列化的数据结构和接口
-2. **避免底层对象代理**: 不要试图代理复杂的底层原生对象
-3. **关注点分离**: 主进程专注于服务，渲染进程专注于UI
-4. **接口稳定性**: 高层接口比底层API更稳定，更适合跨进程通信
+1. **Inter-process communication principle**: Should be based on stable, simple, serializable data structures and interfaces
+2. **Avoid proxying low-level objects**: Do not try to proxy complex low-level native objects
+3. **Separation of concerns**: The main process focuses on services and the renderer process focuses on the UI
+4. **Interface stability**: High-level interfaces are more stable than low-level APIs and better suited to inter-process communication
 
-## 🔗 相关文档
+## 🔗 Related Documents
 
-- [当前桌面架构](./README.md)
-- [桌面应用实施记录](./desktop-implementation.md)
-- [IPC通信最佳实践](./ipc-best-practices.md)
+- [Current Desktop Architecture](./README.md)
+- [Desktop Application Implementation Record](./desktop-implementation.md)
+- [IPC Communication Best Practices](./ipc-best-practices.md)
 
 ---
 
-**任务状态**: 📋 计划阶段  
-**优先级**: 高  
-**最后更新**: 2025-07-01
+**Task status**: 📋 Planning phase  
+**Priority**: High  
+**Last updated**: 2025-07-01

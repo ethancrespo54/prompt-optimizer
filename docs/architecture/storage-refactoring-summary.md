@@ -1,76 +1,76 @@
-# 存储架构重构总结
+# Storage Architecture Refactoring Summary
 
-## 📋 重构概述
+## 📋 Refactoring Overview
 
-基于用户反馈，我们对存储架构进行了两项重要改进：
-1. **移除TemplateManager的过度设计** - 删除不必要的storageKey配置
-2. **统一使用PreferenceService** - 将所有用户偏好设置统一管理
+Based on user feedback, we made two important improvements to the storage architecture:
+1. **Removed over-engineering in TemplateManager** - Deleted the unnecessary storageKey configuration
+2. **Unified use of PreferenceService** - Manage all user preference settings in one place
 
-## 🎯 改进1：移除TemplateManager的过度设计
+## 🎯 Improvement 1: Remove Over-Engineering in TemplateManager
 
-### 问题分析
-TemplateManager的`config?.storageKey`是过度设计的产物：
-- 理论上提供灵活性，但实际从未被使用
-- 增加了不必要的复杂性
-- 所有地方都使用默认值，没有传入自定义storageKey
+### Problem Analysis
+TemplateManager's `config?.storageKey` was a product of over-engineering:
+- In theory it provides flexibility, but it was never actually used
+- It added unnecessary complexity
+- Every call site used the default value; no custom storageKey was ever passed
 
-### 修改内容
+### Changes
 
-#### 1. 简化TemplateManagerConfig接口
+#### 1. Simplify the TemplateManagerConfig interface
 ```typescript
-// ❌ 修改前
+// ❌ Before
 export interface TemplateManagerConfig {
-  storageKey?: string;     // localStorage存储键名
-  cacheTimeout?: number;   // 缓存超时时间
+  storageKey?: string;     // localStorage storage key name
+  cacheTimeout?: number;   // Cache timeout
 }
 
-// ✅ 修改后
+// ✅ After
 export interface TemplateManagerConfig {
-  cacheTimeout?: number;   // 缓存超时时间
+  cacheTimeout?: number;   // Cache timeout
 }
 ```
 
-#### 2. 直接使用常量
+#### 2. Use constants directly
 ```typescript
-// ❌ 修改前
+// ❌ Before
 this.config = {
   storageKey: config?.storageKey || CORE_SERVICE_KEYS.USER_TEMPLATES,
   cacheTimeout: config?.cacheTimeout || 5 * 60 * 1000,
 };
 
-// ✅ 修改后
+// ✅ After
 this.config = {
   cacheTimeout: config?.cacheTimeout || 5 * 60 * 1000,
 };
 
-// 直接使用常量
+// Use the constant directly
 await this.storageProvider.setItem(CORE_SERVICE_KEYS.USER_TEMPLATES, data);
 ```
 
-### 优势
-- **简化代码** - 减少不必要的配置选项
-- **提高可读性** - 直接使用常量，意图更明确
-- **减少维护成本** - 少一个配置点，少一个出错的可能
+### Benefits
+- **Simpler code** - Fewer unnecessary configuration options
+- **Better readability** - Using constants directly makes the intent clearer
+- **Lower maintenance cost** - One fewer configuration point, one fewer thing that can go wrong
 
-## 🎯 改进2：统一使用PreferenceService
+## 🎯 Improvement 2: Unified Use of PreferenceService
 
-### 问题分析
-内置模板语言设置与其他UI设置使用不同的存储方式：
-- 其他UI设置通过PreferenceService存储（带`pref:`前缀）
-- 内置模板语言直接存储（无前缀）
-- 导致存储方式不一致，增加了DataManager的复杂性
+### Problem Analysis
+The built-in template language setting used a different storage method from other UI settings:
+- Other UI settings are stored via PreferenceService (with the `pref:` prefix)
+- The built-in template language was stored directly (no prefix)
+- This made the storage method inconsistent and added complexity to DataManager
 
-### 架构原则重新审视
-用户的观点是正确的：
-- **PreferenceService不仅仅是UI设置** - 它是用户偏好设置的统一管理
-- **内置模板语言也是用户偏好** - 用户选择使用中文还是英文模板
-- **统一存储方式更简洁** - 减少特殊情况处理
+### Revisiting the Architectural Principles
+The user's point was correct:
+- **PreferenceService is not just for UI settings** - It is the unified manager of user preference settings
+- **The built-in template language is also a user preference** - The user chooses whether to use Chinese or English templates
+- **A unified storage method is simpler** - Fewer special cases to handle
 
-### 修改内容
+### Changes
 
-#### 1. TemplateLanguageService使用PreferenceService
+#### 1. TemplateLanguageService uses PreferenceService
 ```typescript
-// ❌ 修改前
+// ❌ Before
 export class TemplateLanguageService {
   private readonly STORAGE_KEY = 'app:settings:ui:builtin-template-language';
   private storage: IStorageProvider;
@@ -84,7 +84,7 @@ export class TemplateLanguageService {
   }
 }
 
-// ✅ 修改后
+// ✅ After
 export class TemplateLanguageService {
   private storage: IStorageProvider;
   private preferenceService: IPreferenceService;
@@ -100,14 +100,14 @@ export class TemplateLanguageService {
 }
 ```
 
-#### 2. 更新工厂函数
+#### 2. Update the factory function
 ```typescript
-// ❌ 修改前
+// ❌ Before
 export function createTemplateLanguageService(storageProvider: IStorageProvider): TemplateLanguageService {
   return new TemplateLanguageService(storageProvider);
 }
 
-// ✅ 修改后
+// ✅ After
 export function createTemplateLanguageService(
   storageProvider: IStorageProvider, 
   preferenceService: IPreferenceService
@@ -116,9 +116,9 @@ export function createTemplateLanguageService(
 }
 ```
 
-#### 3. 简化DataManager
+#### 3. Simplify DataManager
 ```typescript
-// ❌ 修改前
+// ❌ Before
 const PREFERENCE_BASED_KEYS = [
   'app:settings:ui:theme-id',
   'app:settings:ui:preferred-language',
@@ -126,104 +126,104 @@ const PREFERENCE_BASED_KEYS = [
 ] as const;
 
 const DIRECT_STORAGE_KEYS = [
-  'app:settings:ui:builtin-template-language', // 特殊处理
+  'app:settings:ui:builtin-template-language', // Special handling
 ] as const;
 
-// ✅ 修改后
+// ✅ After
 const PREFERENCE_BASED_KEYS = [
   'app:settings:ui:theme-id',
   'app:settings:ui:preferred-language',
-  'app:settings:ui:builtin-template-language', // 统一处理
+  'app:settings:ui:builtin-template-language', // Unified handling
   // ...
 ] as const;
 
 const DIRECT_STORAGE_KEYS = [
-  // 现在所有UI设置都通过PreferenceService存储
+  // All UI settings are now stored via PreferenceService
 ] as const;
 ```
 
-### 优势
-- **架构一致性** - 所有用户偏好设置都通过PreferenceService管理
-- **简化DataManager** - 不再需要区分两种存储方式
-- **语义清晰** - 内置模板语言确实是用户偏好，应该统一管理
-- **便于扩展** - 未来新增用户偏好设置都遵循同一模式
+### Benefits
+- **Architectural consistency** - All user preference settings are managed through PreferenceService
+- **Simplified DataManager** - No longer needs to distinguish two storage methods
+- **Clear semantics** - The built-in template language is indeed a user preference and should be managed uniformly
+- **Easy to extend** - Future user preference settings all follow the same pattern
 
-## 📊 影响范围
+## 📊 Scope of Impact
 
-### 修改的文件
-1. **核心服务**
-   - `packages/core/src/services/template/types.ts` - 简化配置接口
-   - `packages/core/src/services/template/manager.ts` - 移除storageKey配置
-   - `packages/core/src/services/template/languageService.ts` - 使用PreferenceService
-   - `packages/core/src/services/data/manager.ts` - 简化存储键分类
+### Modified Files
+1. **Core services**
+   - `packages/core/src/services/template/types.ts` - Simplified the configuration interface
+   - `packages/core/src/services/template/manager.ts` - Removed the storageKey configuration
+   - `packages/core/src/services/template/languageService.ts` - Uses PreferenceService
+   - `packages/core/src/services/data/manager.ts` - Simplified storage key classification
 
-2. **应用初始化**
-   - `packages/ui/src/composables/useAppInitializer.ts` - 更新服务创建
-   - `packages/desktop/main.js` - 更新服务创建
+2. **Application initialization**
+   - `packages/ui/src/composables/useAppInitializer.ts` - Updated service creation
+   - `packages/desktop/main.js` - Updated service creation
 
-3. **测试文件**
-   - `packages/core/tests/unit/template/languageService.test.ts` - 更新测试
-   - `packages/core/tests/unit/template/manager.test.ts` - 更新测试
+3. **Test files**
+   - `packages/core/tests/unit/template/languageService.test.ts` - Updated tests
+   - `packages/core/tests/unit/template/manager.test.ts` - Updated tests
 
-4. **文档**
-   - `docs/architecture/storage-key-architecture.md` - 更新架构说明
+4. **Documentation**
+   - `docs/architecture/storage-key-architecture.md` - Updated architecture description
 
-### 向后兼容性
-- **数据导入** - 旧版本数据仍然可以正常导入
-- **键名转换** - LEGACY_KEY_MAPPING确保兼容性
-- **用户体验** - 用户不会感知到任何变化
+### Backward Compatibility
+- **Data import** - Data from older versions can still be imported normally
+- **Key name conversion** - LEGACY_KEY_MAPPING ensures compatibility
+- **User experience** - Users will not notice any change
 
-## 🎉 重构效果
+## 🎉 Results of the Refactoring
 
-### 代码质量提升
-- **减少复杂性** - 移除不必要的配置选项
-- **提高一致性** - 统一的存储方式
-- **增强可维护性** - 更简洁的架构
+### Improved Code Quality
+- **Reduced complexity** - Removed unnecessary configuration options
+- **Improved consistency** - A unified storage method
+- **Better maintainability** - A cleaner architecture
 
-### 架构改进
-- **职责清晰** - PreferenceService专门管理用户偏好
-- **扩展性好** - 新增用户偏好设置有明确的模式
-- **测试友好** - 统一的存储方式便于测试
+### Architectural Improvements
+- **Clear responsibilities** - PreferenceService is dedicated to managing user preferences
+- **Good extensibility** - There is a clear pattern for adding new user preference settings
+- **Test-friendly** - A unified storage method makes testing easier
 
-### 用户体验
-- **功能不变** - 用户不会感知到任何变化
-- **数据安全** - 完全向后兼容，不会丢失数据
-- **性能提升** - 减少了特殊情况处理的开销
+### User Experience
+- **Functionality unchanged** - Users will not notice any change
+- **Data safety** - Fully backward compatible; no data is lost
+- **Performance gains** - Less overhead from special-case handling
 
-## 🚀 最佳实践
+## 🚀 Best Practices
 
-### 1. 新增用户偏好设置
+### 1. Adding a New User Preference Setting
 ```typescript
-// 1. 在常量文件中定义键名
+// 1. Define the key name in the constants file
 export const UI_SETTINGS_KEYS = {
   NEW_PREFERENCE: 'app:settings:ui:new-preference',
 } as const;
 
-// 2. 通过PreferenceService存储
+// 2. Store it via PreferenceService
 await preferenceService.set(UI_SETTINGS_KEYS.NEW_PREFERENCE, value);
 
-// 3. 在DataManager中添加到PREFERENCE_BASED_KEYS
+// 3. Add it to PREFERENCE_BASED_KEYS in DataManager
 const PREFERENCE_BASED_KEYS = [
   // ...existing keys
   'app:settings:ui:new-preference',
 ] as const;
 ```
 
-### 2. 避免过度设计
-- 只在真正需要时才添加配置选项
-- 优先使用常量而不是可配置参数
-- 定期审查和清理不必要的配置
+### 2. Avoid Over-Engineering
+- Add configuration options only when truly needed
+- Prefer constants over configurable parameters
+- Periodically review and remove unnecessary configuration
 
-### 3. 保持架构一致性
-- 同类型的数据使用相同的存储方式
-- 遵循既定的命名规范
-- 保持服务职责的清晰边界
+### 3. Maintain Architectural Consistency
+- Use the same storage method for the same type of data
+- Follow the established naming conventions
+- Keep clear boundaries between service responsibilities
 
-## 📝 总结
+## 📝 Summary
 
-这次重构体现了"简单即美"的设计哲学：
-1. **移除过度设计** - 删除不必要的复杂性
-2. **统一架构模式** - 相同类型的数据使用相同的处理方式
-3. **保持向后兼容** - 在改进架构的同时不影响用户
+This refactoring embodies the design philosophy that "simple is beautiful":
+1. **Remove over-engineering** - Delete unnecessary complexity
+2. **Unify architectural patterns** - Handle the same type of data in the same way
+3. **Maintain backward compatibility** - Improve the architecture without affecting users
 
-重构后的架构更加简洁、一致和可维护，为未来的功能扩展奠定了良好的基础。
+The refactored architecture is cleaner, more consistent, and more maintainable, laying a solid foundation for future feature expansion.

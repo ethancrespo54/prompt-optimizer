@@ -1,6 +1,6 @@
 {
   "testName": "optimize\\pro-multi.spec.ts",
-  "testCase": "自动选择最新消息并优化，生成优化结果",
+  "testCase": "Auto-select the latest message, optimize, and generate an optimized result",
   "interactions": [
     {
       "provider": "deepseek",

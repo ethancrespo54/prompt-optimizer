@@ -1,55 +1,55 @@
-# 可访问性功能完整指南
+# Complete Accessibility Guide
 
-## 概述
+## Overview
 
-本文档详细介绍了Prompt Optimizer UI组件库中的可访问性功能。我们的组件完全符合WCAG 2.1 AA/AAA标准，为所有用户（包括残障用户）提供平等的使用体验。
+This document describes in detail the accessibility features of the Prompt Optimizer UI component library. Our components fully comply with the WCAG 2.1 AA/AAA standards and provide an equal experience for all users, including users with disabilities.
 
-## 核心特性
+## Core Features
 
-### 🎯 WCAG 2.1 合规性
-- **A级**: 基础可访问性要求
-- **AA级**: 推荐的可访问性标准
-- **AAA级**: 最高级别的可访问性支持
+### 🎯 WCAG 2.1 Compliance
+- **Level A**: Basic accessibility requirements
+- **Level AA**: Recommended accessibility standard
+- **Level AAA**: Highest level of accessibility support
 
-### ⌨️ 键盘导航
-- Tab键循环导航
-- Enter键激活元素
-- Escape键关闭模态框
-- 方向键导航列表和菜单
-- Home/End键快速定位
+### ⌨️ Keyboard Navigation
+- Tab key cycles through navigation
+- Enter key activates elements
+- Escape key closes modals
+- Arrow keys navigate lists and menus
+- Home/End keys jump to the start/end
 
-### 🔊 屏幕阅读器支持
-- 完整的ARIA标签体系
-- 实时区域状态通知
-- 语义化HTML结构
-- 上下文敏感的描述
+### 🔊 Screen Reader Support
+- Complete ARIA label system
+- Live region status announcements
+- Semantic HTML structure
+- Context-sensitive descriptions
 
-### 👀 视觉辅助
-- 高对比度模式
-- 可调节字体大小
-- 聚焦指示器
-- 减少动画选项
+### 👀 Visual Aids
+- High contrast mode
+- Adjustable font size
+- Focus indicators
+- Reduced motion option
 
-## 详细功能介绍
+## Detailed Feature Descriptions
 
 ### 1. useAccessibility Composable
 
-这是我们可访问性功能的核心，提供完整的可访问性支持：
+This is the core of our accessibility features and provides complete accessibility support:
 
 ```typescript
 import { useAccessibility } from '@prompt-optimizer/ui'
 
 const {
-  keyboard,      // 键盘导航
-  aria,         // ARIA标签管理
-  announce,     // 屏幕阅读器通知
-  features,     // 可访问性特性检测
-  enableFocusTrap,  // 启用焦点陷阱
-  disableFocusTrap  // 禁用焦点陷阱
+  keyboard,      // Keyboard navigation
+  aria,         // ARIA label management
+  announce,     // Screen reader announcements
+  features,     // Accessibility feature detection
+  enableFocusTrap,  // Enable focus trap
+  disableFocusTrap  // Disable focus trap
 } = useAccessibility('MyComponent')
 ```
 
-#### 键盘导航支持
+#### Keyboard Navigation Support
 
 ```vue
 <template>
@@ -70,9 +70,9 @@ import { ref, onMounted } from 'vue'
 import { useAccessibility } from '@prompt-optimizer/ui'
 
 const items = ref([
-  { id: 1, name: '选项1' },
-  { id: 2, name: '选项2' },
-  { id: 3, name: '选项3' }
+  { id: 1, name: 'Option 1' },
+  { id: 2, name: 'Option 2' },
+  { id: 3, name: 'Option 3' }
 ])
 
 const {
@@ -82,24 +82,24 @@ const {
 } = useAccessibility('MenuComponent')
 
 onMounted(() => {
-  // 设置可聚焦元素
+  // Set the focusable elements
   const buttons = document.querySelectorAll('button')
   keyboard.setFocusableElements(Array.from(buttons))
 })
 </script>
 ```
 
-#### ARIA标签管理
+#### ARIA Label Management
 
 ```vue
 <template>
   <div>
     <button
-      :aria-label="aria.getLabel('save', '保存按钮')"
-      :aria-describedby="aria.getDescription('save', '保存当前编辑的内容')"
+      :aria-label="aria.getLabel('save', 'Save button')"
+      :aria-describedby="aria.getDescription('save', 'Save the content currently being edited')"
       role="button"
     >
-      保存
+      Save
     </button>
     
     <div
@@ -120,32 +120,32 @@ const { aria, announce } = useAccessibility('SaveButton')
 const statusMessage = ref('')
 
 const handleSave = () => {
-  statusMessage.value = '正在保存...'
-  announce('正在保存内容', 'polite')
+  statusMessage.value = 'Saving...'
+  announce('Saving content', 'polite')
   
-  // 模拟保存操作
+  // Simulate the save operation
   setTimeout(() => {
-    statusMessage.value = '保存完成'
-    announce('内容已成功保存', 'polite')
+    statusMessage.value = 'Save complete'
+    announce('Content saved successfully', 'polite')
   }, 1000)
 }
 </script>
 ```
 
-### 2. 焦点管理系统
+### 2. Focus Management System
 
 #### useFocusManager Composable
 
-专业的焦点管理，支持焦点陷阱和自动恢复：
+Professional focus management with support for focus traps and automatic restoration:
 
 ```vue
 <template>
   <div ref="containerRef" class="modal">
-    <h2>模态框标题</h2>
-    <input v-model="inputValue" placeholder="输入内容" />
+    <h2>Modal title</h2>
+    <input v-model="inputValue" placeholder="Enter content" />
     <div class="button-group">
-      <button @click="confirm">确认</button>
-      <button @click="cancel">取消</button>
+      <button @click="confirm">Confirm</button>
+      <button @click="cancel">Cancel</button>
     </div>
   </div>
 </template>
@@ -169,10 +169,10 @@ const {
 })
 
 onMounted(() => {
-  // 自动启用焦点陷阱
+  // Automatically enable the focus trap
   trapFocus()
   
-  // 监听键盘事件
+  // Listen for keyboard events
   document.addEventListener('keydown', handleKeydown)
 })
 
@@ -200,7 +200,7 @@ const handleKeydown = (e: KeyboardEvent) => {
 }
 
 const confirm = () => {
-  console.log('确认:', inputValue.value)
+  console.log('Confirm:', inputValue.value)
   releaseFocus()
 }
 
@@ -210,22 +210,22 @@ const cancel = () => {
 </script>
 ```
 
-### 3. 屏幕阅读器支持组件
+### 3. Screen Reader Support Components
 
-#### ScreenReaderSupport 组件
+#### ScreenReaderSupport Component
 
-专门为屏幕阅读器用户提供增强支持：
+Provides enhanced support specifically for screen reader users:
 
 ```vue
 <template>
   <div>
-    <!-- 您的应用内容 -->
+    <!-- Your app content -->
     <main role="main">
-      <h1>应用标题</h1>
-      <p>应用内容...</p>
+      <h1>App title</h1>
+      <p>App content...</p>
     </main>
     
-    <!-- 屏幕阅读器支持组件 -->
+    <!-- Screen reader support component -->
     <ScreenReaderSupport
       ref="screenReader"
       :enhanced="true"
@@ -253,35 +253,35 @@ const handleShortcut = (shortcut: string) => {
       showNavHelp.value = !showNavHelp.value
       break
     case 'Alt+S':
-      // 跳转到搜索框
+      // Jump to the search box
       document.querySelector('input[type="search"]')?.focus()
       break
   }
 }
 
-// 发送通知给屏幕阅读器
+// Send an announcement to the screen reader
 const notifyUser = (message: string, priority: 'polite' | 'assertive' = 'polite') => {
   screenReader.value?.announce(message, priority)
 }
 
-// 在操作完成后发送通知
+// Send an announcement after the operation completes
 const handleSave = () => {
-  // 保存逻辑
-  notifyUser('内容已保存')
+  // Save logic
+  notifyUser('Content saved')
 }
 
 const handleError = () => {
-  // 错误处理
-  notifyUser('保存失败，请重试', 'assertive')
+  // Error handling
+  notifyUser('Save failed, please try again', 'assertive')
 }
 </script>
 ```
 
-### 4. 可访问性测试工具
+### 4. Accessibility Testing Tools
 
 #### useAccessibilityTesting Composable
 
-自动化的可访问性合规性检查：
+Automated accessibility compliance checks:
 
 ```vue
 <script setup lang="ts">
@@ -301,7 +301,7 @@ const runAccessibilityTests = async () => {
   isLoading.value = true
   
   try {
-    // 运行完整的可访问性测试
+    // Run the full accessibility test
     const result = await runTest({
       scope: document.body,
       wcagLevel: 'AA',
@@ -310,47 +310,47 @@ const runAccessibilityTests = async () => {
     
     testResults.value = result
     
-    // 报告结果
-    console.log('可访问性测试结果:')
-    console.log(`总体分数: ${result.score}`)
-    console.log(`通过的规则: ${result.passedRules.length}`)
-    console.log(`发现的问题: ${result.issues.length}`)
-    console.log(`警告: ${result.warnings.length}`)
+    // Report the results
+    console.log('Accessibility test results:')
+    console.log(`Overall score: ${result.score}`)
+    console.log(`Passed rules: ${result.passedRules.length}`)
+    console.log(`Issues found: ${result.issues.length}`)
+    console.log(`Warnings: ${result.warnings.length}`)
     
-    // 处理严重问题
+    // Handle critical issues
     const criticalIssues = result.issues.filter(
       issue => issue.severity === 'critical'
     )
     
     if (criticalIssues.length > 0) {
-      console.error('发现严重可访问性问题:')
+      console.error('Critical accessibility issues found:')
       criticalIssues.forEach(issue => {
         console.error(`- ${issue.rule}: ${issue.message}`)
       })
     }
     
   } catch (error) {
-    console.error('可访问性测试失败:', error)
+    console.error('Accessibility test failed:', error)
   } finally {
     isLoading.value = false
   }
 }
 
-// 测试特定规则
+// Test a specific rule
 const testImageAlt = () => {
   const result = runSingleRule('img-alt')
   if (result.issues.length > 0) {
-    console.warn('发现图片缺少alt属性:')
+    console.warn('Found images missing the alt attribute:')
     result.issues.forEach(issue => {
       console.warn(`- ${issue.message}`)
     })
   }
 }
 
-// 获取所有可用的测试规则
+// Get all available test rules
 const logAvailableRules = () => {
   const rules = getAvailableRules()
-  console.log('可用的测试规则:')
+  console.log('Available test rules:')
   rules.forEach(rule => {
     console.log(`- ${rule.name} (${rule.wcagLevel}): ${rule.description}`)
   })
@@ -358,63 +358,63 @@ const logAvailableRules = () => {
 </script>
 ```
 
-## 可访问性最佳实践
+## Accessibility Best Practices
 
-### 1. 语义化HTML
+### 1. Semantic HTML
 
 ```vue
 <template>
-  <!-- ✅ 正确：使用语义化标签 -->
+  <!-- ✅ Correct: use semantic tags -->
   <main role="main">
     <article>
       <header>
-        <h1>文章标题</h1>
-        <p>发布时间: <time datetime="2024-01-01">2024年1月1日</time></p>
+        <h1>Article title</h1>
+        <p>Published: <time datetime="2024-01-01">January 1, 2024</time></p>
       </header>
       <section>
-        <h2>章节标题</h2>
-        <p>章节内容...</p>
+        <h2>Section title</h2>
+        <p>Section content...</p>
       </section>
     </article>
   </main>
   
-  <!-- ❌ 错误：缺少语义化标签 -->
+  <!-- ❌ Wrong: missing semantic tags -->
   <div>
-    <div>文章标题</div>
-    <div>文章内容</div>
+    <div>Article title</div>
+    <div>Article content</div>
   </div>
 </template>
 ```
 
-### 2. ARIA标签使用
+### 2. Using ARIA Labels
 
 ```vue
 <template>
-  <!-- ✅ 正确：完整的ARIA标签 -->
+  <!-- ✅ Correct: complete ARIA labels -->
   <button
     role="button"
-    aria-label="保存文档"
+    aria-label="Save document"
     aria-describedby="save-help"
     :aria-pressed="isSaving"
     :disabled="isDisabled"
     @click="handleSave"
   >
-    {{ isSaving ? '保存中...' : '保存' }}
+    {{ isSaving ? 'Saving...' : 'Save' }}
   </button>
   <div id="save-help" class="sr-only">
-    保存当前编辑的文档到本地存储
+    Save the document currently being edited to local storage
   </div>
   
-  <!-- ❌ 错误：缺少ARIA标签 -->
-  <div @click="handleSave">保存</div>
+  <!-- ❌ Wrong: missing ARIA labels -->
+  <div @click="handleSave">Save</div>
 </template>
 ```
 
-### 3. 键盘导航支持
+### 3. Keyboard Navigation Support
 
 ```vue
 <template>
-  <!-- ✅ 正确：完整的键盘支持 -->
+  <!-- ✅ Correct: complete keyboard support -->
   <div
     role="tablist"
     @keydown="handleTabKeydown"
@@ -464,7 +464,7 @@ const handleTabKeydown = (e: KeyboardEvent) => {
 </script>
 ```
 
-### 4. 实时状态通知
+### 4. Live Status Announcements
 
 ```vue
 <template>
@@ -474,7 +474,7 @@ const handleTabKeydown = (e: KeyboardEvent) => {
         v-model="formData.name"
         :aria-invalid="errors.name ? 'true' : 'false'"
         aria-describedby="name-error"
-        placeholder="请输入姓名"
+        placeholder="Enter your name"
       />
       <div
         id="name-error"
@@ -486,11 +486,11 @@ const handleTabKeydown = (e: KeyboardEvent) => {
       </div>
       
       <button type="submit" :disabled="isSubmitting">
-        {{ isSubmitting ? '提交中...' : '提交' }}
+        {{ isSubmitting ? 'Submitting...' : 'Submit' }}
       </button>
     </form>
     
-    <!-- 实时状态区域 -->
+    <!-- Live status region -->
     <div
       role="status"
       aria-live="polite"
@@ -499,7 +499,7 @@ const handleTabKeydown = (e: KeyboardEvent) => {
       {{ statusMessage }}
     </div>
     
-    <!-- 错误通知区域 -->
+    <!-- Error announcement region -->
     <div
       role="alert"
       aria-live="assertive"
@@ -529,30 +529,30 @@ const errors = reactive({
 })
 
 const validateForm = () => {
-  errors.name = formData.name ? '' : '姓名为必填项'
+  errors.name = formData.name ? '' : 'Name is required'
   return !errors.name
 }
 
 const handleSubmit = async () => {
   if (!validateForm()) {
-    errorMessage.value = '请修正表单错误'
-    announce('表单验证失败，请检查输入', 'assertive')
+    errorMessage.value = 'Please fix the form errors'
+    announce('Form validation failed, please check your input', 'assertive')
     return
   }
   
   isSubmitting.value = true
-  statusMessage.value = '正在提交表单...'
-  announce('正在提交表单', 'polite')
+  statusMessage.value = 'Submitting form...'
+  announce('Submitting form', 'polite')
   
   try {
-    // 模拟提交
+    // Simulate submission
     await new Promise(resolve => setTimeout(resolve, 2000))
     
-    statusMessage.value = '表单提交成功'
-    announce('表单提交成功', 'polite')
+    statusMessage.value = 'Form submitted successfully'
+    announce('Form submitted successfully', 'polite')
   } catch (error) {
-    errorMessage.value = '提交失败，请重试'
-    announce('提交失败，请重试', 'assertive')
+    errorMessage.value = 'Submission failed, please try again'
+    announce('Submission failed, please try again', 'assertive')
   } finally {
     isSubmitting.value = false
   }
@@ -560,33 +560,33 @@ const handleSubmit = async () => {
 </script>
 ```
 
-## 样式和视觉辅助
+## Styles and Visual Aids
 
-### 1. 聚焦指示器
+### 1. Focus Indicators
 
 ```scss
-// 高可见性的聚焦指示器
+// Highly visible focus indicator
 .focus-visible {
   outline: 3px solid #005fcc;
   outline-offset: 2px;
   border-radius: 3px;
 }
 
-// 键盘聚焦样式
+// Keyboard focus styles
 *:focus-visible {
   @extend .focus-visible;
 }
 
-// 移除鼠标点击时的聚焦样式
+// Remove focus styles on mouse click
 *:focus:not(:focus-visible) {
   outline: none;
 }
 ```
 
-### 2. 高对比度支持
+### 2. High Contrast Support
 
 ```scss
-// 高对比度模式样式
+// High contrast mode styles
 @media (prefers-contrast: high) {
   :root {
     --text-color: #000000;
@@ -607,10 +607,10 @@ const handleSubmit = async () => {
 }
 ```
 
-### 3. 减少动画选项
+### 3. Reduced Motion Options
 
 ```scss
-// 尊重用户的动画偏好
+// Respect the user's motion preference
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -621,7 +621,7 @@ const handleSubmit = async () => {
   }
 }
 
-// 为需要动画的用户提供平滑体验
+// Provide a smooth experience for users who want animation
 @media (prefers-reduced-motion: no-preference) {
   .animated-element {
     transition: all 0.3s ease;
@@ -629,28 +629,28 @@ const handleSubmit = async () => {
 }
 ```
 
-## 测试指南
+## Testing Guide
 
-### 1. 键盘导航测试
+### 1. Keyboard Navigation Tests
 
 ```typescript
-// E2E测试示例
-describe('键盘导航测试', () => {
-  it('应该支持Tab键导航', async () => {
+// E2E test example
+describe('Keyboard Navigation Tests', () => {
+  it('should support Tab key navigation', async () => {
     const page = await browser.newPage()
     await page.goto('http://localhost:3000')
     
-    // 模拟Tab键导航
+    // Simulate Tab key navigation
     await page.keyboard.press('Tab')
     const activeElement = await page.evaluate(() => document.activeElement?.tagName)
     expect(activeElement).toBe('BUTTON')
     
-    // 模拟Enter键激活
+    // Simulate Enter key activation
     await page.keyboard.press('Enter')
-    // 验证操作结果
+    // Verify the result of the operation
   })
   
-  it('应该支持方向键导航', async () => {
+  it('should support arrow key navigation', async () => {
     await page.focus('[role="tablist"] [role="tab"]:first-child')
     await page.keyboard.press('ArrowRight')
     
@@ -662,11 +662,11 @@ describe('键盘导航测试', () => {
 })
 ```
 
-### 2. 屏幕阅读器测试
+### 2. Screen Reader Tests
 
 ```typescript
-describe('屏幕阅读器支持测试', () => {
-  it('应该包含正确的ARIA标签', async () => {
+describe('Screen reader support tests', () => {
+  it('should include correct ARIA labels', async () => {
     const button = await page.$('button')
     const ariaLabel = await button?.getAttribute('aria-label')
     const role = await button?.getAttribute('role')
@@ -675,42 +675,42 @@ describe('屏幕阅读器支持测试', () => {
     expect(role).toBe('button')
   })
   
-  it('应该更新实时区域', async () => {
+  it('should update the live region', async () => {
     await page.click('[data-testid="save-button"]')
     
     const liveRegion = await page.$('[role="status"]')
     const content = await liveRegion?.textContent()
     
-    expect(content).toContain('已保存')
+    expect(content).toContain('Saved')
   })
 })
 ```
 
-## 常见问题解决
+## Common Problems and Solutions
 
-### Q: 如何处理动态内容的可访问性？
+### Q: How do I handle accessibility for dynamic content?
 
-A: 使用实时区域和适当的ARIA标签：
+A: Use live regions and appropriate ARIA labels:
 
 ```vue
 <template>
   <div>
-    <button @click="loadData">加载数据</button>
+    <button @click="loadData">Load data</button>
     
-    <!-- 加载状态 -->
+    <!-- Loading state -->
     <div
       v-if="isLoading"
       role="status"
       aria-live="polite"
     >
-      正在加载数据...
+      Loading data...
     </div>
     
-    <!-- 动态内容 -->
+    <!-- Dynamic content -->
     <div
       v-if="data"
       role="region"
-      :aria-label="`搜索结果，共${data.length}项`"
+      :aria-label="`Search results, ${data.length} items`"
     >
       <div
         v-for="item in data"
@@ -724,18 +724,18 @@ A: 使用实时区域和适当的ARIA标签：
 </template>
 ```
 
-### Q: 如何处理复杂表单的可访问性？
+### Q: How do I handle accessibility for complex forms?
 
-A: 使用字段集、标签关联和错误处理：
+A: Use fieldsets, label associations, and error handling:
 
 ```vue
 <template>
   <form @submit.prevent="handleSubmit">
     <fieldset>
-      <legend>基本信息</legend>
+      <legend>Basic information</legend>
       
       <div class="field">
-        <label for="name">姓名（必填）</label>
+        <label for="name">Name (required)</label>
         <input
           id="name"
           v-model="form.name"
@@ -744,7 +744,7 @@ A: 使用字段集、标签关联和错误处理：
           required
         />
         <div id="name-help" class="field-help">
-          请输入您的真实姓名
+          Please enter your real name
         </div>
         <div
           v-if="errors.name"
@@ -760,17 +760,17 @@ A: 使用字段集、标签关联和错误处理：
 </template>
 ```
 
-### Q: 如何确保第三方组件的可访问性？
+### Q: How do I ensure accessibility of third-party components?
 
-A: 包装第三方组件并添加可访问性支持：
+A: Wrap the third-party component and add accessibility support:
 
 ```vue
 <template>
   <div class="accessible-wrapper">
-    <!-- 为第三方组件添加ARIA标签 -->
+    <!-- Add ARIA labels to the third-party component -->
     <div
       role="application"
-      :aria-label="aria.getLabel('chart', '数据图表')"
+      :aria-label="aria.getLabel('chart', 'Data chart')"
       aria-describedby="chart-description"
     >
       <ThirdPartyChart v-bind="chartProps" />
@@ -780,14 +780,14 @@ A: 包装第三方组件并添加可访问性支持：
       {{ chartDescription }}
     </div>
     
-    <!-- 为不支持屏幕阅读器的图表提供数据表格替代 -->
+    <!-- Provide a data table alternative for charts that screen readers cannot read -->
     <details class="chart-alternative">
-      <summary>查看图表数据表格</summary>
+      <summary>View chart data table</summary>
       <table>
         <thead>
           <tr>
-            <th>类别</th>
-            <th>数值</th>
+            <th>Category</th>
+            <th>Value</th>
           </tr>
         </thead>
         <tbody>
@@ -804,4 +804,4 @@ A: 包装第三方组件并添加可访问性支持：
 
 ---
 
-*本文档将持续更新，确保涵盖最新的可访问性最佳实践和功能特性。*
+*This document will be continuously updated to cover the latest accessibility best practices and features.*

@@ -1,114 +1,114 @@
-# Session 持久化问题修复计划
+# Session Persistence Fix Plan
 
-## 📋 问题描述
+## 📋 Problem Description
 
-### 现象
-用户在无痕模式打开应用，切换下拉框（优化模型、测试模型、模板）的值后，刷新页面，选择的值会丢失，恢复到默认值。
+### Symptom
+A user opens the app in incognito mode, changes the value of a dropdown (optimization model, test model, template), and then refreshes the page. The selected value is lost and reverts to the default.
 
-### 用户期望
-切换下拉框后，刷新页面，选择应该保留。
-
----
-
-## 🔍 问题分析
-
-### 根本原因
-**切换下拉框时，数据没有立即保存到持久化存储，只更新了内存。**
-
-### 数据流分析
-
-#### 当前实现（有问题的流程）：
-```
-用户切换下拉框
-  ↓
-下拉框组件触发更新事件
-  ↓
-session store 的 updateOptimizeModel(modelKey) 被调用
-  ↓
-更新内存中的 ref: selectedOptimizeModelKey.value = modelKey  ✅
-  ↓
-【问题点】没有调用 saveSession()  ❌
-  ↓
-用户刷新页面
-  ↓
-pagehide 事件触发，但异步保存未完成
-  ↓
-页面刷新，内存清空
-  ↓
-restoreSession() 从 IndexedDB 恢复数据
-  ↓
-【问题点】恢复的是旧数据或默认值  ❌
-  ↓
-下拉框显示错误的值
-```
-
-#### 正确的流程应该是：
-```
-用户切换下拉框
-  ↓
-updateOptimizeModel(modelKey) 被调用
-  ↓
-更新内存: selectedOptimizeModelKey.value = modelKey  ✅
-  ↓
-【修复点】立即调用 saveSession()  ✅
-  ↓
-saveSession() 异步保存到 IndexedDB
-  ↓
-用户刷新页面
-  ↓
-restoreSession() 从 IndexedDB 恢复数据
-  ↓
-下拉框显示正确的值  ✅
-```
+### User Expectation
+After changing a dropdown and refreshing the page, the selection should be preserved.
 
 ---
 
-## 🛠️ 已尝试的方案
+## 🔍 Problem Analysis
 
-### 方案 1: 防抖保存（已废弃）
-**实施内容**：
-- 在 session store 中添加 `createDebounceSave` 函数
-- 在 `updateOptimizeModel` 等方法中调用 `debouncedSave()`
-- 防抖延迟 500ms
+### Root Cause
+**When a dropdown is changed, the data is not saved to persistent storage immediately; only memory is updated.**
 
-**问题**：
-- ❌ 延迟 500ms 太久，用户在 500ms 内刷新会丢失数据
-- ❌ 复杂化了问题，引入了额外的状态管理
-- ❌ 违背了"立即保存"的原则
+### Data Flow Analysis
 
-### 方案 2: 同步 pagehide 保存（已废弃）
-**实施内容**：
-- 在 `PromptOptimizerApp.vue` 的 `handlePagehide` 中添加同步 localStorage 写入
+#### Current implementation (the problematic flow):
+```
+User changes the dropdown
+  ↓
+The dropdown component fires an update event
+  ↓
+The session store's updateOptimizeModel(modelKey) is called
+  ↓
+The in-memory ref is updated: selectedOptimizeModelKey.value = modelKey  ✅
+  ↓
+[Problem] saveSession() is not called  ❌
+  ↓
+User refreshes the page
+  ↓
+The pagehide event fires, but the async save has not completed
+  ↓
+The page refreshes and memory is cleared
+  ↓
+restoreSession() restores data from IndexedDB
+  ↓
+[Problem] The restored data is stale or the defaults  ❌
+  ↓
+The dropdown shows the wrong value
+```
 
-**问题**：
-- ❌ 只保存部分字段（selectedOptimizeModelKey、selectedTemplateId）
-- ❌ 逻辑错误：`if (existingData)` 检查导致首次切换时无法保存
-- ❌ 破坏了架构（绕过 core 层抽象）
-
-### 方案 3: 移除防抖，直接调用 saveSession（当前方案）
-**实施内容**：
-- 移除防抖机制
-- 在 `updateOptimizeModel` 等方法中直接调用 `saveSession()`
-
-**问题**：
-- ❌ 测试仍然失败，数据没有保存
-- ⚠️ 可能 `saveSession()` 是异步的，但没有 await
-- ⚠️ 可能 `saveSession()` 调用失败
-
-### 方案 4: 双重保存（同步 + 异步）
-**实施内容**：
-- 在 `updateOptimizeModel` 中先同步写入 localStorage
-- 再异步调用 `saveSession()` 保存到 IndexedDB
-
-**问题**：
-- ❌ 违背了架构原则（绕过 core 层）
-- ❌ 逻辑错误：`if (existingData)` 检查导致首次切换时无法保存
+#### The correct flow should be:
+```
+User changes the dropdown
+  ↓
+updateOptimizeModel(modelKey) is called
+  ↓
+Update memory: selectedOptimizeModelKey.value = modelKey  ✅
+  ↓
+[Fix] Call saveSession() immediately  ✅
+  ↓
+saveSession() asynchronously saves to IndexedDB
+  ↓
+User refreshes the page
+  ↓
+restoreSession() restores data from IndexedDB
+  ↓
+The dropdown shows the correct value  ✅
+```
 
 ---
 
-## 📂 关键文件位置
+## 🛠️ Approaches Already Tried
 
-### Session Store 文件
+### Approach 1: Debounced save (abandoned)
+**What was implemented**:
+- Added a `createDebounceSave` function in the session store
+- Called `debouncedSave()` in methods such as `updateOptimizeModel`
+- Debounce delay of 500ms
+
+**Problems**:
+- ❌ A 500ms delay is too long; if the user refreshes within 500ms, data is lost
+- ❌ It complicated the problem and introduced extra state management
+- ❌ It violated the "save immediately" principle
+
+### Approach 2: Synchronous save on pagehide (abandoned)
+**What was implemented**:
+- Added a synchronous localStorage write in `handlePagehide` in `PromptOptimizerApp.vue`
+
+**Problems**:
+- ❌ Only saves some fields (selectedOptimizeModelKey, selectedTemplateId)
+- ❌ Logic error: the `if (existingData)` check prevents saving on the first change
+- ❌ It broke the architecture (bypassed the core layer abstraction)
+
+### Approach 3: Remove debounce and call saveSession directly (current approach)
+**What was implemented**:
+- Removed the debounce mechanism
+- Called `saveSession()` directly in methods such as `updateOptimizeModel`
+
+**Problems**:
+- ❌ The test still fails; the data is not saved
+- ⚠️ `saveSession()` may be async but is not awaited
+- ⚠️ The `saveSession()` call may be failing
+
+### Approach 4: Double save (sync + async)
+**What was implemented**:
+- In `updateOptimizeModel`, first write to localStorage synchronously
+- Then call `saveSession()` asynchronously to save to IndexedDB
+
+**Problems**:
+- ❌ It violates the architectural principles (bypasses the core layer)
+- ❌ Logic error: the `if (existingData)` check prevents saving on the first change
+
+---
+
+## 📂 Key File Locations
+
+### Session Store Files
 ```
 packages/ui/src/stores/session/
 ├── useBasicSystemSession.ts
@@ -124,65 +124,65 @@ packages/ui/src/stores/session/
 packages/ui/src/stores/session/useSessionManager.ts
 ```
 
-### 应用初始化
+### App Initialization
 ```
 packages/ui/src/components/app-layout/PromptOptimizerApp.vue
 ```
 
-### 存储初始化
+### Storage Initialization
 ```
 packages/ui/src/composables/system/useAppInitializer.ts
 ```
 
-### 测试文件
+### Test File
 ```
 tests/e2e/session-persistence/basic-user-persistence.spec.ts
 ```
 
 ---
 
-## 📊 当前代码状态
+## 📊 Current Code State
 
-### `useBasicUserSession.ts` 的问题
+### Problems in `useBasicUserSession.ts`
 
-#### 1. updateOptimizeModel 方法
+#### 1. The updateOptimizeModel method
 ```typescript
 const updateOptimizeModel = (modelKey: string) => {
   if (selectedOptimizeModelKey.value === modelKey) return
   selectedOptimizeModelKey.value = modelKey
   lastActiveAt.value = Date.now()
 
-  // 【问题】同步保存到 localStorage
+  // [Problem] Synchronous save to localStorage
   try {
     const key = 'session/v1/basic-user'
     const existing = localStorage.getItem(key)
-    if (existing) {  // ⚠️ 关键问题：首次切换时 existing 为 null
+    if (existing) {  // ⚠️ Key problem: existing is null on the first change
       const data = JSON.parse(existing)
       data.selectedOptimizeModelKey = modelKey
       data.lastActiveAt = lastActiveAt.value
       localStorage.setItem(key, JSON.stringify(data))
     }
   } catch (err) {
-    console.warn('[BasicUserSession] 同步保存失败:', err)
+    console.warn('[BasicUserSession] Synchronous save failed:', err)
   }
 
-  // 【问题】异步保存，但没有 await
-  saveSession()  // ⚠️ 异步调用，但没有等待完成
+  // [Problem] Async save, but not awaited
+  saveSession()  // ⚠️ Async call, but does not wait for completion
 }
 ```
 
-**问题分析**：
-1. 同步保存有逻辑错误：`if (existing)` 检查导致首次切换时无法保存
-2. `saveSession()` 是异步的，但没有 await，调用者不知道何时完成
-3. 没有错误处理机制
+**Problem analysis**:
+1. The synchronous save has a logic error: the `if (existing)` check prevents saving on the first change
+2. `saveSession()` is async but not awaited, so the caller does not know when it finishes
+3. There is no error handling mechanism
 
-#### 2. saveSession 方法
+#### 2. The saveSession method
 ```typescript
 const saveSession = async () => {
-  console.log('[BasicUserSession] saveSession 被调用')
+  console.log('[BasicUserSession] saveSession called')
   const $services = getPiniaServices()
   if (!$services?.preferenceService) {
-    console.warn('[BasicUserSession] PreferenceService 不可用，无法保存会话')
+    console.warn('[BasicUserSession] PreferenceService unavailable, cannot save session')
     return
   }
 
@@ -202,168 +202,168 @@ const saveSession = async () => {
       isCompareMode: isCompareMode.value,
       lastActiveAt: lastActiveAt.value,
     }
-    console.log('[BasicUserSession] 保存会话, selectedOptimizeModelKey:', sessionState.selectedOptimizeModelKey)
+    console.log('[BasicUserSession] Saving session, selectedOptimizeModelKey:', sessionState.selectedOptimizeModelKey)
 
     await $services.preferenceService.set(
       'session/v1/basic-user',
       JSON.stringify(sessionState)
     )
 
-    console.log('[BasicUserSession] 保存会话成功')
+    console.log('[BasicUserSession] Session saved successfully')
   } catch (error) {
-    console.error('[BasicUserSession] 保存会话失败:', error)
+    console.error('[BasicUserSession] Failed to save session:', error)
   }
 }
 ```
 
-**问题分析**：
-- ✅ 实现看起来正确
-- ⚠️ 但测试中没有看到这些日志，说明可能没有被调用
-- ⚠️ 或者 PreferenceService 不可用
+**Problem analysis**:
+- ✅ The implementation looks correct
+- ⚠️ But these logs were not seen in the test, which suggests it may not be called
+- ⚠️ Or PreferenceService is unavailable
 
 ---
 
-## 🧪 测试结果
+## 🧪 Test Results
 
-### 测试文件位置
+### Test File Location
 ```
 tests/e2e/session-persistence/basic-user-persistence.spec.ts
 ```
 
-### 测试策略
-- ✅ 移除了对 localStorage 的依赖
-- ✅ 改为验证 UI 状态（下拉框显示的值）
+### Test Strategy
+- ✅ Removed the dependency on localStorage
+- ✅ Changed to verify the UI state (the value shown in the dropdown)
 
-### 测试结果（最新）
+### Test Results (latest)
 ```
-初始优化模型: DeepSeekDeepSeek
-切换到模型: SiliconFlowSiliconFlow
-切换后: SiliconFlowSiliconFlow  ✅ UI 更新成功
-刷新后: DeepSeekDeepSeek  ❌ 恢复到初始值
+Initial optimization model: DeepSeekDeepSeek
+Switched to model: SiliconFlowSiliconFlow
+After switching: SiliconFlowSiliconFlow  ✅ UI updated successfully
+After refresh: DeepSeekDeepSeek  ❌ Reverted to the initial value
 
-期望: "SiliconFlowSiliconFlow"
-实际: "DeepSeekDeepSeek"
+Expected: "SiliconFlowSiliconFlow"
+Actual: "DeepSeekDeepSeek"
 ```
 
-**结论**：数据没有被保存到 IndexedDB，或者没有被正确恢复。
+**Conclusion**: The data was not saved to IndexedDB, or was not restored correctly.
 
 ---
 
-## 🎯 下一步建议
+## 🎯 Suggested Next Steps
 
-### 建议 1: 简化方案，使用同步保存
-**原理**：
-- 既然 `saveSession()` 是异步的，而用户刷新很快，异步操作可能来不及完成
-- 可以改为使用同步的 localStorage 保存
+### Suggestion 1: Simplify and use synchronous saving
+**Rationale**:
+- Since `saveSession()` is async and users refresh quickly, the async operation may not finish in time
+- Switch to a synchronous localStorage save
 
-**实施步骤**：
-1. 移除所有 `saveSession()` 调用
-2. 在 `updateOptimizeModel` 等方法中直接同步写入 localStorage
-3. 修改 `restoreSession` 从 localStorage 读取
-4. 保留 PreferenceService 的异步保存作为备份（可选）
+**Implementation steps**:
+1. Remove all `saveSession()` calls
+2. Write to localStorage synchronously and directly in methods such as `updateOptimizeModel`
+3. Change `restoreSession` to read from localStorage
+4. Keep the PreferenceService async save as a backup (optional)
 
-**优点**：
-- ✅ 简单直接，可靠性高
-- ✅ 不依赖异步操作完成
-- ✅ 不会因为用户快速刷新而丢失数据
+**Pros**:
+- ✅ Simple and direct, highly reliable
+- ✅ Does not depend on async operations completing
+- ✅ No data loss when the user refreshes quickly
 
-**缺点**：
-- ❌ 绕过了 core 层的抽象（PreferenceService）
-- ❌ 但 session 数据本来就是 UI 层的数据，使用 localStorage 合理
+**Cons**:
+- ❌ Bypasses the core layer abstraction (PreferenceService)
+- ❌ But session data is UI-layer data anyway, so using localStorage is reasonable
 
-### 建议 2: 修复异步保存流程
-**原理**：
-- 保持现有的架构（使用 PreferenceService）
-- 确保异步保存正确完成
+### Suggestion 2: Fix the async save flow
+**Rationale**:
+- Keep the existing architecture (using PreferenceService)
+- Ensure the async save completes correctly
 
-**实施步骤**：
-1. 检查 `saveSession()` 是否真的被调用（添加日志验证）
-2. 检查 `preferenceService.set()` 是否成功
-3. 检查 `restoreSession()` 是否正确从 IndexedDB 读取数据
-4. 检查 `restoreSession()` 是否在页面加载时被调用
+**Implementation steps**:
+1. Check whether `saveSession()` is really called (add logs to verify)
+2. Check whether `preferenceService.set()` succeeds
+3. Check whether `restoreSession()` reads data from IndexedDB correctly
+4. Check whether `restoreSession()` is called when the page loads
 
-**调试方法**：
-- 在 `updateOptimizeModel` 开头添加 `console.log`
-- 在 `saveSession` 开头添加 `console.log`
-- 在 `preferenceService.set()` 前后添加 `console.log`
-- 在 `restoreSession` 开头和结尾添加 `console.log`
-- 运行测试，查看浏览器控制台日志
+**Debugging methods**:
+- Add a `console.log` at the start of `updateOptimizeModel`
+- Add a `console.log` at the start of `saveSession`
+- Add `console.log` before and after `preferenceService.set()`
+- Add a `console.log` at the start and end of `restoreSession`
+- Run the test and check the browser console logs
 
-### 建议 3: 使用 watch 自动保存
-**原理**：
-- 使用 Vue 的 `watch` 监听 ref 的变化
-- 当 ref 变化时自动调用 `saveSession()`
+### Suggestion 3: Use watch for automatic saving
+**Rationale**:
+- Use Vue's `watch` to observe ref changes
+- Automatically call `saveSession()` when a ref changes
 
-**实施步骤**：
+**Implementation steps**:
 ```typescript
-// 在 store 中添加
+// Add in the store
 watch(selectedOptimizeModelKey, (newValue) => {
   saveSession()
 })
 ```
 
-**优点**：
-- ✅ 自动化，不需要手动调用 `saveSession()`
-- ✅ 解耦，更新逻辑和保存逻辑分离
+**Pros**:
+- ✅ Automatic, no need to call `saveSession()` manually
+- ✅ Decoupled: update logic and save logic are separated
 
-**缺点**：
-- ⚠️ 仍然是异步保存，可能来不及完成
-
----
-
-## 🚫 避免的陷阱
-
-### 1. 不要过度优化
-- ❌ 不要使用防抖（用户可能快速刷新）
-- ❌ 不要使用节流（可能丢失最后的更新）
-- ✅ 应该立即保存，简单直接
-
-### 2. 不要破坏架构
-- ❌ 不要在多个地方保存（localStorage + IndexedDB）
-- ❌ 不要绕过 core 层的抽象（除非有充分理由）
-- ✅ 应该统一使用 PreferenceService
-
-### 3. 不要依赖异步完成
-- ❌ 不要假设异步操作会在页面刷新前完成
-- ❌ 不要使用 pagehide 作为唯一的保存时机
-- ✅ 应该在数据变化时立即保存
+**Cons**:
+- ⚠️ It is still an async save and may not finish in time
 
 ---
 
-## 📝 额外信息
+## 🚫 Pitfalls to Avoid
 
-### 架构说明
-- **存储层**：PreferenceService（core 层抽象）
-- **存储提供者**：DexieStorageProvider（Web 环境，使用 IndexedDB）
-- **Session Store**：Pinia store（UI 层）
-- **恢复时机**：应用启动时调用 `restoreAllSessions()`
+### 1. Do not over-optimize
+- ❌ Do not use debounce (the user may refresh quickly)
+- ❌ Do not use throttle (the last update may be lost)
+- ✅ Save immediately, simple and direct
 
-### 相关代码
-- `useAppInitializer.ts`：初始化 PreferenceService
-- `useSessionManager.ts`：管理所有 session 的保存和恢复
-- `PromptOptimizerApp.vue`：应用初始化时调用 `restoreAllSessions()`
+### 2. Do not break the architecture
+- ❌ Do not save in multiple places (localStorage + IndexedDB)
+- ❌ Do not bypass the core layer abstraction (unless there is a good reason)
+- ✅ Use PreferenceService consistently
 
-### 已知问题
-1. Web 环境使用 DexieStorageProvider（IndexedDB），不是 localStorage
-2. `preferenceService.set()` 会添加 `pref:` 前缀
-3. 实际存储键是 `pref:session/v1/basic-user`，不是 `session/v1/basic-user`
-
----
-
-## ✅ 验收标准
-
-修复后的代码应该满足：
-1. ✅ 用户切换下拉框后立即保存
-2. ✅ 用户刷新页面后，下拉框显示正确的值
-3. ✅ 即使用户在切换后立即刷新，数据也能保留
-4. ✅ 代码简单清晰，不引入复杂的状态管理
-5. ✅ 不破坏现有的架构（尽量使用 PreferenceService）
-6. ✅ E2E 测试通过
+### 3. Do not rely on async completion
+- ❌ Do not assume async operations will finish before the page refreshes
+- ❌ Do not use pagehide as the only save opportunity
+- ✅ Save immediately when the data changes
 
 ---
 
-## 🔗 相关资源
+## 📝 Additional Information
 
-- 用户讨论：用户强调"所有写操作都应该立即保存"
-- 用户观点：不要"修修补补"，要找到问题的本质
-- 用户要求：使用 core 层抽象存储（PreferenceService），不要在测试中直接操作 localStorage
+### Architecture Notes
+- **Storage layer**: PreferenceService (core layer abstraction)
+- **Storage provider**: DexieStorageProvider (web environment, uses IndexedDB)
+- **Session Store**: Pinia store (UI layer)
+- **Restore timing**: `restoreAllSessions()` is called at app startup
+
+### Related Code
+- `useAppInitializer.ts`: initializes PreferenceService
+- `useSessionManager.ts`: manages saving and restoring of all sessions
+- `PromptOptimizerApp.vue`: calls `restoreAllSessions()` during app initialization
+
+### Known Issues
+1. The web environment uses DexieStorageProvider (IndexedDB), not localStorage
+2. `preferenceService.set()` adds a `pref:` prefix
+3. The actual storage key is `pref:session/v1/basic-user`, not `session/v1/basic-user`
+
+---
+
+## ✅ Acceptance Criteria
+
+The fixed code should satisfy:
+1. ✅ The value is saved immediately after the user changes a dropdown
+2. ✅ After the user refreshes the page, the dropdown shows the correct value
+3. ✅ Even if the user refreshes immediately after switching, the data is preserved
+4. ✅ The code is simple and clear, without introducing complex state management
+5. ✅ The existing architecture is not broken (use PreferenceService wherever possible)
+6. ✅ E2E tests pass
+
+---
+
+## 🔗 Related Resources
+
+- User discussion: the user stressed that "all write operations should be saved immediately"
+- User's view: don't "patch things up"; find the root of the problem
+- User requirement: use the core layer storage abstraction (PreferenceService); do not manipulate localStorage directly in tests

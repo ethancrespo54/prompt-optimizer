@@ -1,6 +1,6 @@
 {
   "testName": "optimize\\basic-user.spec.ts",
-  "testCase": "优化提示词并生成优化结果",
+  "testCase": "Optimize the prompt and generate an optimized result",
   "provider": "deepseek",
   "url": "https://api.deepseek.com/v1/chat/completions",
   "requestBody": {

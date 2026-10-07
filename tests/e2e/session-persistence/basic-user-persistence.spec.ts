@@ -1,95 +1,95 @@
 import { test, expect } from '../fixtures'
 
 /**
- * Basic User 模式 - Session 持久化测试
+ * Basic User mode - session persistence tests
  *
- * 测试场景：
- * 1. 切换优化模型后刷新，验证选择是否保留（通过 UI 验证）
- * 2. 切换模板后刷新，验证选择是否保留（通过 UI 验证）
+ * Test scenarios:
+ * 1. After switching the optimization model and refreshing, verify the selection is kept (verified through the UI)
+ * 2. After switching the template and refreshing, verify the selection is kept (verified through the UI)
  *
- * 注意：测试验证用户看到的 UI 状态，而不是底层存储实现
+ * Note: the tests verify the UI state the user sees, not the underlying storage implementation
  */
 test.describe('Basic User - Session Persistence', () => {
-  test('切换优化模型后刷新页面，选择应该保留', async ({ page }) => {
-    // 1. 导航到 basic/user
+  test('after switching the optimization model and refreshing the page, the selection should be kept', async ({ page }) => {
+    // 1. Navigate to basic/user
     await page.goto('/')
     await page.waitForLoadState('networkidle')
     await page.goto('/#/basic/user')
     await page.waitForLoadState('networkidle')
-    await page.waitForTimeout(2000) // 等待数据加载
+    await page.waitForTimeout(2000) // wait for data to load
 
-    // 2. 找到优化模型下拉框并记录初始值
-    const modelLabel = page.getByText(/优化模型|Optimization Model/i).first()
+    // 2. Find the optimization model dropdown and record its initial value
+    const modelLabel = page.getByText(/Optimization Model/i).first()
     await expect(modelLabel).toBeVisible({ timeout: 15000 })
 
     const container = modelLabel.locator('xpath=ancestor::*[.//div[contains(@class,"n-base-selection")]][1]')
     const select = container.locator('.n-base-selection').first()
 
-    // 获取初始选中的模型
+    // Get the initially selected model
     const getSelectedModel = async () => {
       return await select.textContent()
     }
 
     const initialModel = await getSelectedModel()
-    console.log(`初始优化模型: ${initialModel || '(未设置)'}`)
+    console.log(`Initial optimization model: ${initialModel || '(not set)'}`)
 
-    // 3. 点击下拉框并切换
+    // 3. Click the dropdown and switch
     await select.click()
     await page.waitForTimeout(500)
 
-    // 获取所有选项
+    // Get all options
     const options = await page.locator('.n-base-select-option').allTextContents()
-    console.log(`可用模型选项: ${options.length} 个`)
+    console.log(`Available model options: ${options.length}`)
     expect(options.length).toBeGreaterThan(0)
 
-    // 记录要切换到的模型（选择第二个选项，如果存在）
+    // Record the model to switch to (the second option, if it exists)
     const targetModelIndex = options.length > 1 ? 1 : 0
     const targetModel = options[targetModelIndex]
 
     if (targetModelIndex === 0) {
-      console.log('⚠️ 只有一个模型选项，跳过切换测试')
+      console.log('⚠️ Only one model option, skipping the switch test')
       return
     }
 
-    // 点击第二个选项
+    // Click the second option
     await page.locator('.n-base-select-option').nth(targetModelIndex).click()
-    console.log(`切换到模型: ${targetModel}`)
+    console.log(`Switched to model: ${targetModel}`)
 
-    // 4. 验证切换后的值已更新
-    await page.waitForTimeout(500) // 等待 UI 更新
+    // 4. Verify the value is updated after switching
+    await page.waitForTimeout(500) // wait for the UI to update
     const afterSwitch = await getSelectedModel()
-    console.log(`切换后: ${afterSwitch}`)
+    console.log(`After switch: ${afterSwitch}`)
 
-    // 5. 刷新页面
+    // 5. Reload the page
     await page.reload()
     await page.waitForLoadState('networkidle')
-    await page.waitForTimeout(2000) // 等待恢复完成
+    await page.waitForTimeout(2000) // wait for restoration to finish
 
-    // 6. 验证刷新后下拉框是否显示之前选择的值（这就是持久化的意义）
+    // 6. Verify the dropdown shows the previously selected value after reload (this is the point of persistence)
     const afterRefresh = await getSelectedModel()
-    console.log(`刷新后: ${afterRefresh}`)
+    console.log(`After reload: ${afterRefresh}`)
 
-    // 关键断言：刷新后的值应该等于切换后的值
+    // Key assertion: the value after reload should equal the value after switching
     if (afterRefresh === targetModel) {
-      console.log('✅ 持久化成功：模型选择已保留')
+      console.log('✅ Persistence succeeded: model selection was kept')
     } else {
-      console.log(`❌ 持久化失败：期望 "${targetModel}"，实际 "${afterRefresh}"`)
+      console.log(`❌ Persistence failed: expected "${targetModel}", got "${afterRefresh}"`)
     }
 
-    // 这个断言会验证持久化是否成功
+    // This assertion verifies whether persistence succeeded
     expect(afterRefresh).toBe(targetModel)
   })
 
-  test('切换模板后刷新页面，选择应该保留', async ({ page }) => {
-    // 1. 导航到 basic/user
+  test('after switching the template and refreshing the page, the selection should be kept', async ({ page }) => {
+    // 1. Navigate to basic/user
     await page.goto('/')
     await page.waitForLoadState('networkidle')
     await page.goto('/#/basic/user')
     await page.waitForLoadState('networkidle')
     await page.waitForTimeout(2000)
 
-    // 2. 找到模板下拉框并记录初始值
-    const templateLabel = page.getByText(/优化提示词模板|Optimization Template/i).first()
+    // 2. Find the template dropdown and record its initial value
+    const templateLabel = page.getByText(/Optimization Template/i).first()
     await expect(templateLabel).toBeVisible({ timeout: 15000 })
 
     const container = templateLabel.locator('xpath=ancestor::*[.//div[contains(@class,"n-base-selection")]][1]')
@@ -100,52 +100,52 @@ test.describe('Basic User - Session Persistence', () => {
     }
 
     const initialTemplate = await getSelectedTemplate()
-    console.log(`初始模板: ${initialTemplate || '(未设置)'}`)
+    console.log(`Initial template: ${initialTemplate || '(not set)'}`)
 
-    // 3. 点击下拉框并切换
+    // 3. Click the dropdown and switch
     await select.click()
     await page.waitForTimeout(500)
 
-    // 获取所有选项
+    // Get all options
     const options = await page.locator('.n-base-select-option').allTextContents()
-    console.log(`可用模板选项: ${options.length} 个`)
+    console.log(`Available template options: ${options.length}`)
     expect(options.length).toBeGreaterThan(0)
 
-    // 记录要切换到的模板（选择第二个选项，如果存在）
+    // Record the template to switch to (the second option, if it exists)
     const targetIndex = options.length > 1 ? 1 : 0
     const targetTemplate = options[targetIndex]
 
     if (targetIndex === 0) {
-      console.log('⚠️ 只有一个模板选项，跳过切换测试')
+      console.log('⚠️ Only one template option, skipping the switch test')
       return
     }
 
-    // 点击第二个选项
+    // Click the second option
     await page.locator('.n-base-select-option').nth(targetIndex).click()
-    console.log(`切换到模板: ${targetTemplate}`)
+    console.log(`Switched to template: ${targetTemplate}`)
 
-    // 4. 验证切换后的值已更新
+    // 4. Verify the value is updated after switching
     await page.waitForTimeout(500)
     const afterSwitch = await getSelectedTemplate()
-    console.log(`切换后: ${afterSwitch}`)
+    console.log(`After switch: ${afterSwitch}`)
 
-    // 5. 刷新页面
+    // 5. Reload the page
     await page.reload()
     await page.waitForLoadState('networkidle')
     await page.waitForTimeout(2000)
 
-    // 6. 验证刷新后下拉框是否显示之前选择的值
+    // 6. Verify the dropdown shows the previously selected value after reload
     const afterRefresh = await getSelectedTemplate()
-    console.log(`刷新后: ${afterRefresh}`)
+    console.log(`After reload: ${afterRefresh}`)
 
-    // 关键断言：刷新后的值应该等于切换后的值
+    // Key assertion: the value after reload should equal the value after switching
     if (afterRefresh === targetTemplate) {
-      console.log('✅ 持久化成功：模板选择已保留')
+      console.log('✅ Persistence succeeded: template selection was kept')
     } else {
-      console.log(`❌ 持久化失败：期望 "${targetTemplate}"，实际 "${afterRefresh}"`)
+      console.log(`❌ Persistence failed: expected "${targetTemplate}", got "${afterRefresh}"`)
     }
 
-    // 这个断言会验证持久化是否成功
+    // This assertion verifies whether persistence succeeded
     expect(afterRefresh).toBe(targetTemplate)
   })
 })

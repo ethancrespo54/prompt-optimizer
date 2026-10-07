@@ -1,351 +1,351 @@
-# 用户提示词优化正常流程测试
+# User Prompt Optimization Normal Flow Test
 
-## 📖 测试概述
-验证用户提示词优化功能的基本流程，确保用户能够正常进行用户提示词优化操作。用户提示词优化与系统提示词优化不同，主要用于优化用户的指令，使其更具体、更可执行。
+## 📖 Test Overview
+Verify the basic flow of the user prompt optimization feature, ensuring users can perform user prompt optimization normally. User prompt optimization differs from system prompt optimization; it is mainly used to optimize the user's instructions so that they become more specific and more actionable.
 
-## 🎯 测试目标
-- 验证优化模式切换功能（系统提示词 ↔ 用户提示词）
-- 确认用户提示词输入和优化流程
-- 验证用户提示词优化结果的质量和特点
-- 检查模板自动适配功能
-- 验证版本管理和迭代功能
+## 🎯 Test Goals
+- Verify the optimization mode switching feature (System Prompt ↔ User Prompt)
+- Confirm the user prompt input and optimization flow
+- Verify the quality and characteristics of the user prompt optimization result
+- Check the automatic template adaptation feature
+- Verify the version management and iteration features
 
-## 📋 前置条件
-- [ ] 应用已启动并加载完成
-- [ ] 至少配置了一个AI模型（OpenAI/Claude/Gemini等）
-- [ ] 存在可用的用户提示词优化模板
-- [ ] 网络连接正常
-
----
-
-## 🔧 测试步骤
-
-### 步骤1：切换到用户提示词优化模式
-
-**AI执行指导：**
-- 使用 `browser_snapshot` 获取页面当前状态
-- 查找优化模式切换按钮："系统提示词优化" 和 "用户提示词优化"
-- 使用 `browser_click` 点击"用户提示词优化"按钮
-
-**预期结果：**
-- "用户提示词优化"按钮变为选中状态（pressed）
-- "系统提示词优化"按钮变为未选中状态
-- 界面标题从"原始提示词"变为"User Prompt"
-- 输入框提示文字更新为用户提示词相关内容
-- 优化模板可能自动切换为适合用户提示词的模板
-
-**验证点：**
-- [ ] 模式切换按钮状态正确
-- [ ] 界面标题和提示文字正确更新
-- [ ] 优化模板自动适配（如切换为"专业优化"等）
-- [ ] 测试区域标题更新为"User Prompt Test"
+## 📋 Prerequisites
+- [ ] The application has started and finished loading
+- [ ] At least one AI model is configured (OpenAI/Claude/Gemini, etc.)
+- [ ] Available user prompt optimization templates exist
+- [ ] The network connection is normal
 
 ---
 
-### 步骤2：输入用户提示词
+## 🔧 Test Steps
 
-**AI执行指导：**
-- 使用 `browser_type` 在用户提示词输入框中输入测试内容
-- 观察界面状态变化
+### Step 1: Switch to User Prompt Optimization Mode
 
-**测试数据：**
+**AI execution guidance:**
+- Use `browser_snapshot` to get the current page state
+- Find the optimization mode toggle buttons: "System Prompt Optimization" and "User Prompt Optimization"
+- Use `browser_click` to click the "User Prompt Optimization" button
+
+**Expected results:**
+- The "User Prompt Optimization" button becomes selected (pressed)
+- The "System Prompt Optimization" button becomes unselected
+- The interface title changes from "Original Prompt" to "User Prompt"
+- The input box placeholder text updates to user-prompt-related content
+- The optimization template may automatically switch to one suited for user prompts
+
+**Verification points:**
+- [ ] The mode toggle button states are correct
+- [ ] The interface title and prompt text update correctly
+- [ ] The optimization template adapts automatically (for example, switching to "Professional Optimization")
+- [ ] The test area title updates to "User Prompt Test"
+
+---
+
+### Step 2: Enter the User Prompt
+
+**AI execution guidance:**
+- Use `browser_type` to enter test content in the user prompt input box
+- Observe the interface state changes
+
+**Test data:**
 ```
-典型用户提示词：帮我写一份工作总结
-简短指令：翻译这段文字
-任务请求：制定一个学习计划
-```
-
-**预期结果：**
-- 文本框显示已输入的用户提示词
-- "Optimize →"按钮变为可点击状态
-- 可能出现"Compare"按钮
-
-**验证点：**
-- [ ] 用户提示词已成功输入
-- [ ] 输入内容完整显示
-- [ ] 优化按钮变为可用状态
-- [ ] 没有输入错误提示
-
----
-
-### 步骤3：执行用户提示词优化
-
-**AI执行指导：**
-- 使用 `browser_click` 点击"Optimize →"按钮
-- 等待优化过程完成（可能需要几秒钟）
-- 使用 `browser_wait_for` 等待优化结果显示
-
-**预期结果：**
-- 优化按钮显示"Loading..."状态
-- 优化完成后显示成功提示
-- 右侧区域显示优化后的用户提示词
-- 出现版本管理按钮（V1）
-- 出现"Continue Optimize"按钮
-
-**验证点：**
-- [ ] 优化过程正常启动
-- [ ] 优化成功完成，无错误提示
-- [ ] 优化结果正确显示
-- [ ] 版本管理功能可用
-
----
-
-### 步骤4：验证用户提示词优化效果
-
-**AI执行指导：**
-- 使用 `browser_snapshot` 查看优化结果内容
-- 对比原始用户提示词和优化后的结果
-
-**预期结果：**
-- 优化后的提示词比原始提示词更具体、更详细
-- 包含明确的要求和指导
-- 结构化程度更高
-- 可执行性更强
-
-**验证点：**
-- [ ] 优化效果显著（从简单指令变为详细要求）
-- [ ] 优化后内容结构清晰
-- [ ] 包含具体的执行指导
-- [ ] 内容质量符合用户提示词优化特点
-
-**示例对比：**
-```
-原始：帮我写一份工作总结
-优化后：应包含具体的要求清单，如：
-- 总结周期
-- 岗位职责
-- 主要工作内容
-- 工作成果
-- 亮点与创新
-- 不足之处
-- 经验教训
-- 未来展望
-- 格式要求
-- 提交截止日期
+Typical user prompt: Help me write a work summary
+Short instruction: Translate this text
+Task request: Make a study plan
 ```
 
----
+**Expected results:**
+- The text box shows the entered user prompt
+- The "Optimize →" button becomes clickable
+- A "Compare" button may appear
 
-### 步骤5：测试模式切换保持功能
-
-**AI执行指导：**
-- 使用 `browser_click` 切换回"系统提示词优化"模式
-- 再次切换回"用户提示词优化"模式
-- 观察内容是否保持
-
-**预期结果：**
-- 模式切换流畅，无延迟
-- 已输入的内容和优化结果保持不变
-- 界面元素正确更新
-- 模板自动适配
-
-**验证点：**
-- [ ] 模式切换功能正常
-- [ ] 内容不会因切换而丢失
-- [ ] 界面状态正确更新
-- [ ] 模板自动切换正确
+**Verification points:**
+- [ ] The user prompt was entered successfully
+- [ ] The input content is fully displayed
+- [ ] The optimize button becomes available
+- [ ] There is no input error prompt
 
 ---
 
-### 步骤6：测试迭代优化功能
+### Step 3: Execute User Prompt Optimization
 
-**AI执行指导：**
-- 使用 `browser_click` 点击"Continue Optimize"按钮
-- 在迭代优化界面输入优化方向
-- 执行迭代优化
+**AI execution guidance:**
+- Use `browser_click` to click the "Optimize →" button
+- Wait for the optimization process to complete (may take a few seconds)
+- Use `browser_wait_for` to wait for the optimization result to be displayed
 
-**测试数据：**
+**Expected results:**
+- The optimize button shows a "Loading..." state
+- A success prompt is displayed after optimization completes
+- The right area displays the optimized user prompt
+- The version management button (V1) appears
+- The "Continue Optimize" button appears
+
+**Verification points:**
+- [ ] The optimization process starts normally
+- [ ] The optimization completes successfully without error prompts
+- [ ] The optimization result is displayed correctly
+- [ ] The version management feature is available
+
+---
+
+### Step 4: Verify the User Prompt Optimization Effect
+
+**AI execution guidance:**
+- Use `browser_snapshot` to view the optimization result content
+- Compare the original user prompt with the optimized result
+
+**Expected results:**
+- The optimized prompt is more specific and detailed than the original prompt
+- It contains clear requirements and guidance
+- It is more structured
+- It is more actionable
+
+**Verification points:**
+- [ ] The optimization effect is significant (from a simple instruction to detailed requirements)
+- [ ] The optimized content structure is clear
+- [ ] It contains specific execution guidance
+- [ ] The content quality matches the characteristics of user prompt optimization
+
+**Example comparison:**
 ```
-迭代要求：请增加更多关于时间管理和具体格式的要求
+Original: Help me write a work summary
+After optimization: Should contain a list of specific requirements, such as:
+- Summary period
+- Job responsibilities
+- Main work content
+- Work achievements
+- Highlights and innovations
+- Shortcomings
+- Lessons learned
+- Future outlook
+- Format requirements
+- Submission deadline
 ```
 
-**预期结果：**
-- 迭代优化界面正确打开
-- 可以输入优化方向
-- 迭代优化成功执行
-- 生成V2版本
-- 版本切换功能正常
+---
 
-**验证点：**
-- [ ] 迭代优化界面正常打开
-- [ ] 优化方向输入成功
-- [ ] 迭代优化执行成功
-- [ ] V2版本正确生成
-- [ ] 版本切换功能正常
+### Step 5: Test Mode Switching Retention
+
+**AI execution guidance:**
+- Use `browser_click` to switch back to "System Prompt Optimization" mode
+- Switch back to "User Prompt Optimization" mode again
+- Observe whether the content is retained
+
+**Expected results:**
+- Mode switching is smooth without delay
+- The entered content and optimization results remain unchanged
+- Interface elements update correctly
+- The template adapts automatically
+
+**Verification points:**
+- [ ] The mode switching feature works normally
+- [ ] Content is not lost due to switching
+- [ ] The interface state updates correctly
+- [ ] The template switches automatically and correctly
 
 ---
 
-### 步骤7：测试结果展示功能 ⭐ 新增
+### Step 6: Test the Iterative Optimization Feature
 
-**AI执行指导：**
-- 在用户提示词优化完成后，继续测试结果展示相关功能
-- 验证用户在获得优化结果后的各种操作体验
+**AI execution guidance:**
+- Use `browser_click` to click the "Continue Optimize" button
+- Enter the optimization direction in the iterative optimization interface
+- Execute the iterative optimization
 
-#### 7.1 视图切换功能测试
+**Test data:**
+```
+Iteration requirement: Please add more requirements about time management and specific formats
+```
 
-**AI执行指导：**
-- 使用 `browser_click` 点击"Source"按钮
-- 使用 `browser_snapshot` 验证内容变为Markdown源码格式
-- 使用 `browser_click` 点击"Render"按钮
-- 使用 `browser_snapshot` 验证内容变为HTML渲染格式
+**Expected results:**
+- The iterative optimization interface opens correctly
+- The optimization direction can be entered
+- The iterative optimization executes successfully
+- A V2 version is generated
+- The version switching feature works normally
 
-**预期结果：**
-- 渲染视图：显示格式化的用户提示词优化结果
-- 源码视图：显示原始的Markdown文本格式
-- 按钮状态正确更新（当前视图按钮disabled）
-
-**验证点：**
-- [ ] 视图切换响应正常
-- [ ] 内容格式正确转换
-- [ ] 按钮状态正确更新
-- [ ] 内容完整性保持
-
-#### 7.2 复制功能测试
-
-**AI执行指导：**
-- 使用 `browser_click` 点击"Copy"按钮
-- 观察是否出现成功提示
-
-**预期结果：**
-- 出现"Copied to clipboard"提示
-- 提示自动消失或可手动关闭
-
-**验证点：**
-- [ ] 复制按钮响应正常
-- [ ] 成功提示正确显示
-- [ ] 用户反馈及时清晰
-
-#### 7.3 全屏查看功能测试
-
-**AI执行指导：**
-- 使用 `browser_click` 点击"Fullscreen"按钮
-- 使用 `browser_snapshot` 验证全屏界面
-- 测试全屏模式下的视图切换
-- 使用 `browser_click` 关闭全屏
-
-**预期结果：**
-- 打开独立的全屏内容查看器
-- 全屏模式有完整的功能控制
-- 可以正常关闭回到原界面
-
-**验证点：**
-- [ ] 全屏界面正确打开
-- [ ] 全屏模式功能完整
-- [ ] 视图控制正常工作
-- [ ] 关闭功能正常
-
-#### 7.4 智能对比功能测试
-
-**AI执行指导：**
-- 使用 `browser_click` 点击"Compare"按钮
-- 使用 `browser_snapshot` 观察对比显示效果
-
-**预期结果：**
-- 智能识别原始用户提示词和优化结果的差异
-- 分段显示不同部分（原始、共同、优化扩展）
-- Compare按钮状态更新为disabled
-
-**验证点：**
-- [ ] 对比模式正确激活
-- [ ] 文本差异正确识别
-- [ ] 分段显示清晰
-- [ ] 按钮状态正确更新
-
-#### 7.5 展开编辑功能测试
-
-**AI执行指导：**
-- 使用 `browser_click` 点击"Expand"按钮
-- 使用 `browser_snapshot` 验证全屏编辑界面
-- 测试输入功能
-- 使用 `browser_click` 关闭编辑界面
-
-**预期结果：**
-- 打开全屏编辑模式
-- 有独立的编辑窗口和关闭按钮
-- 输入功能正常工作
-
-**验证点：**
-- [ ] 全屏编辑界面正确打开
-- [ ] 输入功能正常
-- [ ] 关闭功能正常
-- [ ] 内容保持一致
+**Verification points:**
+- [ ] The iterative optimization interface opens normally
+- [ ] The optimization direction is entered successfully
+- [ ] The iterative optimization executes successfully
+- [ ] The V2 version is generated correctly
+- [ ] The version switching feature works normally
 
 ---
 
-## 🎯 测试重点
+### Step 7: Test Result Display Features ⭐ New
 
-### 核心功能验证
-1. **模式切换功能**：系统提示词优化 ↔ 用户提示词优化
-2. **模板自动适配**：不同模式自动选择合适的优化模板
-3. **优化效果差异**：用户提示词优化应产生指令优化结果，而非内容生成
+**AI execution guidance:**
+- After user prompt optimization completes, continue testing the result display features
+- Verify the various operation experiences available to the user after obtaining the optimization result
 
-### 用户体验验证
-1. **界面一致性**：两种模式的操作流程应该一致
-2. **内容保持**：模式切换不应丢失已有工作成果
-3. **反馈及时性**：优化过程应有清晰的状态反馈
+#### 7.1 View Switching Test
 
-### 质量验证
-1. **优化质量**：用户提示词优化应使指令更具体、更可执行
-2. **版本管理**：支持多版本管理和切换
-3. **迭代功能**：支持基于反馈的迭代优化
+**AI execution guidance:**
+- Use `browser_click` to click the "Source" button
+- Use `browser_snapshot` to verify the content changes to Markdown source format
+- Use `browser_click` to click the "Render" button
+- Use `browser_snapshot` to verify the content changes to HTML rendered format
+
+**Expected results:**
+- Render view: shows the formatted user prompt optimization result
+- Source view: shows the original Markdown text format
+- Button states update correctly (the button of the current view is disabled)
+
+**Verification points:**
+- [ ] View switching responds normally
+- [ ] The content format converts correctly
+- [ ] Button states update correctly
+- [ ] Content integrity is maintained
+
+#### 7.2 Copy Feature Test
+
+**AI execution guidance:**
+- Use `browser_click` to click the "Copy" button
+- Observe whether a success prompt appears
+
+**Expected results:**
+- A "Copied to clipboard" prompt appears
+- The prompt disappears automatically or can be closed manually
+
+**Verification points:**
+- [ ] The copy button responds normally
+- [ ] The success prompt is displayed correctly
+- [ ] User feedback is timely and clear
+
+#### 7.3 Fullscreen View Test
+
+**AI execution guidance:**
+- Use `browser_click` to click the "Fullscreen" button
+- Use `browser_snapshot` to verify the fullscreen interface
+- Test view switching in fullscreen mode
+- Use `browser_click` to close fullscreen
+
+**Expected results:**
+- A standalone fullscreen content viewer opens
+- Fullscreen mode has complete function controls
+- It can be closed normally to return to the original interface
+
+**Verification points:**
+- [ ] The fullscreen interface opens correctly
+- [ ] Fullscreen mode features are complete
+- [ ] View controls work normally
+- [ ] The close feature works normally
+
+#### 7.4 Smart Compare Feature Test
+
+**AI execution guidance:**
+- Use `browser_click` to click the "Compare" button
+- Use `browser_snapshot` to observe the comparison display
+
+**Expected results:**
+- Differences between the original user prompt and the optimized result are intelligently identified
+- Different parts are displayed in segments (original, common, optimized extension)
+- The Compare button state updates to disabled
+
+**Verification points:**
+- [ ] Compare mode is activated correctly
+- [ ] Text differences are identified correctly
+- [ ] Segmented display is clear
+- [ ] Button states update correctly
+
+#### 7.5 Expand Editing Feature Test
+
+**AI execution guidance:**
+- Use `browser_click` to click the "Expand" button
+- Use `browser_snapshot` to verify the fullscreen editing interface
+- Test the input feature
+- Use `browser_click` to close the editing interface
+
+**Expected results:**
+- Fullscreen editing mode opens
+- There is an independent editing window and a close button
+- The input feature works normally
+
+**Verification points:**
+- [ ] The fullscreen editing interface opens correctly
+- [ ] The input feature works normally
+- [ ] The close feature works normally
+- [ ] The content stays consistent
 
 ---
 
-## 📊 成功标准
+## 🎯 Testing Focus
 
-### A级标准（必须通过）
-- [ ] 模式切换功能100%正常
-- [ ] 用户提示词优化功能100%正常
-- [ ] 优化结果质量符合预期
-- [ ] 版本管理功能100%正常
+### Core Feature Verification
+1. **Mode switching feature**: System Prompt Optimization ↔ User Prompt Optimization
+2. **Automatic template adaptation**: Different modes automatically select suitable optimization templates
+3. **Difference in optimization effect**: User prompt optimization should produce instruction optimization results, not content generation
 
-### B级标准（应该通过）
-- [ ] 模板自动适配功能正常
-- [ ] 迭代优化功能正常
-- [ ] 界面交互流畅
-- [ ] 内容保持功能正常
+### User Experience Verification
+1. **Interface consistency**: The operation flow of the two modes should be consistent
+2. **Content retention**: Mode switching should not lose existing work
+3. **Timely feedback**: The optimization process should have clear status feedback
 
-### C级标准（可以接受的问题）
-- [ ] 优化速度稍慢（10秒内完成可接受）
-- [ ] 界面元素轻微延迟更新
-- [ ] 非关键功能的小问题
+### Quality Verification
+1. **Optimization quality**: User prompt optimization should make instructions more specific and more actionable
+2. **Version management**: Supports multi-version management and switching
+3. **Iteration feature**: Supports feedback-based iterative optimization
 
 ---
 
-## 🐛 常见问题排查
+## 📊 Success Criteria
 
-### 模式切换问题
-- 检查按钮状态是否正确更新
-- 确认界面元素是否正确切换
-- 验证模板是否自动适配
+### Level A Criteria (Must Pass)
+- [ ] The mode switching feature is 100% normal
+- [ ] The user prompt optimization feature is 100% normal
+- [ ] The optimization result quality meets expectations
+- [ ] The version management feature is 100% normal
 
-### 优化功能问题
-- 确认模型配置是否正确
-- 检查网络连接是否正常
-- 验证输入内容是否符合要求
+### Level B Criteria (Should Pass)
+- [ ] The automatic template adaptation feature is normal
+- [ ] The iterative optimization feature is normal
+- [ ] Interface interaction is smooth
+- [ ] The content retention feature is normal
 
-### 结果显示问题
-- 检查优化结果是否完整显示
-- 确认版本管理功能是否正常
-- 验证内容格式是否正确
+### Level C Criteria (Acceptable Issues)
+- [ ] Optimization is slightly slow (completing within 10 seconds is acceptable)
+- [ ] Interface elements update with slight delay
+- [ ] Minor issues in non-critical features
 
 ---
 
-## 📝 测试记录模板
+## 🐛 Common Problem Troubleshooting
+
+### Mode Switching Problems
+- Check whether the button states update correctly
+- Confirm whether interface elements switch correctly
+- Verify whether the template adapts automatically
+
+### Optimization Feature Problems
+- Confirm whether the model configuration is correct
+- Check whether the network connection is normal
+- Verify whether the input content meets the requirements
+
+### Result Display Problems
+- Check whether the optimization result is fully displayed
+- Confirm whether the version management feature is normal
+- Verify whether the content format is correct
+
+---
+
+## 📝 Test Record Template
 
 ```
-测试执行时间：____
-测试执行人：____
-测试环境：____
+Test execution time: ____
+Tester: ____
+Test environment: ____
 
-步骤1 - 模式切换：□ 通过 □ 失败
-步骤2 - 用户提示词输入：□ 通过 □ 失败  
-步骤3 - 优化执行：□ 通过 □ 失败
-步骤4 - 优化效果验证：□ 通过 □ 失败
-步骤5 - 模式切换保持：□ 通过 □ 失败
-步骤6 - 迭代优化：□ 通过 □ 失败
+Step 1 - Mode switching: □ Pass □ Fail
+Step 2 - User prompt input: □ Pass □ Fail  
+Step 3 - Optimization execution: □ Pass □ Fail
+Step 4 - Optimization effect verification: □ Pass □ Fail
+Step 5 - Mode switching retention: □ Pass □ Fail
+Step 6 - Iterative optimization: □ Pass □ Fail
 
-总体评分：____/100
-发现问题：____
-改进建议：____
+Overall score: ____/100
+Problems found: ____
+Improvement suggestions: ____
 ```

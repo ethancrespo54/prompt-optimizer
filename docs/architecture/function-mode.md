@@ -1,69 +1,69 @@
-# 全局功能模式（Function Mode）与上下文模板
+# Global Function Mode and Context Templates
 
-本文档说明全局功能模式（basic/pro）与六类模板类型的关系，以及历史记录与存储键的联动策略。
+This document describes the relationship between the global function mode (basic/pro) and the six template types, as well as how history records and storage keys are coordinated.
 
-## 功能模式（Function Mode）
+## Function Mode
 
-- 偏好键：`app:settings:ui:function-mode`
-- 取值：`'basic' | 'pro'`（默认 `'basic'`，首次运行自动持久化为 `'basic'`）
-- 目的：统一驱动模板下拉选择、历史复用等行为（类似主题/语言的全局来源）。
+- Preference key: `app:settings:ui:function-mode`
+- Values: `'basic' | 'pro'` (default `'basic'`; automatically persisted as `'basic'` on first run)
+- Purpose: Uniformly drives behaviors such as template dropdown selection and history reuse (a global source similar to theme/language).
 
-## 模板类型映射（6 类）
+## Template Type Mapping (6 types)
 
-- 基础（basic）：
-  - 系统优化：`optimize`
-  - 用户优化：`userOptimize`
-  - 迭代优化：`iterate`
-- 专业（pro）：
-  - 上下文-系统优化：`contextSystemOptimize`
-  - 上下文-用户优化：`contextUserOptimize`
-  - 上下文-迭代优化：`contextIterate`
+- Basic (basic):
+  - System optimization: `optimize`
+  - User optimization: `userOptimize`
+  - Iterative optimization: `iterate`
+- Pro (pro):
+  - Context - system optimization: `contextSystemOptimize`
+  - Context - user optimization: `contextUserOptimize`
+  - Context - iterative optimization: `contextIterate`
 
-> 页面（如 App.vue）会根据当前 `function-mode` 与系统/用户/迭代家族，自动选择对应的模板类型；无需新增本地开关。
+> Pages (such as App.vue) automatically choose the corresponding template type based on the current `function-mode` and the system/user/iterate family; no new local toggle is needed.
 
-## 模板管理器分类
+## Template Manager Categories
 
-模板管理器独立于功能模式，提供 6 类模板的全量管理：
+The template manager is independent of the function mode and provides full management of all 6 template types:
 - `optimize` / `userOptimize` / `iterate`
 - `contextSystemOptimize` / `contextUserOptimize` / `contextIterate`
 
-在相应分类内新建/复制模板时，其 `metadata.templateType` 将被设置为该分类对应类型。
+When a template is created or copied within a category, its `metadata.templateType` is set to the type corresponding to that category.
 
-## 模板选择持久化（键位）
+## Template Selection Persistence (Keys)
 
-为确保模式切换后的“记忆”体验，基础/专业两种模式下的选择分开保存：
+To preserve the "memory" experience after switching modes, selections for basic and pro modes are stored separately:
 
-- 基础：
-  - 系统：`app:selected-optimize-template`
-  - 用户：`app:selected-user-optimize-template`
-  - 迭代：`app:selected-iterate-template`
-- 专业（上下文）：
-  - 系统：`app:selected-context-system-optimize-template`
-  - 用户：`app:selected-context-user-optimize-template`
-  - 迭代：`app:selected-context-iterate-template`
+- Basic:
+  - System: `app:selected-optimize-template`
+  - User: `app:selected-user-optimize-template`
+  - Iterate: `app:selected-iterate-template`
+- Pro (context):
+  - System: `app:selected-context-system-optimize-template`
+  - User: `app:selected-context-user-optimize-template`
+  - Iterate: `app:selected-context-iterate-template`
 
-切换 `function-mode` 时，系统将读取对应键，若不存在则回退到该类型列表的第一项并写回保存。
+When `function-mode` is switched, the system reads the corresponding key; if it does not exist, it falls back to the first item in that type's list and writes it back.
 
-## 历史记录
+## History
 
-- 类型：扩展为 6 类，与模板类型一致（另含 `test`）。
-- 新建链：
-  - `function-mode='pro'` 或选择了 `context*` 模板 → 记录为 `contextSystemOptimize`/`contextUserOptimize`。
-  - 否则记录为基础类型 `optimize`/`userOptimize`；
-  - 迭代版本始终为 `iterate`（保持与根类型一致的家族）。
-- 复用链：
-  - 根记录类型为 `context*` → 自动切换 `function-mode='pro'`；
-  - 根记录类型为基础 → 自动切换 `function-mode='basic'`；
-  - 同时根据根类型切换 `system/user` 优化模式。
+- Types: Extended to 6, consistent with the template types (plus `test`).
+- New chain:
+  - `function-mode='pro'` or a `context*` template selected → recorded as `contextSystemOptimize`/`contextUserOptimize`.
+  - Otherwise recorded as the basic type `optimize`/`userOptimize`;
+  - Iteration versions are always `iterate` (staying in the same family as the root type).
+- Reuse chain:
+  - Root record type is `context*` → automatically switch to `function-mode='pro'`;
+  - Root record type is basic → automatically switch to `function-mode='basic'`;
+  - Also switch the `system/user` optimization mode according to the root type.
 
-## 回退策略
+## Fallback Strategy
 
-当请求 `context*` 类型但没有可用模板时：
-- 下拉列表为空并引导用户在模板管理器添加模板；
-- 服务层默认模板查找会从 `context*` 回退到对应基础类型，保证流程不中断。
+When a `context*` type is requested but no template is available:
+- The dropdown list is empty and guides the user to add a template in the template manager;
+- The service layer's default template lookup falls back from `context*` to the corresponding basic type, so the flow is not interrupted.
 
-## 兼容性
+## Compatibility
 
-- 默认 `function-mode` 为 `'basic'`，向后兼容旧版本；
-- 如存在历史布尔“高级模式”，可一次性迁移为 `function-mode`：`true → 'pro'`、`false → 'basic'`（实现层可选）。
+- The default `function-mode` is `'basic'`, which is backward compatible with older versions;
+- If a historical boolean "advanced mode" exists, it can be migrated to `function-mode` in one pass: `true → 'pro'`, `false → 'basic'` (optional at the implementation layer).
 

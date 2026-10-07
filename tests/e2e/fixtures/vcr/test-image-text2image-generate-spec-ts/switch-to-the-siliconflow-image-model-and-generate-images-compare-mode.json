@@ -1,6 +1,6 @@
 {
   "testName": "test\\image-text2image-generate.spec.ts",
-  "testCase": "切换到 SiliconFlow 图像模型并生成图片（对比模式）",
+  "testCase": "Switch to the SiliconFlow image model and generate images (compare mode)",
   "interactions": [
     {
       "provider": "deepseek",

@@ -1,26 +1,26 @@
 import { test, expect } from './fixtures';
 
 /**
- * UI 交互回归测试
+ * UI interaction regression tests
  *
- * 目的: 确保现有的 UI 功能没有被新变更破坏
- * 测试范围:
- * 1. 收藏列表的显示和交互
- * 2. 导入导出功能
- * 3. 分类管理基本功能
- * 4. 现有的搜索和过滤
+ * Purpose: ensure existing UI features are not broken by new changes
+ * Test scope:
+ * 1. Favorites list display and interaction
+ * 2. Import/export
+ * 3. Basic category management
+ * 4. Existing search and filtering
  */
-test.describe('UI 交互回归测试', () => {
+test.describe('UI interaction regression tests', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
   });
 
-  test('收藏管理器能够正常打开和关闭', async ({ page }) => {
-    // 这是一个基础功能，应该一直工作
+  test('The favorites manager opens and closes correctly', async ({ page }) => {
+    // This is a basic feature and should always work
 
-    // 1. 打开收藏管理器
-    const favoriteButton = page.getByRole('button', { name: /收藏|favorite/i });
+    // 1. Open the favorites manager
+    const favoriteButton = page.getByRole('button', { name: /favorite/i });
     if (await favoriteButton.count() === 0) {
       test.skip();
       return;
@@ -29,24 +29,24 @@ test.describe('UI 交互回归测试', () => {
     await favoriteButton.first().click();
     await page.waitForTimeout(500);
 
-    // 2. 验证对话框打开
-    const dialog = page.locator('[role="dialog"]').filter({ hasText: /收藏|Favorites/i }).first();
+    // 2. Verify the dialog opens
+    const dialog = page.locator('[role="dialog"]').filter({ hasText: /Favorites/i }).first();
     await expect(dialog).toBeVisible();
 
-    // 3. 关闭对话框
+    // 3. Close the dialog
     const closeButton = dialog.locator('[aria-label="close"], .n-base-close, .n-dialog__close').first();
     if (await closeButton.count() > 0) {
       await closeButton.click();
       await page.waitForTimeout(500);
 
-      // 4. 验证对话框关闭
+      // 4. Verify the dialog closes
       await expect(dialog).not.toBeVisible();
     }
   });
 
-  test('收藏列表能够正常显示', async ({ page }) => {
-    // 1. 打开收藏管理器
-    const favoriteButton = page.getByRole('button', { name: /收藏|favorite/i });
+  test('The favorites list displays correctly', async ({ page }) => {
+    // 1. Open the favorites manager
+    const favoriteButton = page.getByRole('button', { name: /favorite/i });
     if (await favoriteButton.count() === 0) {
       test.skip();
       return;
@@ -54,24 +54,24 @@ test.describe('UI 交互回归测试', () => {
 
     await favoriteButton.first().click();
 
-    const managerDialog = page.locator('[role="dialog"]').filter({ hasText: /收藏|Favorites/i }).first();
+    const managerDialog = page.locator('[role="dialog"]').filter({ hasText: /Favorites/i }).first();
     await expect(managerDialog).toBeVisible();
 
-    // 2. 等待列表加载
+    // 2. Wait for the list to load
     await page.waitForTimeout(1000);
 
-    // 3. 验证列表容器存在
-    // 即使没有数据，也应该有空状态或列表容器
+    // 3. Verify the list container exists
+    // Even with no data, there should be an empty state or list container
     const hasEmptyState = await managerDialog.locator('.n-empty').isVisible().catch(() => false);
     const hasList = await managerDialog.locator('.n-card, [class*="favorite"]').count() > 0;
 
-    // 应该至少有一个存在（空状态或列表）
+    // At least one should exist (empty state or list)
     expect(hasEmptyState || hasList).toBe(true);
   });
 
-  test('导出功能能够正常触发', async ({ page }) => {
-    // 1. 打开收藏管理器
-    const favoriteButton = page.getByRole('button', { name: /收藏|favorite/i });
+  test('The export feature triggers correctly', async ({ page }) => {
+    // 1. Open the favorites manager
+    const favoriteButton = page.getByRole('button', { name: /favorite/i });
     if (await favoriteButton.count() === 0) {
       test.skip();
       return;
@@ -79,10 +79,10 @@ test.describe('UI 交互回归测试', () => {
 
     await favoriteButton.first().click();
 
-    const managerDialog = page.locator('[role="dialog"]').filter({ hasText: /收藏|Favorites/i }).first();
+    const managerDialog = page.locator('[role="dialog"]').filter({ hasText: /Favorites/i }).first();
     await expect(managerDialog).toBeVisible();
 
-    // 2. 查找更多操作菜单
+    // 2. Find the more-actions menu
     const moreButton = managerDialog.getByRole('button').filter({
       has: page.locator('svg, .n-icon')
     }).first();
@@ -91,28 +91,28 @@ test.describe('UI 交互回归测试', () => {
       await moreButton.click();
       await page.waitForTimeout(300);
 
-      // 3. 查找导出选项
-      const exportOption = page.locator('text=/导出|Export/i');
+      // 3. Find the export option
+      const exportOption = page.locator('text=/Export/i');
 
       if (await exportOption.count() > 0) {
-        // 设置下载监听
+        // Set up the download listener
         const downloadPromise = page.waitForEvent('download', { timeout: 5000 }).catch(() => null);
 
         await exportOption.click();
 
-        // 验证下载开始（如果有数据）
+        // Verify the download started (if there is data)
         const download = await downloadPromise;
         if (download) {
           expect(download).toBeTruthy();
         }
-        // 如果没有数据，可能没有下载，这也是正常的
+        // If there is no data there may be no download, which is also fine
       }
     }
   });
 
-  test('导入功能对话框能够正常打开', async ({ page }) => {
-    // 1. 打开收藏管理器
-    const favoriteButton = page.getByRole('button', { name: /收藏|favorite/i });
+  test('The import dialog opens correctly', async ({ page }) => {
+    // 1. Open the favorites manager
+    const favoriteButton = page.getByRole('button', { name: /favorite/i });
     if (await favoriteButton.count() === 0) {
       test.skip();
       return;
@@ -120,31 +120,31 @@ test.describe('UI 交互回归测试', () => {
 
     await favoriteButton.first().click();
 
-    const managerDialog = page.locator('[role="dialog"]').filter({ hasText: /收藏|Favorites/i }).first();
+    const managerDialog = page.locator('[role="dialog"]').filter({ hasText: /Favorites/i }).first();
     await expect(managerDialog).toBeVisible();
 
-    // 2. 查找导入按钮
-    const importButton = managerDialog.getByRole('button', { name: /导入|Import/i });
+    // 2. Find the import button
+    const importButton = managerDialog.getByRole('button', { name: /Import/i });
 
     if (await importButton.count() > 0) {
       await importButton.click();
       await page.waitForTimeout(500);
 
-      // 3. 验证导入对话框或文件选择器出现
-      // 可能是新对话框或文件上传组件
+      // 3. Verify the import dialog or file picker appears
+      // May be a new dialog or a file upload component
       const importDialog = page.locator('[role="dialog"]').last();
       const isNewDialog = await importDialog.isVisible().catch(() => false);
 
-      // 如果有导入对话框，验证它显示正常
+      // If there is an import dialog, verify it displays correctly
       if (isNewDialog) {
         await expect(importDialog).toBeVisible();
       }
     }
   });
 
-  test('搜索功能输入响应正常', async ({ page }) => {
-    // 1. 打开收藏管理器
-    const favoriteButton = page.getByRole('button', { name: /收藏|favorite/i });
+  test('Search input responds correctly', async ({ page }) => {
+    // 1. Open the favorites manager
+    const favoriteButton = page.getByRole('button', { name: /favorite/i });
     if (await favoriteButton.count() === 0) {
       test.skip();
       return;
@@ -152,22 +152,22 @@ test.describe('UI 交互回归测试', () => {
 
     await favoriteButton.first().click();
 
-    const dialog = page.locator('[role="dialog"]').filter({ hasText: /收藏|Favorites/i }).first();
+    const dialog = page.locator('[role="dialog"]').filter({ hasText: /Favorites/i }).first();
     await expect(dialog).toBeVisible();
 
-    // 2. 查找搜索框
-    const searchInput = dialog.getByPlaceholder(/搜索|search/i);
+    // 2. Find the search box
+    const searchInput = dialog.getByPlaceholder(/search/i);
 
     if (await searchInput.count() > 0) {
-      // 3. 输入搜索文本
-      await searchInput.fill('回归测试');
+      // 3. Enter search text
+      await searchInput.fill('regression test');
       await page.waitForTimeout(500);
 
-      // 4. 验证输入值正确
+      // 4. Verify the input value is correct
       const inputValue = await searchInput.inputValue();
-      expect(inputValue).toBe('回归测试');
+      expect(inputValue).toBe('regression test');
 
-      // 5. 清空搜索
+      // 5. Clear the search
       await searchInput.clear();
       await page.waitForTimeout(300);
 
@@ -176,9 +176,9 @@ test.describe('UI 交互回归测试', () => {
     }
   });
 
-  test('分类选择器能够正常交互', async ({ page }) => {
-    // 1. 打开收藏管理器
-    const favoriteButton = page.getByRole('button', { name: /收藏|favorite/i });
+  test('The category selector interacts correctly', async ({ page }) => {
+    // 1. Open the favorites manager
+    const favoriteButton = page.getByRole('button', { name: /favorite/i });
     if (await favoriteButton.count() === 0) {
       test.skip();
       return;
@@ -186,32 +186,32 @@ test.describe('UI 交互回归测试', () => {
 
     await favoriteButton.first().click();
 
-    const dialog = page.locator('[role="dialog"]').filter({ hasText: /收藏|Favorites/i }).first();
+    const dialog = page.locator('[role="dialog"]').filter({ hasText: /Favorites/i }).first();
     await expect(dialog).toBeVisible();
 
-    // 2. 查找分类选择器
+    // 2. Find the category selector
     const categorySelect = dialog.locator('.n-base-selection, .n-select').first();
 
     if (await categorySelect.count() > 0) {
-      // 3. 点击打开下拉菜单
+      // 3. Click to open the dropdown menu
       await categorySelect.click();
       await page.waitForTimeout(300);
 
-      // 4. 验证下拉菜单出现
+      // 4. Verify the dropdown menu appears
       const dropdown = page.locator('.n-base-select-menu, .n-select-menu');
       if (await dropdown.isVisible().catch(() => false)) {
         await expect(dropdown).toBeVisible();
 
-        // 5. 关闭下拉菜单（点击其他地方）
+        // 5. Close the dropdown menu (click elsewhere)
         await page.keyboard.press('Escape');
         await page.waitForTimeout(300);
       }
     }
   });
 
-  test('创建收藏对话框表单验证正常工作', async ({ page }) => {
-    // 1. 打开收藏管理器
-    const favoriteButton = page.getByRole('button', { name: /收藏|favorite/i });
+  test('Create favorite dialog form validation works correctly', async ({ page }) => {
+    // 1. Open the favorites manager
+    const favoriteButton = page.getByRole('button', { name: /favorite/i });
     if (await favoriteButton.count() === 0) {
       test.skip();
       return;
@@ -219,39 +219,39 @@ test.describe('UI 交互回归测试', () => {
 
     await favoriteButton.first().click();
 
-    const managerDialog = page.locator('[role="dialog"]').filter({ hasText: /收藏|Favorites/i }).first();
+    const managerDialog = page.locator('[role="dialog"]').filter({ hasText: /Favorites/i }).first();
     await expect(managerDialog).toBeVisible();
 
-    // 2. 点击创建按钮
-    const createButton = managerDialog.getByRole('button', { name: /添加|创建|新建|add|create/i }).first();
+    // 2. Click the create button
+    const createButton = managerDialog.getByRole('button', { name: /add|create/i }).first();
     await createButton.click();
     await page.waitForTimeout(500);
 
-    // 3. 定位到创建对话框
+    // 3. Locate the create dialog
     const createDialog = page.locator('[role="dialog"]').last();
 
-    // 4. 尝试保存空表单（应该有验证）
-    const saveButton = createDialog.getByRole('button', { name: /保存|save|确定|ok/i });
+    // 4. Try saving an empty form (validation should trigger)
+    const saveButton = createDialog.getByRole('button', { name: /save|confirm|ok/i });
 
     if (await saveButton.count() > 0) {
-      // 点击保存
+      // Click save
       await saveButton.click();
       await page.waitForTimeout(500);
 
-      // 验证对话框仍然打开（因为验证失败）
-      // 或者有错误提示显示
+      // Verify the dialog is still open (because validation failed)
+      // Or an error message is shown
       const stillVisible = await createDialog.isVisible().catch(() => false);
 
-      // 如果对话框仍然可见，说明验证起作用了
+      // If the dialog is still visible, validation took effect
       if (stillVisible) {
         expect(stillVisible).toBe(true);
       }
     }
   });
 
-  test('工具栏按钮都能正常点击', async ({ page }) => {
-    // 1. 打开收藏管理器
-    const favoriteButton = page.getByRole('button', { name: /收藏|favorite/i });
+  test('All toolbar buttons are clickable', async ({ page }) => {
+    // 1. Open the favorites manager
+    const favoriteButton = page.getByRole('button', { name: /favorite/i });
     if (await favoriteButton.count() === 0) {
       test.skip();
       return;
@@ -259,16 +259,16 @@ test.describe('UI 交互回归测试', () => {
 
     await favoriteButton.first().click();
 
-    const managerDialog = page.locator('[role="dialog"]').filter({ hasText: /收藏|Favorites/i }).first();
+    const managerDialog = page.locator('[role="dialog"]').filter({ hasText: /Favorites/i }).first();
     await expect(managerDialog).toBeVisible();
 
-    // 2. 查找所有工具栏按钮
+    // 2. Find all toolbar buttons
     const toolbarButtons = managerDialog.locator('.toolbar button, [class*="toolbar"] button');
 
     const buttonCount = await toolbarButtons.count();
 
     if (buttonCount > 0) {
-      // 3. 验证至少有一些按钮可点击
+      // 3. Verify at least some buttons are clickable
       let clickableCount = 0;
 
       for (let i = 0; i < Math.min(buttonCount, 5); i++) {
@@ -279,14 +279,14 @@ test.describe('UI 交互回归测试', () => {
         }
       }
 
-      // 至少应该有一些按钮是可用的
+      // At least some buttons should be usable
       expect(clickableCount).toBeGreaterThan(0);
     }
   });
 
-  test('收藏卡片能够正常显示（如果有数据）', async ({ page }) => {
-    // 1. 打开收藏管理器
-    const favoriteButton = page.getByRole('button', { name: /收藏|favorite/i });
+  test('Favorite cards display correctly (if there is data)', async ({ page }) => {
+    // 1. Open the favorites manager
+    const favoriteButton = page.getByRole('button', { name: /favorite/i });
     if (await favoriteButton.count() === 0) {
       test.skip();
       return;
@@ -294,35 +294,35 @@ test.describe('UI 交互回归测试', () => {
 
     await favoriteButton.first().click();
 
-    const managerDialog = page.locator('[role="dialog"]').filter({ hasText: /收藏|Favorites/i }).first();
+    const managerDialog = page.locator('[role="dialog"]').filter({ hasText: /Favorites/i }).first();
     await expect(managerDialog).toBeVisible();
     await page.waitForTimeout(1000);
 
-    // 2. 先创建一个收藏以确保有数据
-    const createButton = managerDialog.getByRole('button', { name: /添加|创建|新建|add|create/i }).first();
+    // 2. First create a favorite to make sure there is data
+    const createButton = managerDialog.getByRole('button', { name: /add|create/i }).first();
     await createButton.click();
     await page.waitForTimeout(500);
 
     const createDialog = page.locator('[role="dialog"]').last();
 
-    // 填写基本信息
-    const titleInput = createDialog.getByPlaceholder(/标题|title/i);
+    // Fill in the basic information
+    const titleInput = createDialog.getByPlaceholder(/title|name this prompt/i);
     if (await titleInput.count() > 0) {
-      await titleInput.fill('回归测试收藏');
+      await titleInput.fill('Regression Test Favorite');
 
       const contentInput = createDialog.locator('textarea').first();
       if (await contentInput.count() > 0) {
-        await contentInput.fill('这是用于回归测试的收藏内容');
+        await contentInput.fill('Favorite content used for regression testing');
       }
 
-      // 保存
-      const saveButton = createDialog.getByRole('button', { name: /保存|save|确定|ok/i });
+      // Save
+      const saveButton = createDialog.getByRole('button', { name: /save|confirm|ok/i });
       if (await saveButton.count() > 0) {
         await saveButton.click();
         await page.waitForTimeout(1500);
 
-        // 3. 验证收藏卡片显示
-        const favoriteCard = managerDialog.locator('text=回归测试收藏');
+        // 3. Verify the favorite card is displayed
+        const favoriteCard = managerDialog.locator('text=Regression Test Favorite');
         if (await favoriteCard.count() > 0) {
           await expect(favoriteCard.first()).toBeVisible();
         }
@@ -332,26 +332,26 @@ test.describe('UI 交互回归测试', () => {
 });
 
 /**
- * 关键功能持续性测试
- * 确保核心功能在重构后依然可用
+ * Key feature continuity tests
+ * Ensure core features remain usable after refactoring
  */
-test.describe('关键功能持续性测试', () => {
+test.describe('Key feature continuity tests', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
   });
 
-  test('应用主界面能够正常加载', async ({ page }) => {
-    // 验证基础 HTML 结构
+  test('The main app UI loads correctly', async ({ page }) => {
+    // Verify the basic HTML structure
     const app = page.locator('#app, [id="app"], main');
     await expect(app).toBeAttached();
 
-    // 验证页面标题
-    await expect(page).toHaveTitle(/提示词优化器|Prompt Optimizer/i);
+    // Verify the page title
+    await expect(page).toHaveTitle(/Prompt Optimizer/i);
   });
 
-  test('本地存储功能保持可用', async ({ page }) => {
-    // 验证 localStorage 仍然可用
+  test('Local storage remains available', async ({ page }) => {
+    // Verify localStorage is still available
     const storageWorks = await page.evaluate(() => {
       try {
         const testKey = 'regression-test-' + Date.now();
@@ -367,17 +367,17 @@ test.describe('关键功能持续性测试', () => {
     expect(storageWorks).toBe(true);
   });
 
-  test('页面布局结构保持完整', async ({ page }) => {
-    // 验证基本布局元素存在
+  test('The page layout structure remains intact', async ({ page }) => {
+    // Verify the basic layout elements exist
     await page.waitForTimeout(1000);
 
-    // 应该有某种导航或工具栏
+    // There should be some kind of navigation or toolbar
     const hasNavigation = await page.locator('nav, header, .toolbar, [class*="toolbar"]').count();
 
-    // 应该有主内容区域
+    // There should be a main content area
     const hasMainContent = await page.locator('main, #app, [role="main"], .content').count();
 
-    // 至少应该有一些结构
+    // There should be at least some structure
     expect(hasNavigation + hasMainContent).toBeGreaterThan(0);
   });
 });

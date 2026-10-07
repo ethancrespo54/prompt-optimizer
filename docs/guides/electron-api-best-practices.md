@@ -1,14 +1,14 @@
-# Electron API 最佳实践指南
+# Electron API Best Practices Guide
 
-## 🎯 核心原则
+## 🎯 Core Principle
 
-**保持简单，直接调用，通过类型定义解决 IDE 警告**
+**Keep it simple, call directly, and resolve IDE warnings through type definitions**
 
-## 📝 正确的实现方式
+## 📝 The Correct Approach
 
-### 1. 完善类型定义
+### 1. Complete the Type Definitions
 
-在 `packages/ui/src/types/electron.d.ts` 中定义完整的 API 类型：
+Define the complete API types in `packages/ui/src/types/electron.d.ts`:
 
 ```typescript
 declare global {
@@ -54,19 +54,19 @@ declare global {
 }
 ```
 
-### 2. 直接使用 API
+### 2. Use the API Directly
 
-在业务代码中直接调用，无需包装：
+Call it directly in business code, with no wrapper:
 
 ```typescript
-// ✅ 正确的使用方式
+// ✅ Correct usage
 export function useUpdater() {
   const checkBothVersions = async () => {
     try {
-      // 直接调用，类型安全，无 IDE 警告
+      // Direct call: type-safe, no IDE warnings
       const results = await window.electronAPI!.updater.checkAllVersions()
       
-      // 直接使用返回的数据
+      // Use the returned data directly
       console.log('Current version:', results.currentVersion)
       if (results.stable?.hasUpdate) {
         console.log('Stable update available:', results.stable.remoteVersion)
@@ -104,10 +104,10 @@ export function useUpdater() {
 }
 ```
 
-### 3. 事件监听
+### 3. Event Listening
 
 ```typescript
-// ✅ 正确的事件监听
+// ✅ Correct event listening
 const setupEventListeners = () => {
   if (!window.electronAPI?.on) return
 
@@ -117,7 +117,7 @@ const setupEventListeners = () => {
 
   window.electronAPI.on('update-available-info', updateAvailableListener)
 
-  // 清理函数
+  // Cleanup function
   return () => {
     if (window.electronAPI?.off) {
       window.electronAPI.off('update-available-info', updateAvailableListener)
@@ -126,12 +126,12 @@ const setupEventListeners = () => {
 }
 ```
 
-## ❌ 避免的反模式
+## ❌ Anti-Patterns to Avoid
 
-### 1. 过度抽象
+### 1. Over-Abstraction
 
 ```typescript
-// ❌ 错误：不必要的包装层
+// ❌ Wrong: unnecessary wrapper layer
 const useElectronAPI = () => {
   const safeCall = async (apiCall) => {
     try {
@@ -150,23 +150,23 @@ const useElectronAPI = () => {
 }
 ```
 
-### 2. 复杂的响应格式
+### 2. Complex Response Formats
 
 ```typescript
-// ❌ 错误：引入不必要的包装格式
+// ❌ Wrong: introduces an unnecessary wrapper format
 const response = await electronAPI.updater.checkAllVersions()
-if (!response.success) {  // 增加了复杂性
+if (!response.success) {  // Adds complexity
   throw new Error(response.error)
 }
-const data = response.data  // 多余的解包
+const data = response.data  // Redundant unwrapping
 ```
 
-## 🔧 preload.js 最佳实践
+## 🔧 preload.js Best Practices
 
-保持 preload.js 的简洁性：
+Keep preload.js simple:
 
 ```javascript
-// ✅ 正确：简单直接
+// ✅ Correct: simple and direct
 const electronAPI = {
   updater: {
     checkAllVersions: async () => {
@@ -174,7 +174,7 @@ const electronAPI = {
       if (!result.success) {
         throw new Error(result.error)
       }
-      return result.data  // 直接返回数据
+      return result.data  // Return the data directly
     },
     
     installUpdate: async () => {
@@ -182,7 +182,7 @@ const electronAPI = {
       if (!result.success) {
         throw new Error(result.error)
       }
-      // void 返回，无需返回数据
+      // Returns void, no data to return
     }
   },
   
@@ -192,7 +192,7 @@ const electronAPI = {
       if (!result.success) {
         throw new Error(result.error)
       }
-      // void 返回
+      // Returns void
     }
   },
   
@@ -203,22 +203,22 @@ const electronAPI = {
 contextBridge.exposeInMainWorld('electronAPI', electronAPI)
 ```
 
-## 🎯 关键要点
+## 🎯 Key Takeaways
 
-1. **类型安全通过类型定义实现**，而非运行时包装
-2. **保持 API 调用的直接性**，减少抽象层
-3. **错误处理在业务层进行**，而非在 API 层包装
-4. **preload.js 只负责暴露 API**，不做复杂逻辑
-5. **优先解决核心问题**，避免过度工程化
+1. **Type safety comes from type definitions**, not runtime wrappers
+2. **Keep API calls direct** and reduce abstraction layers
+3. **Handle errors in the business layer**, not by wrapping them in the API layer
+4. **preload.js only exposes the API** and does not contain complex logic
+5. **Solve the core problem first** and avoid over-engineering
 
-## 🚀 优势
+## 🚀 Benefits
 
-- **性能更好**：无额外的函数调用开销
-- **调试简单**：问题直接定位到源头
-- **代码清晰**：意图明确，易于理解
-- **维护简单**：减少抽象层的维护负担
-- **类型安全**：完整的 TypeScript 支持
+- **Better performance**: No extra function call overhead
+- **Easy debugging**: Problems trace directly to the source
+- **Clear code**: The intent is explicit and easy to understand
+- **Easy maintenance**: Fewer abstraction layers to maintain
+- **Type safety**: Full TypeScript support
 
 ---
 
-**记住**: 最好的抽象就是没有抽象。只在真正需要时才引入复杂性。
+**Remember**: The best abstraction is no abstraction. Only introduce complexity when it is truly needed.

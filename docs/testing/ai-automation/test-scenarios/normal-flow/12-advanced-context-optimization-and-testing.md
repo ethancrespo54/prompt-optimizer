@@ -1,66 +1,66 @@
-# 变量/上下文/工具的完整优化与测试流程（Normal Flow）
+# Full Optimization and Testing Flow for Variables/Context/Tools (Normal Flow)
 
-## 📖 测试概述
-在“高级模式”下，将变量（全局+上下文覆盖）、上下文消息（system/user）与工具（function tools）一起参与优化与测试，验证端到端链路：
-- 数据准备（变量/上下文/工具）
-- 启用高级模式并执行优化（system 与/或 user 模式）
-- 执行测试（Compare 模式、工具调用展示）
-- 预览与缺失统计一致性、导出数据完整性
+## 📖 Test Overview
+In "Advanced Mode", variables (global + context overrides), context messages (system/user), and tools (function tools) participate together in optimization and testing, verifying the end-to-end chain:
+- Data preparation (variables/context/tools)
+- Enable advanced mode and run optimization (system and/or user mode)
+- Run tests (Compare mode, tool call display)
+- Consistency of preview and missing statistics, completeness of exported data
 
-## 🎯 测试目标
-- 高级模式下优化请求包含 variables/messages/tools
-- Compare 测试可运行，结果展示稳定
-- 若发生工具调用，在 TestAreaPanel 正确展示/记录
-- 变量替换与缺失统计一致，context 覆盖优先生效
-- 导出数据包含 tools 与变量元数据
+## 🎯 Test Goals
+- In advanced mode, the optimization request includes variables/messages/tools
+- Compare tests can run and the result display is stable
+- If a tool call occurs, it is displayed/recorded correctly in TestAreaPanel
+- Variable replacement and missing statistics are consistent, and context overrides take precedence
+- Exported data includes tools and variable metadata
 
-## 📋 前置条件
-- [ ] 应用正常运行，已完成模型配置（可用的测试模型）
-- [ ] 允许网络访问（执行真实优化/测试）
-- [ ] 已了解“系统提示词优化”与“用户提示词优化”的差异
+## 📋 Prerequisites
+- [ ] The application is running normally and the model configuration is done (an available test model)
+- [ ] Network access is allowed (to run real optimization/tests)
+- [ ] The differences between "System Prompt Optimization" and "User Prompt Optimization" are understood
 
 ---
 
-## 🔧 测试步骤
+## 🔧 Test Steps
 
-### 步骤1：准备全局变量（VariableManager）
-**AI执行指导：**
-- 打开全局变量管理器（VariableManager），新增：
+### Step 1: Prepare Global Variables (VariableManager)
+**AI execution guidance:**
+- Open the global variable manager (VariableManager) and add:
   - `name = GlobalName`
-  - `scene = 全局场景`
-- 记录当前全局变量数量
+  - `scene = Global Scene`
+- Record the current number of global variables
 
-**预期结果：**
-- 变量列表中出现 `name`、`scene`
+**Expected results:**
+- `name` and `scene` appear in the variable list
 
-**验证点：**
-- [ ] 变量计数正确，新增变量持久
-
----
-
-### 步骤2：准备上下文（ContextEditor → 消息）
-**AI执行指导：**
-- 在对话管理中添加消息并“打开编辑器”进入 ContextEditor：
-  - system: `你是一个专业助手，称谓={{name}}，角色={{role}}`
-  - user: `请在 {{scene}} 下完成 {{task}}，并提供步骤`
-- 在变量页新增上下文覆盖：
-  - `name = Alice`（使其覆盖全局值 `GlobalName`）
-  - `role = 系统助手`
-  - `task = 高级流程验证`
-
-**预期结果：**
-- 变量统计至少 3 项
-- 预览时 `name` 使用上下文覆盖（Alice）而非全局（GlobalName）
-
-**验证点：**
-- [ ] 缺失变量为 0（`name/role/scene/task` 均有来源：scene 来自全局）
-- [ ] 预览替换无 `{{…}}` 残留
+**Verification points:**
+- [ ] The variable count is correct and the added variables persist
 
 ---
 
-### 步骤3：准备工具（ContextEditor → 工具管理）
-**AI执行指导：**
-- 在工具页新增工具定义：
+### Step 2: Prepare the Context (ContextEditor → Messages)
+**AI execution guidance:**
+- Add messages in conversation management and "Open Editor" to enter ContextEditor:
+  - system: `You are a professional assistant, name={{name}}, role={{role}}`
+  - user: `Please complete {{task}} under {{scene}}, and provide steps`
+- Add context overrides in the variables tab:
+  - `name = Alice` (so that it overrides the global value `GlobalName`)
+  - `role = System Assistant`
+  - `task = Advanced Flow Verification`
+
+**Expected results:**
+- The variable statistics have at least 3 items
+- In the preview, `name` uses the context override (Alice) instead of the global one (GlobalName)
+
+**Verification points:**
+- [ ] Missing variables are 0 (`name/role/scene/task` all have a source: scene comes from global)
+- [ ] The preview replacement leaves no `{{…}}` remnants
+
+---
+
+### Step 3: Prepare Tools (ContextEditor → Tools Management)
+**AI execution guidance:**
+- Add a tool definition in the tools page:
 ```json
 {
   "type": "function",
@@ -78,99 +78,98 @@
   }
 }
 ```
-- 关闭编辑器返回对话管理区域，检查工具数量徽章（tools.count）
+- Close the editor and return to the conversation management area, and check the tool count badge (tools.count)
 
-**预期结果：**
-- 工具列表出现 `get_weather`
-- 顶部徽章显示工具数量 = 1
+**Expected results:**
+- `get_weather` appears in the tool list
+- The top badge shows tool count = 1
 
-**验证点：**
-- [ ] 工具 JSON 保存无报错
-- [ ] 工具数量显示正确
+**Verification points:**
+- [ ] The tool JSON is saved without errors
+- [ ] The tool count is displayed correctly
 
 ---
 
-### 步骤4：启用高级模式并执行“优化”
-**AI执行指导：**
-- 打开“高级模式”开关（Advanced Mode）
-- 选择一个优化模板（system 或 user 模式皆可；建议先用 system 模式）
-- 点击“优化”
-- 使用 `browser_console_messages` 抓取日志关键字：
-  - `[App] Optimizing with advanced context:` 或
+### Step 4: Enable Advanced Mode and Run "Optimize"
+**AI execution guidance:**
+- Turn on the "Advanced Mode" switch (Advanced Mode)
+- Select an optimization template (either system or user mode works; it is recommended to use system mode first)
+- Click "Optimize"
+- Use `browser_console_messages` to capture log keywords:
+  - `[App] Optimizing with advanced context:` or
   - `[usePromptOptimizer] Starting optimization with advanced context:`
 
-**预期结果：**
-- 控制台出现“advanced context”日志，包含 variables/messages/tools 的简要统计
-- 优化结束后，右侧显示优化结果（若 Compare 模式开启则作为“优化结果”区域）
+**Expected results:**
+- The console shows "advanced context" logs containing a brief summary of variables/messages/tools
+- After the optimization finishes, the optimization result is displayed on the right (if Compare mode is on, it serves as the "Optimized Result" area)
 
-**验证点：**
-- [ ] 出现上述日志（说明已携带高级上下文）
-- [ ] 优化结果区域渲染稳定，无错误弹窗
-
----
-
-### 步骤5：执行“测试”（Compare 模式）
-**AI执行指导：**
-- 在 TestAreaPanel 输入测试内容（system 模式下作为用户输入；user 模式可为空或自定义）
-- 点击“开始测试”，先运行“原始”，再运行“优化”
-- 若有工具调用：控制台会打印 `test tool call received`，或面板中出现“工具调用”列表（ToolCallDisplay）
-
-**预期结果：**
-- 两侧（或单列）结果区域更新，无异常
-- 若模型触发工具调用，面板显示工具调用项
-
-**验证点：**
-- [ ] 测试启动与完成日志存在（如 `[App] original/optimized test completed`）
-- [ ]（可选）展示工具调用列表或出现 `test tool call received` 日志
+**Verification points:**
+- [ ] The above logs appear (indicating the advanced context is carried)
+- [ ] The optimization result area renders stably without error popups
 
 ---
 
-### 步骤6：一致性与替换校验
-**AI执行指导：**
-- 检查预览/缺失统计与测试时变量替换一致：
-  - `name` 应为 Alice（上下文覆盖优先）
-  - `scene` 应来自全局（GlobalName 未被用于场景）
-  - 不应出现任何预定义变量名的覆盖项（如 `currentPrompt`）
+### Step 5: Run "Test" (Compare Mode)
+**AI execution guidance:**
+- Enter test content in TestAreaPanel (as user input in system mode; can be empty or custom in user mode)
+- Click "Start Test", run the "Original" first, then the "Optimized"
+- If there is a tool call: the console will print `test tool call received`, or a "Tool Calls" list (ToolCallDisplay) appears in the panel
 
-**预期结果：**
-- finalVars 合并策略生效：`final = global ∪ contextOverrides`，且剔除预定义名
-- 预览、缺失统计、测试结果中的变量替换一致
+**Expected results:**
+- The result areas on both sides (or the single column) update without abnormalities
+- If the model triggers a tool call, the panel shows the tool call item
 
-**验证点：**
-- [ ] ContextEditor 统计与实际替换一致
-- [ ] 无预定义键覆盖项被保存
+**Verification points:**
+- [ ] Test start and completion logs exist (such as `[App] original/optimized test completed`)
+- [ ] (Optional) The tool call list is displayed or the `test tool call received` log appears
 
 ---
 
-### 步骤7：导出校验（标准格式）
-**AI执行指导：**
-- 在 ContextEditor 中打开“导出”，选择“标准格式”
-- 执行“复制到剪贴板”或“导出到文件”，解析 JSON：
-  - `messages` 为数组
-  - `metadata.variables` 含 `name/role/task/scene`
+### Step 6: Consistency and Replacement Check
+**AI execution guidance:**
+- Check that the preview/missing statistics are consistent with the variable replacement during testing:
+  - `name` should be Alice (context override takes precedence)
+  - `scene` should come from global (GlobalName is not used for the scene)
+  - No override items with predefined variable names (such as `currentPrompt`) should appear
+
+**Expected results:**
+- The finalVars merge strategy takes effect: `final = global ∪ contextOverrides`, with predefined names removed
+- The variable replacement in the preview, missing statistics, and test results is consistent
+
+**Verification points:**
+- [ ] The ContextEditor statistics match the actual replacement
+- [ ] No predefined key override items are saved
+
+---
+
+### Step 7: Export Validation (Standard Format)
+**AI execution guidance:**
+- Open "Export" in ContextEditor and select "Standard Format"
+- Run "Copy to Clipboard" or "Export to File", and parse the JSON:
+  - `messages` is an array
+  - `metadata.variables` contains `name/role/task/scene`
   - `tools[0].function.name === 'get_weather'`
 
-**预期结果：**
-- 导出结构完整，后续可用于导入
+**Expected results:**
+- The export structure is complete and can be used for subsequent import
 
-**验证点：**
+**Verification points:**
 - [ ] `messages.length >= 2`
-- [ ] `metadata.variables` 包含本次配置
-- [ ] `tools` 数组存在且含 `get_weather`
+- [ ] `metadata.variables` contains this configuration
+- [ ] The `tools` array exists and contains `get_weather`
 
 ---
 
-## 🧪 诊断建议（失败时）
-- 未出现“advanced context”日志：确认已开启高级模式，且存在非空的 messages/variables/tools
-- 测试无输出：检查模型可用性、网络与控制台错误
-- 工具调用不展示：不强制要求触发；关注有无相关日志
-- 变量优先级错误：检查全局与上下文覆盖是否同名，确认覆盖优先
+## 🧪 Diagnostic Suggestions (On Failure)
+- The "advanced context" log does not appear: confirm that advanced mode is enabled and that non-empty messages/variables/tools exist
+- Test has no output: check model availability, network, and console errors
+- Tool calls are not displayed: triggering is not mandatory; watch for related logs
+- Wrong variable priority: check whether the global and context overrides share the same name, and confirm the override takes precedence
 
 ---
 
-## ✅ 成功标准
-- 高级模式优化与测试可用且稳定
-- variables/messages/tools 全链路生效
-- 预览/缺失统计/测试替换一致
-- 导出结构完整（含 tools 与变量元数据）
-
+## ✅ Success Criteria
+- Advanced mode optimization and testing are available and stable
+- The whole chain of variables/messages/tools takes effect
+- The preview/missing statistics/test replacement are consistent
+- The export structure is complete (including tools and variable metadata)

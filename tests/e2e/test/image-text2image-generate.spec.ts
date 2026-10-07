@@ -54,25 +54,25 @@ async function selectOption(page: any, select: any, matcher?: RegExp) {
   await options.first().click()
 }
 
-test.describe('Image Text2Image - 生成（SiliconFlow）', () => {
-  test('切换到 SiliconFlow 图像模型并生成图片（对比模式）', async ({ page }) => {
+test.describe('Image Text2Image - Generation (SiliconFlow)', () => {
+  test('Switch to the SiliconFlow image model and generate images (compare mode)', async ({ page }) => {
     // Record mode may be slow (two image generations); keep replay fast.
     test.setTimeout(900000)
 
     await navigateToMode(page, 'image', 'text2image')
 
-    // 1) 输入提示词并优化（左侧）
-    // 尽量保持 prompt 简短，避免生成的优化 prompt 过长导致图像模型失败/超时。
+    // 1) Enter the prompt and optimize (left side)
+    // Keep the prompt short so the generated optimized prompt is not too long, which could make the image model fail/time out.
     await fillOriginalPrompt(page, MODE, 'corgi, studio photo')
     await clickOptimizeButton(page, MODE)
     await expectOptimizedResultNotEmpty(page, MODE)
 
-    // 2) 确保列数为 2（避免默认列数变化导致额外请求，影响 VCR fixture 匹配）
+    // 2) Ensure the column count is 2 (avoids extra requests from default column count changes, which would break VCR fixture matching)
     const workspace = page.locator('[data-testid="workspace"][data-mode="image-text2image"]').first()
-    // Naive UI 的 radio button 真实可点元素是 label；若 value=2 已默认选中，click 会因拦截重试而超时。
+    // The truly clickable element of a Naive UI radio button is the label; if value=2 is already selected by default, click would retry on interception and time out.
     await workspace.getByRole('radio', { name: '2' }).check()
 
-    // 3) 选择图像模型（A/B 两列都设置为 SiliconFlow，保证请求与 fixture 匹配）
+    // 3) Select the image model (set both A/B columns to SiliconFlow so requests match the fixture)
     const originalModelSelect = page.getByTestId('image-text2image-test-original-model-select')
     const optimizedModelSelect = page.getByTestId('image-text2image-test-optimized-model-select')
     await expect(originalModelSelect).toBeVisible({ timeout: 20000 })
@@ -80,10 +80,10 @@ test.describe('Image Text2Image - 生成（SiliconFlow）', () => {
     await selectOption(page, originalModelSelect, /siliconflow/i)
     await selectOption(page, optimizedModelSelect, /siliconflow/i)
 
-    // 4) 运行两列生成（original + optimized）
+    // 4) Run generation for both columns (original + optimized)
     await page.getByTestId('image-text2image-test-run-all').click()
 
-    // 5) 断言两份生成结果都非空（至少 img src 有值）
+    // 5) Assert both generated results are non-empty (at least img src has a value)
     const originalImg = page.getByTestId('image-text2image-original-image').locator('img')
     const optimizedImg = page.getByTestId('image-text2image-optimized-image').locator('img')
 
@@ -103,8 +103,8 @@ test.describe('Image Text2Image - 生成（SiliconFlow）', () => {
       }, { timeout: 240000 })
       .toMatch(/^data:image\/(png|jpeg);base64,|^https?:\/\//)
 
-    // 在 record 模式下保存一张样例图供 image2image 上传复用。
-    // 如果是 base64，直接落盘；如果是 URL（siliconflow 默认返回 url），则通过 Playwright 下载落盘。
+    // In record mode, save a sample image for the image2image upload to reuse.
+    // If it is base64, write it to disk directly; if it is a URL (siliconflow returns a url by default), download it via Playwright and write it to disk.
     if (process.env.E2E_VCR_MODE === 'record') {
       const outPath = path.join(process.cwd(), 'tests/e2e/fixtures/images/text2image-output.png')
 

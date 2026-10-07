@@ -1,55 +1,55 @@
 import { test, expect } from './fixtures';
 
 /**
- * 标签自动完成功能 E2E 测试
- * 验证标签输入和自动完成建议功能
+ * Tag autocomplete E2E tests
+ * Verify tag input and autocomplete suggestions
  */
-test.describe('标签自动完成功能', () => {
+test.describe('Tag Autocomplete', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
   });
 
-  test('标签自动完成建议能够正常显示', async ({ page }) => {
-    // 1. 打开收藏管理器
-    const favoriteButton = page.getByRole('button', { name: /收藏|favorite/i });
+  test('Tag autocomplete suggestions display correctly', async ({ page }) => {
+    // 1. Open the favorites manager
+    const favoriteButton = page.getByRole('button', { name: /favorite/i });
     if (await favoriteButton.count() === 0) {
       test.skip();
       return;
     }
     await favoriteButton.first().click();
 
-    const managerDialog = page.locator('[role="dialog"]').filter({ hasText: /收藏|Favorites/i }).first();
+    const managerDialog = page.locator('[role="dialog"]').filter({ hasText: /Favorites/i }).first();
     await expect(managerDialog).toBeVisible();
 
-    // 2. 点击添加收藏按钮
-    const addButton = managerDialog.getByRole('button', { name: /添加|创建|新建|add|create/i }).first();
+    // 2. Click the add favorite button
+    const addButton = managerDialog.getByRole('button', { name: /add|create/i }).first();
     await addButton.click();
     await page.waitForTimeout(500);
 
-    // 3. 定位到编辑对话框
+    // 3. Locate the edit dialog
     const editDialog = page.locator('[role="dialog"]').last();
     await expect(editDialog).toBeVisible();
 
-    // 4. 查找标签输入框
-    const tagInput = editDialog.getByPlaceholder(/标签|tag/i);
+    // 4. Find the tag input
+    const tagInput = editDialog.getByPlaceholder(/tag/i);
 
     if (await tagInput.count() > 0) {
-      // 5. 输入部分标签文本
-      await tagInput.fill('测');
+      // 5. Enter partial tag text
+      await tagInput.fill('te');
       await page.waitForTimeout(500);
 
-      // 6. 验证标签输入框的值
+      // 6. Verify the value of the tag input
       const inputValue = await tagInput.inputValue();
-      expect(inputValue).toBe('测');
+      expect(inputValue).toBe('te');
 
-      // 7. 检查是否有自动完成下拉菜单出现
+      // 7. Check whether an autocomplete dropdown appears
       const autocompleteMenu = page.locator('.n-auto-complete-menu, .n-base-select-menu');
 
-      // 注意：如果没有匹配的建议，菜单可能不会显示，这是正常的
-      // 我们只验证输入功能正常
+      // Note: if there are no matching suggestions the menu may not be shown, which is fine
+      // We only verify the input works
 
-      // 8. 清空输入
+      // 8. Clear the input
       await tagInput.clear();
       await page.waitForTimeout(300);
 
@@ -58,86 +58,86 @@ test.describe('标签自动完成功能', () => {
     }
   });
 
-  test('可以通过手动输入添加标签', async ({ page }) => {
-    // 1. 打开收藏管理器
-    const favoriteButton = page.getByRole('button', { name: /收藏|favorite/i });
+  test('Can add a tag by typing manually', async ({ page }) => {
+    // 1. Open the favorites manager
+    const favoriteButton = page.getByRole('button', { name: /favorite/i });
     if (await favoriteButton.count() === 0) {
       test.skip();
       return;
     }
     await favoriteButton.first().click();
 
-    const managerDialog = page.locator('[role="dialog"]').filter({ hasText: /收藏|Favorites/i }).first();
+    const managerDialog = page.locator('[role="dialog"]').filter({ hasText: /Favorites/i }).first();
     await expect(managerDialog).toBeVisible();
 
-    // 2. 点击添加收藏按钮
-    const addButton = managerDialog.getByRole('button', { name: /添加|创建|新建|add|create/i }).first();
+    // 2. Click the add favorite button
+    const addButton = managerDialog.getByRole('button', { name: /add|create/i }).first();
     await addButton.click();
     await page.waitForTimeout(500);
 
-    // 3. 定位到编辑对话框
+    // 3. Locate the edit dialog
     const editDialog = page.locator('[role="dialog"]').last();
 
-    // 4. 查找标签输入框
-    const tagInput = editDialog.getByPlaceholder(/标签|tag/i);
+    // 4. Find the tag input
+    const tagInput = editDialog.getByPlaceholder(/tag/i);
 
     if (await tagInput.count() > 0) {
-      // 5. 输入标签文本
-      await tagInput.fill('E2E测试标签');
+      // 5. Enter tag text
+      await tagInput.fill('E2E Test Tag');
       await page.waitForTimeout(300);
 
-      // 6. 按 Enter 键添加标签
+      // 6. Press Enter to add the tag
       await tagInput.press('Enter');
       await page.waitForTimeout(500);
 
-      // 7. 验证标签是否被添加（查找标签显示）
-      // 标签通常显示为 NTag 组件
-      const addedTag = editDialog.locator('text=E2E测试标签');
+      // 7. Verify the tag was added (look for the displayed tag)
+      // Tags are usually rendered as NTag components
+      const addedTag = editDialog.locator('text=E2E Test Tag');
       if (await addedTag.count() > 0) {
         await expect(addedTag.first()).toBeVisible();
       }
 
-      // 8. 验证输入框已清空（准备输入下一个标签）
+      // 8. Verify the input was cleared (ready for the next tag)
       const inputValue = await tagInput.inputValue();
       expect(inputValue).toBe('');
     }
   });
 
-  test('可以删除已添加的标签', async ({ page }) => {
-    // 1. 打开收藏管理器
-    const favoriteButton = page.getByRole('button', { name: /收藏|favorite/i });
+  test('Can delete an added tag', async ({ page }) => {
+    // 1. Open the favorites manager
+    const favoriteButton = page.getByRole('button', { name: /favorite/i });
     if (await favoriteButton.count() === 0) {
       test.skip();
       return;
     }
     await favoriteButton.first().click();
 
-    const managerDialog = page.locator('[role="dialog"]').filter({ hasText: /收藏|Favorites/i }).first();
+    const managerDialog = page.locator('[role="dialog"]').filter({ hasText: /Favorites/i }).first();
     await expect(managerDialog).toBeVisible();
 
-    // 2. 点击添加收藏按钮
-    const addButton = managerDialog.getByRole('button', { name: /添加|创建|新建|add|create/i }).first();
+    // 2. Click the add favorite button
+    const addButton = managerDialog.getByRole('button', { name: /add|create/i }).first();
     await addButton.click();
     await page.waitForTimeout(500);
 
-    // 3. 定位到编辑对话框
+    // 3. Locate the edit dialog
     const editDialog = page.locator('[role="dialog"]').last();
 
-    // 4. 查找标签输入框并添加标签
-    const tagInput = editDialog.getByPlaceholder(/标签|tag/i);
+    // 4. Find the tag input and add a tag
+    const tagInput = editDialog.getByPlaceholder(/tag/i);
 
     if (await tagInput.count() > 0) {
-      // 5. 添加一个标签
-      await tagInput.fill('可删除标签');
+      // 5. Add a tag
+      await tagInput.fill('Deletable Tag');
       await tagInput.press('Enter');
       await page.waitForTimeout(500);
 
-      // 6. 查找已添加的标签
-      const addedTag = editDialog.locator('text=可删除标签').first();
+      // 6. Find the added tag
+      const addedTag = editDialog.locator('text=Deletable Tag').first();
 
       if (await addedTag.count() > 0) {
-        // 7. 查找标签的关闭按钮（通常是 closable 的 NTag）
-        // 查找标签父元素中的关闭图标
+        // 7. Find the tag's close button (usually a closable NTag)
+        // Find the close icon within the tag's parent element
         const tagContainer = addedTag.locator('..').first();
         const closeButton = tagContainer.locator('[role="button"], .n-tag__close, .n-base-close').first();
 
@@ -145,40 +145,40 @@ test.describe('标签自动完成功能', () => {
           await closeButton.click();
           await page.waitForTimeout(500);
 
-          // 8. 验证标签已被删除
-          const deletedTag = editDialog.locator('text=可删除标签');
+          // 8. Verify the tag was deleted
+          const deletedTag = editDialog.locator('text=Deletable Tag');
           expect(await deletedTag.count()).toBe(0);
         }
       }
     }
   });
 
-  test('标签输入框支持多个标签添加', async ({ page }) => {
-    // 1. 打开收藏管理器
-    const favoriteButton = page.getByRole('button', { name: /收藏|favorite/i });
+  test('The tag input supports adding multiple tags', async ({ page }) => {
+    // 1. Open the favorites manager
+    const favoriteButton = page.getByRole('button', { name: /favorite/i });
     if (await favoriteButton.count() === 0) {
       test.skip();
       return;
     }
     await favoriteButton.first().click();
 
-    const managerDialog = page.locator('[role="dialog"]').filter({ hasText: /收藏|Favorites/i }).first();
+    const managerDialog = page.locator('[role="dialog"]').filter({ hasText: /Favorites/i }).first();
     await expect(managerDialog).toBeVisible();
 
-    // 2. 点击添加收藏按钮
-    const addButton = managerDialog.getByRole('button', { name: /添加|创建|新建|add|create/i }).first();
+    // 2. Click the add favorite button
+    const addButton = managerDialog.getByRole('button', { name: /add|create/i }).first();
     await addButton.click();
     await page.waitForTimeout(500);
 
-    // 3. 定位到编辑对话框
+    // 3. Locate the edit dialog
     const editDialog = page.locator('[role="dialog"]').last();
 
-    // 4. 查找标签输入框
-    const tagInput = editDialog.getByPlaceholder(/标签|tag/i);
+    // 4. Find the tag input
+    const tagInput = editDialog.getByPlaceholder(/tag/i);
 
     if (await tagInput.count() > 0) {
-      // 5. 连续添加多个标签
-      const tags = ['标签1', '标签2', '标签3'];
+      // 5. Add several tags in a row
+      const tags = ['Tag 1', 'Tag 2', 'Tag 3'];
 
       for (const tag of tags) {
         await tagInput.fill(tag);
@@ -186,7 +186,7 @@ test.describe('标签自动完成功能', () => {
         await page.waitForTimeout(300);
       }
 
-      // 6. 验证所有标签都被添加
+      // 6. Verify all tags were added
       for (const tag of tags) {
         const addedTag = editDialog.locator(`text=${tag}`);
         if (await addedTag.count() > 0) {
@@ -198,55 +198,55 @@ test.describe('标签自动完成功能', () => {
 });
 
 /**
- * 标签自动完成建议测试（需要有已存在的标签）
+ * Tag autocomplete suggestion tests (existing tags required)
  */
-test.describe('标签自动完成建议', () => {
+test.describe('Tag Autocomplete Suggestions', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
   });
 
-  test('输入时显示匹配的标签建议', async ({ page }) => {
-    // 注意：这个测试需要数据库中已经有一些标签
-    // 如果是全新安装，可能不会有建议
+  test('Matching tag suggestions are shown while typing', async ({ page }) => {
+    // Note: this test requires some tags to already exist in the database
+    // On a fresh install there may be no suggestions
 
-    const favoriteButton = page.getByRole('button', { name: /收藏|favorite/i });
+    const favoriteButton = page.getByRole('button', { name: /favorite/i });
     if (await favoriteButton.count() === 0) {
       test.skip();
       return;
     }
     await favoriteButton.first().click();
 
-    const managerDialog = page.locator('[role="dialog"]').filter({ hasText: /收藏|Favorites/i }).first();
+    const managerDialog = page.locator('[role="dialog"]').filter({ hasText: /Favorites/i }).first();
     await expect(managerDialog).toBeVisible();
 
-    const addButton = managerDialog.getByRole('button', { name: /添加|创建|新建|add|create/i }).first();
+    const addButton = managerDialog.getByRole('button', { name: /add|create/i }).first();
     await addButton.click();
     await page.waitForTimeout(500);
 
     const editDialog = page.locator('[role="dialog"]').last();
-    const tagInput = editDialog.getByPlaceholder(/标签|tag/i);
+    const tagInput = editDialog.getByPlaceholder(/tag/i);
 
     if (await tagInput.count() > 0) {
-      // 先添加一个标签到系统中
-      await tagInput.fill('前端开发');
+      // First add a tag to the system
+      await tagInput.fill('Frontend Development');
       await tagInput.press('Enter');
       await page.waitForTimeout(300);
 
-      // 清空输入框
+      // Clear the input
       await tagInput.clear();
       await page.waitForTimeout(300);
 
-      // 现在输入部分匹配文本
-      await tagInput.fill('前');
+      // Now enter partially matching text
+      await tagInput.fill('Fr');
       await page.waitForTimeout(500);
 
-      // 检查是否有自动完成菜单
+      // Check whether there is an autocomplete menu
       const autocompleteMenu = page.locator('.n-auto-complete-menu, .n-base-select-menu');
 
-      // 如果有菜单且可见，验证里面有匹配的选项
+      // If the menu exists and is visible, verify it contains matching options
       if (await autocompleteMenu.isVisible().catch(() => false)) {
-        const matchingOption = autocompleteMenu.locator('text=/前端/');
+        const matchingOption = autocompleteMenu.locator('text=/Frontend/');
         if (await matchingOption.count() > 0) {
           await expect(matchingOption.first()).toBeVisible();
         }

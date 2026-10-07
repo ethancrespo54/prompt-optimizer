@@ -1,53 +1,53 @@
-# Architecture Migration Guide 详细分析
+# Architecture Migration Guide: Detailed Analysis
 
-## 📋 文档概述
+## 📋 Document Overview
 
-**文档名称**: `architecture-migration-guide.md`
-**性质**: 长期规划文档（未执行）
-**目标**: 将三种模式统一到 **Store + Operations** 架构
-
----
-
-## 🎯 核心目标
-
-### 要解决的问题
-1. **P0 Bug 根因**: `logic.testResults?.originalResult` 遗漏 `.value`，导致 UI 显示问题
-2. **架构不统一**: Basic/Context/Image 三种模式使用不同的状态管理模式
-3. **响应式陷阱**: Logic 层返回"对象属性中的 ComputedRef"，容易被误用
-4. **维护成本高**: 多种模式并存，代码风格不一致
-
-### 理想架构（目标态）
-```
-Component (直接消费 store)
-    ↓
-Operations composable (副作用/流程逻辑)
-    ↓
-Pinia Session Store (单一真源)
-```
+**Document name**: `architecture-migration-guide.md`
+**Nature**: Long-term planning document (not executed)
+**Goal**: Unify the three modes onto the **Store + Operations** architecture
 
 ---
 
-## 📊 当前架构实际状态
+## 🎯 Core Goals
 
-### 1. Basic 模式（部分修复，未迁移）
+### Problems to Solve
+1. **Root cause of the P0 bug**: `logic.testResults?.originalResult` missed `.value`, causing UI display issues
+2. **Inconsistent architecture**: The Basic/Context/Image modes use different state management patterns
+3. **Reactivity trap**: The Logic layer returns "ComputedRef inside object properties", which is easy to misuse
+4. **High maintenance cost**: Multiple patterns coexist and the code style is inconsistent
 
-#### 当前状态
+### Ideal Architecture (Target State)
+```
+Component (consumes the store directly)
+    ↓
+Operations composable (side effects / flow logic)
+    ↓
+Pinia Session Store (single source of truth)
+```
+
+---
+
+## 📊 Actual Current Architecture State
+
+### 1. Basic Mode (Partially fixed, not migrated)
+
+#### Current State
 ```
 BasicSystemWorkspace.vue / BasicUserWorkspace.vue
     ↓
-useBasicWorkspaceLogic (状态代理 + 业务逻辑)  ← 仍在使用
+useBasicWorkspaceLogic (state proxy + business logic)  ← still in use
     ↓
 useBasicSystemSession / useBasicUserSession (Pinia Store)
 ```
 
-#### 代码证据
+#### Code Evidence
 
-**Logic 层仍在使用** (`packages/ui/src/composables/workspaces/useBasicWorkspaceLogic.ts`):
+**The Logic layer is still in use** (`packages/ui/src/composables/workspaces/useBasicWorkspaceLogic.ts`):
 ```typescript
-// ✅ P0 Bug 已修复：testResults getter 不再返回临时对象
+// ✅ P0 bug fixed: the testResults getter no longer returns a temporary object
 const testResults = computed<BasicSessionStore['testResults']>({
   get: () => {
-    // 关键修复：始终返回 sessionStore.testResults（即使是 null）
+    // Key fix: always return sessionStore.testResults (even if it is null)
     return sessionStore.testResults
   },
   set: (value) => {
@@ -55,20 +55,20 @@ const testResults = computed<BasicSessionStore['testResults']>({
   }
 })
 
-// ❌ 但 Logic 层仍然返回大量 computed 包装
+// ❌ But the Logic layer still returns many computed wrappers
 export function useBasicWorkspaceLogic(options) {
   return {
-    // 状态代理（所有都是 ComputedRef）
+    // State proxies (all are ComputedRef)
     prompt,              // ComputedRef<string>
     optimizedPrompt,     // ComputedRef<string>
     testResults,         // ComputedRef<TestResults | null>
     testContent,         // ComputedRef<string>
 
-    // 过程态
+    // Process state
     isOptimizing,        // Ref<boolean>
     isTestingOriginal,   // Ref<boolean>
 
-    // 业务方法
+    // Business methods
     handleOptimize,
     handleTest,
     handleIterate,
@@ -77,7 +77,7 @@ export function useBasicWorkspaceLogic(options) {
 }
 ```
 
-**组件消费方式** (`BasicSystemWorkspace.vue:323-365`):
+**How the component consumes it** (`BasicSystemWorkspace.vue:323-365`):
 ```typescript
 const logic = useBasicWorkspaceLogic({
   services,
@@ -86,107 +86,107 @@ const logic = useBasicWorkspaceLogic({
   promptRecordType: 'optimize'
 })
 
-// ✅ P0 Bug 已修复：组件中正确使用 .value
+// ✅ P0 bug fixed: `.value` is used correctly in the component
 const hasOriginalResult = computed(() => !!logic.testResults.value?.originalResult)
 const hasOptimizedResult = computed(() => !!logic.testResults.value?.optimizedResult)
 ```
 
-#### 分析
+#### Analysis
 
-**已完成的工作**:
-- ✅ P0 Bug 已修复（组件中正确使用 `.value`）
-- ✅ Logic 层的 `testResults` getter 不再返回临时对象
-- ✅ Session Store 使用独立 ref（不再是 `state.xxx`）
+**Completed work**:
+- ✅ The P0 bug is fixed (`.value` is used correctly in the component)
+- ✅ The `testResults` getter in the Logic layer no longer returns a temporary object
+- ✅ The Session Store uses standalone refs (no longer `state.xxx`)
 
-**未完成的迁移**:
-- ❌ Logic 层仍然存在（19KB，597 行代码）
-- ❌ Logic 层仍然返回大量 ComputedRef 包装
-- ❌ 组件仍然通过 `logic.xxx` 访问状态，而非直接访问 `session.xxx`
-- ❌ 业务逻辑（handleOptimize/handleTest）仍在 Logic 层，未抽离为独立 Operations
+**Incomplete migration**:
+- ❌ The Logic layer still exists (19KB, 597 lines of code)
+- ❌ The Logic layer still returns many ComputedRef wrappers
+- ❌ Components still access state through `logic.xxx` rather than directly through `session.xxx`
+- ❌ Business logic (handleOptimize/handleTest) is still in the Logic layer and has not been extracted into standalone Operations
 
-**为什么没有迁移？**
-1. **短期止血优先**: P0 Bug 已通过修复组件消费方式解决，不影响功能
-2. **迁移成本高**: 需要重构组件 + 创建 Operations + 测试验证
-3. **风险控制**: 当前架构虽不理想，但已稳定运行
+**Why hasn't it been migrated?**
+1. **Short-term stopgap first**: The P0 bug was resolved by fixing how components consume the state, and it does not affect functionality
+2. **High migration cost**: Requires refactoring components + creating Operations + test verification
+3. **Risk control**: The current architecture is not ideal but has been running stably
 
 ---
 
-### 2. Context 模式（Tester composable 主导）
+### 2. Context Mode (Dominated by the Tester composable)
 
-#### 当前状态
+#### Current State
 ```
 ContextSystemWorkspace.vue
     ↓
-useConversationTester (reactive 状态树 + 业务逻辑)
+useConversationTester (reactive state tree + business logic)
     ↓
-部分数据写入 Session Store
+Some data is written to the Session Store
 ```
 
-#### 代码证据
+#### Code Evidence
 
 **Tester composable** (`ContextSystemWorkspace.vue:461`):
 ```typescript
 const conversationTester = useConversationTester(
   services,
   optimizationContext,
-  // ... 其他参数
+  // ... other parameters
 )
 ```
 
-**Tester 内部使用 reactive 状态树**:
+**The Tester uses a reactive state tree internally**:
 ```typescript
-// useConversationTester 内部（推测）
+// Inside useConversationTester (inferred)
 const state = reactive({
   testResults: null,
   isTestingOriginal: false,
   isTestingOptimized: false,
-  // ... 大量临时状态
+  // ... lots of temporary state
 })
 ```
 
-#### 分析
+#### Analysis
 
-**问题**:
-- ❌ Tester composable 既管理临时态，又管理持久化状态
-- ❌ reactive 状态树与 Session Store 可能存在状态分裂
-- ❌ 组件难以直接访问 Session Store（被 Tester 封装了）
+**Problems**:
+- ❌ The Tester composable manages both temporary state and persisted state
+- ❌ The reactive state tree and the Session Store may have split state
+- ❌ Components have difficulty accessing the Session Store directly (it is encapsulated by the Tester)
 
-**迁移指南建议**:
+**Migration guide recommendation**:
 ```typescript
-// 目标架构
-useContextWorkspaceOperations (对外接口)
+// Target architecture
+useContextWorkspaceOperations (public interface)
     ↓
-useConversationTester (内部实现，只管理临时态)
+useConversationTester (internal implementation, manages temporary state only)
     ↓
-Session Store (持久化状态的唯一真源)
+Session Store (the single source of truth for persisted state)
 ```
 
 ---
 
-### 3. Image 模式（已接近目标架构）
+### 3. Image Mode (Already close to the target architecture)
 
-#### 当前状态
+#### Current State
 ```
 ImageText2ImageWorkspace.vue
     ↓
-直接消费 useImageText2ImageSession (Pinia Store)
+Consumes useImageText2ImageSession (Pinia Store) directly
     ↓
-ImageStorageService (图像数据存储)
+ImageStorageService (image data storage)
 ```
 
-#### 代码证据
+#### Code Evidence
 
 **Session Store** (`useImageText2ImageSession.ts:41-56`):
 ```typescript
 export const useImageText2ImageSession = defineStore('imageText2ImageSession', () => {
-  // ✅ 使用独立 ref，符合 Pinia 最佳实践
+  // ✅ Uses standalone refs, in line with Pinia best practices
   const originalPrompt = ref('')
   const optimizedPrompt = ref('')
   const reasoning = ref('')
   const originalImageResult = ref<ImageResult | null>(null)
   const optimizedImageResult = ref<ImageResult | null>(null)
 
-  // ✅ 提供简洁的 action 方法
+  // ✅ Provides concise action methods
   const updatePrompt = (prompt: string) => {
     if (originalPrompt.value === prompt) return
     originalPrompt.value = prompt
@@ -207,58 +207,58 @@ export const useImageText2ImageSession = defineStore('imageText2ImageSession', (
 })
 ```
 
-**图像存储分离** (`ImageStorageService`):
+**Image storage separation** (`ImageStorageService`):
 ```typescript
-// ✅ base64 数据存储在独立的 IndexedDB
-// ✅ Session Store 只存储 ImageRef
+// ✅ base64 data is stored in a separate IndexedDB
+// ✅ The Session Store only stores an ImageRef
 {
   id: 'img_123',
   _type: 'image-ref'
 }
 ```
 
-#### 分析
+#### Analysis
 
-**优点**:
-- ✅ 最接近目标架构（Store + Operations）
-- ✅ Session Store 使用独立 ref
-- ✅ 数据分离合理（图像数据 vs 元数据）
-- ✅ 组件可以直接访问 store
+**Pros**:
+- ✅ Closest to the target architecture (Store + Operations)
+- ✅ The Session Store uses standalone refs
+- ✅ Reasonable data separation (image data vs metadata)
+- ✅ Components can access the store directly
 
-**缺点**:
-- ⚠️ 业务逻辑可能直接写在组件中（未抽离 Operations）
-- ⚠️ 组件可能会膨胀（2205 行）
-
----
-
-## 🗺️ 迁移路线图分析
-
-### Phase 1：基础设施准备（未开始）
-
-**目标**: 建立护栏和规范
-
-**具体任务**:
-1. ✅ **已完成**: 组件消费规则文档（通过 Bug 修复总结）
-2. ❌ **未完成**: ESLint 规则（禁止 computed 返回临时对象）
-3. ❌ **未完成**: Operations 模板/示例
-4. ❌ **未完成**: 迁移 checklist
-
-**为什么没做？**
-- P0 Bug 已通过局部修复解决
-- 护栏建设需要团队协调
-- 投入产出比不高（当前架构已稳定）
+**Cons**:
+- ⚠️ Business logic may be written directly in the component (Operations not extracted)
+- ⚠️ The component may grow bloated (2205 lines)
 
 ---
 
-### Phase 2：Basic 模式迁移（未开始）
+## 🗺️ Migration Roadmap Analysis
 
-**目标**: Logic → Operations
+### Phase 1: Infrastructure Preparation (Not started)
 
-**迁移步骤**（指南描述）:
+**Goal**: Establish guardrails and conventions
+
+**Specific tasks**:
+1. ✅ **Done**: Component consumption rules document (via the bug fix summary)
+2. ❌ **Not done**: ESLint rule (forbid computed returning temporary objects)
+3. ❌ **Not done**: Operations template/example
+4. ❌ **Not done**: Migration checklist
+
+**Why hasn't it been done?**
+- The P0 bug was resolved with a local fix
+- Building guardrails requires team coordination
+- The return on investment is not high (the current architecture is stable)
+
+---
+
+### Phase 2: Basic Mode Migration (Not started)
+
+**Goal**: Logic → Operations
+
+**Migration steps** (as described in the guide):
 ```typescript
-// Step 1: 创建新的 Operations composable
+// Step 1: Create a new Operations composable
 export function useBasicWorkspaceOperations(options) {
-  // 只返回过程态和方法，不包装状态
+  // Only return process state and methods; do not wrap state
   const isOptimizing = ref(false)
   const handleOptimize = async () => { /* ... */ }
 
@@ -270,198 +270,198 @@ export function useBasicWorkspaceOperations(options) {
   }
 }
 
-// Step 2: 组件直接消费 store
+// Step 2: The component consumes the store directly
 const session = useBasicSystemSession()
 const ops = useBasicWorkspaceOperations({ services, sessionStore: session })
 
-// 直接访问 store（不通过 Logic 层）
+// Access the store directly (not through the Logic layer)
 const hasOriginalResult = computed(() => !!session.testResults?.originalResult)
 
-// 触发操作
-<button @click="ops.handleOptimize()">优化</button>
+// Trigger the operation
+<button @click="ops.handleOptimize()">Optimize</button>
 ```
 
-**当前 vs 目标对比**:
+**Current vs target comparison**:
 
-| 维度 | 当前（Logic 层） | 目标（Operations） |
+| Dimension | Current (Logic layer) | Target (Operations) |
 |------|-----------------|-------------------|
-| 状态访问 | `logic.testResults.value` | `session.testResults` |
-| 状态类型 | ComputedRef | 原生 Ref |
-| 业务逻辑 | Logic 层内部 | Operations 独立 |
-| 组件绑定 | `logic.handleOptimize` | `ops.handleOptimize` |
-| 响应式陷阱 | 易漏 `.value` | 直接访问 store，无陷阱 |
+| State access | `logic.testResults.value` | `session.testResults` |
+| State type | ComputedRef | Native Ref |
+| Business logic | Inside the Logic layer | Standalone Operations |
+| Component binding | `logic.handleOptimize` | `ops.handleOptimize` |
+| Reactivity trap | Easy to miss `.value` | Direct store access, no trap |
 
-**为什么没迁移？**
-1. **当前方案已可用**: P0 Bug 已修复，功能正常
-2. **迁移成本高**: 需要重构 2 个组件 + 创建新 Operations + 回归测试
-3. **风险大**: Basic 模式是核心功能，迁移失败影响面大
-4. **优先级低**: 没有紧迫的业务需求驱动
-
----
-
-### Phase 3-5（未开始）
-
-- **Phase 3**: Context 模式迁移（Tester → Operations）
-- **Phase 4**: Image 模式对齐（补充 Operations 抽离）
-- **Phase 5**: 清理废弃代码 + 性能优化
+**Why hasn't it been migrated?**
+1. **The current approach already works**: The P0 bug is fixed and functionality is normal
+2. **High migration cost**: Requires refactoring 2 components + creating new Operations + regression testing
+3. **High risk**: Basic mode is a core feature, so a failed migration has a wide impact
+4. **Low priority**: No urgent business need is driving it
 
 ---
 
-## 💡 关键发现
+### Phases 3-5 (Not started)
 
-### 1. P0 Bug 的实际修复方式
+- **Phase 3**: Context mode migration (Tester → Operations)
+- **Phase 4**: Image mode alignment (add Operations extraction)
+- **Phase 5**: Clean up deprecated code + performance optimization
 
-**迁移指南描述**: 需要迁移到 Store + Operations
-**实际修复**: 局部修复组件消费方式
+---
 
-**修复前** (`BasicSystemWorkspace.vue`):
+## 💡 Key Findings
+
+### 1. How the P0 Bug Was Actually Fixed
+
+**Migration guide description**: Need to migrate to Store + Operations
+**Actual fix**: A local fix to how components consume the state
+
+**Before the fix** (`BasicSystemWorkspace.vue`):
 ```typescript
-// ❌ 错误：logic.testResults 是 ComputedRef，漏了 .value
+// ❌ Wrong: logic.testResults is a ComputedRef and `.value` was missed
 const hasOriginalResult = computed(() => !!logic.testResults?.originalResult)
 ```
 
-**修复后** (`BasicSystemWorkspace.vue:365`):
+**After the fix** (`BasicSystemWorkspace.vue:365`):
 ```typescript
-// ✅ 正确：显式使用 .value
+// ✅ Correct: explicitly use .value
 const hasOriginalResult = computed(() => !!logic.testResults.value?.originalResult)
 ```
 
-**结论**: P0 Bug 通过**最小化修改**已解决，不需要完整迁移架构。
+**Conclusion**: The P0 bug was resolved with a **minimal change**; a full architecture migration is not required.
 
 ---
 
-### 2. Logic 层的实际价值
+### 2. The Actual Value of the Logic Layer
 
-**迁移指南认为**: Logic 层是"技术债"，应该删除
-**实际情况**: Logic 层提供了价值
+**The migration guide considers**: The Logic layer is "technical debt" and should be removed
+**In reality**: The Logic layer provides value
 
-**Logic 层的优点**:
-1. ✅ **代码复用**: BasicSystem/BasicUser 共享同一套业务逻辑（597 行）
-2. ✅ **状态封装**: 隔离了 Session Store 的实现细节
-3. ✅ **职责清晰**: 组件专注于 UI，Logic 专注于业务逻辑
+**Advantages of the Logic layer**:
+1. ✅ **Code reuse**: BasicSystem/BasicUser share one set of business logic (597 lines)
+2. ✅ **State encapsulation**: Isolates the implementation details of the Session Store
+3. ✅ **Clear responsibilities**: Components focus on UI, and Logic focuses on business logic
 
-**Logic 层的缺点**:
-1. ❌ **响应式陷阱**: 返回对象属性中的 ComputedRef，容易漏 `.value`
-2. ❌ **间接层**: 增加了一层抽象，调试时需要跟踪多层
-3. ❌ **与 Pinia 范式不符**: Pinia 推荐直接消费 store
-
----
-
-### 3. 迁移的实际阻力
-
-**迁移指南假设**: 团队愿意投入资源完成迁移
-**实际情况**: 存在多重阻力
-
-**阻力来源**:
-1. **功能已稳定**: P0 Bug 已修复，没有紧迫的业务驱动
-2. **投入产出比低**: 迁移需要数周时间，收益主要是"代码更优雅"
-3. **回归风险**: Basic 模式是核心功能，迁移失败影响大
-4. **测试覆盖不足**: 缺少自动化测试，迁移后难以验证正确性
-5. **团队协调成本**: 需要统一编码规范、Code Review 标准
+**Disadvantages of the Logic layer**:
+1. ❌ **Reactivity trap**: Returns ComputedRef in object properties, so `.value` is easy to miss
+2. ❌ **Indirection**: Adds a layer of abstraction, so debugging requires tracing multiple layers
+3. ❌ **Does not match the Pinia paradigm**: Pinia recommends consuming the store directly
 
 ---
 
-## 📝 建议
+### 3. The Actual Resistance to Migration
 
-### 短期（1-2周）
+**The migration guide assumes**: The team is willing to invest resources to complete the migration
+**In reality**: There are multiple sources of resistance
 
-**保持现状，不强制迁移**
-
-**理由**:
-1. P0 Bug 已修复，功能正常
-2. 当前架构虽不完美，但已稳定运行
-3. 迁移的性价比不高
-
-**可选优化**:
-- ✅ 补充组件消费规则文档（防止再次漏 `.value`）
-- ✅ 添加 ESLint 规则提醒（warn 级别）
-- ✅ 补充单元测试（防回归）
+**Sources of resistance**:
+1. **Functionality is stable**: The P0 bug is fixed and there is no urgent business driver
+2. **Low return on investment**: Migration takes weeks and the benefit is mainly "more elegant code"
+3. **Regression risk**: Basic mode is a core feature, so a failed migration has a large impact
+4. **Insufficient test coverage**: Without automated tests, it is hard to verify correctness after migration
+5. **Team coordination cost**: Requires unified coding conventions and Code Review standards
 
 ---
 
-### 中期（1-3月）
+## 📝 Recommendations
 
-**逐步迁移，按优先级排序**
+### Short Term (1-2 weeks)
 
-**优先级**:
-1. **Context 模式** (优先级最高)
-   - 原因：Tester composable 状态管理混乱，存在状态分裂风险
-   - 收益：统一架构，提高可维护性
+**Keep the status quo; do not force migration**
 
-2. **Image 模式** (优先级中)
-   - 原因：已接近目标架构，只需补充 Operations 抽离
-   - 收益：组件瘦身，业务逻辑复用
+**Reasons**:
+1. The P0 bug is fixed and functionality is normal
+2. The current architecture is imperfect but has been running stably
+3. The cost-benefit ratio of migration is not high
 
-3. **Basic 模式** (优先级低)
-   - 原因：当前方案已可用，迁移风险最大
-   - 收益：主要是代码优雅性提升
-
----
-
-### 长期（3-6月）
-
-**建立规范，新代码遵循 Store + Operations**
-
-**策略**:
-1. **新功能强制使用**: 所有新增功能必须使用 Store + Operations
-2. **旧代码按需重构**: 只在修改旧代码时顺便重构
-3. **建立最佳实践**: 提供 Operations 模板和示例
-4. **持续改进**: 每次迭代优化一小部分
+**Optional improvements**:
+- ✅ Add a component consumption rules document (to prevent missing `.value` again)
+- ✅ Add an ESLint rule reminder (warn level)
+- ✅ Add unit tests (to prevent regressions)
 
 ---
 
-## 🎯 结论
+### Medium Term (1-3 months)
 
-### 迁移指南的定位
+**Migrate gradually, ordered by priority**
 
-**文档性质**: 长期愿景，非强制执行计划
-**实际价值**:
-- ✅ 提供了架构改进的方向
-- ✅ 总结了当前架构的问题
-- ✅ 设计了详细的迁移方案
+**Priority**:
+1. **Context mode** (highest priority)
+   - Reason: The Tester composable's state management is messy and there is a risk of split state
+   - Benefit: Unified architecture and improved maintainability
 
-**但实际上**:
-- ❌ Phase 1-5 完全未开始
-- ❌ Logic 层仍在使用
-- ❌ 三种模式仍然使用不同架构
+2. **Image mode** (medium priority)
+   - Reason: Already close to the target architecture; only Operations extraction is needed
+   - Benefit: Slimmer components and reuse of business logic
 
-### 是否需要迁移？
+3. **Basic mode** (low priority)
+   - Reason: The current approach already works and migration carries the greatest risk
+   - Benefit: Mainly improved code elegance
 
-**答案**: 不强制，按需渐进
+---
 
-**理由**:
-1. P0 Bug 已通过最小化修改解决
-2. 当前架构已稳定，功能正常
-3. 迁移的投入产出比不高
-4. 可以通过增量改进逐步达成目标
+### Long Term (3-6 months)
 
-### 推荐路径
+**Establish conventions; new code follows Store + Operations**
+
+**Strategy**:
+1. **Mandatory for new features**: All new features must use Store + Operations
+2. **Refactor old code on demand**: Only refactor old code when it is being modified anyway
+3. **Establish best practices**: Provide Operations templates and examples
+4. **Continuous improvement**: Optimize a small part in each iteration
+
+---
+
+## 🎯 Conclusion
+
+### The Role of the Migration Guide
+
+**Nature of the document**: A long-term vision, not a mandatory execution plan
+**Actual value**:
+- ✅ Provides a direction for architecture improvement
+- ✅ Summarizes the problems of the current architecture
+- ✅ Designs a detailed migration plan
+
+**But in reality**:
+- ❌ Phases 1-5 have not started at all
+- ❌ The Logic layer is still in use
+- ❌ The three modes still use different architectures
+
+### Is Migration Necessary?
+
+**Answer**: Not mandatory; progress incrementally as needed
+
+**Reasons**:
+1. The P0 bug was resolved with a minimal change
+2. The current architecture is stable and functionality is normal
+3. The return on investment of migration is not high
+4. The goal can be reached gradually through incremental improvement
+
+### Recommended Path
 
 ```
-现状维持（短期）
+Maintain the status quo (short term)
     ↓
-Context 模式优先迁移（中期）
+Migrate Context mode first (medium term)
     ↓
-新功能强制使用 Store + Operations（长期）
+Mandate Store + Operations for new features (long term)
     ↓
-旧代码按需重构（逐步收敛）
+Refactor old code on demand (gradual convergence)
 ```
 
 ---
 
-## 📌 附录：快速参考
+## 📌 Appendix: Quick Reference
 
-### 当前三种模式对比
+### Comparison of the Three Current Modes
 
-| 模式 | 架构 | 是否需要迁移 | 优先级 |
+| Mode | Architecture | Needs migration? | Priority |
 |------|------|-------------|--------|
-| Basic | Store → Logic → Component | 可选 | 低 |
-| Context | Tester → Component | 建议迁移 | 高 |
-| Image | Store → Component | 补充优化 | 中 |
+| Basic | Store → Logic → Component | Optional | Low |
+| Context | Tester → Component | Migration recommended | High |
+| Image | Store → Component | Additional optimization | Medium |
 
-### 关键代码位置
+### Key Code Locations
 
-- **Basic Logic**: `packages/ui/src/composables/workspaces/useBasicWorkspaceLogic.ts` (597 行)
+- **Basic Logic**: `packages/ui/src/composables/workspaces/useBasicWorkspaceLogic.ts` (597 lines)
 - **Context Tester**: `packages/ui/src/composables/prompt/useConversationTester.ts`
 - **Image Session**: `packages/ui/src/stores/session/useImageText2ImageSession.ts`
-- **迁移指南**: `docs/workspace/architecture-migration-guide.md` (20 KB)
+- **Migration guide**: `docs/workspace/architecture-migration-guide.md` (20 KB)

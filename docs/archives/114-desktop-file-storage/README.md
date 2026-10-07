@@ -21,8 +21,8 @@ if (app.isPackaged) {
   // Production: executable directory/prompt-optimizer-data/
   const execDir = path.dirname(process.execPath);
   userDataPath = path.join(execDir, 'prompt-optimizer-data');
+} else {
   // Development: project root/prompt-optimizer-data/
-  // 开发环境：项目根目录/prompt-optimizer-data/
   userDataPath = path.join(__dirname, '..', '..', 'prompt-optimizer-data');
 }
 ```

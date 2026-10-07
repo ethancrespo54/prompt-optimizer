@@ -1,30 +1,30 @@
-# 工具管理与高级上下文测试（Normal Flow）
+# Tools Management and Advanced Context Test (Normal Flow)
 
-## 📖 测试概述
-验证在上下文中新增/编辑/删除工具定义（function tools）及与高级模式（Advanced Mode）联动：
-工具数量展示、导出包含 tools、运行测试可在“带工具”路径下稳定工作。
+## 📖 Test Overview
+Verify adding/editing/deleting tool definitions (function tools) in a context and their linkage with Advanced Mode:
+tool count display, exports including tools, and tests running stably on the "with tools" path.
 
-## 🎯 测试目标
-- 工具管理页可新增/编辑/删除工具
-- 对话区显示工具数量徽章（toolCount）
-- 导出数据包含 `tools` 数组
-- 高级模式下启动测试时能走“带工具”的调用路径，稳定无错
+## 🎯 Test Goals
+- The tools management page can add/edit/delete tools
+- The conversation area shows a tool count badge (toolCount)
+- Exported data includes a `tools` array
+- In advanced mode, starting a test goes through the "with tools" call path, stable and error-free
 
-## 📋 前置条件
-- [ ] 应用正常运行
-- [ ] 可打开“上下文编辑器”
-- [ ] 已配置至少一个可用模型（如需实际流式测试）
-- [ ] 高级模式开关可用（导航/设置内）
+## 📋 Prerequisites
+- [ ] The application is running normally
+- [ ] The "Context Editor" can be opened
+- [ ] At least one available model is configured (if actual streaming tests are needed)
+- [ ] The advanced mode switch is available (in navigation/settings)
 
 ---
 
-## 🔧 测试步骤
+## 🔧 Test Steps
 
-### 步骤1：新增工具定义
-**AI执行指导：**
-- 打开“上下文编辑器”
-- 切换到“工具”管理页（或启用工具管理区）
-- 点击“新增工具”，使用模板或手动创建：
+### Step 1: Add a Tool Definition
+**AI execution guidance:**
+- Open the "Context Editor"
+- Switch to the "Tools" management page (or enable the tool management area)
+- Click "Add Tool", and create using a template or manually:
 ```json
 {
   "type": "function",
@@ -43,86 +43,85 @@
 }
 ```
 
-**预期结果：**
-- 工具列表出现 `get_weather`，无格式错误
+**Expected results:**
+- `get_weather` appears in the tool list without format errors
 
-**验证点：**
-- [ ] 工具条目渲染正常（显示函数名）
-- [ ] 未出现参数 JSON 解析错误
-
----
-
-### 步骤2：对话区工具数量展示
-**AI执行指导：**
-- 关闭编辑器返回“对话管理”
-- 使用 `browser_snapshot` 检查顶部徽章是否显示“工具：1个”（文案以 i18n 为准）
-
-**预期结果：**
-- 对话区标题处显示工具数量标签（tools.count）
-
-**验证点：**
-- [ ] 工具数量徽章出现且数值=1
+**Verification points:**
+- [ ] The tool entry renders normally (shows the function name)
+- [ ] No parameter JSON parse error appears
 
 ---
 
-### 步骤3：导出包含 tools（结构校验）
-**AI执行指导：**
-- 再次打开“上下文编辑器”，打开“导出”
-- 选择“标准格式”，执行“复制到剪贴板”或“导出到文件”
-- 解析 JSON 并检查 `tools`
+### Step 2: Tool Count Display in the Conversation Area
+**AI execution guidance:**
+- Close the editor and return to "Conversation Management"
+- Use `browser_snapshot` to check whether the top badge shows "Tools: 1" (the text follows i18n)
 
-**预期结果：**
-- `tools` 字段存在且数组长度 ≥ 1
+**Expected results:**
+- A tool count label (tools.count) is shown at the conversation area title
+
+**Verification points:**
+- [ ] The tool count badge appears and its value = 1
+
+---
+
+### Step 3: Export Includes tools (Structure Validation)
+**AI execution guidance:**
+- Open the "Context Editor" again and open "Export"
+- Select "Standard Format", run "Copy to Clipboard" or "Export to File"
+- Parse the JSON and check `tools`
+
+**Expected results:**
+- The `tools` field exists and the array length ≥ 1
 - `tools[0].function.name === "get_weather"`
 
-**验证点：**
-- [ ] `tools` 数组存在且非空
-- [ ] 第一项函数名为 `get_weather`
+**Verification points:**
+- [ ] The `tools` array exists and is non-empty
+- [ ] The first function name is `get_weather`
 
 ---
 
-### 步骤4：带工具的测试路径（高级模式）
-**AI执行指导：**
-- 打开“高级模式”
-- 准备一段系统/用户消息
-- 点击“开始测试/运行测试”
-- 使用 `browser_console_messages` 观察是否走到自定义会话流（可打印“带工具”相关日志）
-- 若模型实际返回工具调用，观察测试区域是否出现“工具调用”列表（TestAreaPanel ToolCallDisplay）
+### Step 4: Test Path with Tools (Advanced Mode)
+**AI execution guidance:**
+- Turn on "Advanced Mode"
+- Prepare a system/user message
+- Click "Start Test / Run Test"
+- Use `browser_console_messages` to observe whether the custom conversation flow is reached (logs related to "with tools" may be printed)
+- If the model actually returns a tool call, observe whether a "Tool Calls" list appears in the test area (TestAreaPanel ToolCallDisplay)
 
-**预期结果：**
-- 启动测试无报错（即使未产生工具调用）
-- 若产生工具调用，测试结果区域应展示工具调用卡片
+**Expected results:**
+- Starting the test produces no errors (even if no tool call is generated)
+- If a tool call is generated, the test result area should show a tool call card
 
-**验证点：**
-- [ ] 高级模式下测试正常启动，无报错
-- [ ]（可选）出现工具调用列表或相关日志
-
----
-
-### 步骤5：编辑/删除工具稳定性
-**AI执行指导：**
-- 在“工具”管理页编辑 `get_weather` 的描述或参数（例如新增必填字段）
-- 删除该工具后返回对话区
-
-**预期结果：**
-- 编辑后导出结构随之变化
-- 删除后对话区工具数量徽章消失或数值减少
-
-**验证点：**
-- [ ] 编辑后的导出 `tools` 内容同步更新
-- [ ] 删除后工具数量徽章与实际一致
+**Verification points:**
+- [ ] The test starts normally in advanced mode without errors
+- [ ] (Optional) A tool call list or related logs appear
 
 ---
 
-## 🧪 诊断建议（失败时）
-- 工具无法保存：检查 JSON 参数是否符合 schema（type/properties/required）
-- 工具数量未更新：父子组件间状态传递是否正确（`@update:state/contextChange`）
-- 测试无法启动：确认已启用高级模式且存在 tools；检查模型配置与网络权限
+### Step 5: Edit/Delete Tool Stability
+**AI execution guidance:**
+- In the "Tools" management page, edit the description or parameters of `get_weather` (for example, add a required field)
+- Delete the tool and return to the conversation area
+
+**Expected results:**
+- The export structure changes accordingly after editing
+- After deletion, the tool count badge in the conversation area disappears or its value decreases
+
+**Verification points:**
+- [ ] The exported `tools` content updates in sync after editing
+- [ ] After deletion, the tool count badge matches reality
 
 ---
 
-## ✅ 成功标准
-- 工具管理与 UI 展示一致，导出包含 tools
-- 高级模式下携带工具可稳定执行测试（不强制要求产生工具调用）
-- 全流程无错误弹窗与致命日志
+## 🧪 Diagnostic Suggestions (On Failure)
+- Tool cannot be saved: check whether the JSON parameters conform to the schema (type/properties/required)
+- Tool count not updated: check whether state is passed correctly between parent and child components (`@update:state/contextChange`)
+- Test cannot start: confirm that advanced mode is enabled and tools exist; check the model configuration and network permissions
 
+---
+
+## ✅ Success Criteria
+- Tool management is consistent with the UI display, and the export includes tools
+- Tests can run stably with tools in advanced mode (generating a tool call is not required)
+- No error popups or fatal logs throughout the flow

@@ -1,156 +1,156 @@
-# 测试方案重新设计 - 研究发现
+# Test Strategy Redesign - Research Findings
 
-## 技术选型对比与推荐（2025-2026）
+## Technology Selection Comparison and Recommendations (2025-2026)
 
-### 1. 单元/集成测试框架：Vitest vs Jest
+### 1. Unit/Integration Test Framework: Vitest vs Jest
 
-#### 性能对比
+#### Performance Comparison
 
-| 指标 | Vitest | Jest |
+| Metric | Vitest | Jest |
 |------|--------|------|
-| **执行速度** | 快 30-70% | 基准 |
-| **冷启动** | 4x 更快（esbuild） | 基准（Babel/ts-jest） |
-| **内存占用** | 低 30% | 基准 |
-| **Watch 模式** | HMR，近瞬时 | 需要重新运行 |
+| **Execution speed** | 30-70% faster | Baseline |
+| **Cold start** | 4x faster (esbuild) | Baseline (Babel/ts-jest) |
+| **Memory usage** | 30% lower | Baseline |
+| **Watch mode** | HMR, near-instant | Requires re-running |
 
-**真实基准测试**：
-- Vitest 在大型项目中有时会略慢，但 watch 模式体验远优于 Jest
-- [来源：DEV Community 基准测试](https://dev.to/thejaredwilcurt/vitest-vs-jest-benchmarks-on-a-5-year-old-real-work-spa-4mf1)
+**Real benchmarks**:
+- Vitest is sometimes slightly slower on large projects, but its watch mode experience is far better than Jest's
+- [Source: DEV Community benchmark](https://dev.to/thejaredwilcurt/vitest-vs-jest-benchmarks-on-a-5-year-old-real-work-spa-4mf1)
 
-#### TypeScript 支持
-
-**Vitest**:
-- ✅ 开箱即用，无需配置
-- ✅ 复用 Vite 的 esbuild 管道
-- ✅ 原生 ESM 支持
-
-**Jest**:
-- ⚠️ 需要 ts-jest 或 Babel 转译
-- ⚠️ ESM 支持仍处于实验阶段（Jest 30）
-- ⚠️ 配置复杂
-
-#### Vue 3 生态适配
+#### TypeScript Support
 
 **Vitest**:
-- ✅ 由 Vite 团队开发（Evan You 创建 Vite 和 Vue）
-- ✅ 与 Vue 3 + Vite 项目天然契合
-- ✅ Nuxt 官方推荐
+- ✅ Works out of the box, no configuration needed
+- ✅ Reuses Vite's esbuild pipeline
+- ✅ Native ESM support
 
 **Jest**:
-- ⚠️ 需要额外配置 Vue 转换器
-- ⚠️ 不支持 Vite 的 HMR
+- ⚠️ Requires ts-jest or Babel transpilation
+- ⚠️ ESM support is still experimental (Jest 30)
+- ⚠️ Complex configuration
 
-#### 生态系统成熟度
+#### Vue 3 Ecosystem Fit
+
+**Vitest**:
+- ✅ Developed by the Vite team (Evan You created both Vite and Vue)
+- ✅ A natural fit for Vue 3 + Vite projects
+- ✅ Officially recommended by Nuxt
 
 **Jest**:
-- ✅ 3500 万月下载量
-- ✅ 自 2014 年以来经过实战检验
+- ⚠️ Requires extra configuration for the Vue transformer
+- ⚠️ Does not support Vite's HMR
+
+#### Ecosystem Maturity
+
+**Jest**:
+- ✅ 35 million monthly downloads
+- ✅ Battle-tested since 2014
 - ✅ 44k GitHub stars
-- ✅ React 生态主导地位
+- ✅ Dominant in the React ecosystem
 
 **Vitest**:
-- ⚠️ 380 万月下载量
-- ⚠️ 相对较新（但快速成长）
-- ✅ 与 Vite 生态深度集成
+- ⚠️ 3.8 million monthly downloads
+- ⚠️ Relatively new (but growing quickly)
+- ✅ Deeply integrated with the Vite ecosystem
 
-#### 推荐结论
+#### Recommendation
 
-**✅ 保持 Vitest**（当前已使用）
+**✅ Keep Vitest** (already in use)
 
-**理由**：
-1. **项目已使用 Vite + Vue 3**：天然契合，无需迁移
-2. **TypeScript 支持更好**：开箱即用，无额外配置
-3. **性能优势明显**：watch 模式体验远超 Jest
-4. **生态足够成熟**：Vitest 4.0 已稳定，社区活跃
+**Reasons**:
+1. **The project already uses Vite + Vue 3**: a natural fit, no migration needed
+2. **Better TypeScript support**: works out of the box with no extra configuration
+3. **Clear performance advantage**: watch mode experience is far better than Jest
+4. **The ecosystem is mature enough**: Vitest 4.0 is stable and the community is active
 
-[来源：Medium - Jest vs Vitest 2025](https://medium.com/@ruverd/jest-vs-vitest-which-test-runner-should-you-use-in-2025-5c85e4f2bda9)
+[Source: Medium - Jest vs Vitest 2025](https://medium.com/@ruverd/jest-vs-vitest-which-test-runner-should-you-use-in-2025-5c85e4f2bda9)
 
 ---
 
-### 2. E2E 测试框架：Playwright vs Cypress
+### 2. E2E Test Framework: Playwright vs Cypress
 
-#### 性能对比
+#### Performance Comparison
 
-| 指标 | Playwright | Cypress |
+| Metric | Playwright | Cypress |
 |------|-----------|---------|
-| **并行执行** | ✅ 内置，免费 | ⚠️ 需付费或自行配置 |
-| **执行速度** | 快 35-45%（并行） | 基准 |
-| **跨浏览器** | Chromium/Firefox/WebKit | Chromium/Firefox（有限） |
-| **移动设备模拟** | ✅ 原生支持 | ⚠️ 有限 |
+| **Parallel execution** | ✅ Built in, free | ⚠️ Paid or self-configured |
+| **Execution speed** | 35-45% faster (parallel) | Baseline |
+| **Cross-browser** | Chromium/Firefox/WebKit | Chromium/Firefox (limited) |
+| **Mobile device emulation** | ✅ Native support | ⚠️ Limited |
 
-#### 架构差异
+#### Architectural Differences
 
-**Playwright**：
-- 在浏览器外运行，通过 CDP (Chrome DevTools Protocol) 控制
-- 支持真正的并行执行
-- 支持多标签页、多窗口
+**Playwright**:
+- Runs outside the browser and controls it through CDP (Chrome DevTools Protocol)
+- Supports true parallel execution
+- Supports multiple tabs and multiple windows
 
-**Cypress**：
-- 在浏览器内运行
-- 并行需要额外配置或付费服务
-- 单标签页限制
+**Cypress**:
+- Runs inside the browser
+- Parallelism requires extra configuration or a paid service
+- Single-tab limitation
 
-#### 适用场景对比
+#### Use Case Comparison
 
-**Playwright 适合**：
-- ✅ 需要跨浏览器测试（Safari 支持）
-- ✅ 大规模并行执行（CI/CD 加速）
-- ✅ 复杂交互（多标签页、文件上传/下载）
-- ✅ 稳定性优先（更少 flaky tests）
+**Playwright is suited for**:
+- ✅ Cross-browser testing (Safari support)
+- ✅ Large-scale parallel execution (CI/CD speedup)
+- ✅ Complex interactions (multiple tabs, file upload/download)
+- ✅ Stability first (fewer flaky tests)
 
-**Cypress 适合**：
-- ✅ 快速上手，可视化调试
-- ✅ 小型团队，Chrome 优先
-- ✅ 开发者体验优先
+**Cypress is suited for**:
+- ✅ Quick onboarding and visual debugging
+- ✅ Small teams, Chrome first
+- ✅ Developer experience first
 
-#### 推荐结论
+#### Recommendation
 
-**✅ 保持 Playwright**（当前已使用）
+**✅ Keep Playwright** (already in use)
 
-**理由**：
-1. **项目需求匹配**：需要稳定、快速的并行执行
-2. **跨浏览器支持**：未来可能需要 Safari 测试
-3. **CI/CD 友好**：免费并行，无额外成本
-4. **2025 趋势**：Playwright 社区增长迅速
+**Reasons**:
+1. **Matches project needs**: stable, fast parallel execution is required
+2. **Cross-browser support**: Safari testing may be needed in the future
+3. **CI/CD friendly**: free parallelism with no extra cost
+4. **2025 trend**: the Playwright community is growing rapidly
 
-[来源：BugBug - Cypress vs Playwright 2025](https://bugbug.io/blog/test-automation-tools/cypress-vs-playwright/)
-[来源：Medium - Cypress vs Playwright 2025](https://medium.com/@crissyjoshua/cypress-vs-playwright-who-owns-the-top-spot-in-2025-c248c021508f)
+[Source: BugBug - Cypress vs Playwright 2025](https://bugbug.io/blog/test-automation-tools/cypress-vs-playwright/)
+[Source: Medium - Cypress vs Playwright 2025](https://medium.com/@crissyjoshua/cypress-vs-playwright-who-owns-the-top-spot-in-2025-c248c021508f)
 
 ---
 
-### 3. HTTP Mocking / VCR 模式：技术选型
+### 3. HTTP Mocking / VCR Pattern: Technology Selection
 
-#### 方案对比
+#### Option Comparison
 
-| 方案 | 优点 | 缺点 | 推荐度 |
+| Option | Pros | Cons | Rating |
 |------|------|------|--------|
-| **MSW (Mock Service Worker)** | 网络层拦截，浏览器+Node 通用，类型安全 | 初始配置复杂 | ⭐⭐⭐⭐⭐ |
-| **nock** | 简单易用，HTTP mocking | 仅支持 Node.js | ⭐⭐⭐ |
-| **Polly.js** | 自动录制-回放 | 维护不活跃（2021 年后） | ⭐⭐ |
-| **自定义 VCR** | 完全控制 | 开发成本高 | ⭐⭐⭐⭐ |
+| **MSW (Mock Service Worker)** | Network-layer interception, works in browser + Node, type-safe | Complex initial setup | ⭐⭐⭐⭐⭐ |
+| **nock** | Simple and easy to use, HTTP mocking | Node.js only | ⭐⭐⭐ |
+| **Polly.js** | Automatic record-replay | Not actively maintained (since 2021) | ⭐⭐ |
+| **Custom VCR** | Full control | High development cost | ⭐⭐⭐⭐ |
 
-#### MSW 核心优势
+#### Core Advantages of MSW
 
-**网络层拦截**：
+**Network-layer interception**:
 ```typescript
-// MSW 使用 Service Worker API 拦截真实请求
-// 无需修改生产代码
-fetch('/api/optimize') // 会被 MSW 拦截
+// MSW uses the Service Worker API to intercept real requests
+// No need to modify production code
+fetch('/api/optimize') // Will be intercepted by MSW
 ```
 
-**框架无关**：
-- 无论使用 fetch、Axios、GraphQL 都能拦截
-- 同一套 handlers 可用于开发、测试、演示
+**Framework-agnostic**:
+- Works whether you use fetch, Axios, or GraphQL
+- The same set of handlers can be used for development, testing, and demos
 
-**类型安全**：
+**Type-safe**:
 ```typescript
-// 路径参数、请求体、响应体都有类型
+// Path params, request body, and response body are all typed
 http.post<OptimizeRequest, OptimizeResponse>('/api/optimize', ...)
 ```
 
-**最佳实践（2025-2026）**：
+**Best practices (2025-2026)**:
 
-1. **集中化 Handlers 管理**
+1. **Centralize handler management**
 ```typescript
 // mocks/handlers.ts
 export const handlers = [
@@ -160,7 +160,7 @@ export const handlers = [
 ]
 ```
 
-2. **环境特定集成**
+2. **Environment-specific integration**
 ```typescript
 // Node.js (Vitest)
 const server = setupServer(...handlers)
@@ -173,157 +173,158 @@ const worker = setupWorker(...handlers)
 await worker.start()
 ```
 
-3. **模拟真实场景**
+3. **Simulate real scenarios**
 ```typescript
-// 模拟延迟
+// Simulate latency
 http.get('/api/slow', () => delay(2000))
 
-// 模拟错误
+// Simulate errors
 http.get('/api/error', () => HttpResponse.error())
 
-// 模拟流式响应（需自定义）
+// Simulate streaming responses (requires customization)
 http.post('/api/stream', async () => {
   const stream = new ReadableStream(...)
   return new HttpResponse(stream)
 })
 ```
 
-[来源：MSW 官方文档](https://mswjs.io/)
-[来源：Callstack - MSW 综合指南](https://www.callstack.com/blog/guide-to-mock-service-worker-msw)
+[Source: MSW official documentation](https://mswjs.io/)
+[Source: Callstack - A Comprehensive Guide to MSW](https://www.callstack.com/blog/guide-to-mock-service-worker-msw)
 
-#### VCR 自动化录制-回放架构
+#### VCR Automated Record-Replay Architecture
 
-**推荐方案**：MSW + 自定义 Fixtures 管理
+**Recommended approach**: MSW + custom fixture management
 
 ```
 ┌────────────────────────────────────────────┐
-│  测试代码                                   │
-│  test('优化提示词', async () => { ... })    │
+│  Test code                                 │
+│  test('optimize prompt', async () => {...})│
 └────────────────────────────────────────────┘
                     ↓
 ┌────────────────────────────────────────────┐
 │  VCR Middleware                            │
-│  - 检测 fixture 是否存在                    │
-│  - 存在: MSW 回放 fixture                  │
-│  - 不存在: 真实 API 并录制                  │
+│  - Check whether the fixture exists        │
+│  - Exists: MSW replays the fixture         │
+│  - Missing: call the real API and record   │
 └────────────────────────────────────────────┘
                     ↓
         ┌───────────┴──────────┐
         ↓                       ↓
 ┌───────────────┐       ┌──────────────┐
-│  Mock 模式     │       │  真实 API     │
-│  MSW handlers │       │  录制响应     │
+│  Mock mode    │       │  Real API    │
+│  MSW handlers │       │  Record      │
+│               │       │  response    │
 └───────────────┘       └──────────────┘
 ```
 
-#### 推荐结论
+#### Recommendation
 
-**✅ MSW + 自定义 Fixtures**
+**✅ MSW + custom fixtures**
 
-**理由**：
-1. **网络层拦截**：最接近真实环境
-2. **跨环境复用**：Vitest + Playwright 通用
-3. **类型安全**：TypeScript 优先
-4. **生态活跃**：持续更新，社区支持好
+**Reasons**:
+1. **Network-layer interception**: closest to the real environment
+2. **Cross-environment reuse**: works with both Vitest and Playwright
+3. **Type safety**: TypeScript first
+4. **Active ecosystem**: continuously updated with good community support
 
-[来源：Leapcell - MSW 测试实践](https://leapcell.io/blog/seamless-api-mocking-in-tests-with-mock-service-worker)
+[Source: Leapcell - MSW Testing Practices](https://leapcell.io/blog/seamless-api-mocking-in-tests-with-mock-service-worker)
 
 ---
 
-### 4. 视觉回归测试：技术选型
+### 4. Visual Regression Testing: Technology Selection
 
-#### 方案对比
+#### Option Comparison
 
-| 方案 | 类型 | 优点 | 缺点 | 成本 |
+| Option | Type | Pros | Cons | Cost |
 |------|------|------|------|------|
-| **Playwright Visual Testing** | 内置代码 | 免费，集成简单，本地运行 | 像素级敏感，baseline 管理需手动 | 免费 |
-| **Percy** | 云服务 | 智能对比，跨浏览器，UI 审查 | 依赖外部服务，收费 | $149/月起 |
-| **Chromatic** | 云服务（Storybook） | Storybook 集成，组件驱动 | 限于 Storybook，收费 | $99/月起 |
-| **Applitools Eyes** | 云服务（AI） | AI 驱动，智能忽略差异 | 贵，依赖外部 | $799/月起 |
+| **Playwright Visual Testing** | Built-in code | Free, easy integration, runs locally | Pixel-level sensitivity, baseline management is manual | Free |
+| **Percy** | Cloud service | Smart comparison, cross-browser, UI review | Depends on an external service, paid | From $149/month |
+| **Chromatic** | Cloud service (Storybook) | Storybook integration, component-driven | Limited to Storybook, paid | From $99/month |
+| **Applitools Eyes** | Cloud service (AI) | AI-driven, intelligently ignores differences | Expensive, depends on an external service | From $799/month |
 
-#### Playwright Visual Testing 详解
+#### Playwright Visual Testing in Detail
 
-**基本用法**：
+**Basic usage**:
 ```typescript
-test('视觉回归测试', async ({ page }) => {
+test('visual regression test', async ({ page }) => {
   await page.goto('/')
 
-  // 生成 baseline 或对比
+  // Generate a baseline or compare against it
   await expect(page).toHaveScreenshot('homepage.png', {
-    maxDiffPixels: 100,    // 允许 100 像素差异
-    threshold: 0.2,        // 20% 差异阈值
-    animations: 'disabled' // 禁用动画
+    maxDiffPixels: 100,    // Allow a 100-pixel difference
+    threshold: 0.2,        // 20% difference threshold
+    animations: 'disabled' // Disable animations
   })
 })
 ```
 
-**Baseline 管理**：
+**Baseline management**:
 ```bash
-# 首次运行：生成 baseline
+# First run: generate the baseline
 pnpm test:e2e --update-snapshots
 
-# 后续运行：自动对比
+# Subsequent runs: automatic comparison
 pnpm test:e2e
 
-# 失败时：生成对比图
+# On failure: comparison images are generated
 # tests/e2e/.screenshots/
 # ├── homepage-actual.png
 # ├── homepage-expected.png
 # └── homepage-diff.png
 ```
 
-**优点**：
-- ✅ 完全免费
-- ✅ 本地运行，无需外部服务
-- ✅ 失败时生成对比图
-- ✅ 像素级精确
+**Pros**:
+- ✅ Completely free
+- ✅ Runs locally, no external service needed
+- ✅ Generates comparison images on failure
+- ✅ Pixel-level precision
 
-**缺点**：
-- ⚠️ 字体渲染差异（跨 OS）
-- ⚠️ 动画/loading 需要等待
-- ⚠️ Baseline 更新需人工审查
+**Cons**:
+- ⚠️ Font rendering differences (across OSes)
+- ⚠️ Animations/loading require waiting
+- ⚠️ Baseline updates need manual review
 
-**最佳实践**：
-1. **Docker 统一环境**（减少跨 OS 差异）
-2. **禁用动画**（animations: 'disabled'）
-3. **等待稳定状态**（waitForLoadState）
-4. **设置合理阈值**（threshold: 0.1-0.3）
+**Best practices**:
+1. **Use a unified Docker environment** (reduces cross-OS differences)
+2. **Disable animations** (animations: 'disabled')
+3. **Wait for a stable state** (waitForLoadState)
+4. **Set a reasonable threshold** (threshold: 0.1-0.3)
 
-#### 推荐结论
+#### Recommendation
 
 **✅ Playwright Visual Testing**
 
-**理由**：
-1. **成本**：完全免费，无订阅费用
-2. **集成度**：已使用 Playwright，无需额外工具
-3. **控制权**：本地运行，Baseline 纳入版本控制
-4. **项目需求**：初期不需要复杂的 AI 对比
+**Reasons**:
+1. **Cost**: completely free, no subscription fees
+2. **Integration**: Playwright is already in use, no extra tools needed
+3. **Control**: runs locally, baselines are kept under version control
+4. **Project needs**: complex AI-based comparison is not needed at first
 
-**未来考虑**：
-- 如果团队扩大，Baseline 审查负担过重，可考虑 Percy/Chromatic
-- 如果需要跨多浏览器视觉对比，可考虑云服务
+**Future considerations**:
+- If the team grows and the baseline review burden becomes too heavy, consider Percy/Chromatic
+- If cross-browser visual comparison is needed, consider a cloud service
 
 ---
 
-### 5. Vue 组件测试：Vue Test Utils vs Testing Library
+### 5. Vue Component Testing: Vue Test Utils vs Testing Library
 
-#### 方案对比
+#### Option Comparison
 
-| 特性 | Vue Test Utils | Testing Library (Vue) |
+| Feature | Vue Test Utils | Testing Library (Vue) |
 |------|---------------|----------------------|
-| **哲学** | 实现细节测试 | 用户行为测试 |
-| **API 风格** | 包装器，完全访问组件内部 | 查询 DOM，模拟用户交互 |
-| **学习曲线** | Vue 特定，需了解组件 API | 框架无关，接近用户视角 |
-| **重构友好** | ⚠️ 实现变化需修改测试 | ✅ UI 不变则测试不变 |
+| **Philosophy** | Test implementation details | Test user behavior |
+| **API style** | Wrapper with full access to component internals | Query the DOM and simulate user interactions |
+| **Learning curve** | Vue-specific, requires knowing the component API | Framework-agnostic, close to the user's perspective |
+| **Refactoring friendliness** | ⚠️ Tests must change when the implementation changes | ✅ Tests stay the same if the UI does not change |
 
-**Vue Test Utils 示例**：
+**Vue Test Utils example**:
 ```typescript
 const wrapper = mount(Component)
-wrapper.vm.someMethod() // 直接访问组件实例
+wrapper.vm.someMethod() // Access the component instance directly
 expect(wrapper.vm.someData).toBe('value')
 ```
 
-**Testing Library 示例**：
+**Testing Library example**:
 ```typescript
 render(Component)
 const button = screen.getByRole('button', { name: /submit/i })
@@ -331,148 +332,148 @@ await userEvent.click(button)
 expect(screen.getByText('Success')).toBeInTheDocument()
 ```
 
-#### 推荐结论
+#### Recommendation
 
-**✅ Vue Test Utils（主要）+ Testing Library（补充）**
+**✅ Vue Test Utils (primary) + Testing Library (supplementary)**
 
-**理由**：
-1. **项目已使用 Vue Test Utils**：迁移成本高
-2. **需要测试实现细节**：某些测试确实需要访问组件内部（如 Pinia Store 集成）
-3. **逐步引入 Testing Library**：新测试优先使用 Testing Library 风格
+**Reasons**:
+1. **The project already uses Vue Test Utils**: migration cost is high
+2. **Implementation details need to be tested**: some tests do need access to component internals (such as Pinia Store integration)
+3. **Introduce Testing Library gradually**: new tests should prefer the Testing Library style
 
-**指导原则**：
-- **组件单元测试**：Vue Test Utils（测试组件逻辑）
-- **集成测试**：Testing Library 风格（测试用户行为）
-- **E2E 测试**：Playwright（真实用户视角）
+**Guiding principles**:
+- **Component unit tests**: Vue Test Utils (test component logic)
+- **Integration tests**: Testing Library style (test user behavior)
+- **E2E tests**: Playwright (real user perspective)
 
 ---
 
-### 6. 技术栈总结与推荐
+### 6. Tech Stack Summary and Recommendations
 
-| 层级 | 推荐工具 | 决策 |
+| Layer | Recommended Tool | Decision |
 |------|---------|------|
-| **单元/集成测试** | Vitest 4.0 | ✅ 保持现有选择 |
-| **E2E 测试** | Playwright 1.56 | ✅ 保持现有选择 |
-| **HTTP Mocking** | MSW 2.0 + 自定义 VCR | ✅ 新增实现 |
-| **视觉回归** | Playwright Visual Testing | ✅ 新增实现 |
-| **Vue 组件测试** | Vue Test Utils + Testing Library | ✅ 保持+补充 |
-| **Pinia 测试** | 现有 pinia-test-helpers | ✅ 保持+增强 |
+| **Unit/integration tests** | Vitest 4.0 | ✅ Keep the existing choice |
+| **E2E tests** | Playwright 1.56 | ✅ Keep the existing choice |
+| **HTTP mocking** | MSW 2.0 + custom VCR | ✅ New implementation |
+| **Visual regression** | Playwright Visual Testing | ✅ New implementation |
+| **Vue component tests** | Vue Test Utils + Testing Library | ✅ Keep + supplement |
+| **Pinia tests** | Existing pinia-test-helpers | ✅ Keep + enhance |
 
-**关键决策**：
-1. **无需大规模迁移**：现有技术栈（Vitest + Playwright）已是 2025 最佳实践
-2. **重点增强**：VCR 模式、视觉回归、UI 错误检测
-3. **成本优先**：选择免费开源方案（Playwright Visual Testing），避免云服务订阅
+**Key decisions**:
+1. **No large-scale migration needed**: the existing stack (Vitest + Playwright) is already the 2025 best practice
+2. **Focus on enhancement**: VCR mode, visual regression, UI error detection
+3. **Cost first**: choose free open-source options (Playwright Visual Testing) and avoid cloud service subscriptions
 
-**下一步行动**：
-- [ ] 实现 MSW + VCR 基础设施
-- [ ] 配置 Playwright 视觉回归测试
-- [ ] 实现全局错误检测机制
+**Next actions**:
+- [ ] Implement the MSW + VCR infrastructure
+- [ ] Configure Playwright visual regression tests
+- [ ] Implement the global error detection mechanism
 
-## 项目当前状态
+## Current Project State
 
-### 现有测试基础
+### Existing Test Foundation
 
-**测试文件统计**（2026-01-09 探索）:
-- 总计: 111 个测试文件
-- Core 包: 71 个（52 单元 + 19 集成）
-- UI 包: 21 个（18 单元 + 2 集成 + 1 E2E）
-- E2E 测试: 6 个（根目录）
-- 其他: 12 个
+**Test file statistics** (explored 2026-01-09):
+- Total: 111 test files
+- Core package: 71 (52 unit + 19 integration)
+- UI package: 21 (18 unit + 2 integration + 1 E2E)
+- E2E tests: 6 (root directory)
+- Others: 12
 
-**测试框架**:
-- Vitest 4.0.15 - 单元/集成测试
-- Playwright 1.56.1 - E2E 测试
-- @vue/test-utils 2.4.5 - Vue 组件测试
-- jsdom 26.0.0 - DOM 模拟环境
+**Test frameworks**:
+- Vitest 4.0.15 - unit/integration tests
+- Playwright 1.56.1 - E2E tests
+- @vue/test-utils 2.4.5 - Vue component tests
+- jsdom 26.0.0 - DOM simulation environment
 
-**测试配置文件**:
-- `vitest.config.ts` (UI/Web) - jsdom 环境，5 秒超时
-- `vitest.config.js` (Core) - node 环境，30 秒超时
-- `playwright.config.ts` - Chromium 浏览器，端口 15555
-- `packages/ui/tests/setup.ts` - 全局测试设置（i18n, Naive UI, Mock APIs）
-- `packages/core/tests/setup.js` - Core 全局设置（localStorage Mock）
+**Test configuration files**:
+- `vitest.config.ts` (UI/Web) - jsdom environment, 5-second timeout
+- `vitest.config.js` (Core) - node environment, 30-second timeout
+- `playwright.config.ts` - Chromium browser, port 15555
+- `packages/ui/tests/setup.ts` - global test setup (i18n, Naive UI, Mock APIs)
+- `packages/core/tests/setup.js` - Core global setup (localStorage Mock)
 
-**测试辅助工具**:
-- `packages/ui/tests/utils/pinia-test-helpers.ts` - Pinia 测试工具
-  - `createTestPinia()` - 创建测试 Pinia 实例
+**Test helper utilities**:
+- `packages/ui/tests/utils/pinia-test-helpers.ts` - Pinia test utilities
+  - `createTestPinia()` - create a test Pinia instance
   - `createPreferenceServiceStub()` - PreferenceService stub
-  - `withMockPiniaServices()` - 自动清理的测试入口
+  - `withMockPiniaServices()` - test entry point with automatic cleanup
 
-### 核心发现
+### Key Findings
 
-#### 1. 测试覆盖不足的领域
+#### 1. Areas with Insufficient Test Coverage
 
-**UI 包测试薄弱**:
-- 仅 18 个组件单元测试（对比 Core 的 52 个）
-- 缺少 Workspace 组件测试（BasicSystemWorkspace, BasicUserWorkspace 等）
-- 缺少路由、Store 整体流程测试
+**UI package tests are weak**:
+- Only 18 component unit tests (compared with 52 in Core)
+- Missing Workspace component tests (BasicSystemWorkspace, BasicUserWorkspace, etc.)
+- Missing tests for routing and overall Store flows
 
-**Desktop/Extension 完全无测试**:
-- Desktop 包: 0 个测试（Electron 主进程、IPC 通信无覆盖）
-- Extension 包: 0 个测试（Chrome Extension 功能无覆盖）
+**Desktop/Extension have no tests at all**:
+- Desktop package: 0 tests (Electron main process and IPC communication are not covered)
+- Extension package: 0 tests (Chrome Extension functionality is not covered)
 
-**性能测试缺失**:
-- `/packages/core/tests/performance` 目录存在但为空
+**Performance tests are missing**:
+- The `/packages/core/tests/performance` directory exists but is empty
 
-#### 2. 当前测试的问题
+#### 2. Problems with Current Tests
 
-**无法发现 UI 错误**:
-- 控制台错误需要手动查看 DevTools
-- 组件渲染错误无法被单元测试捕获
-- 状态同步问题需要手动交互才能发现
-- 视觉渲染错误需要人工检查界面
+**UI errors cannot be detected**:
+- Console errors require manually checking DevTools
+- Component rendering errors cannot be caught by unit tests
+- State synchronization issues can only be found through manual interaction
+- Visual rendering errors require manual inspection of the UI
 
-**测试不可靠**:
-- 缺少真实 API 集成测试（仅有少量 `real-api.test.ts`）
-- Mock 服务无法模拟流式响应
-- 无视觉回归测试
+**Tests are unreliable**:
+- Missing real API integration tests (only a few `real-api.test.ts`)
+- The mock service cannot simulate streaming responses
+- No visual regression tests
 
-**执行效率低**:
-- 无覆盖率门禁配置
-- 无 pre-commit hook
-- 无测试分组（fast/full）
+**Low execution efficiency**:
+- No coverage gate configured
+- No pre-commit hook
+- No test grouping (fast/full)
 
-#### 3. 最近重构（Session Store 单一真源）
+#### 3. Recent Refactor (Session Store as the Single Source of Truth)
 
-**重构背景** (commit 5ea1004):
-- 实现 Pinia Session Stores 作为单一真源
-- 6 个 Session Store: BasicSystem, BasicUser, ProSystem, ProUser, ImageText2Image, ImageImage2Image
-- 关键机制: 状态隔离、持久化保护、并发锁、顺序恢复
+**Refactor background** (commit 5ea1004):
+- Implemented Pinia Session Stores as the single source of truth
+- 6 Session Stores: BasicSystem, BasicUser, ProSystem, ProUser, ImageText2Image, ImageImage2Image
+- Key mechanisms: state isolation, persistence protection, concurrency locks, sequential restore
 
-**关键风险点**（需重点测试）:
-- 跨模式状态污染
-- 持久化保护机制（未恢复前禁止保存）
-- 并发竞态（saveInFlight/isSwitching 锁）
-- 对比模式一致性（originalResult vs optimizedResult）
-- 子模式隔离（System/User 状态独立）
+**Key risk points** (need focused testing):
+- Cross-mode state contamination
+- Persistence protection mechanism (saving is forbidden before restore completes)
+- Concurrency races (saveInFlight/isSwitching locks)
+- Compare mode consistency (originalResult vs optimizedResult)
+- Sub-mode isolation (System/User state is independent)
 
-### 技术栈分析
+### Tech Stack Analysis
 
-**前端框架**:
+**Frontend framework**:
 - Vue 3 + TypeScript + Composition API
-- Pinia 状态管理（独立 refs，非 wrapped state）
-- Naive UI 组件库
+- Pinia state management (standalone refs, not wrapped state)
+- Naive UI component library
 
-**核心服务** (`packages/core/src/services/`):
-- LLM 服务: OpenAI, Gemini, DeepSeek, 自定义模型
-- Prompt 服务: 优化、测试、评估
-- Template 服务: CSP 安全处理，变量替换
-- Image 服务: IndexedDB 存储，LRU 清理
-- Storage 服务: 多适配器（localStorage, IndexedDB, file system）
-- Preference 服务: 用户偏好，跨平台同步
+**Core services** (`packages/core/src/services/`):
+- LLM service: OpenAI, Gemini, DeepSeek, custom models
+- Prompt service: optimization, testing, evaluation
+- Template service: CSP-safe processing, variable replacement
+- Image service: IndexedDB storage, LRU cleanup
+- Storage service: multiple adapters (localStorage, IndexedDB, file system)
+- Preference service: user preferences, cross-platform sync
 
-**多平台支持**:
-- Web: Vite 构建
-- Desktop: Electron + IPC 代理
+**Multi-platform support**:
+- Web: built with Vite
+- Desktop: Electron + IPC proxy
 - Extension: Chrome Extension
 
-## UI 错误检测技术调研
+## UI Error Detection Technology Research
 
-### 1. 控制台错误检测
+### 1. Console Error Detection
 
-#### Vitest 环境
+#### Vitest Environment
 
-**方案 A: 全局 console spy**
+**Option A: Global console spy**
 ```typescript
 // tests/setup.ts
 const originalError = console.error
@@ -492,16 +493,16 @@ afterEach(() => {
 })
 ```
 
-**优点**:
-- 自动捕获所有 console.error/warn
-- 测试失败时提供清晰错误信息
-- 无需修改现有测试
+**Pros**:
+- Automatically captures all console.error/warn
+- Provides clear error messages when a test fails
+- No need to modify existing tests
 
-**缺点**:
-- 可能误报（某些库的合法警告）
-- 需要白名单机制
+**Cons**:
+- May produce false positives (legitimate warnings from some libraries)
+- Needs an allowlist mechanism
 
-**方案 B: Vue warn handler**
+**Option B: Vue warn handler**
 ```typescript
 // tests/setup.ts
 import { createApp } from 'vue'
@@ -512,18 +513,18 @@ app.config.warnHandler = (msg, instance, trace) => {
 }
 ```
 
-**优点**:
-- 专门捕获 Vue 警告
-- 提供组件栈信息
+**Pros**:
+- Dedicated to capturing Vue warnings
+- Provides component stack information
 
-**缺点**:
-- 仅限 Vue 警告，无法捕获其他错误
+**Cons**:
+- Limited to Vue warnings; cannot capture other errors
 
-**推荐**: 方案 A + 方案 B 结合，白名单过滤合法警告
+**Recommendation**: Combine Option A + Option B, with an allowlist to filter legitimate warnings
 
-#### Playwright 环境
+#### Playwright Environment
 
-**方案: page.on('console') 监听器**
+**Option: page.on('console') listener**
 ```typescript
 // playwright.config.ts
 test.beforeEach(async ({ page }) => {
@@ -539,96 +540,96 @@ test.beforeEach(async ({ page }) => {
 })
 ```
 
-**优点**:
-- 捕获真实浏览器控制台错误
-- 捕获未捕获异常
+**Pros**:
+- Captures real browser console errors
+- Captures uncaught exceptions
 
-**缺点**:
-- 需要针对每个测试配置
+**Cons**:
+- Needs to be configured for each test
 
-**推荐**: 在 Playwright 全局配置中启用
+**Recommendation**: Enable it in the global Playwright configuration
 
-### 2. 视觉渲染检测
+### 2. Visual Rendering Detection
 
-#### 方案对比
+#### Option Comparison
 
-| 方案 | 工具 | 优点 | 缺点 | 推荐度 |
+| Option | Tool | Pros | Cons | Rating |
 |------|------|------|------|--------|
-| **截图对比** | Playwright Visual Testing | 内置，无需额外服务 | 像素级对比敏感 | ⭐⭐⭐⭐ |
-| **云端服务** | Percy, Chromatic | 智能对比，UI 审查 | 收费，依赖外部服务 | ⭐⭐⭐ |
-| **DOM 结构验证** | Testing Library | 快速，稳定 | 无法检测样式问题 | ⭐⭐⭐⭐⭐ |
+| **Screenshot comparison** | Playwright Visual Testing | Built in, no extra service | Pixel-level comparison is sensitive | ⭐⭐⭐⭐ |
+| **Cloud services** | Percy, Chromatic | Smart comparison, UI review | Paid, depends on an external service | ⭐⭐⭐ |
+| **DOM structure verification** | Testing Library | Fast, stable | Cannot detect style issues | ⭐⭐⭐⭐⭐ |
 
-**推荐方案**: DOM 结构验证 + Playwright 截图对比
+**Recommended approach**: DOM structure verification + Playwright screenshot comparison
 
 #### Playwright Visual Testing
 
 ```typescript
 // tests/e2e/visual-regression.spec.ts
-test('Basic workspace 视觉对比', async ({ page }) => {
+test('Basic workspace visual comparison', async ({ page }) => {
   await page.goto('/')
   await page.getByText(/Basic.*System/i).click()
 
-  // 生成 baseline 或对比
+  // Generate a baseline or compare against it
   await expect(page).toHaveScreenshot('basic-system-workspace.png', {
-    maxDiffPixels: 100, // 允许 100 像素差异
-    threshold: 0.2      // 20% 差异阈值
+    maxDiffPixels: 100, // Allow a 100-pixel difference
+    threshold: 0.2      // 20% difference threshold
   })
 })
 ```
 
-**Baseline 管理**:
-- 首次运行: `pnpm test:e2e --update-snapshots` 生成 baseline
-- 后续运行: 自动对比，差异超过阈值则失败
-- Baseline 存储: `tests/e2e/.screenshots/`
-- 纳入版本控制
+**Baseline management**:
+- First run: `pnpm test:e2e --update-snapshots` generates the baseline
+- Subsequent runs: automatic comparison; fails if the difference exceeds the threshold
+- Baseline storage: `tests/e2e/.screenshots/`
+- Kept under version control
 
-**优点**:
-- 自动化，无需云服务
-- 像素级精确对比
-- 失败时生成对比图
+**Pros**:
+- Automated, no cloud service needed
+- Pixel-level precise comparison
+- Generates comparison images on failure
 
-**缺点**:
-- 字体渲染差异（需要 headless 浏览器一致性）
-- 动画/loading 状态需要 wait
-- Baseline 更新需要人工审查
+**Cons**:
+- Font rendering differences (requires headless browser consistency)
+- Animation/loading states require waiting
+- Baseline updates need manual review
 
-#### DOM 结构验证
+#### DOM Structure Verification
 
 ```typescript
 // packages/ui/tests/unit/components/BasicSystemWorkspace.spec.ts
-test('应该渲染所有必需元素', () => {
+test('should render all required elements', () => {
   const wrapper = mount(BasicSystemWorkspace)
 
-  // 验证关键元素存在
+  // Verify key elements exist
   expect(wrapper.find('[data-testid="prompt-input"]').exists()).toBe(true)
   expect(wrapper.find('[data-testid="optimize-button"]').exists()).toBe(true)
   expect(wrapper.find('[data-testid="test-area"]').exists()).toBe(true)
 
-  // 验证 CSS 类
+  // Verify CSS classes
   expect(wrapper.find('.workspace-container').classes()).toContain('theme-light')
 
-  // 验证可见性
+  // Verify visibility
   expect(wrapper.find('[data-testid="optimize-button"]').isVisible()).toBe(true)
 })
 ```
 
-**优点**:
-- 快速，稳定
-- 无像素级敏感度
-- 语义化验证
+**Pros**:
+- Fast, stable
+- No pixel-level sensitivity
+- Semantic verification
 
-**缺点**:
-- 无法检测样式问题（颜色、字体、布局细节）
+**Cons**:
+- Cannot detect style issues (color, fonts, layout details)
 
-**推荐**: 组件测试用 DOM 验证，E2E 测试用截图对比
+**Recommendation**: Use DOM verification for component tests and screenshot comparison for E2E tests
 
-### 3. 状态同步检测
+### 3. State Synchronization Detection
 
-#### 方案: Pinia Store 监听 + UI 断言
+#### Option: Pinia Store Listening + UI Assertions
 
 ```typescript
 // packages/ui/tests/integration/state-sync.spec.ts
-test('Store 更新应同步到 UI', async () => {
+test('Store updates should sync to the UI', async () => {
   const { pinia } = createTestPinia()
   const wrapper = mount(BasicSystemWorkspace, {
     global: { plugins: [pinia] }
@@ -636,17 +637,17 @@ test('Store 更新应同步到 UI', async () => {
 
   const store = useBasicSystemSession(pinia)
 
-  // 更新 Store
+  // Update the Store
   store.updatePrompt('New Prompt')
 
   await wrapper.vm.$nextTick()
 
-  // 验证 UI 同步
+  // Verify the UI is in sync
   const input = wrapper.find('[data-testid="prompt-input"]')
   expect(input.element.value).toBe('New Prompt')
 })
 
-test('UI 更新应同步到 Store', async () => {
+test('UI updates should sync to the Store', async () => {
   const { pinia } = createTestPinia()
   const wrapper = mount(BasicSystemWorkspace, {
     global: { plugins: [pinia] }
@@ -655,28 +656,28 @@ test('UI 更新应同步到 Store', async () => {
   const store = useBasicSystemSession(pinia)
   const input = wrapper.find('[data-testid="prompt-input"]')
 
-  // 更新 UI
+  // Update the UI
   await input.setValue('User Input')
 
-  // 验证 Store 同步
+  // Verify the Store is in sync
   expect(store.prompt).toBe('User Input')
 })
 ```
 
-**检测响应式失效**:
+**Detecting reactivity failures**:
 ```typescript
-test('computed 应正确触发', async () => {
+test('computed should trigger correctly', async () => {
   const { pinia } = createTestPinia()
   const store = useBasicSystemSession(pinia)
 
-  // 监听 computed 变化
+  // Watch for computed changes
   let computedTriggered = false
   const stopWatch = watch(
     () => store.hasOptimizedResult,
     () => { computedTriggered = true }
   )
 
-  // 触发依赖变化
+  // Trigger a dependency change
   store.updateOptimizedResult({
     optimizedPrompt: 'Result',
     reasoning: 'Reason',
@@ -690,13 +691,13 @@ test('computed 应正确触发', async () => {
 })
 ```
 
-### 4. 交互行为检测
+### 4. Interaction Behavior Detection
 
-#### 方案: 用户事件模拟 + 行为断言
+#### Option: User Event Simulation + Behavior Assertions
 
-**按钮点击响应**:
+**Button click response**:
 ```typescript
-test('优化按钮应触发优化流程', async () => {
+test('the optimize button should trigger the optimization flow', async () => {
   const mockOptimize = vi.fn().mockResolvedValue({
     optimizedPrompt: 'Optimized',
     reasoning: 'Reason',
@@ -712,15 +713,15 @@ test('优化按钮应触发优化流程', async () => {
     global: { plugins: [pinia] }
   })
 
-  // 设置输入
+  // Set the input
   const store = useBasicSystemSession(pinia)
   store.updatePrompt('Test Prompt')
 
-  // 点击按钮
+  // Click the button
   const button = wrapper.find('[data-testid="optimize-button"]')
   await button.trigger('click')
 
-  // 验证行为
+  // Verify the behavior
   expect(mockOptimize).toHaveBeenCalledWith(
     'Test Prompt',
     expect.any(Object)
@@ -731,89 +732,90 @@ test('优化按钮应触发优化流程', async () => {
 })
 ```
 
-**表单提交流程**:
+**Form submission flow**:
 ```typescript
-test('表单提交应验证并保存', async () => {
+test('form submission should validate and save', async () => {
   const { page } = await context.newPage()
   await page.goto('/')
 
-  // 填写表单
+  // Fill in the form
   await page.fill('[data-testid="title-input"]', 'Test Title')
   await page.fill('[data-testid="content-input"]', 'Test Content')
 
-  // 提交
-  const submitButton = page.getByRole('button', { name: /保存/i })
+  // Submit
+  const submitButton = page.getByRole('button', { name: /save/i })
   await submitButton.click()
 
-  // 验证成功提示
-  await expect(page.locator('.n-message')).toContainText('保存成功')
+  // Verify the success message
+  await expect(page.locator('.n-message')).toContainText('Saved successfully')
 
-  // 验证数据持久化
+  // Verify data persistence
   await page.reload()
   await expect(page.locator('[data-testid="title-input"]')).toHaveValue('Test Title')
 })
 ```
 
-**模态框行为**:
+**Modal behavior**:
 ```typescript
-test('模态框关闭应清理状态', async () => {
+test('closing the modal should clean up state', async () => {
   const wrapper = mount(ImportExportDialog, {
     props: { show: true }
   })
 
-  // 触发关闭
+  // Trigger close
   await wrapper.find('[data-testid="close-button"]').trigger('click')
 
-  // 验证 emit
+  // Verify emit
   expect(wrapper.emitted('update:show')).toBeTruthy()
   expect(wrapper.emitted('update:show')[0]).toEqual([false])
 
-  // 验证状态清理
+  // Verify state cleanup
   const internalState = wrapper.vm.exportData
   expect(internalState).toBeNull()
 })
 ```
 
-## VCR 模式技术调研
+## VCR Pattern Technology Research
 
-### 录制-回放库对比
+### Record-Replay Library Comparison
 
-| 库 | 优点 | 缺点 | 推荐度 |
+| Library | Pros | Cons | Rating |
 |-----|------|------|--------|
-| **MSW (Mock Service Worker)** | 拦截 fetch/XHR，支持浏览器和 Node | 需要手动编写 handlers | ⭐⭐⭐⭐⭐ |
-| **nock** | HTTP mocking，简单易用 | 仅支持 Node.js | ⭐⭐⭐ |
-| **Polly.js** | 自动录制-回放，适配器丰富 | 维护不活跃（最后更新 2021） | ⭐⭐ |
-| **自定义 VCR** | 完全控制，定制化强 | 开发成本高 | ⭐⭐⭐⭐ |
+| **MSW (Mock Service Worker)** | Intercepts fetch/XHR, supports browser and Node | Handlers must be written manually | ⭐⭐⭐⭐⭐ |
+| **nock** | HTTP mocking, simple and easy to use | Node.js only | ⭐⭐⭐ |
+| **Polly.js** | Automatic record-replay, rich adapters | Not actively maintained (last updated 2021) | ⭐⭐ |
+| **Custom VCR** | Full control, highly customizable | High development cost | ⭐⭐⭐⭐ |
 
-**推荐方案**: MSW + 自定义 Fixtures 管理
+**Recommended approach**: MSW + custom fixture management
 
-### MSW + 自定义 VCR 实现
+### MSW + Custom VCR Implementation
 
-#### 架构设计
+#### Architecture Design
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│  测试代码                                            │
-│  test('优化提示词', async () => { ... })             │
+│  Test code                                          │
+│  test('optimize prompt', async () => { ... })       │
 └─────────────────────────────────────────────────────┘
                         ↓
 ┌─────────────────────────────────────────────────────┐
 │  VCR Middleware                                     │
-│  - 检测 fixture 是否存在                             │
-│  - 存在: 回放 fixture (Mock)                         │
-│  - 不存在: 调用真实 API 并录制                        │
+│  - Check whether the fixture exists                 │
+│  - Exists: replay the fixture (Mock)                │
+│  - Missing: call the real API and record            │
 └─────────────────────────────────────────────────────┘
                         ↓
          ┌──────────────┴──────────────┐
          ↓                              ↓
 ┌──────────────────┐          ┌──────────────────┐
-│  Mock 模式        │          │  真实 API 模式    │
-│  MSW handlers    │          │  真实 LLM 服务   │
-│  读取 fixtures   │          │  录制响应        │
+│  Mock mode       │          │  Real API mode   │
+│  MSW handlers    │          │  Real LLM        │
+│  Read fixtures   │          │  service         │
+│                  │          │  Record response │
 └──────────────────┘          └──────────────────┘
 ```
 
-#### Fixtures 文件结构
+#### Fixtures File Structure
 
 ```
 packages/core/tests/fixtures/
@@ -835,26 +837,26 @@ packages/core/tests/fixtures/
     └── image2image-success.json
 ```
 
-**Fixture 格式**:
+**Fixture format**:
 ```json
 {
   "request": {
     "provider": "openai",
     "model": "gpt-4",
     "messages": [
-      { "role": "user", "content": "帮我写一封邮件" }
+      { "role": "user", "content": "Help me write an email" }
     ],
     "stream": true
   },
   "response": {
     "type": "streaming",
     "chunks": [
-      { "content": "尊敬的", "timestamp": 0 },
-      { "content": "张经理", "timestamp": 50 },
-      { "content": "：", "timestamp": 100 }
+      { "content": "Dear ", "timestamp": 0 },
+      { "content": "Manager Zhang", "timestamp": 50 },
+      { "content": ":", "timestamp": 100 }
     ],
     "finalResult": {
-      "content": "尊敬的张经理：...",
+      "content": "Dear Manager Zhang: ...",
       "usage": { "prompt_tokens": 10, "completion_tokens": 50 }
     }
   },
@@ -866,7 +868,7 @@ packages/core/tests/fixtures/
 }
 ```
 
-#### VCR 工具实现
+#### VCR Utility Implementation
 
 ```typescript
 // packages/core/tests/utils/vcr.ts
@@ -887,21 +889,21 @@ export class VCR {
   ): Promise<T> {
     const fixturePath = this.getFixturePath(key)
 
-    // 模式判断
+    // Mode check
     if (this.options.mode === 'off') {
       return realFn()
     }
 
     if (this.options.mode === 'replay' ||
         (this.options.mode === 'auto' && existsSync(fixturePath))) {
-      // 回放模式
+      // Replay mode
       const fixture = JSON.parse(readFileSync(fixturePath, 'utf-8'))
       return this.simulateResponse(fixture)
     }
 
     if (this.options.mode === 'record' ||
         (this.options.mode === 'auto' && !existsSync(fixturePath))) {
-      // 录制模式
+      // Record mode
       const result = await realFn()
       const fixture = this.serializeResult(key, result)
       writeFileSync(fixturePath, JSON.stringify(fixture, null, 2))
@@ -910,7 +912,7 @@ export class VCR {
   }
 
   private simulateResponse<T>(fixture: any): Promise<T> {
-    // 模拟延迟
+    // Simulate latency
     return new Promise(resolve => {
       setTimeout(() => {
         resolve(fixture.response.finalResult)
@@ -924,7 +926,7 @@ export class VCR {
 }
 ```
 
-#### 流式响应 Mock
+#### Streaming Response Mock
 
 ```typescript
 // packages/core/tests/utils/stream-simulator.ts
@@ -935,7 +937,7 @@ export class StreamSimulator {
     let lastTimestamp = 0
 
     for (const chunk of this.chunks) {
-      // 模拟真实延迟
+      // Simulate real latency
       const delay = chunk.timestamp - lastTimestamp
       if (delay > 0) {
         await new Promise(resolve => setTimeout(resolve, delay))
@@ -947,102 +949,102 @@ export class StreamSimulator {
   }
 }
 
-// 使用示例
+// Usage example
 const simulator = new StreamSimulator(fixture.response.chunks)
 for await (const chunk of simulator.generate()) {
   callback(chunk)
 }
 ```
 
-### 环境变量控制
+### Environment Variable Control
 
 ```typescript
 // vitest.config.ts
 export default defineConfig({
   test: {
     env: {
-      // 默认使用 Mock（VCR 回放）
+      // Use Mock by default (VCR replay)
       VCR_MODE: process.env.VCR_MODE || 'auto',
 
-      // 可选: 强制使用真实 API
+      // Optional: force the use of real APIs
       ENABLE_REAL_LLM: process.env.ENABLE_REAL_LLM || 'false'
     }
   }
 })
 ```
 
-**测试命令**:
+**Test commands**:
 ```bash
-# 默认: 自动模式（有 fixture 则回放，无则录制）
+# Default: auto mode (replay if a fixture exists, otherwise record)
 pnpm test
 
-# 强制录制（更新所有 fixtures）
+# Force record (update all fixtures)
 VCR_MODE=record pnpm test
 
-# 强制回放（仅使用 fixtures，无则失败）
+# Force replay (use fixtures only; fail if missing)
 VCR_MODE=replay pnpm test
 
-# 禁用 VCR（始终使用真实 API）
+# Disable VCR (always use real APIs)
 VCR_MODE=off pnpm test
-# 或
+# or
 ENABLE_REAL_LLM=true pnpm test
 ```
 
-## 测试分层与执行时间优化
+## Test Layering and Execution Time Optimization
 
-### 目标
+### Goal
 
-提交前测试必须 < 10 分钟，分层如下：
+Pre-commit tests must take < 10 minutes, layered as follows:
 
-| 层级 | 执行时间 | 测试类型 | 说明 |
+| Layer | Execution time | Test type | Description |
 |------|---------|---------|------|
-| **Fast** | 1-2 分钟 | 单元测试（纯逻辑） | 无 I/O，无 Mock，纯计算 |
-| **Standard** | 3-4 分钟 | 单元+集成（Mock） | VCR 回放，Pinia 测试 |
-| **Full** | 5-6 分钟 | E2E（浏览器） | Playwright，视觉回归 |
-| **Total** | **< 10 分钟** | 提交前完整测试 | Fast + Standard + Full |
+| **Fast** | 1-2 minutes | Unit tests (pure logic) | No I/O, no Mock, pure computation |
+| **Standard** | 3-4 minutes | Unit + integration (Mock) | VCR replay, Pinia tests |
+| **Full** | 5-6 minutes | E2E (browser) | Playwright, visual regression |
+| **Total** | **< 10 minutes** | Full pre-commit test run | Fast + Standard + Full |
 
-### 并行化策略
+### Parallelization Strategy
 
-**Vitest 并行化**:
+**Vitest parallelization**:
 ```typescript
 // vitest.config.ts
 export default defineConfig({
   test: {
-    // 最大并发 workers（CPU 核心数 - 1）
+    // Maximum concurrent workers (CPU cores - 1)
     maxWorkers: Math.max(1, os.cpus().length - 1),
 
-    // 最小并发 workers
+    // Minimum concurrent workers
     minWorkers: 1,
 
-    // 每个 worker 隔离模式
-    pool: 'threads', // 或 'forks'
+    // Isolation mode for each worker
+    pool: 'threads', // or 'forks'
 
-    // 超时配置
+    // Timeout configuration
     testTimeout: 5000,
     hookTimeout: 10000
   }
 })
 ```
 
-**Playwright 并行化**:
+**Playwright parallelization**:
 ```typescript
 // playwright.config.ts
 export default defineConfig({
-  // 并发 workers
-  workers: process.env.CI ? 1 : undefined, // CI 串行，本地并发
+  // Concurrent workers
+  workers: process.env.CI ? 1 : undefined, // Serial in CI, parallel locally
 
-  // Sharding（分片执行）
+  // Sharding
   shard: process.env.SHARD ? {
     current: parseInt(process.env.SHARD_INDEX),
     total: parseInt(process.env.SHARD_TOTAL)
   } : undefined,
 
-  // 失败重试
+  // Retry on failure
   retries: process.env.CI ? 2 : 0
 })
 ```
 
-**CI 分片执行**:
+**CI sharded execution**:
 ```yaml
 # .github/workflows/test.yml
 jobs:
@@ -1058,72 +1060,72 @@ jobs:
           SHARD_TOTAL: 4
 ```
 
-### 慢速测试标记
+### Marking Slow Tests
 
 ```typescript
 // packages/ui/tests/unit/slow.spec.ts
 test.skipIf(process.env.SKIP_SLOW === 'true')(
-  '大型数据集性能测试',
+  'large dataset performance test',
   async () => {
-    // 耗时测试
+    // Time-consuming test
   },
   { timeout: 60000 }
 )
 ```
 
-**快速模式**:
+**Fast mode**:
 ```bash
-# 跳过慢速测试（提交前快速验证）
+# Skip slow tests (quick verification before committing)
 SKIP_SLOW=true pnpm test
 
-# 完整测试（CI 或发布前）
+# Full tests (CI or before release)
 pnpm test
 ```
 
-## 未解决问题
+## Unresolved Issues
 
-### 1. 视觉回归测试 baseline 管理
+### 1. Visual Regression Test Baseline Management
 
-**问题**:
-- Baseline 截图在不同操作系统可能有细微差异
-- 字体渲染在 Windows/Mac/Linux 不一致
+**Problem**:
+- Baseline screenshots may differ slightly across operating systems
+- Font rendering is inconsistent across Windows/Mac/Linux
 
-**待调研**:
-- Docker 容器统一测试环境
-- 云端 baseline 存储（Percy, Chromatic）
-- 差异阈值调优
+**To investigate**:
+- A unified test environment in Docker containers
+- Cloud baseline storage (Percy, Chromatic)
+- Difference threshold tuning
 
-### 2. 流式响应录制的完整性
+### 2. Completeness of Streaming Response Recording
 
-**问题**:
-- 如何准确录制流式响应的时序？
-- chunk 之间的延迟如何模拟？
+**Problem**:
+- How can the timing of streaming responses be recorded accurately?
+- How should the delay between chunks be simulated?
 
-**待实现**:
-- 高精度时间戳记录（ms 级）
-- 模拟网络抖动
+**To implement**:
+- High-precision timestamp recording (ms level)
+- Simulated network jitter
 
-### 3. Electron Desktop 测试
+### 3. Electron Desktop Testing
 
-**问题**:
-- Playwright 如何测试 Electron 应用？
-- IPC 通信如何 Mock？
+**Problem**:
+- How does Playwright test Electron apps?
+- How should IPC communication be mocked?
 
-**待调研**:
-- `@playwright/test` 的 Electron 支持
-- Spectron（已废弃，需寻找替代方案）
+**To investigate**:
+- Electron support in `@playwright/test`
+- Spectron (deprecated; an alternative needs to be found)
 
-## 下一步行动
+## Next Actions
 
-1. **完成 Phase 1 调研**
-   - [ ] 选定视觉回归测试工具（Playwright Visual Testing）
-   - [ ] 设计 VCR 系统架构（MSW + 自定义 Fixtures）
-   - [ ] 设计测试分层策略（Fast/Standard/Full）
+1. **Complete the Phase 1 research**
+   - [ ] Select the visual regression testing tool (Playwright Visual Testing)
+   - [ ] Design the VCR system architecture (MSW + custom fixtures)
+   - [ ] Design the test layering strategy (Fast/Standard/Full)
 
-2. **开始 Phase 2 实现**
-   - [ ] 实现 VCR 基础设施
-   - [ ] 录制首批 fixtures（OpenAI, DeepSeek）
+2. **Start the Phase 2 implementation**
+   - [ ] Implement the VCR infrastructure
+   - [ ] Record the first batch of fixtures (OpenAI, DeepSeek)
 
-3. **输出架构文档**
-   - [ ] 编写 `architecture.md`
-   - [ ] 更新 `task_plan.md` 决策日志
+3. **Produce the architecture documentation**
+   - [ ] Write `architecture.md`
+   - [ ] Update the `task_plan.md` decision log

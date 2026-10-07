@@ -1,51 +1,51 @@
 import { test, expect } from './fixtures';
 
 /**
- * 收藏管理基础 E2E 测试
- * 验证收藏管理器的核心功能
+ * Basic favorites management E2E tests
+ * Verify the core features of the favorites manager
  */
-test.describe('收藏管理基础功能', () => {
+test.describe('Favorites Management Basics', () => {
   test.beforeEach(async ({ page }) => {
-    // 访问应用首页
+    // Visit the app home page
     await page.goto('/');
 
-    // 等待页面加载完成
+    // Wait for the page to finish loading
     await page.waitForLoadState('networkidle');
   });
 
-  test('应用能够正常加载', async ({ page }) => {
-    // 验证页面标题
-    await expect(page).toHaveTitle(/提示词优化器|Prompt Optimizer/i);
+  test('The app loads correctly', async ({ page }) => {
+    // Verify the page title
+    await expect(page).toHaveTitle(/Prompt Optimizer/i);
 
-    // 验证主要元素存在
+    // Verify the main elements exist
     const mainContent = page.locator('main, #app, [role="main"]');
     await expect(mainContent).toBeAttached();
   });
 
-  test('能够打开收藏管理器', async ({ page }) => {
-    // 查找并点击收藏管理按钮
-    // 根据实际UI调整选择器
-    const favoriteButton = page.getByRole('button', { name: /收藏|favorite/i });
+  test('Can open the favorites manager', async ({ page }) => {
+    // Find and click the favorites manager button
+    // Adjust the selector according to the actual UI
+    const favoriteButton = page.getByRole('button', { name: /favorite/i });
 
     if (await favoriteButton.count() > 0) {
       await favoriteButton.first().click();
 
-      // 等待收藏管理器对话框出现
-      const dialog = page.locator('[role="dialog"]').filter({ hasText: /收藏|favorite/i });
+      // Wait for the favorites manager dialog to appear
+      const dialog = page.locator('[role="dialog"]').filter({ hasText: /favorite/i });
       await expect(dialog).toBeVisible({ timeout: 5000 });
 
-      // 验证对话框标题
+      // Verify the dialog title
       const dialogTitle = dialog.locator('h1, h2, .n-card-header__main');
-      await expect(dialogTitle).toContainText(/收藏|Favorites/i);
+      await expect(dialogTitle).toContainText(/Favorites/i);
     } else {
-      // 如果没有找到收藏按钮,跳过测试
+      // If the favorites button is not found, skip the test
       test.skip();
     }
   });
 
-  test('收藏管理器包含必要的UI元素', async ({ page }) => {
-    // 尝试打开收藏管理器
-    const favoriteButton = page.getByRole('button', { name: /收藏|favorite/i });
+  test('The favorites manager contains the required UI elements', async ({ page }) => {
+    // Try to open the favorites manager
+    const favoriteButton = page.getByRole('button', { name: /favorite/i });
 
     if (await favoriteButton.count() === 0) {
       test.skip();
@@ -54,26 +54,26 @@ test.describe('收藏管理基础功能', () => {
 
     await favoriteButton.first().click();
 
-    // 等待对话框出现
-    const dialog = page.locator('[role="dialog"]').filter({ hasText: /收藏|favorite/i });
+    // Wait for the dialog to appear
+    const dialog = page.locator('[role="dialog"]').filter({ hasText: /favorite/i });
     await expect(dialog).toBeVisible();
 
-    // 验证搜索输入框
-    const searchInput = dialog.getByPlaceholder(/搜索|search/i);
+    // Verify the search input
+    const searchInput = dialog.getByPlaceholder(/search/i);
     if (await searchInput.count() > 0) {
       await expect(searchInput.first()).toBeVisible();
     }
 
-    // 验证"添加"或"创建"按钮
-    const addButton = dialog.getByRole('button', { name: /添加|创建|新建|add|create/i });
+    // Verify the "Add" or "Create" button
+    const addButton = dialog.getByRole('button', { name: /add|create/i });
     if (await addButton.count() > 0) {
       await expect(addButton.first()).toBeVisible();
     }
   });
 
-  test('能够创建新收藏(基础验证)', async ({ page }) => {
-    // 打开收藏管理器
-    const favoriteButton = page.getByRole('button', { name: /收藏|favorite/i });
+  test('Can create a new favorite (basic verification)', async ({ page }) => {
+    // Open the favorites manager
+    const favoriteButton = page.getByRole('button', { name: /favorite/i });
 
     if (await favoriteButton.count() === 0) {
       test.skip();
@@ -82,11 +82,11 @@ test.describe('收藏管理基础功能', () => {
 
     await favoriteButton.first().click();
 
-    const dialog = page.locator('[role="dialog"]').filter({ hasText: /收藏|favorite/i });
+    const dialog = page.locator('[role="dialog"]').filter({ hasText: /favorite/i });
     await expect(dialog).toBeVisible();
 
-    // 点击添加按钮
-    const addButton = dialog.getByRole('button', { name: /添加|创建|新建|add|create/i });
+    // Click the add button
+    const addButton = dialog.getByRole('button', { name: /add|create/i });
 
     if (await addButton.count() === 0) {
       test.skip();
@@ -95,101 +95,101 @@ test.describe('收藏管理基础功能', () => {
 
     await addButton.first().click();
 
-    // 等待创建对话框出现
-    await page.waitForTimeout(500); // 等待动画
+    // Wait for the create dialog to appear
+    await page.waitForTimeout(500); // wait for the animation
 
-    // 验证创建对话框出现(可能是第二个对话框)
+    // Verify the create dialog appears (may be the second dialog)
     const dialogs = page.locator('[role="dialog"]');
     const dialogCount = await dialogs.count();
 
-    // 如果有多个对话框,说明创建对话框已打开
+    // If there are multiple dialogs, the create dialog is open
     expect(dialogCount).toBeGreaterThanOrEqual(1);
   });
 });
 
 /**
- * 收藏 CRUD 完整流程测试
+ * Full favorites CRUD flow tests
  */
-test.describe('收藏完整 CRUD 流程', () => {
+test.describe('Favorites Full CRUD Flow', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
   });
 
-  test('完整的创建、编辑、删除收藏流程', async ({ page }) => {
-    // 1. 打开收藏管理器
-    const favoriteButton = page.getByRole('button', { name: /收藏|favorite/i });
+  test('Full create, edit, and delete favorite flow', async ({ page }) => {
+    // 1. Open the favorites manager
+    const favoriteButton = page.getByRole('button', { name: /favorite/i });
     if (await favoriteButton.count() === 0) {
       test.skip();
       return;
     }
     await favoriteButton.first().click();
 
-    const managerDialog = page.locator('[role="dialog"]').filter({ hasText: /收藏|Favorites/i }).first();
+    const managerDialog = page.locator('[role="dialog"]').filter({ hasText: /Favorites/i }).first();
     await expect(managerDialog).toBeVisible();
 
-    // 等待对话框完全加载
+    // Wait for the dialog to fully load
     await page.waitForTimeout(500);
 
-    // 2. 点击添加收藏按钮
-    const addButton = managerDialog.getByRole('button', { name: /添加|创建|新建|add|create/i }).first();
+    // 2. Click the add favorite button
+    const addButton = managerDialog.getByRole('button', { name: /add|create/i }).first();
     await addButton.click();
     await page.waitForTimeout(500);
 
-    // 3. 填写收藏信息
+    // 3. Fill in the favorite information
     const createDialog = page.locator('[role="dialog"]').last();
 
-    // 填写标题
-    const titleInput = createDialog.getByPlaceholder(/标题|title/i);
+    // Fill in the title
+    const titleInput = createDialog.getByPlaceholder(/title|name this prompt/i);
     if (await titleInput.count() > 0) {
-      await titleInput.fill('E2E 测试收藏');
+      await titleInput.fill('E2E Test Favorite');
     }
 
-    // 填写内容
+    // Fill in the content
     const contentInput = createDialog.locator('textarea').first();
     if (await contentInput.count() > 0) {
-      await contentInput.fill('这是一个 E2E 测试创建的收藏内容');
+      await contentInput.fill('Favorite content created by an E2E test');
     }
 
-    // 4. 保存收藏
-    const saveButton = createDialog.getByRole('button', { name: /保存|save|确定|ok/i });
+    // 4. Save the favorite
+    const saveButton = createDialog.getByRole('button', { name: /save|confirm|ok/i });
     if (await saveButton.count() > 0) {
       await saveButton.click();
 
-      // 等待保存完成
+      // Wait for the save to finish
       await page.waitForTimeout(1000);
 
-      // 5. 验证收藏已创建 - 搜索刚创建的收藏
-      const searchInput = managerDialog.getByPlaceholder(/搜索|search/i);
+      // 5. Verify the favorite was created - search for the one just created
+      const searchInput = managerDialog.getByPlaceholder(/search/i);
       if (await searchInput.count() > 0) {
-        await searchInput.fill('E2E 测试收藏');
+        await searchInput.fill('E2E Test Favorite');
         await page.waitForTimeout(500);
 
-        // 验证收藏卡片出现
-        const favoriteCard = managerDialog.locator('text=E2E 测试收藏');
+        // Verify the favorite card appears
+        const favoriteCard = managerDialog.locator('text=E2E Test Favorite');
         if (await favoriteCard.count() > 0) {
           await expect(favoriteCard.first()).toBeVisible();
 
-          // 6. 删除收藏 - 查找删除按钮
+          // 6. Delete the favorite - find the delete button
           const card = favoriteCard.locator('..').locator('..').first();
-          const deleteButton = card.getByRole('button', { name: /删除|delete/i });
+          const deleteButton = card.getByRole('button', { name: /delete/i });
 
           if (await deleteButton.count() > 0) {
             await deleteButton.click();
             await page.waitForTimeout(300);
 
-            // 确认删除
-            const confirmButton = page.getByRole('button', { name: /确定|确认|yes|ok/i });
+            // Confirm deletion
+            const confirmButton = page.getByRole('button', { name: /yes|ok|confirm/i });
             if (await confirmButton.count() > 0) {
               await confirmButton.click();
               await page.waitForTimeout(500);
 
-              // 7. 验证收藏已删除
+              // 7. Verify the favorite was deleted
               await searchInput.clear();
-              await searchInput.fill('E2E 测试收藏');
+              await searchInput.fill('E2E Test Favorite');
               await page.waitForTimeout(500);
 
-              const deletedCard = managerDialog.locator('text=E2E 测试收藏');
+              const deletedCard = managerDialog.locator('text=E2E Test Favorite');
               expect(await deletedCard.count()).toBe(0);
             }
           }
@@ -200,70 +200,70 @@ test.describe('收藏完整 CRUD 流程', () => {
 });
 
 /**
- * 搜索和过滤功能测试
+ * Search and filter tests
  */
-test.describe('搜索和过滤功能', () => {
+test.describe('Search and Filter', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
   });
 
-  test('搜索功能能够正常工作', async ({ page }) => {
-    const favoriteButton = page.getByRole('button', { name: /收藏|favorite/i });
+  test('Search works correctly', async ({ page }) => {
+    const favoriteButton = page.getByRole('button', { name: /favorite/i });
     if (await favoriteButton.count() === 0) {
       test.skip();
       return;
     }
     await favoriteButton.first().click();
 
-    const dialog = page.locator('[role="dialog"]').filter({ hasText: /收藏|Favorites/i }).first();
+    const dialog = page.locator('[role="dialog"]').filter({ hasText: /Favorites/i }).first();
     await expect(dialog).toBeVisible();
 
-    // 测试搜索功能
-    const searchInput = dialog.getByPlaceholder(/搜索|search/i);
+    // Test the search feature
+    const searchInput = dialog.getByPlaceholder(/search/i);
     if (await searchInput.count() > 0) {
-      // 输入搜索关键词
-      await searchInput.fill('测试');
+      // Enter a search keyword
+      await searchInput.fill('test');
       await page.waitForTimeout(800);
 
-      // 验证搜索输入框的值已更新
+      // Verify the search input value was updated
       const searchValue = await searchInput.inputValue();
-      expect(searchValue).toBe('测试');
+      expect(searchValue).toBe('test');
 
-      // 清空搜索
+      // Clear the search
       await searchInput.clear();
       await page.waitForTimeout(500);
 
-      // 验证搜索已清空
+      // Verify the search was cleared
       const clearedValue = await searchInput.inputValue();
       expect(clearedValue).toBe('');
     }
   });
 
-  test('分类过滤能够正常工作', async ({ page }) => {
-    const favoriteButton = page.getByRole('button', { name: /收藏|favorite/i });
+  test('Category filtering works correctly', async ({ page }) => {
+    const favoriteButton = page.getByRole('button', { name: /favorite/i });
     if (await favoriteButton.count() === 0) {
       test.skip();
       return;
     }
     await favoriteButton.first().click();
 
-    const dialog = page.locator('[role="dialog"]').filter({ hasText: /收藏|Favorites/i }).first();
+    const dialog = page.locator('[role="dialog"]').filter({ hasText: /Favorites/i }).first();
     await expect(dialog).toBeVisible();
 
-    // 查找分类选择器
+    // Find the category selector
     const categorySelect = dialog.locator('.n-base-selection, .n-select').first();
     if (await categorySelect.count() > 0) {
       await categorySelect.click();
       await page.waitForTimeout(300);
 
-      // 选择一个分类选项（如果有）
+      // Select a category option (if any)
       const firstOption = page.locator('.n-base-select-option').first();
       if (await firstOption.count() > 0) {
         await firstOption.click();
         await page.waitForTimeout(800);
 
-        // 验证选择器不再显示下拉菜单（已选择）
+        // Verify the selector no longer shows the dropdown menu (an option was selected)
         const dropdownHidden = await page.locator('.n-base-select-menu').isHidden().catch(() => true);
         expect(dropdownHidden).toBe(true);
       }
@@ -272,105 +272,105 @@ test.describe('搜索和过滤功能', () => {
 });
 
 /**
- * 标签管理功能测试
+ * Tag management tests
  */
-test.describe('标签管理功能', () => {
+test.describe('Tag Management', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
-    // 避免 networkidle 被后台请求/轮询拖慢，这里只等页面主体渲染完成
+    // Avoid networkidle being slowed by background requests/polling; only wait for the main page body to render
     await page.waitForLoadState('domcontentloaded');
     await expect(page.locator('[data-testid="workspace"]')).toBeVisible({ timeout: 10000 });
   });
 
-  test('能够打开标签管理器', async ({ page }) => {
-    const favoriteButton = page.getByRole('button', { name: /收藏|favorite/i });
+  test('Can open the tag manager', async ({ page }) => {
+    const favoriteButton = page.getByRole('button', { name: /favorite/i });
     if (await favoriteButton.count() === 0) {
       test.skip();
       return;
     }
     await favoriteButton.first().click();
 
-    const managerDialog = page.locator('[role="dialog"]').filter({ hasText: /收藏|Favorites/i }).first();
+    const managerDialog = page.locator('[role="dialog"]').filter({ hasText: /Favorites/i }).first();
     await expect(managerDialog).toBeVisible();
 
-    // 打开更多操作下拉菜单（NDropdown 的菜单渲染在 portal 中，不在 dialog DOM 内）
-    // 用 data-testid 精确定位触发按钮，避免误点输入框的 clear icon 等。
+    // Open the more-actions dropdown (the NDropdown menu renders in a portal, not inside the dialog DOM)
+    // Locate the trigger button precisely with data-testid to avoid mis-clicking the input's clear icon, etc.
     const moreButton = managerDialog.getByTestId('favorites-manager-actions');
     await expect(moreButton).toBeVisible({ timeout: 5000 });
     await moreButton.click();
 
-    // 下拉项文案是“管理标签”(zh) / “Manage Tags”(en)
-    const dropdownMenu = page.locator('.n-dropdown-menu').filter({ hasText: /管理标签|Manage Tags/i }).first();
+    // The dropdown item label is "Manage Tags"
+    const dropdownMenu = page.locator('.n-dropdown-menu').filter({ hasText: /Manage Tags/i }).first();
     await expect(dropdownMenu).toBeVisible({ timeout: 3000 });
 
-    await dropdownMenu.getByText(/管理标签|Manage Tags/i).first().click();
+    await dropdownMenu.getByText(/Manage Tags/i).first().click();
 
-    // 验证标签管理器对话框出现（标题是“标签管理”/“Tag Manager”）
-    const tagDialog = page.locator('[role="dialog"]').filter({ hasText: /标签管理|Tag Manager/i }).last();
+    // Verify the tag manager dialog appears (the title is "Tag Manager")
+    const tagDialog = page.locator('[role="dialog"]').filter({ hasText: /Tag Manager/i }).last();
     await expect(tagDialog).toBeVisible({ timeout: 5000 });
   });
 });
 
 /**
- * 分类管理功能测试
+ * Category management tests
  */
-test.describe('分类管理功能', () => {
+test.describe('Category Management', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
-    // 避免 networkidle 被后台请求/轮询拖慢，这里只等页面主体渲染完成
+    // Avoid networkidle being slowed by background requests/polling; only wait for the main page body to render
     await page.waitForLoadState('domcontentloaded');
     await expect(page.locator('[data-testid="workspace"]')).toBeVisible({ timeout: 10000 });
   });
 
-  test('能够打开分类管理器', async ({ page }) => {
-    const favoriteButton = page.getByRole('button', { name: /收藏|favorite/i });
+  test('Can open the category manager', async ({ page }) => {
+    const favoriteButton = page.getByRole('button', { name: /favorite/i });
     if (await favoriteButton.count() === 0) {
       test.skip();
       return;
     }
     await favoriteButton.first().click();
 
-    const managerDialog = page.locator('[role="dialog"]').filter({ hasText: /收藏|Favorites/i }).first();
+    const managerDialog = page.locator('[role="dialog"]').filter({ hasText: /Favorites/i }).first();
     await expect(managerDialog).toBeVisible();
 
-    // 打开更多操作下拉菜单（NDropdown 的菜单渲染在 portal 中，不在 dialog DOM 内）
+    // Open the more-actions dropdown (the NDropdown menu renders in a portal, not inside the dialog DOM)
     const moreButton = managerDialog.getByTestId('favorites-manager-actions');
     await expect(moreButton).toBeVisible({ timeout: 5000 });
     await moreButton.click();
 
-    // 下拉项文案是“管理分类”(zh) / “Manage Categories”(en)
-    const dropdownMenu = page.locator('.n-dropdown-menu').filter({ hasText: /管理分类|Manage Categories/i }).first();
+    // The dropdown item label is "Manage Categories"
+    const dropdownMenu = page.locator('.n-dropdown-menu').filter({ hasText: /Manage Categories/i }).first();
     await expect(dropdownMenu).toBeVisible({ timeout: 3000 });
 
-    await dropdownMenu.getByText(/管理分类|Manage Categories/i).first().click();
+    await dropdownMenu.getByText(/Manage Categories/i).first().click();
 
-    // 验证分类管理器对话框出现（标题是“分类管理”/“Category Manager”）
-    const categoryDialog = page.locator('[role="dialog"]').filter({ hasText: /分类管理|Category Manager/i }).last();
+    // Verify the category manager dialog appears (the title is "Category Manager")
+    const categoryDialog = page.locator('[role="dialog"]').filter({ hasText: /Category Manager/i }).last();
     await expect(categoryDialog).toBeVisible({ timeout: 5000 });
   });
 });
 
 /**
- * 导入导出功能测试
+ * Import/export tests
  */
-test.describe('导入导出功能', () => {
+test.describe('Import/Export', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
   });
 
-  test('导出按钮能够正常工作', async ({ page }) => {
-    const favoriteButton = page.getByRole('button', { name: /收藏|favorite/i });
+  test('The export button works correctly', async ({ page }) => {
+    const favoriteButton = page.getByRole('button', { name: /favorite/i });
     if (await favoriteButton.count() === 0) {
       test.skip();
       return;
     }
     await favoriteButton.first().click();
 
-    const managerDialog = page.locator('[role="dialog"]').filter({ hasText: /收藏|Favorites/i }).first();
+    const managerDialog = page.locator('[role="dialog"]').filter({ hasText: /Favorites/i }).first();
     await expect(managerDialog).toBeVisible();
 
-    // 查找更多操作菜单
+    // Find the more-actions menu
     const moreButton = managerDialog.getByRole('button').filter({
       has: page.locator('svg, .n-icon')
     }).first();
@@ -379,15 +379,15 @@ test.describe('导入导出功能', () => {
       await moreButton.click();
       await page.waitForTimeout(300);
 
-      // 查找导出选项
-      const exportOption = page.locator('text=/导出|Export/i');
+      // Find the export option
+      const exportOption = page.locator('text=/Export/i');
       if (await exportOption.count() > 0) {
-        // 设置下载监听
+        // Set up the download listener
         const downloadPromise = page.waitForEvent('download', { timeout: 5000 }).catch(() => null);
 
         await exportOption.click();
 
-        // 验证下载开始（如果有）
+        // Verify the download started (if any)
         const download = await downloadPromise;
         if (download) {
           expect(download).toBeTruthy();
@@ -398,14 +398,14 @@ test.describe('导入导出功能', () => {
 });
 
 /**
- * 收藏管理数据持久化测试
+ * Favorites data persistence tests
  */
-test.describe('收藏数据持久化', () => {
-  test('本地存储能够正常工作', async ({ page }) => {
+test.describe('Favorites Data Persistence', () => {
+  test('Local storage works correctly', async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
 
-    // 检查 localStorage 是否可用
+    // Check whether localStorage is available
     const localStorageAvailable = await page.evaluate(() => {
       try {
         localStorage.setItem('test', 'test');

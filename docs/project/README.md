@@ -1,58 +1,58 @@
-# 项目管理文档
+# Project Management Documentation
 
-这里包含了项目管理相关的文档，面向项目经理、产品经理和团队成员。
+This directory contains project management documents, intended for project managers, product managers, and team members.
 
-## 📋 项目概览
+## 📋 Project Overview
 
-- [产品需求文档](./prd.md) - 产品功能需求和规格说明
-- [项目状态](./project-status.md) - 当前项目进度和完成情况
-- [版本同步](./version-sync.md) - 版本管理和同步策略
+- [Product Requirements Document](./prd.md) - Product feature requirements and specifications
+- [Project Status](./project-status.md) - Current project progress and completion status
+- [Version Sync](./version-sync.md) - Version management and synchronization strategy
 
-## 📊 项目状态
+## 📊 Project Status
 
-- **当前版本**：v1.0.6
-- **项目完成度**：95%
-- **当前阶段**：功能完善与用户体验优化
-- **最新更新**：2025年1月
+- **Current version**: v1.0.6
+- **Project completion**: 95%
+- **Current phase**: Feature refinement and user experience optimization
+- **Latest update**: January 2025
 
-## 🎯 功能规划
+## 🎯 Feature Planning
 
-### 已完成功能
-- 核心架构搭建
-- Web应用开发
-- 浏览器插件开发
-- 多LLM模型支持
-- 基础UI组件
+### Completed Features
+- Core architecture setup
+- Web application development
+- Browser extension development
+- Multi-LLM model support
+- Basic UI components
 
-### 进行中功能
-- 桌面端应用
-- 模板管理优化
-- 用户体验改进
+### In-Progress Features
+- Desktop application
+- Template management optimization
+- User experience improvements
 
-### 计划中功能
-- 高级模板功能
-- 批量处理
-- 性能优化
+### Planned Features
+- Advanced template features
+- Batch processing
+- Performance optimization
 
-## 📈 里程碑
+## 📈 Milestones
 
-- **2024-12-20**：单例重构开始
-- **2024-12-29**：单例重构完成
-- **2024-12-30**：Web架构重构完成
-- **2025-01-01**：当前状态
+- **2024-12-20**: Singleton refactor started
+- **2024-12-29**: Singleton refactor completed
+- **2024-12-30**: Web architecture refactor completed
+- **2025-01-01**: Current state
 
-## 📝 需求管理
+## 📝 Requirements Management
 
-- [功能需求](./requirements/feature-requirements.md)（待创建） - 详细功能需求列表
+- [Feature Requirements](./requirements/feature-requirements.md) (to be created) - Detailed feature requirements list
 
-## 🔄 版本管理
+## 🔄 Version Management
 
-- 版本发布计划
-- 功能迭代计划
-- 技术债务管理
+- Version release plan
+- Feature iteration plan
+- Technical debt management
 
-## 📞 项目联系
+## 📞 Project Contacts
 
-- 项目经理：[待填写]
-- 技术负责人：[待填写]
-- 产品负责人：[待填写]
+- Project manager: [TBD]
+- Technical lead: [TBD]
+- Product owner: [TBD]

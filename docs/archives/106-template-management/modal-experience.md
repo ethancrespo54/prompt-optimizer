@@ -1,49 +1,49 @@
-# 模态框组件开发经验
+# Modal Component Development Lessons
 
-## 📋 概述
+## 📋 Overview
 
-在模板管理功能开发过程中积累的Vue模态框组件设计、实现和调试经验，包括渲染问题、事件处理和最佳实践。
+Lessons on the design, implementation, and debugging of Vue modal components accumulated during the development of the template management feature, including rendering problems, event handling, and best practices.
 
-## 🚨 Vue 模态框渲染问题
+## 🚨 Vue Modal Rendering Problem
 
-### 问题现象
-应用启动时，`TemplateManager.vue` 和 `ModelManager.vue` 等模态框组件会立即显示在页面上，并且无法通过点击关闭按钮或外部区域来关闭。
+### Symptom
+When the application starts, modal components such as `TemplateManager.vue` and `ModelManager.vue` are immediately displayed on the page and cannot be closed by clicking the close button or the area outside.
 
-### 根本原因
-组件的最外层元素（通常是带灰色蒙层的 `div`）没有使用 `v-if` 指令与控制其可见性的 `show` prop 绑定。因此，即使 `show` 的初始值为 `false`，该组件的 DOM 结构也已经被渲染到了页面上，导致蒙层和弹窗内容可见。点击关闭将 `show` 更新为 `false` 也无法移除已经渲染的 DOM，因此看起来"关不掉"。
+### Root cause
+The outermost element of the component (usually a `div` with a gray overlay) was not bound to the `show` prop controlling its visibility with a `v-if` directive. As a result, even when the initial value of `show` is `false`, the component's DOM structure has already been rendered onto the page, making the overlay and dialog content visible. Clicking close updates `show` to `false` but cannot remove the already-rendered DOM, so it appears that it "cannot be closed".
 
-### 解决方案
-在模态框组件的最外层元素上添加 `v-if="show"` 指令。
+### Solution
+Add the `v-if="show"` directive to the outermost element of the modal component.
 
-### 示例代码
+### Example code
 ```vue
 <template>
   <div
-    v-if="show"  <!-- 关键修复 -->
+    v-if="show"  <!-- Key fix -->
     class="fixed inset-0 theme-mask z-[60] flex items-center justify-center overflow-y-auto"
     @click="close"
   >
-    <!-- ... 弹窗内容 ... -->
+    <!-- ... dialog content ... -->
   </div>
 </template>
 ```
 
-### 结论
-在创建可复用的模态框或弹窗组件时，必须确保组件的根元素或其容器的渲染与 `v-if` 或 `v-show` 指令绑定，以正确控制其在 DOM 中的存在和可见性。
+### Conclusion
+When creating a reusable modal or dialog component, you must make sure that the rendering of the component's root element or its container is bound to a `v-if` or `v-show` directive, so as to correctly control its presence and visibility in the DOM.
 
-## 🎯 事件处理最佳实践
+## 🎯 Event Handling Best Practices
 
-### 问题描述
-在模态框组件中，仅实现 `@click="$emit('close')"` 的关闭事件处理方式不支持 `v-model:show` 双向绑定，导致父组件必须显式处理关闭逻辑，代码冗余且不符合 Vue 最佳实践。
+### Problem description
+In a modal component, implementing close event handling only with `@click="$emit('close')"` does not support `v-model:show` two-way binding, so the parent component has to explicitly handle the close logic. This is redundant and does not follow Vue best practices.
 
-### 最佳实践方案
-实现统一的 `close` 方法，同时触发 `update:show` 和 `close` 事件，支持多种使用模式。
+### Best practice approach
+Implement a unified `close` method that triggers both the `update:show` and `close` events, supporting multiple usage patterns.
 
-### 组件定义示例
+### Component definition example
 ```vue
 <template>
   <div v-if="show" @click="close">
-    <!-- 弹窗内容 -->
+    <!-- Dialog content -->
     <button @click="close">×</button>
   </div>
 </template>
@@ -59,53 +59,53 @@ const props = defineProps({
 const emit = defineEmits(['update:show', 'close']);
 
 const close = () => {
-  emit('update:show', false); // 支持 v-model
-  emit('close');             // 向后兼容
+  emit('update:show', false); // Supports v-model
+  emit('close');             // Backward compatible
 }
 </script>
 ```
 
-### 父组件使用方式
+### How the parent component uses it
 ```vue
-<!-- 推荐：使用 v-model 双向绑定 -->
+<!-- Recommended: use v-model two-way binding -->
 <ModelManagerUI v-model:show="isModalVisible" />
 
-<!-- 兼容：使用独立事件处理 -->
+<!-- Compatible: use a separate event handler -->
 <ModelManagerUI :show="isModalVisible" @close="handleClose" />
 ```
 
-### 优势
-1. **符合 Vue 的 `v-model` 规范**：通过触发 `update:show` 事件支持双向绑定
-2. **代码封装和可维护性**：关闭逻辑集中在一个方法中，便于扩展和维护
-3. **向后兼容**：同时支持 `v-model` 和传统的 `@close` 事件监听
-4. **语义清晰**：模板中的 `@click="close"` 比 `@click="$emit('close')"` 更直观表达意图
+### Advantages
+1. **Follows Vue's `v-model` convention**: Supports two-way binding by triggering the `update:show` event
+2. **Code encapsulation and maintainability**: The close logic is centralized in one method, making it easy to extend and maintain
+3. **Backward compatible**: Supports both `v-model` and the traditional `@close` event listener
+4. **Clear semantics**: `@click="close"` in the template expresses intent more intuitively than `@click="$emit('close')"`
 
-## 🏆 模态框组件最佳实践范式
+## 🏆 Best Practice Paradigm for Modal Components
 
-### 目标
-创建一个可复用、功能完备、体验优秀且高度灵活的基础模态框组件。
+### Goal
+Create a reusable, fully featured, high-quality, and highly flexible base modal component.
 
-### 核心范式来源
-`FullscreenDialog.vue` 和 `Modal.vue`
+### Source of the core paradigm
+`FullscreenDialog.vue` and `Modal.vue`
 
-### 关键实现要点
+### Key implementation points
 
-#### 1. 标准化 `v-model`
-- **Prop**: 使用 `modelValue` 作为接收组件可见性状态的 prop
-- **Event**: 触发 `update:modelValue` 事件来响应状态变更
+#### 1. Standardized `v-model`
+- **Prop**: Use `modelValue` as the prop that receives the component's visibility state
+- **Event**: Emit the `update:modelValue` event in response to state changes
 
-#### 2. 健壮的关闭机制
-- **统一关闭方法**: 封装一个 `close` 方法，集中处理所有关闭逻辑 (`emit('update:modelValue', false)`)
-- **严谨的背景点击**: 使用 `event.target === event.currentTarget` 判断来确保只有直接点击背景遮罩时才关闭弹窗，防止点击内容区时意外关闭
-- **键盘可访问性**: 监听 `Escape` 键，为用户提供通过键盘关闭弹窗的快捷方式
+#### 2. Robust closing mechanism
+- **Unified close method**: Encapsulate a `close` method that centrally handles all close logic (`emit('update:modelValue', false)`)
+- **Careful backdrop click**: Use the `event.target === event.currentTarget` check to ensure the dialog closes only when the backdrop is clicked directly, preventing accidental closing when clicking the content area
+- **Keyboard accessibility**: Listen for the `Escape` key to give users a keyboard shortcut for closing the dialog
 
-#### 3. 通过插槽实现高度灵活性
-使用 `<slot name="title">`, `<slot></slot>` (默认插槽), 和 `<slot name="footer">` 来定义模态框的各个区域，使父组件可以完全自定义其内容和交互。
+#### 3. High flexibility through slots
+Use `<slot name="title">`, `<slot></slot>` (the default slot), and `<slot name="footer">` to define the areas of the modal, so that the parent component can fully customize its content and interactions.
 
-#### 4. 平滑的过渡动画
-使用 Vue 的 `<Transition>` 组件包裹模态框的根元素和内容，为其出现和消失添加 CSS 动画，提升用户体验。
+#### 4. Smooth transition animations
+Wrap the modal's root element and content with Vue's `<Transition>` component and add CSS animations for their appearance and disappearance to improve the user experience.
 
-### 代码范例
+### Code example
 ```vue
 <template>
   <Teleport to="body">
@@ -144,60 +144,60 @@ const handleBackdropClick = (event) => {
   }
 }
 
-// 监听ESC键
+// Listen for the ESC key
 // onMounted / onUnmounted ...
 </script>
 ```
 
-## 💡 关键经验总结
+## 💡 Key Lessons Summary
 
-1. **DOM 渲染控制**: 模态框组件必须使用 `v-if` 控制 DOM 的存在，而不仅仅是可见性
-2. **事件处理统一**: 实现统一的关闭方法，同时支持 `v-model` 和传统事件
-3. **用户体验**: 提供多种关闭方式（按钮、背景点击、ESC键）
-4. **组件复用**: 通过插槽实现高度灵活的内容定制
-5. **向后兼容**: 在引入新的API时保持对旧用法的兼容
+1. **DOM rendering control**: Modal components must use `v-if` to control the existence of the DOM, not just visibility
+2. **Unified event handling**: Implement a unified close method that supports both `v-model` and traditional events
+3. **User experience**: Provide multiple ways to close (button, backdrop click, ESC key)
+4. **Component reuse**: Achieve highly flexible content customization through slots
+5. **Backward compatibility**: Stay compatible with old usage when introducing new APIs
 
-## 🔗 相关文档
+## 🔗 Related Documents
 
-- [模板管理功能概述](./README.md)
-- [组件标准化重构](../107-component-standardization/README.md)
-- [故障排查清单](./troubleshooting.md)
-
----
-
-**文档类型**: 经验总结
-**适用范围**: Vue 模态框组件开发
-**最后更新**: 2025-01-15
+- [Template Management Feature Overview](./README.md)
+- [Component Standardization Refactor](../107-component-standardization/README.md)
+- [Troubleshooting Checklist](./troubleshooting.md)
 
 ---
 
-## ⚠️ Naive UI 嵌套 Modal 架构陷阱 (2025-01)
+**Document type**: Lessons learned
+**Scope**: Vue modal component development
+**Last updated**: 2025-01-15
 
-### 问题场景
+---
 
-在实现收藏夹管理功能时,需要三层 Modal 嵌套:
-1. **一级**: 收藏夹列表 (FavoriteManager)
-2. **二级**: 分类管理 (CategoryManager)
-3. **三级**: 新增/编辑分类对话框
+## ⚠️ Naive UI Nested Modal Architecture Pitfall (2025-01)
 
-### 问题现象
+### Scenario
 
-按照直觉实现后,出现严重的事件拦截问题:
-- 二级和三级 Modal **完全无法点击和编辑**
-- 按 **ESC 键会同时关闭所有 Modal**,而不是只关闭最上层
-- 所有操作似乎被一级 Modal 异常拦截处理
+When implementing the favorites management feature, three levels of nested Modals were needed:
+1. **Level 1**: Favorites list (FavoriteManager)
+2. **Level 2**: Category management (CategoryManager)
+3. **Level 3**: Add/edit category dialog
 
-### 根本原因分析
+### Symptoms
 
-#### ❌ 错误架构模式 (内容组件模式)
+After implementing it the intuitive way, serious event interception problems appeared:
+- The level 2 and level 3 Modals **could not be clicked or edited at all**
+- Pressing the **ESC key closed all Modals at once** instead of only the topmost one
+- All operations seemed to be abnormally intercepted and handled by the level 1 Modal
+
+### Root Cause Analysis
+
+#### ❌ Wrong architecture pattern (content component pattern)
 
 ```vue
-<!-- FavoriteManager.vue - 错误实现 -->
+<!-- FavoriteManager.vue - wrong implementation -->
 <template>
   <div class="favorite-manager">
-    <!-- 只是内容,没有 Modal 包装 -->
+    <!-- Content only, no Modal wrapper -->
 
-    <!-- ❌ 子 Modal 嵌套在内容中 -->
+    <!-- ❌ Child Modal nested in the content -->
     <n-modal v-model:show="categoryManagerVisible">
       <CategoryManager />
     </n-modal>
@@ -205,50 +205,50 @@ const handleBackdropClick = (event) => {
 </template>
 
 <script>
-// ❌ 没有 show prop
-// ❌ 没有 update:show emit
+// ❌ No show prop
+// ❌ No update:show emit
 const emit = defineEmits(['optimize-prompt', 'use-favorite'])
 </script>
 ```
 
 ```vue
-<!-- App.vue - 错误调用方式 -->
+<!-- App.vue - wrong way of calling it -->
 <NModal
-  v-model:show="showFavoriteManager"  <!-- ❌ 双向绑定导致事件拦截 -->
+  v-model:show="showFavoriteManager"  <!-- ❌ Two-way binding causes event interception -->
   preset="card"
   :title="$t('favorites.title')"
 >
   <NScrollbar>
-    <FavoriteManagerUI />  <!-- 内容组件,没有独立管理能力 -->
+    <FavoriteManagerUI />  <!-- Content component with no independent management capability -->
   </NScrollbar>
 </NModal>
 ```
 
-**问题根源**:
-1. **双向绑定陷阱**: `v-model:show` 在父组件创建响应式连接,导致父 Modal 垄断所有事件
-2. **架构不一致**: FavoriteManager 是内容组件,却被当作 Modal 组件使用
-3. **层级管理失效**: 子 Modal 嵌套在内容中,无法独立管理 z-index 和焦点
+**Root causes**:
+1. **Two-way binding trap**: `v-model:show` creates a reactive connection in the parent component, causing the parent Modal to monopolize all events
+2. **Architectural inconsistency**: FavoriteManager is a content component but was used as a Modal component
+3. **Layer management failure**: Child Modals nested inside the content cannot independently manage z-index and focus
 
-#### ✅ 正确架构模式 (完整 Modal 组件)
+#### ✅ Correct architecture pattern (complete Modal component)
 
-参考项目中成熟稳定的 `ModelManager.vue`:
+Refer to the mature and stable `ModelManager.vue` in the project:
 
 ```vue
-<!-- ModelManager.vue - 正确实现 -->
+<!-- ModelManager.vue - correct implementation -->
 <template>
   <ToastUI>
-    <!-- ✅ 主 Modal 使用单向绑定 -->
+    <!-- ✅ The main Modal uses one-way binding -->
     <NModal
       :show="show"
       preset="card"
       @update:show="(value) => !value && close()"
     >
       <NScrollbar>
-        <!-- 主内容 -->
+        <!-- Main content -->
       </NScrollbar>
     </NModal>
 
-    <!-- ✅ 子 Modal 在外层,独立管理 -->
+    <!-- ✅ Child Modals on the outer level, managed independently -->
     <ImageModelEditModal
       :show="showImageModelEdit"
       @update:show="showImageModelEdit = $event"
@@ -257,7 +257,7 @@ const emit = defineEmits(['optimize-prompt', 'use-favorite'])
 </template>
 
 <script setup>
-// ✅ 完整的 Modal 组件接口
+// ✅ Complete Modal component interface
 defineProps({ show: Boolean })
 const emit = defineEmits(['update:show', 'close'])
 const close = () => {
@@ -267,20 +267,20 @@ const close = () => {
 </script>
 ```
 
-### 修复方案
+### Fix
 
-#### 1. 重构 FavoriteManager 为完整 Modal 组件
+#### 1. Refactor FavoriteManager into a complete Modal component
 
 ```vue
-<!-- FavoriteManager.vue - 修复后 -->
+<!-- FavoriteManager.vue - after the fix -->
 <template>
   <ToastUI>
-    <!-- ✅ 包装主 Modal -->
+    <!-- ✅ Wrap the main Modal -->
     <NModal
       :show="show"
       preset="card"
       :style="{ width: '90vw', maxWidth: '1200px', maxHeight: '90vh' }"
-      title="收藏管理"
+      title="Favorites Management"
       size="large"
       :bordered="false"
       :segmented="true"
@@ -288,16 +288,16 @@ const close = () => {
     >
       <NScrollbar style="max-height: 75vh;">
         <div class="favorite-manager-content">
-          <!-- 主内容 -->
+          <!-- Main content -->
         </div>
       </NScrollbar>
     </NModal>
 
-    <!-- ✅ 子 Modal 移到外层,使用单向绑定 -->
+    <!-- ✅ Child Modal moved to the outer level, using one-way binding -->
     <n-modal
       :show="categoryManagerVisible"
       preset="card"
-      title="分类管理"
+      title="Category Management"
       :mask-closable="false"
       :style="{ width: 'min(800px, 90vw)', height: 'min(600px, 80vh)' }"
       @update:show="categoryManagerVisible = $event"
@@ -310,7 +310,7 @@ const close = () => {
 <script setup lang="ts">
 import ToastUI from './Toast.vue'
 
-// ✅ 添加完整的 Modal 组件接口
+// ✅ Add the complete Modal component interface
 defineProps({
   show: {
     type: Boolean,
@@ -332,18 +332,18 @@ const close = () => {
 </script>
 
 <style scoped>
-/* ✅ 更新样式类名 */
+/* ✅ Updated style class name */
 .favorite-manager-content {
   @apply flex flex-col h-full;
 }
 </style>
 ```
 
-#### 2. 更新 App.vue 调用方式
+#### 2. Update how App.vue calls it
 
 ```vue
-<!-- App.vue - 修复后 -->
-<!-- ✅ 直接使用完整的 Modal 组件 -->
+<!-- App.vue - after the fix -->
+<!-- ✅ Use the complete Modal component directly -->
 <FavoriteManagerUI
   v-if="isReady"
   :show="showFavoriteManager"
@@ -353,35 +353,35 @@ const close = () => {
 />
 ```
 
-### 关键技术要点
+### Key Technical Points
 
-#### 1. 单向数据流优于双向绑定
+#### 1. One-way data flow is better than two-way binding
 
 ```vue
-<!-- ✅ 推荐: 单向绑定 + 显式事件处理 -->
+<!-- ✅ Recommended: one-way binding + explicit event handling -->
 <NModal :show="show" @update:show="(value) => !value && close()">
 
-<!-- ❌ 避免: 双向绑定导致事件拦截 -->
+<!-- ❌ Avoid: two-way binding causes event interception -->
 <NModal v-model:show="show">
 ```
 
-**原理**: 单向数据流切断父 Modal 对事件的垄断控制,让每个 Modal 层级独立响应用户操作。
+**Principle**: One-way data flow cuts off the parent Modal's monopoly over events and lets each Modal level respond to user actions independently.
 
-#### 2. Modal 层级独立管理
+#### 2. Manage Modal levels independently
 
 ```vue
 <ToastUI>
-  <!-- 一级 Modal -->
+  <!-- Level 1 Modal -->
   <NModal :show="showMain">...</NModal>
 
-  <!-- ✅ 二级 Modal 独立在外层 -->
+  <!-- ✅ Level 2 Modal independently on the outer level -->
   <NModal :show="showChild" @update:show="showChild = $event">...</NModal>
 </ToastUI>
 ```
 
-**不要嵌套在内容中**:
+**Do not nest inside the content**:
 ```vue
-<!-- ❌ 错误: 子 Modal 嵌套在父 Modal 内容中 -->
+<!-- ❌ Wrong: child Modal nested in the parent Modal's content -->
 <NModal :show="showMain">
   <div class="content">
     <NModal :show="showChild">...</NModal>
@@ -389,17 +389,17 @@ const close = () => {
 </NModal>
 ```
 
-#### 3. 信任 UI 框架的自动管理
+#### 3. Trust the UI framework's automatic management
 
-Naive UI 会自动处理:
-- ✅ z-index 层级管理
-- ✅ 焦点陷阱 (focus trap)
-- ✅ ESC 键行为
-- ✅ 遮罩层点击
+Naive UI automatically handles:
+- ✅ z-index layer management
+- ✅ Focus trap
+- ✅ ESC key behavior
+- ✅ Mask layer clicks
 
-**移除所有手动配置**:
+**Remove all manual configuration**:
 ```vue
-<!-- ❌ 不要手动设置这些 -->
+<!-- ❌ Do not set these manually -->
 <n-modal
   :z-index="3100"
   :auto-focus="false"
@@ -407,35 +407,35 @@ Naive UI 会自动处理:
 >
 ```
 
-### 验证效果
+### Verification
 
-修复后应实现:
-- ✅ 二级 Modal (分类管理) 可以正常点击和编辑
-- ✅ 三级 Modal (新增/编辑分类) 可以正常交互
-- ✅ ESC 键只关闭最上层 Modal
-- ✅ 每层 Modal 独立管理焦点,互不干扰
+After the fix, the following should be achieved:
+- ✅ The level 2 Modal (category management) can be clicked and edited normally
+- ✅ The level 3 Modal (add/edit category) can be interacted with normally
+- ✅ The ESC key closes only the topmost Modal
+- ✅ Each Modal level manages focus independently without interfering with the others
 
-### 架构检查清单
+### Architecture Checklist
 
-在实现嵌套 Modal 时,确保:
+When implementing nested Modals, make sure that:
 
-- [ ] **组件类型明确**: Modal 组件 vs 内容组件
-- [ ] **Props 完整**: 包含 `show` prop
-- [ ] **Events 完整**: emit `update:show` 和 `close`
-- [ ] **数据流模式**: 使用单向绑定而非双向绑定
-- [ ] **层级结构**: 子 Modal 在外层而非嵌套
-- [ ] **信任框架**: 移除手动 z-index/focus 管理
-- [ ] **参考范式**: 对照 ModelManager.vue 实现
+- [ ] **Component type is clear**: Modal component vs content component
+- [ ] **Props are complete**: Includes the `show` prop
+- [ ] **Events are complete**: Emits `update:show` and `close`
+- [ ] **Data flow pattern**: Use one-way binding rather than two-way binding
+- [ ] **Hierarchy**: Child Modals are on the outer level rather than nested
+- [ ] **Trust the framework**: Remove manual z-index/focus management
+- [ ] **Reference paradigm**: Compare against the ModelManager.vue implementation
 
-### 最佳实践总结
+### Best Practices Summary
 
-1. **架构一致性**: 所有 Modal 管理组件都应采用相同的完整组件模式
-2. **单向数据流**: 避免 `v-model:show` 在复杂嵌套场景中的事件拦截问题
-3. **独立层级**: 子 Modal 必须在父 Modal 外层,保持独立管理
-4. **信任框架**: Naive UI 的自动管理机制足够智能,不需要手动干预
-5. **参考成熟实现**: 项目中的 ModelManager.vue 是标准范式
+1. **Architectural consistency**: All Modal management components should adopt the same complete component pattern
+2. **One-way data flow**: Avoid the event interception problem of `v-model:show` in complex nesting scenarios
+3. **Independent levels**: Child Modals must be outside the parent Modal, staying independently managed
+4. **Trust the framework**: Naive UI's automatic management is smart enough and needs no manual intervention
+5. **Refer to mature implementations**: ModelManager.vue in the project is the standard paradigm
 
-### 相关案例
+### Related Cases
 
-- **ModelManager.vue** + **ImageModelEditModal.vue**: 标准的两层 Modal 实现
-- **FavoriteManager.vue** + **CategoryManager.vue**: 修复前后的对比案例
+- **ModelManager.vue** + **ImageModelEditModal.vue**: A standard two-level Modal implementation
+- **FavoriteManager.vue** + **CategoryManager.vue**: A before-and-after comparison case

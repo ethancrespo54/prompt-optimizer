@@ -1,66 +1,66 @@
-# 子模式持久化 - 实施记录
+# Sub-mode Persistence - Implementation Record
 
-## 📋 实施概览
+## 📋 Implementation Overview
 
-本文档记录三种功能模式子模式持久化的完整实施过程，包括核心代码、关键决策和实施步骤。
+This document records the complete implementation process of sub-mode persistence for the three function modes, including the core code, key decisions, and implementation steps.
 
-## 🔧 核心实现
+## 🔧 Core Implementation
 
-### 1. 存储键定义
+### 1. Storage Key Definitions
 
-**文件**: `packages/core/src/constants/storage-keys.ts`
+**File**: `packages/core/src/constants/storage-keys.ts`
 
 ```typescript
 export const UI_SETTINGS_KEYS = {
-  // ... 现有键 ...
+  // ... existing keys ...
   FUNCTION_MODE: 'app:settings:ui:function-mode',
   
-  // ✅ 子模式持久化（三种功能模式独立存储）
-  BASIC_SUB_MODE: 'app:settings:ui:basic-sub-mode',     // 基础模式
-  PRO_SUB_MODE: 'app:settings:ui:pro-sub-mode',         // 上下文模式
-  IMAGE_SUB_MODE: 'app:settings:ui:image-sub-mode',     // 图像模式
+  // ✅ Sub-mode persistence (the three function modes are stored independently)
+  BASIC_SUB_MODE: 'app:settings:ui:basic-sub-mode',     // Basic mode
+  PRO_SUB_MODE: 'app:settings:ui:pro-sub-mode',         // Context mode
+  IMAGE_SUB_MODE: 'app:settings:ui:image-sub-mode',     // Image mode
 } as const
 ```
 
-**设计要点**:
-- 三个完全独立的存储键
-- 命名清晰反映功能模式
-- 使用 `as const` 确保类型安全
+**Design points**:
+- Three completely independent storage keys
+- Names clearly reflect the function mode
+- Use `as const` to ensure type safety
 
 ---
 
-### 2. TypeScript类型定义
+### 2. TypeScript Type Definitions
 
-**文件**: `packages/core/src/services/prompt/types.ts`
+**File**: `packages/core/src/services/prompt/types.ts`
 
 ```typescript
 /**
- * 子模式类型定义（三种功能模式独立）
- * 用于持久化各功能模式下的子模式选择
+ * Sub-mode type definitions (the three function modes are independent)
+ * Used to persist the sub-mode selection under each function mode
  */
 
-// 基础模式的子模式
+// Sub-modes of Basic mode
 export type BasicSubMode = "system" | "user"
 
-// 上下文模式的子模式
+// Sub-modes of Context mode
 export type ProSubMode = "system" | "user"
 
-// 图像模式的子模式
+// Sub-modes of Image mode
 export type ImageSubMode = "text2image" | "image2image"
 ```
 
-**设计要点**:
-- 三个独立的类型，即使值域相同也不混用
-- 清晰的JSDoc注释
-- 体现功能模式的独立性
+**Design points**:
+- Three independent types, never mixed even when the value domains are the same
+- Clear JSDoc comments
+- Reflects the independence of the function modes
 
 ---
 
-### 3. Composable实现
+### 3. Composable Implementation
 
 #### useBasicSubMode.ts
 
-**文件**: `packages/ui/src/composables/useBasicSubMode.ts`
+**File**: `packages/ui/src/composables/useBasicSubMode.ts`
 
 ```typescript
 import { ref, readonly, type Ref } from 'vue'
@@ -83,7 +83,7 @@ let singleton: {
 } | null = null
 
 export function useBasicSubMode(services: Ref<AppServices | null>): UseBasicSubModeApi {
-  // 单例模式：确保全局唯一状态
+  // Singleton pattern: ensure globally unique state
   if (!singleton) {
     singleton = { 
       mode: ref<BasicSubMode>('system'), 
@@ -94,7 +94,7 @@ export function useBasicSubMode(services: Ref<AppServices | null>): UseBasicSubM
 
   const { getPreference, setPreference } = usePreferences(services)
 
-  // 异步初始化：从存储读取，带防抖
+  // Asynchronous initialization: read from storage, with debouncing
   const ensureInitialized = async () => {
     if (singleton!.initialized) return
     if (singleton!.initializing) {
@@ -112,18 +112,18 @@ export function useBasicSubMode(services: Ref<AppServices | null>): UseBasicSubM
           ? saved 
           : 'system'
         
-        console.log(`[useBasicSubMode] 初始化完成，当前值: ${singleton!.mode.value}`)
+        console.log(`[useBasicSubMode] Initialization complete, current value: ${singleton!.mode.value}`)
 
         if (saved !== 'system' && saved !== 'user') {
           await setPreference(UI_SETTINGS_KEYS.BASIC_SUB_MODE, 'system')
-          console.log('[useBasicSubMode] 首次初始化，已持久化默认值: system')
+          console.log('[useBasicSubMode] First initialization, default value persisted: system')
         }
       } catch (e) {
-        console.error('[useBasicSubMode] 初始化失败，使用默认值 system:', e)
+        console.error('[useBasicSubMode] Initialization failed, using default value system:', e)
         try {
           await setPreference(UI_SETTINGS_KEYS.BASIC_SUB_MODE, 'system')
         } catch {
-          // 忽略设置失败错误
+          // Ignore set failure errors
         }
       } finally {
         singleton!.initialized = true
@@ -134,12 +134,12 @@ export function useBasicSubMode(services: Ref<AppServices | null>): UseBasicSubM
     await singleton!.initializing
   }
 
-  // 自动持久化：每次切换自动保存
+  // Automatic persistence: save on every switch
   const setBasicSubMode = async (mode: BasicSubMode) => {
     await ensureInitialized()
     singleton!.mode.value = mode
     await setPreference(UI_SETTINGS_KEYS.BASIC_SUB_MODE, mode)
-    console.log(`[useBasicSubMode] 子模式已切换并持久化: ${mode}`)
+    console.log(`[useBasicSubMode] Sub-mode switched and persisted: ${mode}`)
   }
 
   const switchToSystem = () => setBasicSubMode('system')
@@ -155,16 +155,16 @@ export function useBasicSubMode(services: Ref<AppServices | null>): UseBasicSubM
 }
 ```
 
-**关键设计模式**:
+**Key design patterns**:
 
-1. **单例模式**
+1. **Singleton pattern**
    ```typescript
    let singleton: { mode: Ref<SubMode>, initialized: boolean, initializing: Promise<void> | null } | null = null
    ```
-   - 确保全局唯一状态
-   - 避免多实例冲突
+   - Ensures globally unique state
+   - Avoids multi-instance conflicts
 
-2. **防抖初始化**
+2. **Debounced initialization**
    ```typescript
    if (singleton!.initialized) return
    if (singleton!.initializing) {
@@ -172,84 +172,84 @@ export function useBasicSubMode(services: Ref<AppServices | null>): UseBasicSubM
      return
    }
    ```
-   - 避免重复初始化
-   - 处理并发调用
+   - Avoids repeated initialization
+   - Handles concurrent calls
 
-3. **只读状态暴露**
+3. **Read-only state exposure**
    ```typescript
    return {
      basicSubMode: readonly(singleton.mode) as Ref<BasicSubMode>,
      // ...
    }
    ```
-   - 防止外部直接修改
-   - 强制通过setter更新
+   - Prevents direct external modification
+   - Forces updates through the setter
 
-4. **完善的错误处理**
+4. **Robust error handling**
    ```typescript
    try {
-     // 读取存储
+     // Read from storage
    } catch (e) {
-     // 回退到默认值
+     // Fall back to the default value
    } finally {
      singleton!.initialized = true
      singleton!.initializing = null
    }
    ```
 
-**其他Composable**:
-- `useProSubMode.ts` - 与useBasicSubMode结构相同，使用ProSubMode类型
-- `useImageSubMode.ts` - 与useBasicSubMode结构相同，默认值为'text2image'
+**Other Composables**:
+- `useProSubMode.ts` - Same structure as useBasicSubMode, using the ProSubMode type
+- `useImageSubMode.ts` - Same structure as useBasicSubMode, with the default value 'text2image'
 
 ---
 
-### 4. App.vue集成
+### 4. App.vue Integration
 
-#### 导入和状态初始化
+#### Imports and State Initialization
 
 ```typescript
 import {
     useBasicSubMode,
     useProSubMode,
     useImageSubMode,
-    // ... 其他导入
+    // ... other imports
 } from '@prompt-optimizer/ui'
 
-// 功能模式
+// Function mode
 const { functionMode, setFunctionMode } = useFunctionMode(services as any)
 
-// 三种功能模式的子模式持久化（独立存储）
+// Sub-mode persistence for the three function modes (stored independently)
 const { basicSubMode, setBasicSubMode } = useBasicSubMode(services as any)
 const { proSubMode, setProSubMode } = useProSubMode(services as any)
 const { imageSubMode, setImageSubMode } = useImageSubMode(services as any)
 ```
 
-#### 导航栏模板
+#### Navigation Bar Template
 
 ```vue
 <template #core-nav>
     <NSpace :size="12" align="center">
-        <!-- 功能模式选择器 -->
+        <!-- Function mode selector -->
         <FunctionModeSelector
             :modelValue="functionMode"
             @update:modelValue="handleModeSelect"
         />
 
-        <!-- 子模式选择器 - 基础模式 -->
+        <!-- Sub-mode selector - Basic mode -->
         <OptimizationModeSelectorUI
             v-if="functionMode === 'basic'"
             :modelValue="basicSubMode"
             @change="handleBasicSubModeChange"
         />
 
-        <!-- 子模式选择器 - 上下文模式 -->
+        <!-- Sub-mode selector - Context mode -->
         <OptimizationModeSelectorUI
             v-if="functionMode === 'pro'"
             :modelValue="proSubMode"
             @change="handleProSubModeChange"
         />
 
-        <!-- 子模式选择器 - 图像模式 -->
+        <!-- Sub-mode selector - Image mode -->
         <ImageModeSelector
             v-if="functionMode === 'image'"
             :modelValue="imageSubMode"
@@ -259,18 +259,18 @@ const { imageSubMode, setImageSubMode } = useImageSubMode(services as any)
 </template>
 ```
 
-#### 应用启动初始化
+#### Application Startup Initialization
 
 ```typescript
 onMounted(async () => {
-    // ... 其他初始化代码 ...
+    // ... other initialization code ...
 
-    // 根据当前功能模式，从存储恢复对应的子模式选择
+    // Based on the current function mode, restore the corresponding sub-mode selection from storage
     if (functionMode.value === "basic") {
         const { ensureInitialized } = useBasicSubMode(services as any);
         await ensureInitialized();
         selectedOptimizationMode.value = basicSubMode.value as OptimizationMode;
-        console.log(`[App] 基础模式子模式已恢复: ${basicSubMode.value}`);
+        console.log(`[App] Basic mode sub-mode restored: ${basicSubMode.value}`);
     } else if (functionMode.value === "pro") {
         const { ensureInitialized } = useProSubMode(services as any);
         await ensureInitialized();
@@ -278,26 +278,26 @@ onMounted(async () => {
         await handleContextModeChange(
             proSubMode.value as import("@prompt-optimizer/core").ContextMode,
         );
-        console.log(`[App] 上下文模式子模式已恢复: ${proSubMode.value}`);
+        console.log(`[App] Context mode sub-mode restored: ${proSubMode.value}`);
     } else if (functionMode.value === "image") {
         const { ensureInitialized } = useImageSubMode(services as any);
         await ensureInitialized();
-        console.log(`[App] 图像模式子模式已恢复: ${imageSubMode.value}`);
+        console.log(`[App] Image mode sub-mode restored: ${imageSubMode.value}`);
     }
 })
 ```
 
-#### 子模式切换处理
+#### Sub-mode Switch Handling
 
 ```typescript
-// 基础模式子模式变更处理器
+// Basic mode sub-mode change handler
 const handleBasicSubModeChange = async (mode: OptimizationMode) => {
     await setBasicSubMode(mode as import("@prompt-optimizer/core").BasicSubMode);
     selectedOptimizationMode.value = mode;
-    console.log(`[App] 基础模式子模式已切换并持久化: ${mode}`);
+    console.log(`[App] Basic mode sub-mode switched and persisted: ${mode}`);
 };
 
-// 上下文模式子模式变更处理器
+// Context mode sub-mode change handler
 const handleProSubModeChange = async (mode: OptimizationMode) => {
     await setProSubMode(mode as import("@prompt-optimizer/core").ProSubMode);
     selectedOptimizationMode.value = mode;
@@ -307,15 +307,15 @@ const handleProSubModeChange = async (mode: OptimizationMode) => {
             mode as import("@prompt-optimizer/core").ContextMode,
         );
     }
-    console.log(`[App] 上下文模式子模式已切换并持久化: ${mode}`);
+    console.log(`[App] Context mode sub-mode switched and persisted: ${mode}`);
 };
 
-// 图像模式子模式变更处理器
+// Image mode sub-mode change handler
 const handleImageSubModeChange = async (mode: import("@prompt-optimizer/core").ImageSubMode) => {
     await setImageSubMode(mode);
-    console.log(`[App] 图像模式子模式已切换并持久化: ${mode}`);
+    console.log(`[App] Image mode sub-mode switched and persisted: ${mode}`);
     
-    // 通知 ImageWorkspace 更新
+    // Notify ImageWorkspace to update
     if (typeof window !== "undefined") {
         window.dispatchEvent(new CustomEvent("image-submode-changed", { 
             detail: { mode } 
@@ -326,26 +326,26 @@ const handleImageSubModeChange = async (mode: import("@prompt-optimizer/core").I
 
 ---
 
-### 5. 图像模式特殊处理
+### 5. Special Handling for Image Mode
 
-#### ImageWorkspace.vue 修改
+#### ImageWorkspace.vue Changes
 
-**移除内部选择器**:
+**Remove the internal selector**:
 ```vue
-<!-- ❌ 移除前 -->
+<!-- ❌ Before removal -->
 <ImageModeSelector v-model="imageMode" @change="handleImageModeChange" />
 
-<!-- ✅ 移除后 -->
-<!-- 图像模式选择器已移到导航栏 -->
+<!-- ✅ After removal -->
+<!-- The image mode selector has been moved to the navigation bar -->
 ```
 
-**监听导航栏事件**:
+**Listen for navigation bar events**:
 ```typescript
-// 图像子模式变更事件处理器
+// Image sub-mode change event handler
 const handleImageSubModeChanged = (e: CustomEvent) => {
   const { mode } = e.detail
   if (mode && mode !== imageMode.value) {
-    console.log(`[ImageWorkspace] 接收到导航栏子模式切换事件: ${mode}`)
+    console.log(`[ImageWorkspace] Received sub-mode switch event from the navigation bar: ${mode}`)
     handleImageModeChange(mode)
   }
 }
@@ -365,36 +365,36 @@ onBeforeUnmount(() => {
 })
 ```
 
-#### useImageWorkspace.ts 修复
+#### useImageWorkspace.ts Fix
 
-**问题**: 初始化时未从存储恢复 `imageMode`
+**Problem**: `imageMode` was not restored from storage on initialization
 
-**修复**:
+**Fix**:
 ```typescript
-// 文件: packages/ui/src/composables/useImageWorkspace.ts
+// File: packages/ui/src/composables/useImageWorkspace.ts
 
-// 1. 导入 UI_SETTINGS_KEYS
+// 1. Import UI_SETTINGS_KEYS
 import {
   IMAGE_MODE_KEYS,
-  UI_SETTINGS_KEYS,  // ✅ 新增
+  UI_SETTINGS_KEYS,  // ✅ New
   // ...
 } from '@prompt-optimizer/core'
 
-// 2. 修改 restoreSelections 方法
+// 2. Modify the restoreSelections method
 const restoreSelections = async () => {
   try {
     state.selectedTextModelKey = await getPreference(...)
     state.selectedImageModelKey = await getPreference(...)
     state.isCompareMode = await getPreference(...)
 
-    // ✅ 恢复图像子模式（从全局持久化存储读取）
+    // ✅ Restore the image sub-mode (read from global persistent storage)
     const savedImageMode = await getPreference(
       UI_SETTINGS_KEYS.IMAGE_SUB_MODE,
       "text2image",
     );
     if (savedImageMode === "text2image" || savedImageMode === "image2image") {
       state.imageMode = savedImageMode;
-      console.log(`[useImageWorkspace] 图像子模式已从存储恢复: ${savedImageMode}`);
+      console.log(`[useImageWorkspace] Image sub-mode restored from storage: ${savedImageMode}`);
     }
 
     await restoreTemplateSelection();
@@ -407,16 +407,16 @@ const restoreSelections = async () => {
 
 ---
 
-## 🔄 数据流
+## 🔄 Data Flow
 
-### 初始化流程
+### Initialization Flow
 
 ```
-App启动
+App starts
   ↓
-读取 FUNCTION_MODE → 确定当前功能模式
+Read FUNCTION_MODE → determine the current function mode
   ↓
-根据功能模式调用对应的 ensureInitialized()
+Call the corresponding ensureInitialized() based on the function mode
   ↓
 ┌──────────┬──────────┬──────────┐
 │  basic   │   pro    │  image   │
@@ -425,105 +425,105 @@ App启动
 │ SUB_MODE │ SUB_MODE │ SUB_MODE │
 └──────────┴──────────┴──────────┘
   ↓
-恢复子模式状态 → 显示对应的选择器
+Restore the sub-mode state → show the corresponding selector
 ```
 
-### 切换流程
+### Switch Flow
 
 ```
-用户点击导航栏选择器
+User clicks a navigation bar selector
   ↓
-触发 onChange 事件
+Triggers the onChange event
   ↓
-调用对应的 handleSubModeChange
+Calls the corresponding handleSubModeChange
   ↓
-调用 setSubMode(newMode)
+Calls setSubMode(newMode)
   ↓
-更新内存状态 → 保存到 localStorage
+Update in-memory state → save to localStorage
   ↓
-触发响应式更新 → UI自动刷新
+Triggers a reactive update → UI refreshes automatically
   ↓
-（图像模式）发送自定义事件通知 ImageWorkspace
+(Image mode) Send a custom event to notify ImageWorkspace
 ```
 
 ---
 
-## 📝 关键代码位置
+## 📝 Key Code Locations
 
-| 功能 | 文件路径 | 行号范围 |
+| Function | File path | Line range |
 |------|----------|----------|
-| 存储键定义 | `packages/core/src/constants/storage-keys.ts` | ~28-32 |
-| 类型定义 | `packages/core/src/services/prompt/types.ts` | ~15-25 |
-| useBasicSubMode | `packages/ui/src/composables/useBasicSubMode.ts` | 全文 |
-| useProSubMode | `packages/ui/src/composables/useProSubMode.ts` | 全文 |
-| useImageSubMode | `packages/ui/src/composables/useImageSubMode.ts` | 全文 |
-| App.vue 导航栏 | `packages/web/src/App.vue` | ~21-49 |
-| App.vue 初始化 | `packages/web/src/App.vue` | ~1566-1586 |
-| App.vue 切换器 | `packages/web/src/App.vue` | ~1788-1831 |
-| ImageWorkspace 事件 | `packages/ui/src/components/image-mode/ImageWorkspace.vue` | ~1441-1547 |
-| useImageWorkspace 修复 | `packages/ui/src/composables/useImageWorkspace.ts` | ~282-292 |
+| Storage key definitions | `packages/core/src/constants/storage-keys.ts` | ~28-32 |
+| Type definitions | `packages/core/src/services/prompt/types.ts` | ~15-25 |
+| useBasicSubMode | `packages/ui/src/composables/useBasicSubMode.ts` | Entire file |
+| useProSubMode | `packages/ui/src/composables/useProSubMode.ts` | Entire file |
+| useImageSubMode | `packages/ui/src/composables/useImageSubMode.ts` | Entire file |
+| App.vue navigation bar | `packages/web/src/App.vue` | ~21-49 |
+| App.vue initialization | `packages/web/src/App.vue` | ~1566-1586 |
+| App.vue switch handlers | `packages/web/src/App.vue` | ~1788-1831 |
+| ImageWorkspace events | `packages/ui/src/components/image-mode/ImageWorkspace.vue` | ~1441-1547 |
+| useImageWorkspace fix | `packages/ui/src/composables/useImageWorkspace.ts` | ~282-292 |
 
 ---
 
-## 🧪 测试验证
+## 🧪 Test Verification
 
-### 测试场景
+### Test Scenarios
 
-#### 场景1: 基础模式持久化
-1. 切换到基础模式
-2. 选择"用户提示词优化"
-3. 刷新页面
-4. ✅ 验证: 基础模式仍显示"用户提示词优化"
+#### Scenario 1: Basic Mode Persistence
+1. Switch to Basic mode
+2. Select "User Prompt Optimization"
+3. Refresh the page
+4. ✅ Verify: Basic mode still shows "User Prompt Optimization"
 
-#### 场景2: 独立性验证
-1. 基础模式选择"用户提示词优化"
-2. 切换到上下文模式，选择"系统提示词优化"
-3. 切换回基础模式
-4. ✅ 验证: 基础模式仍显示"用户提示词优化"（证明独立）
+#### Scenario 2: Independence Verification
+1. In Basic mode, select "User Prompt Optimization"
+2. Switch to Context mode and select "System Prompt Optimization"
+3. Switch back to Basic mode
+4. ✅ Verify: Basic mode still shows "User Prompt Optimization" (proves independence)
 
-#### 场景3: 图像模式初始化修复
-1. 切换到图像模式
-2. 选择"图生图"
-3. 刷新页面
-4. ✅ 验证: 文件上传按钮正确显示
+#### Scenario 3: Image Mode Initialization Fix
+1. Switch to Image mode
+2. Select "Image to Image"
+3. Refresh the page
+4. ✅ Verify: The file upload button is displayed correctly
 
-### 验证日志
+### Verification Logs
 
-成功的日志输出示例:
+Example of successful log output:
 ```
-[useBasicSubMode] 初始化完成，当前值: user
-[App] 基础模式子模式已恢复: user
-[useProSubMode] 初始化完成，当前值: system
-[App] 上下文模式子模式已恢复: system
-[useImageSubMode] 初始化完成，当前值: image2image
-[useImageWorkspace] 图像子模式已从存储恢复: image2image
-[App] 图像模式子模式已恢复: image2image
+[useBasicSubMode] Initialization complete, current value: user
+[App] Basic mode sub-mode restored: user
+[useProSubMode] Initialization complete, current value: system
+[App] Context mode sub-mode restored: system
+[useImageSubMode] Initialization complete, current value: image2image
+[useImageWorkspace] Image sub-mode restored from storage: image2image
+[App] Image mode sub-mode restored: image2image
 ```
 
 ---
 
-## 🎯 实施总结
+## 🎯 Implementation Summary
 
-### 核心成就
-1. ✅ 三个功能模式完全独立的子模式管理
-2. ✅ 统一的导航栏UI体验
-3. ✅ 完善的持久化和恢复机制
-4. ✅ 修复了图像模式的初始化问题
+### Core Achievements
+1. ✅ Completely independent sub-mode management for the three function modes
+2. ✅ Unified navigation bar UI experience
+3. ✅ Robust persistence and restore mechanism
+4. ✅ Fixed the Image mode initialization problem
 
-### 技术亮点
-1. **单例模式**: 确保全局唯一状态
-2. **异步初始化**: 不阻塞应用启动
-3. **自动持久化**: 用户无感知的状态保存
-4. **完善的错误处理**: 回退机制保证可用性
-5. **清晰的日志**: 便于调试和问题排查
+### Technical Highlights
+1. **Singleton pattern**: Ensures globally unique state
+2. **Asynchronous initialization**: Does not block application startup
+3. **Automatic persistence**: State is saved transparently to the user
+4. **Robust error handling**: A fallback mechanism guarantees usability
+5. **Clear logs**: Easy debugging and troubleshooting
 
-### 代码质量
-- **类型安全**: 完整的TypeScript类型定义
-- **可维护性**: 清晰的职责分离和模块化
-- **可扩展性**: 易于添加新的功能模式
-- **向后兼容**: 与现有代码平滑集成
+### Code Quality
+- **Type safety**: Complete TypeScript type definitions
+- **Maintainability**: Clear separation of responsibilities and modularity
+- **Extensibility**: Easy to add new function modes
+- **Backward compatibility**: Integrates smoothly with existing code
 
 ---
 
-**文档版本**: v1.0  
-**最后更新**: 2025-10-22
+**Document version**: v1.0  
+**Last updated**: 2025-10-22

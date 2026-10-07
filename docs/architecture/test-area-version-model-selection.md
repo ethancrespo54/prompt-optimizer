@@ -168,8 +168,8 @@ Render them next to the title (and before/after evaluation entry).
 
 Keep existing i18n titles but append selection info for clarity, e.g.
 
-- `原始提示词结果 (v0)`
-- `优化后提示词结果 (latest=v6)`
+- `Original Prompt Result (v0)`
+- `Optimized Prompt Result (latest=v6)`
 
 This can be implemented by computing `originalResultTitle` and `optimizedResultTitle` from the selected values.
 

@@ -1,247 +1,247 @@
-# 模型管理正常流程测试
+# Model Management Normal Flow Test
 
-## 📖 测试概述
-验证模型管理功能的基本流程，确保用户能够正常配置和管理AI模型。
+## 📖 Test Overview
+Verify the basic flow of the model management feature, ensuring users can configure and manage AI models normally.
 
-## 🎯 测试目标
-- 验证模型管理界面正常打开
-- 验证API密钥配置功能
-- 验证模型连接测试功能
-- 验证配置保存和加载
+## 🎯 Test Goals
+- Verify that the model management interface opens normally
+- Verify the API key configuration feature
+- Verify the model connection test feature
+- Verify saving and loading of configuration
 
-## 📋 前置条件
-- [ ] 应用已启动并加载完成
-- [ ] 用户界面显示正常
-- [ ] 网络连接正常
-- [ ] 已准备好测试用的API密钥（可选）
-
----
-
-## 🔧 测试步骤
-
-### 步骤1：打开模型管理器
-
-**AI执行指导：**
-- 使用 `browser_snapshot` 获取页面当前状态
-- 查找包含"⚙️"图标和"模型管理"文字的按钮
-- 使用 `browser_click` 点击该按钮
-
-**预期结果：**
-- 弹出模型管理对话框
-- 对话框标题显示"模型配置"或类似文字
-- 界面显示各种模型的配置选项
-
-**验证点：**
-- [ ] 模型管理弹窗已显示
-- [ ] 弹窗标题正确显示
-- [ ] 可以看到OpenAI、Claude、Gemini等模型选项
-- [ ] 界面布局清晰，功能区域明确
+## 📋 Prerequisites
+- [ ] The application has started and finished loading
+- [ ] The user interface displays correctly
+- [ ] The network connection is normal
+- [ ] An API key for testing is ready (optional)
 
 ---
 
-### 步骤2：查看模型配置界面
+## 🔧 Test Steps
 
-**AI执行指导：**
-- 使用 `browser_snapshot` 查看当前弹窗内容
-- 检查各个模型的配置区域
-- 查看API密钥输入框和其他配置选项
-- 检查按钮和控件的可用性
+### Step 1: Open the Model Manager
 
-**预期结果：**
-- 每个模型都有独立的配置区域
-- API密钥输入框清晰可见
-- 模型选择下拉框可用
-- 测试连接按钮可见
+**AI execution guidance:**
+- Use `browser_snapshot` to get the current page state
+- Find the button containing the "⚙️" icon and the "Model Manager" text
+- Use `browser_click` to click that button
 
-**验证点：**
-- [ ] 模型配置区域布局合理
-- [ ] API密钥输入框可见
-- [ ] 模型选择选项可用
-- [ ] 测试连接按钮可见
+**Expected results:**
+- The model management dialog pops up
+- The dialog title shows "Model Configuration" or similar text
+- The interface shows configuration options for various models
+
+**Verification points:**
+- [ ] The model management popup is displayed
+- [ ] The popup title is displayed correctly
+- [ ] Model options such as OpenAI, Claude, and Gemini are visible
+- [ ] The interface layout is clear and the functional areas are well defined
 
 ---
 
-### 步骤3：配置OpenAI模型（模拟）
+### Step 2: View the Model Configuration Interface
 
-**AI执行指导：**
-- 找到标有"OpenAI"的配置区域
-- 查找API密钥输入框
-- 使用 `browser_type` 输入测试密钥（如果允许）
-- 查找模型选择下拉框并检查选项
+**AI execution guidance:**
+- Use `browser_snapshot` to view the current popup content
+- Check the configuration area of each model
+- Look at the API key input box and other configuration options
+- Check the availability of buttons and controls
 
-**测试数据：**
+**Expected results:**
+- Each model has an independent configuration area
+- The API key input box is clearly visible
+- The model selection dropdown is available
+- The test connection button is visible
+
+**Verification points:**
+- [ ] The model configuration area layout is reasonable
+- [ ] The API key input box is visible
+- [ ] Model selection options are available
+- [ ] The test connection button is visible
+
+---
+
+### Step 3: Configure the OpenAI Model (Simulated)
+
+**AI execution guidance:**
+- Find the configuration area labeled "OpenAI"
+- Find the API key input box
+- Use `browser_type` to enter a test key (if allowed)
+- Find the model selection dropdown and check the options
+
+**Test data:**
 ```
-API密钥：test_api_key_for_testing
-模型选择：GPT-4 或 GPT-3.5-turbo
+API key: test_api_key_for_testing
+Model selection: GPT-4 or GPT-3.5-turbo
 ```
 
-**预期结果：**
-- API密钥输入框接受输入
-- 模型选择下拉框显示可用选项
-- 配置界面响应正常
+**Expected results:**
+- The API key input box accepts input
+- The model selection dropdown shows available options
+- The configuration interface responds normally
 
-**验证点：**
-- [ ] API密钥输入功能正常
-- [ ] 模型选择功能可用
-- [ ] 配置界面响应正常
-- [ ] 没有格式错误提示
-
----
-
-### 步骤4：测试连接功能（模拟）
-
-**AI执行指导：**
-- 查找"测试连接"、"验证"、"测试"等按钮
-- 使用 `browser_click` 点击测试按钮
-- 使用 `browser_wait_for` 等待测试完成
-- 检查测试结果的显示状态
-
-**预期结果：**
-- 测试按钮响应点击
-- 显示测试进行中的状态（如加载图标）
-- 测试完成后显示结果（成功或失败）
-- 结果信息清晰明确
-
-**验证点：**
-- [ ] 测试按钮功能正常
-- [ ] 测试过程状态清晰
-- [ ] 测试结果明确显示
-- [ ] 错误信息有用（如果测试失败）
+**Verification points:**
+- [ ] The API key input feature works normally
+- [ ] The model selection feature is available
+- [ ] The configuration interface responds normally
+- [ ] There are no format error prompts
 
 ---
 
-### 步骤5：保存配置
+### Step 4: Test the Connection Feature (Simulated)
 
-**AI执行指导：**
-- 检查所有配置信息
-- 查找"保存"、"确定"、"应用"等按钮
-- 使用 `browser_click` 点击保存按钮
-- 等待保存操作完成的确认
+**AI execution guidance:**
+- Find buttons such as "Test Connection", "Verify", or "Test"
+- Use `browser_click` to click the test button
+- Use `browser_wait_for` to wait for the test to complete
+- Check the display state of the test result
 
-**预期结果：**
-- 保存按钮响应正常
-- 显示保存成功的提示信息
-- 弹窗状态更新或关闭
-- 配置信息得到保存
+**Expected results:**
+- The test button responds to clicks
+- A state showing the test in progress is displayed (such as a loading icon)
+- The result (success or failure) is displayed after the test completes
+- The result message is clear
 
-**验证点：**
-- [ ] 保存按钮功能正常
-- [ ] 显示保存成功提示
-- [ ] 弹窗状态正确更新
-- [ ] 配置保存成功
-
----
-
-### 步骤6：验证配置生效
-
-**AI执行指导：**
-- 关闭模型管理弹窗（如果还打开）
-- 使用 `browser_snapshot` 检查主界面状态
-- 查找模型选择下拉框
-- 验证新配置的模型是否出现在选项中
-
-**预期结果：**
-- 主界面模型选择器包含配置的模型
-- 模型名称正确显示
-- 状态指示器显示为可用
-- 可以正常选择和切换模型
-
-**验证点：**
-- [ ] 配置的模型出现在选择器中
-- [ ] 模型名称显示正确
-- [ ] 状态指示器显示正常
-- [ ] 模型选择功能正常工作
+**Verification points:**
+- [ ] The test button works normally
+- [ ] The test process state is clear
+- [ ] The test result is clearly displayed
+- [ ] The error message is useful (if the test fails)
 
 ---
 
-### 步骤7：重新打开验证持久性
+### Step 5: Save the Configuration
 
-**AI执行指导：**
-- 重新打开模型管理界面
-- 检查之前的配置是否保持
-- 验证API密钥和模型选择是否保存
-- 测试配置的完整性
+**AI execution guidance:**
+- Check all configuration information
+- Find buttons such as "Save", "OK", or "Apply"
+- Use `browser_click` to click the save button
+- Wait for confirmation that the save operation completed
 
-**预期结果：**
-- 之前的配置正确加载
-- API密钥状态正确显示
-- 模型选择保持不变
-- 所有设置持久保存
+**Expected results:**
+- The save button responds normally
+- A save success message is displayed
+- The popup state updates or closes
+- The configuration is saved
 
-**验证点：**
-- [ ] 配置正确加载
-- [ ] API密钥状态正确
-- [ ] 模型选择保持
-- [ ] 设置持久保存
-
----
-
-## ⚠️ 常见问题检查
-
-### 界面显示问题
-- 弹窗无法打开
-- 配置区域显示异常
-- 按钮状态错误
-- 布局错乱
-
-### 配置功能问题
-- API密钥无法输入
-- 模型选择不可用
-- 测试连接失败
-- 保存功能异常
-
-### 数据持久性问题
-- 配置无法保存
-- 刷新后配置丢失
-- 设置加载失败
-- 本地存储异常
+**Verification points:**
+- [ ] The save button works normally
+- [ ] A save success message is displayed
+- [ ] The popup state updates correctly
+- [ ] The configuration is saved successfully
 
 ---
 
-## 🤖 AI验证执行模板
+### Step 6: Verify the Configuration Takes Effect
+
+**AI execution guidance:**
+- Close the model management popup (if still open)
+- Use `browser_snapshot` to check the main interface state
+- Find the model selection dropdown
+- Verify that the newly configured model appears in the options
+
+**Expected results:**
+- The model selector on the main interface contains the configured model
+- The model name is displayed correctly
+- The status indicator shows it as available
+- Models can be selected and switched normally
+
+**Verification points:**
+- [ ] The configured model appears in the selector
+- [ ] The model name is displayed correctly
+- [ ] The status indicator displays normally
+- [ ] The model selection feature works normally
+
+---
+
+### Step 7: Reopen to Verify Persistence
+
+**AI execution guidance:**
+- Reopen the model management interface
+- Check whether the previous configuration is retained
+- Verify whether the API key and model selection were saved
+- Test the integrity of the configuration
+
+**Expected results:**
+- The previous configuration is loaded correctly
+- The API key status is displayed correctly
+- The model selection remains unchanged
+- All settings are saved persistently
+
+**Verification points:**
+- [ ] The configuration is loaded correctly
+- [ ] The API key status is correct
+- [ ] The model selection is retained
+- [ ] The settings are saved persistently
+
+---
+
+## ⚠️ Common Problem Checks
+
+### Interface Display Problems
+- The popup cannot be opened
+- The configuration area displays abnormally
+- Incorrect button states
+- Layout disorder
+
+### Configuration Feature Problems
+- The API key cannot be entered
+- Model selection is unavailable
+- Test connection fails
+- The save feature is abnormal
+
+### Data Persistence Problems
+- The configuration cannot be saved
+- The configuration is lost after refresh
+- Settings fail to load
+- Local storage anomalies
+
+---
+
+## 🤖 AI Verification Execution Template
 
 ```javascript
-// 1. 打开应用
+// 1. Open the application
 browser_navigate("http://localhost:18181/")
 
-// 2. 获取初始状态
+// 2. Get the initial state
 browser_snapshot()
 
-// 3. 打开模型管理
-browser_click(element="模型管理按钮", ref="model_management_button")
+// 3. Open model management
+browser_click(element="Model Manager button", ref="model_management_button")
 browser_snapshot()
 
-// 4. 检查配置界面
+// 4. Check the configuration interface
 browser_snapshot()
 
-// 5. 配置OpenAI模型（如果允许）
-browser_type(element="API密钥输入框", ref="api_key_input", text="test_api_key")
+// 5. Configure the OpenAI model (if allowed)
+browser_type(element="API key input box", ref="api_key_input", text="test_api_key")
 browser_snapshot()
 
-// 6. 测试连接（如果可以）
-browser_click(element="测试连接按钮", ref="test_connection_button")
+// 6. Test the connection (if possible)
+browser_click(element="Test Connection button", ref="test_connection_button")
 browser_wait_for(time=5)
 browser_snapshot()
 
-// 7. 保存配置
-browser_click(element="保存按钮", ref="save_button")
+// 7. Save the configuration
+browser_click(element="Save button", ref="save_button")
 browser_snapshot()
 
-// 8. 关闭弹窗
+// 8. Close the popup
 browser_press_key("Escape")
 
-// 9. 验证配置生效
+// 9. Verify the configuration takes effect
 browser_snapshot()
 
-// 10. 重新打开验证持久性
-browser_click(element="模型管理按钮", ref="model_management_button")
+// 10. Reopen to verify persistence
+browser_click(element="Model Manager button", ref="model_management_button")
 browser_snapshot()
 ```
 
-**成功标准：**
-- 模型管理界面正常打开和关闭
-- 配置功能正常工作
-- 测试连接功能响应正常
-- 配置能够正确保存和加载
-- 主界面正确反映配置变化
-- 无错误提示或异常状态
+**Success criteria:**
+- The model management interface opens and closes normally
+- The configuration features work normally
+- The test connection feature responds normally
+- The configuration can be saved and loaded correctly
+- The main interface correctly reflects configuration changes
+- No error messages or abnormal states

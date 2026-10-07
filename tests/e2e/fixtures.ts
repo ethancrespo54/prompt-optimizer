@@ -7,7 +7,7 @@ const IGNORE_CONSOLE_PATTERNS: RegExp[] = [
   /ResizeObserver loop completed with undelivered notifications/i,
   // Vue Router warnings during route migration (pro/user -> pro/variable, pro/system -> pro/multi)
   /Vue Router warn.*No match found for location with path "\/(pro\/user|pro\/system)"/i,
-  /Router.*非法 subMode.*重定向/i
+  /Router.*Illegal subMode.*redirect/i
 ]
 
 function shouldIgnoreConsoleMessage(message: string): boolean {
@@ -23,48 +23,48 @@ function formatConsoleMessage(msg: ConsoleMessage): string {
 
 
 /**
- * 自定义测试 fixture，扩展页面功能
+ * Custom test fixture that extends page functionality
  *
- * 存储隔离策略：
- * 1. 为每个测试生成唯一的测试数据库名称
- * 2. 在每次测试前清理旧的测试数据库
- * 3. 通过 init script 注入数据库名称
- * 4. 支持完全并行测试，无需担心测试间状态泄漏
+ * Storage isolation strategy:
+ * 1. Generate a unique test database name for each test
+ * 2. Clean up old test databases before each test
+ * 3. Inject the database name via an init script
+ * 4. Fully parallel tests are supported, with no cross-test state leakage
  */
 export const test = base.extend<{ context: BrowserContext; page: Page }>({
-  // 为每个测试创建独立的 BrowserContext
+  // Create an independent BrowserContext for each test
   context: async ({ browser }, use) => {
-    // ✅ 创建新的 BrowserContext，禁用所有存储（避免测试间状态泄漏）
+    // ✅ Create a new BrowserContext with all storage disabled (avoids cross-test state leakage)
     const context = await browser.newContext({
-      // 禁用 localStorage 和 sessionStorage
-      storageState: undefined, // 不加载任何存储状态
-      // 可以在这里添加其他 context 级别的配置
+      // Disable localStorage and sessionStorage
+      storageState: undefined, // do not load any storage state
+      // Other context-level configuration can be added here
     })
     await use(context)
     await context.close()
   },
 
-  // 在独立的 context 中创建 page
+  // Create the page inside the independent context
   page: async ({ context }, use, testInfo) => {
     const page = await context.newPage()
     const problems: string[] = []
 
-    // ✅ Step 1: 为本次测试生成唯一数据库名称
-    // 使用 workerIndex + timestamp + random 确保唯一性
+    // ✅ Step 1: generate a unique database name for this test
+    // Use workerIndex + timestamp + random to ensure uniqueness
     const testDbName = `test-db-${testInfo.workerIndex}-${Date.now()}-${Math.random().toString(36).substring(7)}`
 
-    // ✅ Step 2: 注入测试配置到页面（合并为一次 addInitScript 调用）
+    // ✅ Step 2: inject the test configuration into the page (merged into a single addInitScript call)
     await page.addInitScript((dbName) => {
-      // 清理 localStorage 和 sessionStorage（避免测试间状态泄漏）。
-      // 注意：当页面导航失败落到浏览器错误页（如 chrome-error://）时，访问 storage 可能抛 SecurityError。
-      // 这里容错处理，避免测试基建本身把“服务未就绪/连接中断”误报为页面脚本错误。
+      // Clear localStorage and sessionStorage (avoids cross-test state leakage).
+      // Note: when navigation fails and lands on a browser error page (e.g. chrome-error://), accessing storage may throw a SecurityError.
+      // Handle this gracefully so the test infrastructure does not misreport "service not ready / connection interrupted" as a page script error.
       try {
         localStorage.clear()
       } catch {}
       try {
         sessionStorage.clear()
       } catch {}
-      // 注入测试数据库名称
+      // Inject the test database name
       ;(window as any).__TEST_DB_NAME__ = dbName
     }, testDbName)
 
@@ -86,8 +86,8 @@ export const test = base.extend<{ context: BrowserContext; page: Page }>({
     page.on('console', onConsole)
     page.on('pageerror', onPageError)
 
-    // 🎬 设置 VCR（录制/回放 LLM API）
-    // 从 titlePath 提取相对路径，去掉 tests/e2e/ 前缀
+    // 🎬 Set up VCR (record/replay LLM API calls)
+    // Extract the relative path from titlePath, stripping the tests/e2e/ prefix
     const fullPath = testInfo.titlePath[0] || 'unknown-test'
     const testName = fullPath.replace(/^tests\/e2e\//, '')
     const testCase = testInfo.title || 'unknown-case'
@@ -99,8 +99,8 @@ export const test = base.extend<{ context: BrowserContext; page: Page }>({
       page.off('console', onConsole)
       page.off('pageerror', onPageError)
       await page.close()
-      // 不需要显式清理当前测试的数据库
-      // 每个测试都会使用独立的 BrowserContext，测试结束后会释放对应的存储（IndexedDB/localStorage 等）
+      // No need to explicitly clean up the current test database
+      // Each test uses its own BrowserContext, and its storage (IndexedDB/localStorage, etc.) is released when the test ends
     }
 
     if (testInfo.status === 'skipped') return

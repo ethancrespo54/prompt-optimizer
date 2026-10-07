@@ -15,7 +15,7 @@ pnpm test:unit
 pnpm test:fast
 ```
 
-### E2E 测试
+### E2E Tests
 
 ```bash
 # Smart E2E run (automatic replay/record)

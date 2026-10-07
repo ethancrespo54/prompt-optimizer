@@ -1,6 +1,6 @@
 {
   "testName": "analysis\\basic-user.spec.ts",
-  "testCase": "分析提示词并显示评估结果",
+  "testCase": "Analyze the prompt and display the evaluation result",
   "provider": "deepseek",
   "url": "https://api.deepseek.com/v1/chat/completions",
   "requestBody": {

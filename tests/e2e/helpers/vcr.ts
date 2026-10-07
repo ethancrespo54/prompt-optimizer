@@ -1,12 +1,12 @@
 /**
- * E2E 测试 VCR (Video Cassette Recorder)
+ * E2E test VCR (Video Cassette Recorder)
  *
- * 为 E2E 测试提供 LLM API 请求的录制和回放功能
+ * Provides recording and replay of LLM API requests for E2E tests
  *
- * 工作原理：
- * - 拦截真实的 LLM API 请求（OpenAI, DeepSeek 等）
- * - 首次运行：调用真实 API 并保存响应为 fixture
- * - 后续运行：直接回放 fixture，无需真实 API 调用
+ * How it works:
+ * - Intercepts real LLM API requests (OpenAI, DeepSeek, etc.)
+ * - First run: calls the real API and saves the response as a fixture
+ * - Later runs: replays the fixture directly, with no real API call
  *
  * @module tests/e2e/helpers/vcr
  */
@@ -17,17 +17,17 @@ import * as path from 'path'
 import * as crypto from 'crypto'
 
 /**
- * LLM API 提供商
+ * LLM API provider
  */
 type LLMProvider = 'openai' | 'deepseek' | 'anthropic' | 'gemini' | 'zhipu' | 'modelscope' | 'siliconflow'
 
 /**
- * VCR 模式
+ * VCR mode
  */
 export type VCRMode = 'auto' | 'record' | 'replay' | 'live'
 
 /**
- * VCR 配置
+ * VCR config
  */
 interface VCRConfig {
   mode: VCRMode
@@ -65,8 +65,8 @@ interface VCRFixture {
   testCase: string
 
   /**
-   * 支持同一个测试用例内的多次 LLM 请求。
-   * 录制时追加 interactions，回放时基于 requestHash 匹配并消费对应条目。
+   * Supports multiple LLM requests within the same test case.
+   * On record, interactions are appended; on replay, entries are matched by requestHash and consumed.
    */
   interactions: VCRInteraction[]
 
@@ -80,7 +80,7 @@ interface VCRFixture {
 }
 
 /**
- * E2E VCR 类
+ * E2E VCR class
  */
 class E2EVCR {
   private config: VCRConfig
@@ -96,7 +96,7 @@ class E2EVCR {
   }
 
   /**
-   * 设置当前测试上下文
+   * Set the current test context
    */
   async setTestContext(testName: string, testCase: string) {
     this.currentTestName = testName
@@ -118,7 +118,7 @@ class E2EVCR {
   }
 
   /**
-   * 获取模式符号
+   * Get the mode symbol
    */
   private getModeSymbol(): string {
     const { mode } = this.config
@@ -130,7 +130,7 @@ class E2EVCR {
   }
 
   /**
-   * 判断是否应该录制
+   * Decide whether to record
    */
   private async shouldRecord(): Promise<boolean> {
     const { mode } = this.config
@@ -138,12 +138,12 @@ class E2EVCR {
     if (mode === 'record') return true
     if (mode === 'replay') return false
 
-    // auto 模式：检查 fixture 是否存在
+    // auto mode: check whether the fixture exists
     return !(await this.fixtureExists())
   }
 
   /**
-   * 检查 fixture 是否存在
+   * Check whether the fixture exists
    */
   private async fixtureExists(): Promise<boolean> {
     const fixturePath = this.getFixturePath()
@@ -156,7 +156,7 @@ class E2EVCR {
   }
 
   /**
-   * 获取 fixture 路径
+   * Get the fixture path
    */
   private getFixturePath(): string {
     const sanitizedTestName = this.sanitizeFilename(this.currentTestName)
@@ -169,22 +169,22 @@ class E2EVCR {
   }
 
   /**
-   * 清理文件名（保留中文、字母、数字）
+   * Sanitize the filename (keeps CJK characters, letters and digits)
    */
   private sanitizeFilename(name: string): string {
-    // Windows 路径会包含反斜杠，正则字符类里会把 "\\" 当作普通字符保留
-    // 这会导致 fixture 目录名与预期不一致（例如 optimize\pro-multi.spec.ts）。
-    // 先统一将路径分隔符替换为 '-' 再进行过滤。
+    // Windows paths contain backslashes, and inside a regex character class "\\" would be kept as a normal character,
+    // which makes the fixture directory name differ from the expected one (e.g. optimize\pro-multi.spec.ts).
+    // First replace path separators with '-' and then filter.
     return name
       .replace(/\\/g, '-')
-      .replace(/[^\u4e00-\u9fa5a-z0-9]/gi, '-') // 保留中文、字母、数字
-      .replace(/-+/g, '-') // 合并多个连字符
-      .replace(/^-|-$/g, '') // 移除首尾连字符
+      .replace(/[^\u4e00-\u9fa5a-z0-9]/gi, '-') // keep CJK, letters, digits
+      .replace(/-+/g, '-') // collapse multiple hyphens
+      .replace(/^-|-$/g, '') // strip leading/trailing hyphens
       .toLowerCase()
   }
 
   /**
-   * 识别 LLM 提供商
+   * Identify the LLM provider
    */
   private identifyProvider(url: string): LLMProvider | null {
     if (url.includes('api.openai.com')) return 'openai'
@@ -198,7 +198,7 @@ class E2EVCR {
   }
 
   /**
-   * 保存 fixture
+   * Save the fixture
    */
   private stableStringify(value: any): string {
     if (value === null || value === undefined) return String(value)
@@ -357,7 +357,7 @@ class E2EVCR {
   }
 
   /**
-   * 加载 fixture
+   * Load the fixture
    */
   async loadFixture(): Promise<VCRFixture | null> {
     const fixturePath = this.getFixturePath()
@@ -392,17 +392,17 @@ class E2EVCR {
   }
 
   /**
-   * 设置路由拦截
+   * Set up route interception
    */
   async setupRoutes(page: Page) {
     const { mode } = this.config
 
-    // live 模式：不拦截
+    // live mode: do not intercept
     if (mode === 'live') {
       return
     }
 
-    // 拦截所有 LLM API 提供商的请求
+    // Intercept requests to all LLM API providers
     const apiPatterns = [
       /https:\/\/api\.openai\.com\/.*/,
       /https:\/\/api\.deepseek\.com\/.*/,
@@ -419,7 +419,7 @@ class E2EVCR {
         const url = request.url()
         const method = request.method()
 
-        // 只拦截 POST 请求
+        // Only intercept POST requests
         if (method !== 'POST') {
           await route.continue()
           return
@@ -435,17 +435,17 @@ class E2EVCR {
           const requestBody = await request.postData()
 
           if (this.recordingEnabled) {
-            // record 模式：调用真实 API 并保存
+            // record mode: call the real API and save
             const startTime = Date.now()
             const response = await route.fetch()
             const endTime = Date.now()
 
             const responseBody = await response.text()
 
-            // 录制时如果返回 4xx/5xx，直接跳过保存 fixture，避免把错误响应录进去
+            // If recording returns 4xx/5xx, skip saving the fixture so the error response is not recorded
             if (response.status() >= 400) {
               const headers = { ...response.headers() }
-              // route.fetch() 已经解码了 body；若保留 content-encoding/content-length 等头会导致浏览器二次解码/长度不匹配
+              // route.fetch() has already decoded the body; keeping headers such as content-encoding/content-length would cause double decoding / length mismatch in the browser
               delete (headers as any)['content-encoding']
               delete (headers as any)['content-length']
               delete (headers as any)['transfer-encoding']
@@ -462,7 +462,7 @@ class E2EVCR {
               return
             }
 
-            // 图像生成等非 SSE：直接按原始响应回放（避免强行合成 SSE 破坏语义）
+            // Image generation and other non-SSE responses: replay the raw response as is (avoid forcing SSE synthesis, which would break semantics)
             const contentType = response.headers()['content-type'] || ''
             const isImageResponse = /\bimage\//i.test(contentType)
             const isSSE = /\btext\/event-stream\b/i.test(contentType)
@@ -503,7 +503,7 @@ class E2EVCR {
             let responseJson: any = null
 
             if (hasSSE) {
-              // 解析 SSE 响应，提取完整内容（OpenAI 兼容格式）
+              // Parse the SSE response and extract the full content (OpenAI-compatible format)
               const lines = responseBody
                 .split('\n')
                 .map(line => line.trim())
@@ -523,7 +523,7 @@ class E2EVCR {
                     fullContent += chunk.choices[0].delta.content || ''
                   }
                 } catch {
-                  // 忽略解析错误
+                  // Ignore parse errors
                 }
               }
 
@@ -540,8 +540,8 @@ class E2EVCR {
                 }
               }
             } else {
-              // 非 SSE 响应：尝试解析为 JSON，并合成一份可回放的 SSE
-              // 目的：让回放模式不依赖真实 API 的流式实现细节
+              // Non-SSE response: try to parse as JSON and synthesize a replayable SSE
+              // Purpose: make replay independent of the real API streaming implementation details
               try {
                 const parsed = JSON.parse(responseBody)
                 responseJson = parsed
@@ -601,7 +601,7 @@ class E2EVCR {
                   `data: ${JSON.stringify(endChunk)}\n\n` +
                   `data: [DONE]\n\n`
               } catch {
-                throw new Error('[VCR] LLM API 返回非流式响应，且无法解析为 JSON')
+                throw new Error('[VCR] LLM API returned a non-streaming response that could not be parsed as JSON')
               }
             }
 
@@ -619,14 +619,14 @@ class E2EVCR {
               response.status()
             )
 
-            // 返回真实响应（补齐 CORS，避免浏览器端 fetch 被拦）
+            // Return the real response (add CORS headers so the browser-side fetch is not blocked)
             const headers = { ...response.headers() }
-            // route.fetch() 已经解码了 body；若保留 content-encoding/content-length 等头会导致浏览器二次解码/长度不匹配
+            // route.fetch() has already decoded the body; keeping headers such as content-encoding/content-length would cause double decoding / length mismatch in the browser
             delete (headers as any)['content-encoding']
             delete (headers as any)['content-length']
             delete (headers as any)['transfer-encoding']
 
-            // 对于 stream=true 的请求，确保 content-type 为 SSE
+            // For stream=true requests, make sure content-type is SSE
             if (hasSSE) {
               headers['content-type'] = 'text/event-stream'
             }
@@ -641,14 +641,14 @@ class E2EVCR {
               body: responseBody
             })
           } else {
-            // replay 模式：使用 fixture（支持同一个测试内多次请求，通过 requestHash 精准匹配）
+            // replay mode: use the fixture (multiple requests within one test are supported, matched precisely by requestHash)
             const fixture = await this.loadFixtureNormalized()
             const parsedRequestBody = JSON.parse(requestBody || '{}')
             const requestHash = this.computeRequestHash(provider, url, method, parsedRequestBody)
             const interaction = this.findReplayInteraction(fixture, requestHash)
 
             if (interaction) {
-              // 直接返回原始 SSE 文本（格式完全一致）
+              // Return the raw SSE text directly (format fully identical)
               const contentType = interaction.responseHeaders?.['content-type'] || 'application/json'
               const isSSE = /text\/event-stream/i.test(contentType)
 
@@ -662,7 +662,7 @@ class E2EVCR {
                         'connection': 'keep-alive',
                       }
                     : {}),
-                  // 关键：避免浏览器端 fetch 因 CORS 直接失败
+                  // Key: avoid the browser-side fetch failing outright due to CORS
                   'access-control-allow-origin': '*',
                   'access-control-allow-headers': '*',
                 },
@@ -670,7 +670,7 @@ class E2EVCR {
               })
             } else {
               if (mode === 'replay') {
-                // replay 模式：没有 fixture 则失败
+                // replay mode: fail if there is no fixture
                 const errorMsg =
                   `[VCR] ❌ Fixture not found for test: ${this.currentTestName} - ${this.currentTestCase}\n` +
                   `Request hash: ${requestHash} (${provider} ${method} ${url.split('?')[0]})\n` +
@@ -679,7 +679,7 @@ class E2EVCR {
                 console.error(errorMsg)
                 await route.abort()
               } else {
-                // auto 模式：降级到真实 API
+                // auto mode: fall back to the real API
                 console.log(
                   `[VCR] ⚠️  No fixture for requestHash=${requestHash} (${provider} ${method} ${url.split('?')[0]}), calling real API`,
                 )
@@ -697,7 +697,7 @@ class E2EVCR {
 }
 
 /**
- * 获取 VCR 实例（每次调用创建新实例，支持并行测试）
+ * Get a VCR instance (a new instance is created on each call, supporting parallel tests)
  */
 export function getVCR(): E2EVCR {
   const mode = (process.env.E2E_VCR_MODE as VCRMode) || 'auto'
@@ -707,7 +707,7 @@ export function getVCR(): E2EVCR {
 }
 
 /**
- * 为测试设置 VCR
+ * Set up VCR for a test
  */
 export async function setupVCRForTest(page: Page, testName: string, testCase: string) {
   const vcr = getVCR()

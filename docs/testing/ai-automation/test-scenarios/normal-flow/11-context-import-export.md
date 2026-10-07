@@ -1,145 +1,144 @@
-# 上下文集合导入导出测试（Normal Flow）
+# Context Collection Import/Export Test (Normal Flow)
 
-## 📖 测试概述
-验证 ContextRepo 的“上下文集合”导入/导出在正常流程下的可用性与一致性。重点覆盖 DataManager 的导出到文件/剪贴板、从文件/剪贴板导入（replace 模式）、导入统计（含预定义变量剔除计数）以及导入后刷新恢复。
+## 📖 Test Overview
+Verify the availability and consistency of ContextRepo "context collection" import/export under normal flows. The focus covers DataManager export to file/clipboard, import from file/clipboard (replace mode), import statistics (including the count of removed predefined variables), and recovery after refreshing following import.
 
-## 🎯 测试目标
-- 确认上下文集合可成功导出到文件与剪贴板
-- 确认上下文集合可从文件与剪贴板导入（replace 模式）
-- 校验导入统计字段：imported/skipped/predefinedVariablesRemoved
-- 导入后刷新页面，数据与 currentId 恢复为导入包指定状态
+## 🎯 Test Goals
+- Confirm that the context collection can be successfully exported to a file and the clipboard
+- Confirm that the context collection can be imported from a file and the clipboard (replace mode)
+- Validate the import statistics fields: imported/skipped/predefinedVariablesRemoved
+- After importing and refreshing the page, the data and currentId are restored to the state specified by the import bundle
 
-## 📋 前置条件
-- [ ] 应用可正常启动
-- [ ] 可打开“数据管理器/DataManager”弹窗
-- [ ] 已有基础上下文数据，或能通过 ContextEditor 快速创建
-
----
-
-## 🔧 测试步骤
-
-### 步骤1：准备可识别的上下文数据
-**AI执行指导：**
-- 通过“对话管理 + 上下文编辑器”创建一个可辨识的上下文（2条消息+2个变量+1个工具可选）
-- 示例（消息）：
-  - system: `你是一个助手，任务={{task}}`
-  - user: `请处理 {{task}}，场景={{scene}}`
-- 示例（变量）：`task=导出测试`，`scene=正常流`
-- 可选：工具 `get_weather`
-
-**预期结果：**
-- 对话区显示变量与（可选）工具数量徽章
-
-**验证点：**
-- [ ] 变量统计数量正确
-- [ ]（可选）工具数量徽章显示
+## 📋 Prerequisites
+- [ ] The application can start normally
+- [ ] The "Data Manager / DataManager" popup can be opened
+- [ ] There is basic context data, or it can be quickly created through ContextEditor
 
 ---
 
-### 步骤2：导出上下文集合到文件
-**AI执行指导：**
-- 打开“数据管理”弹窗（图标"💾"/“数据管理”）
-- 点击“导出上下文到文件”（Context Export → File）
-- 等待下载完成
+## 🔧 Test Steps
 
-**预期结果：**
-- 触发下载 `contexts-backup-YYYY-MM-DD.json`
-- Toast 显示“已导出 X 个上下文集合到文件”
+### Step 1: Prepare Recognizable Context Data
+**AI execution guidance:**
+- Create a recognizable context through "Conversation Management + Context Editor" (2 messages + 2 variables + 1 optional tool)
+- Example (messages):
+  - system: `You are an assistant, task={{task}}`
+  - user: `Please handle {{task}}, scenario={{scene}}`
+- Example (variables): `task=Export Test`, `scene=Normal Flow`
+- Optional: tool `get_weather`
 
-**验证点：**
-- [ ] 下载文件存在且非空
-- [ ] JSON 解析成功，包含 `type/context-bundle`、`version`、`currentId`、`contexts`
+**Expected results:**
+- The conversation area shows the variable and (optional) tool count badges
 
----
-
-### 步骤3：导出上下文集合到剪贴板
-**AI执行指导：**
-- 在数据管理中点击“导出到剪贴板”（Context Export → Clipboard）
-- 读取剪贴板内容为文本并解析
-
-**预期结果：**
-- 复制成功，Toast 显示“已导出 X 个上下文集合到剪贴板”
-- JSON 结构与文件导出一致
-
-**验证点：**
-- [ ] 剪贴板内容非空且可解析为 JSON
-- [ ] 结构字段完整：`type/version/currentId/contexts`
+**Verification points:**
+- [ ] The variable statistics count is correct
+- [ ] (Optional) The tool count badge is displayed
 
 ---
 
-### 步骤4：构造带有预定义变量覆盖的导入包（用于校验剔除）
-**AI执行指导：**
-- 以“步骤2/3”的导出 JSON 为模板，选取其中一个 `contexts[i]`，在其 `variables` 中注入以下任一/多个键值（示例）：
-  - `currentPrompt: "不应被保存"`
-  - `originalPrompt: "不应被保存"`
-  - `userQuestion: "不应被保存"`
-- 确保 JSON 仍合法，保存为临时文件或复制到剪贴板
+### Step 2: Export the Context Collection to a File
+**AI execution guidance:**
+- Open the "Data Management" popup (icon "💾" / "Data Management")
+- Click "Export Contexts to File" (Context Export → File)
+- Wait for the download to complete
 
-**预期结果：**
-- 准备出一个“包含预定义变量名覆盖”的导入包
+**Expected results:**
+- A download of `contexts-backup-YYYY-MM-DD.json` is triggered
+- A toast shows "Exported X context collections to file"
 
-**验证点：**
-- [ ] 文件或剪贴板中的上下文 JSON 可被解析
-- [ ] 至少包含 1 个预定义变量键
-
----
-
-### 步骤5：从文件导入上下文集合（replace 模式）
-**AI执行指导：**
-- 在数据管理弹窗中使用“上下文导入（文件）”按钮选择“步骤4”的临时文件
-- 等待导入完成与 Toast 统计提示
-
-**预期结果：**
-- 成功导入，Toast 文案包含：
-  - 导入数量（imported）
-  - 跳过数量（skipped，如无错误可为0）
-  - 剔除预定义变量覆盖数量（predefinedVariablesRemoved ≥ 1）
-- 若应用在 Web 中，导入成功后可能触发页面刷新（或由父层在“全部数据导入”时触发刷新）；本上下文导入场景以不强制刷新为准。
-
-**验证点：**
-- [ ] 出现“成功：导入 X 个上下文，…剔除 Y 个预定义变量覆盖”的提示
-- [ ] 导入后“上下文编辑器”中对应变量不包含注入的预定义键（如 `currentPrompt`）
+**Verification points:**
+- [ ] The downloaded file exists and is non-empty
+- [ ] The JSON parses successfully and contains `type/context-bundle`, `version`, `currentId`, `contexts`
 
 ---
 
-### 步骤6：从剪贴板导入上下文集合（replace 模式）
-**AI执行指导：**
-- 点击“上下文导入（剪贴板）”，将“步骤4”的 JSON 放入剪贴板后执行
-- 重复“预期结果/验证点”的校验
+### Step 3: Export the Context Collection to the Clipboard
+**AI execution guidance:**
+- In Data Management, click "Export to Clipboard" (Context Export → Clipboard)
+- Read the clipboard content as text and parse it
 
-**预期结果：**
-- 与“步骤5”一致，统计正确且预定义变量被剔除
+**Expected results:**
+- The copy succeeds and a toast shows "Exported X context collections to clipboard"
+- The JSON structure is consistent with the file export
 
-**验证点：**
-- [ ] 统计中的 `predefinedVariablesRemoved` 大于 0
-- [ ] 变量页与预览不包含被禁止的键名
-
----
-
-### 步骤7：导入后刷新恢复（可选）
-**AI执行指导：**
-- 手动刷新页面（或按 F5）
-- 打开“上下文编辑器”，检查消息与变量是否与导入包一致
-- 若导入包包含 `currentId` 指向特定上下文，验证当前上下文内容与之匹配
-
-**预期结果：**
-- 刷新后仍保持导入后的上下文集合与当前选择
-
-**验证点：**
-- [ ] 消息/变量与导入包一致
-- [ ] 当前内容与 `currentId` 指向的一致
+**Verification points:**
+- [ ] The clipboard content is non-empty and can be parsed as JSON
+- [ ] The structure fields are complete: `type/version/currentId/contexts`
 
 ---
 
-## 🧪 诊断建议（失败时）
-- 导入失败：检查 JSON 结构是否满足 `type/context-bundle`、`version`、`currentId`、`contexts[]`
-- 剔除计数为0：确认确实注入了预定义变量键（`currentPrompt/originalPrompt/userQuestion/iterateInput/lastOptimizedPrompt/conversationContext`）
-- 刷新后不生效：确认是否需要等待 UI 的导入完成提示；如走“全部数据导入”流程，父层可能触发刷新
+### Step 4: Construct an Import Bundle with Predefined Variable Overrides (for Verifying Removal)
+**AI execution guidance:**
+- Using the exported JSON from "Step 2/3" as a template, pick one `contexts[i]` and inject any one or more of the following key-value pairs into its `variables` (examples):
+  - `currentPrompt: "Should not be saved"`
+  - `originalPrompt: "Should not be saved"`
+  - `userQuestion: "Should not be saved"`
+- Make sure the JSON is still valid, and save it as a temporary file or copy it to the clipboard
+
+**Expected results:**
+- An import bundle "containing predefined variable name overrides" is prepared
+
+**Verification points:**
+- [ ] The context JSON in the file or clipboard can be parsed
+- [ ] It contains at least 1 predefined variable key
 
 ---
 
-## ✅ 成功标准
-- 文件与剪贴板导出均可用，结构正确
-- 文件与剪贴板导入（replace）均成功，统计正确且预定义变量覆盖被剔除
-- 刷新后状态保持，数据与 currentId 一致
+### Step 5: Import the Context Collection from a File (Replace Mode)
+**AI execution guidance:**
+- In the Data Management popup, use the "Import Contexts (File)" button to select the temporary file from "Step 4"
+- Wait for the import to complete and the toast statistics prompt
 
+**Expected results:**
+- The import succeeds, and the toast text contains:
+  - The imported count (imported)
+  - The skipped count (skipped, can be 0 if there are no errors)
+  - The count of removed predefined variable overrides (predefinedVariablesRemoved ≥ 1)
+- If the app runs on the Web, a page refresh may be triggered after a successful import (or by the parent layer upon "import all data"); this context import scenario does not require a forced refresh.
+
+**Verification points:**
+- [ ] A prompt like "Success: imported X contexts, ... removed Y predefined variable overrides" appears
+- [ ] After import, the corresponding variables in the "Context Editor" do not contain the injected predefined keys (such as `currentPrompt`)
+
+---
+
+### Step 6: Import the Context Collection from the Clipboard (Replace Mode)
+**AI execution guidance:**
+- Click "Import Contexts (Clipboard)", put the JSON from "Step 4" into the clipboard, and run it
+- Repeat the checks of the "Expected results / Verification points"
+
+**Expected results:**
+- Same as "Step 5": the statistics are correct and the predefined variables are removed
+
+**Verification points:**
+- [ ] `predefinedVariablesRemoved` in the statistics is greater than 0
+- [ ] The variables tab and preview do not contain the forbidden key names
+
+---
+
+### Step 7: Recovery After Refresh Following Import (Optional)
+**AI execution guidance:**
+- Refresh the page manually (or press F5)
+- Open the "Context Editor" and check whether the messages and variables match the import bundle
+- If the import bundle's `currentId` points to a specific context, verify that the current context content matches it
+
+**Expected results:**
+- After the refresh, the imported context collection and current selection are still retained
+
+**Verification points:**
+- [ ] The messages/variables match the import bundle
+- [ ] The current content matches what `currentId` points to
+
+---
+
+## 🧪 Diagnostic Suggestions (On Failure)
+- Import fails: check whether the JSON structure satisfies `type/context-bundle`, `version`, `currentId`, `contexts[]`
+- Removal count is 0: confirm that predefined variable keys were actually injected (`currentPrompt/originalPrompt/userQuestion/iterateInput/lastOptimizedPrompt/conversationContext`)
+- Not effective after refresh: confirm whether you need to wait for the UI's import completion prompt; if using the "import all data" flow, the parent layer may trigger a refresh
+
+---
+
+## ✅ Success Criteria
+- Both file and clipboard exports work, with correct structure
+- Both file and clipboard imports (replace) succeed, with correct statistics and predefined variable overrides removed
+- State is retained after refresh, with data and currentId consistent

@@ -1,48 +1,48 @@
 import { test, expect } from './fixtures';
 
 /**
- * 导入导出完整流程 E2E 测试
+ * Full import/export flow E2E tests
  *
- * 测试导入导出功能的完整场景：
- * - 导入有效JSON数据
- * - 导入无效JSON处理
- * - 导入数据合并策略
- * - 导入结果统计显示
- * - 导出数据完整性
+ * Tests the complete import/export scenarios:
+ * - Import valid JSON data
+ * - Handle invalid JSON imports
+ * - Import data merge strategy
+ * - Import result statistics display
+ * - Export data integrity
  */
-test.describe('导入导出完整流程', () => {
+test.describe('Import/Export Full Flow', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
   });
 
   /**
-   * 辅助函数：打开收藏管理器
+   * Helper: open the favorites manager
    */
   async function openFavoriteManager(page: any) {
-    const favoriteButton = page.getByRole('button', { name: /收藏|favorite/i });
+    const favoriteButton = page.getByRole('button', { name: /favorite/i });
     if (await favoriteButton.count() === 0) {
       return null;
     }
     await favoriteButton.first().click();
     await page.waitForTimeout(500);
 
-    const managerDialog = page.locator('[role="dialog"]').filter({ hasText: /收藏|Favorites/i }).first();
+    const managerDialog = page.locator('[role="dialog"]').filter({ hasText: /Favorites/i }).first();
     if (await managerDialog.isVisible().catch(() => false)) {
       return managerDialog;
     }
     return null;
   }
 
-  test('导入有效的JSON数据', async ({ page }) => {
+  test('Import valid JSON data', async ({ page }) => {
     const managerDialog = await openFavoriteManager(page);
     if (!managerDialog) {
       test.skip();
       return;
     }
 
-    // 查找导入按钮
-    const importButton = managerDialog.getByRole('button', { name: /导入|Import/i });
+    // Find the import button
+    const importButton = managerDialog.getByRole('button', { name: /Import/i });
     if (await importButton.count() === 0) {
       test.skip();
       return;
@@ -51,23 +51,23 @@ test.describe('导入导出完整流程', () => {
     await importButton.click();
     await page.waitForTimeout(500);
 
-    // 准备导入数据
+    // Prepare the import data
     const importData = {
       favorites: [
         {
           id: 'import-test-001',
-          title: '导入测试收藏1',
-          content: '这是通过导入创建的收藏',
-          tags: ['导入', '测试'],
+          title: 'Import Test Favorite 1',
+          content: 'A favorite created through import',
+          tags: ['import', 'test'],
           functionMode: 'basic',
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
         },
         {
           id: 'import-test-002',
-          title: '导入测试收藏2',
-          content: '另一个导入的收藏',
-          tags: ['导入'],
+          title: 'Import Test Favorite 2',
+          content: 'Another imported favorite',
+          tags: ['import'],
           functionMode: 'context',
           optimizationMode: 'user',
           createdAt: new Date().toISOString(),
@@ -77,64 +77,64 @@ test.describe('导入导出完整流程', () => {
       categories: [
         {
           id: 'import-cat-001',
-          name: '导入的分类',
-          description: '通过导入创建的分类',
+          name: 'Imported Category',
+          description: 'A category created through import',
           color: '#FF5722'
         }
       ],
-      tags: ['导入', '测试']
+      tags: ['import', 'test']
     };
 
-    // 在导入对话框中输入JSON数据
+    // Enter the JSON data in the import dialog
     const importDialog = page.locator('[role="dialog"]').last();
 
-    // 查找文本输入区域（可能是textarea或文件上传）
+    // Find the text input area (may be a textarea or file upload)
     const jsonInput = importDialog.locator('textarea').first();
 
     if (await jsonInput.count() > 0) {
       await jsonInput.fill(JSON.stringify(importData, null, 2));
 
-      // 点击确认导入按钮
-      const confirmButton = importDialog.getByRole('button', { name: /确定|确认|导入|ok|import/i });
+      // Click the confirm import button
+      const confirmButton = importDialog.getByRole('button', { name: /ok|import/i });
       if (await confirmButton.count() > 0) {
         await confirmButton.click();
         await page.waitForTimeout(1500);
 
-        // 验证导入成功消息
+        // Verify the import success message
         const successMessage = page.locator('.n-message, .n-notification').filter({
-          hasText: /成功|success|导入/i
+          hasText: /success/i
         });
 
         if (await successMessage.count() > 0) {
           await expect(successMessage.first()).toBeVisible();
         }
 
-        // 验证导入的收藏显示在列表中
-        const importedFavorite = managerDialog.locator('text=导入测试收藏1');
+        // Verify the imported favorite is shown in the list
+        const importedFavorite = managerDialog.locator('text=Import Test Favorite 1');
         if (await importedFavorite.count() > 0) {
           await expect(importedFavorite.first()).toBeVisible();
         }
       }
     } else {
-      // 可能是文件上传模式
-      // 创建临时JSON文件并上传
+      // May be file upload mode
+      // Create a temporary JSON file and upload it
       const fileInput = importDialog.locator('input[type="file"]');
       if (await fileInput.count() > 0) {
-        // 在实际环境中，这里需要创建真实文件
-        // Playwright支持通过setInputFiles上传文件
-        test.skip(); // 文件上传模式需要额外处理
+        // In a real environment, a real file would need to be created here
+        // Playwright supports uploading files via setInputFiles
+        test.skip(); // file upload mode needs extra handling
       }
     }
   });
 
-  test('导入无效JSON数据处理', async ({ page }) => {
+  test('Handle importing invalid JSON data', async ({ page }) => {
     const managerDialog = await openFavoriteManager(page);
     if (!managerDialog) {
       test.skip();
       return;
     }
 
-    const importButton = managerDialog.getByRole('button', { name: /导入|Import/i });
+    const importButton = managerDialog.getByRole('button', { name: /Import/i });
     if (await importButton.count() === 0) {
       test.skip();
       return;
@@ -147,24 +147,24 @@ test.describe('导入导出完整流程', () => {
     const jsonInput = importDialog.locator('textarea').first();
 
     if (await jsonInput.count() > 0) {
-      // 输入无效的JSON
-      await jsonInput.fill('{ 这不是有效的JSON }');
+      // Enter invalid JSON
+      await jsonInput.fill('{ this is not valid JSON }');
 
-      const confirmButton = importDialog.getByRole('button', { name: /确定|确认|导入|ok|import/i });
+      const confirmButton = importDialog.getByRole('button', { name: /ok|import/i });
       if (await confirmButton.count() > 0) {
         await confirmButton.click();
         await page.waitForTimeout(500);
 
-        // 应该显示错误消息
+        // An error message should be shown
         const errorMessage = page.locator('.n-message, .n-notification').filter({
-          hasText: /错误|失败|error|invalid|格式/i
+          hasText: /error|invalid/i
         });
 
         if (await errorMessage.count() > 0) {
           await expect(errorMessage.first()).toBeVisible();
         }
 
-        // 对话框应该仍然打开（未成功导入）
+        // The dialog should still be open (import did not succeed)
         const stillOpen = await importDialog.isVisible().catch(() => false);
         if (stillOpen) {
           expect(stillOpen).toBe(true);
@@ -173,17 +173,17 @@ test.describe('导入导出完整流程', () => {
     }
   });
 
-  test('导入数据后统计信息更新', async ({ page }) => {
+  test('Statistics update after importing data', async ({ page }) => {
     const managerDialog = await openFavoriteManager(page);
     if (!managerDialog) {
       test.skip();
       return;
     }
 
-    // 记录导入前的收藏数量（如果有显示）
+    // Record the favorites count before import (if displayed)
     const initialFavorites = await managerDialog.locator('.n-card, [class*="favorite"]').count();
 
-    const importButton = managerDialog.getByRole('button', { name: /导入|Import/i });
+    const importButton = managerDialog.getByRole('button', { name: /Import/i });
     if (await importButton.count() === 0) {
       test.skip();
       return;
@@ -195,16 +195,16 @@ test.describe('导入导出完整流程', () => {
     const importData = {
       favorites: [
         {
-          title: '统计测试收藏',
-          content: '用于测试统计更新',
-          tags: ['统计'],
+          title: 'Statistics Test Favorite',
+          content: 'Used to test statistics updates',
+          tags: ['statistics'],
           functionMode: 'basic',
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
         }
       ],
       categories: [],
-      tags: ['统计']
+      tags: ['statistics']
     };
 
     const importDialog = page.locator('[role="dialog"]').last();
@@ -213,26 +213,26 @@ test.describe('导入导出完整流程', () => {
     if (await jsonInput.count() > 0) {
       await jsonInput.fill(JSON.stringify(importData));
 
-      const confirmButton = importDialog.getByRole('button', { name: /确定|确认|导入|ok|import/i });
+      const confirmButton = importDialog.getByRole('button', { name: /ok|import/i });
       if (await confirmButton.count() > 0) {
         await confirmButton.click();
         await page.waitForTimeout(1500);
 
-        // 验证收藏数量增加
+        // Verify the favorites count increased
         const finalFavorites = await managerDialog.locator('.n-card, [class*="favorite"]').count();
         expect(finalFavorites).toBeGreaterThan(initialFavorites);
       }
     }
   });
 
-  test('导入包含分类的数据', async ({ page }) => {
+  test('Import data containing categories', async ({ page }) => {
     const managerDialog = await openFavoriteManager(page);
     if (!managerDialog) {
       test.skip();
       return;
     }
 
-    const importButton = managerDialog.getByRole('button', { name: /导入|Import/i });
+    const importButton = managerDialog.getByRole('button', { name: /Import/i });
     if (await importButton.count() === 0) {
       test.skip();
       return;
@@ -244,9 +244,9 @@ test.describe('导入导出完整流程', () => {
     const importData = {
       favorites: [
         {
-          title: '分类测试收藏',
-          content: '属于导入分类的收藏',
-          tags: ['分类测试'],
+          title: 'Category Test Favorite',
+          content: 'A favorite that belongs to the imported category',
+          tags: ['category-test'],
           category: 'import-category-001',
           functionMode: 'basic',
           createdAt: new Date().toISOString(),
@@ -256,12 +256,12 @@ test.describe('导入导出完整流程', () => {
       categories: [
         {
           id: 'import-category-001',
-          name: '导入的测试分类',
-          description: '通过导入创建的分类',
+          name: 'Imported Test Category',
+          description: 'A category created through import',
           color: '#4CAF50'
         }
       ],
-      tags: ['分类测试']
+      tags: ['category-test']
     };
 
     const importDialog = page.locator('[role="dialog"]').last();
@@ -270,32 +270,32 @@ test.describe('导入导出完整流程', () => {
     if (await jsonInput.count() > 0) {
       await jsonInput.fill(JSON.stringify(importData));
 
-      const confirmButton = importDialog.getByRole('button', { name: /确定|确认|导入|ok|import/i });
+      const confirmButton = importDialog.getByRole('button', { name: /ok|import/i });
       if (await confirmButton.count() > 0) {
         await confirmButton.click();
         await page.waitForTimeout(1500);
 
-        // 验证收藏已导入
-        const importedFavorite = managerDialog.locator('text=分类测试收藏');
+        // Verify the favorite was imported
+        const importedFavorite = managerDialog.locator('text=Category Test Favorite');
         if (await importedFavorite.count() > 0) {
           await expect(importedFavorite.first()).toBeVisible();
         }
 
-        // 可以通过打开分类管理器验证分类也被导入
-        // 这里简化处理，只验证收藏导入成功
+        // The categories were also imported, which can be verified by opening the category manager
+        // Simplified here: only verify that the favorites were imported successfully
       }
     }
   });
 
-  test('导入数据合并策略（相同ID处理）', async ({ page }) => {
+  test('Import data merge strategy (same ID handling)', async ({ page }) => {
     const managerDialog = await openFavoriteManager(page);
     if (!managerDialog) {
       test.skip();
       return;
     }
 
-    // 第一次导入
-    const importButton = managerDialog.getByRole('button', { name: /导入|Import/i });
+    // First import
+    const importButton = managerDialog.getByRole('button', { name: /Import/i });
     if (await importButton.count() === 0) {
       test.skip();
       return;
@@ -308,16 +308,16 @@ test.describe('导入导出完整流程', () => {
       favorites: [
         {
           id: 'duplicate-test-001',
-          title: '重复ID测试收藏',
-          content: '第一次导入',
-          tags: ['重复测试'],
+          title: 'Duplicate ID Test Favorite',
+          content: 'First import',
+          tags: ['duplicate-test'],
           functionMode: 'basic',
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
         }
       ],
       categories: [],
-      tags: ['重复测试']
+      tags: ['duplicate-test']
     };
 
     const importDialog = page.locator('[role="dialog"]').last();
@@ -326,13 +326,13 @@ test.describe('导入导出完整流程', () => {
     if (await jsonInput.count() > 0) {
       await jsonInput.fill(JSON.stringify(importData));
 
-      const confirmButton = importDialog.getByRole('button', { name: /确定|确认|导入|ok|import/i });
+      const confirmButton = importDialog.getByRole('button', { name: /ok|import/i });
       if (await confirmButton.count() > 0) {
         await confirmButton.click();
         await page.waitForTimeout(1500);
 
-        // 第二次导入相同ID的数据
-        const importButton2 = managerDialog.getByRole('button', { name: /导入|Import/i });
+        // Import data with the same ID a second time
+        const importButton2 = managerDialog.getByRole('button', { name: /Import/i });
         if (await importButton2.count() > 0) {
           await importButton2.click();
           await page.waitForTimeout(500);
@@ -340,17 +340,17 @@ test.describe('导入导出完整流程', () => {
           const importData2 = {
             favorites: [
               {
-                id: 'duplicate-test-001', // 相同ID
-                title: '重复ID测试收藏-修改版',
-                content: '第二次导入',
-                tags: ['重复测试', '修改'],
+                id: 'duplicate-test-001', // same ID
+                title: 'Duplicate ID Test Favorite - Modified',
+                content: 'Second import',
+                tags: ['duplicate-test', 'modified'],
                 functionMode: 'basic',
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString()
               }
             ],
             categories: [],
-            tags: ['重复测试', '修改']
+            tags: ['duplicate-test', 'modified']
           };
 
           const importDialog2 = page.locator('[role="dialog"]').last();
@@ -359,18 +359,18 @@ test.describe('导入导出完整流程', () => {
           if (await jsonInput2.count() > 0) {
             await jsonInput2.fill(JSON.stringify(importData2));
 
-            const confirmButton2 = importDialog2.getByRole('button', { name: /确定|确认|导入|ok|import/i });
+            const confirmButton2 = importDialog2.getByRole('button', { name: /ok|import/i });
             if (await confirmButton2.count() > 0) {
               await confirmButton2.click();
               await page.waitForTimeout(1500);
 
-              // 验证两个收藏都存在（ID冲突应该生成新ID）
+              // Verify both favorites exist (an ID conflict should generate a new ID)
               const favorites = managerDialog.locator('.n-card, [class*="favorite"]').filter({
-                hasText: /重复ID测试收藏/
+                hasText: /Duplicate ID Test Favorite/
               });
 
               const count = await favorites.count();
-              // 应该有2个收藏（系统重新生成了ID以避免冲突）
+              // There should be 2 favorites (the system regenerated the ID to avoid a conflict)
               expect(count).toBeGreaterThanOrEqual(1);
             }
           }
@@ -379,46 +379,46 @@ test.describe('导入导出完整流程', () => {
     }
   });
 
-  test('导出功能生成有效JSON', async ({ page }) => {
+  test('Export generates valid JSON', async ({ page }) => {
     const managerDialog = await openFavoriteManager(page);
     if (!managerDialog) {
       test.skip();
       return;
     }
 
-    // 先创建一个收藏，确保有数据可导出
-    const addButton = managerDialog.getByRole('button', { name: /添加|创建|新建|add|create/i }).first();
+    // First create a favorite so there is data to export
+    const addButton = managerDialog.getByRole('button', { name: /add|create/i }).first();
     if (await addButton.count() > 0) {
       await addButton.click();
       await page.waitForTimeout(500);
 
       const createDialog = page.locator('[role="dialog"]').last();
-      const titleInput = createDialog.getByPlaceholder(/标题|title/i);
+      const titleInput = createDialog.getByPlaceholder(/title|name this prompt/i);
 
       if (await titleInput.count() > 0) {
-        await titleInput.fill('导出测试收藏');
+        await titleInput.fill('Export Test Favorite');
 
         const contentInput = createDialog.locator('textarea').first();
         if (await contentInput.count() > 0) {
-          await contentInput.fill('用于测试导出功能');
+          await contentInput.fill('Used to test the export feature');
         }
 
-        const saveButton = createDialog.getByRole('button', { name: /保存|save|确定|ok/i });
+        const saveButton = createDialog.getByRole('button', { name: /save|confirm|ok/i });
         if (await saveButton.count() > 0) {
           await saveButton.click();
           await page.waitForTimeout(1000);
 
-          // 等待创建对话框的遮罩层消失
+          // Wait for the create dialog's overlay to disappear
           await page.waitForSelector('.n-modal-mask', { state: 'hidden', timeout: 3000 }).catch(() => {});
         }
       }
     }
 
-    // 等待创建对话框完全关闭后再打开更多菜单
+    // Wait for the create dialog to close completely before opening the more menu
     await page.keyboard.press('Escape');
     await page.waitForTimeout(300);
 
-    // 打开更多菜单导出
+    // Open the more menu to export
     const moreButton = managerDialog.getByRole('button').filter({
       has: page.locator('svg, .n-icon')
     }).first();
@@ -427,32 +427,32 @@ test.describe('导入导出完整流程', () => {
       await moreButton.click();
       await page.waitForTimeout(300);
 
-      const exportOption = page.locator('text=/导出|Export/i');
+      const exportOption = page.locator('text=/Export/i');
       if (await exportOption.count() > 0) {
-        // 监听下载事件
+        // Listen for the download event
         const downloadPromise = page.waitForEvent('download', { timeout: 5000 }).catch(() => null);
 
         await exportOption.click();
 
         const download = await downloadPromise;
         if (download) {
-          // 验证下载的文件
+          // Verify the downloaded file
           const path = await download.path();
           if (path) {
             const fs = await import('fs');
             const content = fs.readFileSync(path, 'utf-8');
 
-            // 验证是有效的JSON
+            // Verify it is valid JSON
             expect(() => JSON.parse(content)).not.toThrow();
 
             const data = JSON.parse(content);
 
-            // 验证包含必要的字段
+            // Verify the required fields are present
             expect(data).toHaveProperty('favorites');
             expect(Array.isArray(data.favorites)).toBe(true);
             expect(data.favorites.length).toBeGreaterThan(0);
 
-            // 验证收藏数据结构
+            // Verify the favorite data structure
             const firstFavorite = data.favorites[0];
             expect(firstFavorite).toHaveProperty('id');
             expect(firstFavorite).toHaveProperty('title');
@@ -465,15 +465,15 @@ test.describe('导入导出完整流程', () => {
     }
   });
 
-  test('导入后数据可以正常编辑', async ({ page }) => {
+  test('Imported data can be edited', async ({ page }) => {
     const managerDialog = await openFavoriteManager(page);
     if (!managerDialog) {
       test.skip();
       return;
     }
 
-    // 导入数据
-    const importButton = managerDialog.getByRole('button', { name: /导入|Import/i });
+    // Import data
+    const importButton = managerDialog.getByRole('button', { name: /Import/i });
     if (await importButton.count() === 0) {
       test.skip();
       return;
@@ -485,16 +485,16 @@ test.describe('导入导出完整流程', () => {
     const importData = {
       favorites: [
         {
-          title: '可编辑导入收藏',
-          content: '原始内容',
-          tags: ['可编辑'],
+          title: 'Editable Imported Favorite',
+          content: 'Original content',
+          tags: ['editable'],
           functionMode: 'basic',
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
         }
       ],
       categories: [],
-      tags: ['可编辑']
+      tags: ['editable']
     };
 
     const importDialog = page.locator('[role="dialog"]').last();
@@ -503,38 +503,38 @@ test.describe('导入导出完整流程', () => {
     if (await jsonInput.count() > 0) {
       await jsonInput.fill(JSON.stringify(importData));
 
-      const confirmButton = importDialog.getByRole('button', { name: /确定|确认|导入|ok|import/i });
+      const confirmButton = importDialog.getByRole('button', { name: /ok|import/i });
       if (await confirmButton.count() > 0) {
         await confirmButton.click();
         await page.waitForTimeout(1500);
 
-        // 查找并编辑导入的收藏
-        const favoriteCard = managerDialog.locator('text=可编辑导入收藏').locator('..').locator('..');
+        // Find and edit the imported favorite
+        const favoriteCard = managerDialog.locator('text=Editable Imported Favorite').locator('..').locator('..');
         if (await favoriteCard.count() > 0) {
-          // 查找编辑按钮
+          // Find the edit button
           const editButton = favoriteCard.locator('button').filter({
-            hasText: /编辑|edit/i
+            hasText: /edit/i
           }).first();
 
           if (await editButton.count() > 0) {
             await editButton.click();
             await page.waitForTimeout(500);
 
-            // 修改标题
+            // Change the title
             const editDialog = page.locator('[role="dialog"]').last();
-            const titleInput = editDialog.getByPlaceholder(/标题|title/i);
+            const titleInput = editDialog.getByPlaceholder(/title|name this prompt/i);
 
             if (await titleInput.count() > 0) {
               await titleInput.clear();
-              await titleInput.fill('编辑后的导入收藏');
+              await titleInput.fill('Edited Imported Favorite');
 
-              const saveButton = editDialog.getByRole('button', { name: /保存|save|确定|ok/i });
+              const saveButton = editDialog.getByRole('button', { name: /save|confirm|ok/i });
               if (await saveButton.count() > 0) {
                 await saveButton.click();
                 await page.waitForTimeout(1000);
 
-                // 验证修改成功
-                const updatedCard = managerDialog.locator('text=编辑后的导入收藏');
+                // Verify the change succeeded
+                const updatedCard = managerDialog.locator('text=Edited Imported Favorite');
                 if (await updatedCard.count() > 0) {
                   await expect(updatedCard.first()).toBeVisible();
                 }
@@ -546,15 +546,15 @@ test.describe('导入导出完整流程', () => {
     }
   });
 
-  test('导入后数据可以正常删除', async ({ page }) => {
+  test('Imported data can be deleted', async ({ page }) => {
     const managerDialog = await openFavoriteManager(page);
     if (!managerDialog) {
       test.skip();
       return;
     }
 
-    // 导入数据
-    const importButton = managerDialog.getByRole('button', { name: /导入|Import/i });
+    // Import data
+    const importButton = managerDialog.getByRole('button', { name: /Import/i });
     if (await importButton.count() === 0) {
       test.skip();
       return;
@@ -566,16 +566,16 @@ test.describe('导入导出完整流程', () => {
     const importData = {
       favorites: [
         {
-          title: '可删除导入收藏',
-          content: '将被删除的内容',
-          tags: ['可删除'],
+          title: 'Deletable Imported Favorite',
+          content: 'Content to be deleted',
+          tags: ['deletable'],
           functionMode: 'basic',
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
         }
       ],
       categories: [],
-      tags: ['可删除']
+      tags: ['deletable']
     };
 
     const importDialog = page.locator('[role="dialog"]').last();
@@ -584,30 +584,30 @@ test.describe('导入导出完整流程', () => {
     if (await jsonInput.count() > 0) {
       await jsonInput.fill(JSON.stringify(importData));
 
-      const confirmButton = importDialog.getByRole('button', { name: /确定|确认|导入|ok|import/i });
+      const confirmButton = importDialog.getByRole('button', { name: /ok|import/i });
       if (await confirmButton.count() > 0) {
         await confirmButton.click();
         await page.waitForTimeout(1500);
 
-        // 查找并删除导入的收藏
-        const favoriteCard = managerDialog.locator('text=可删除导入收藏').locator('..').locator('..');
+        // Find and delete the imported favorite
+        const favoriteCard = managerDialog.locator('text=Deletable Imported Favorite').locator('..').locator('..');
         if (await favoriteCard.count() > 0) {
           const deleteButton = favoriteCard.locator('button').filter({
-            hasText: /删除|delete/i
+            hasText: /delete/i
           }).first();
 
           if (await deleteButton.count() > 0) {
             await deleteButton.click();
             await page.waitForTimeout(300);
 
-            // 确认删除
-            const confirmDeleteButton = page.getByRole('button', { name: /确定|确认|ok|confirm/i }).last();
+            // Confirm deletion
+            const confirmDeleteButton = page.getByRole('button', { name: /ok|confirm/i }).last();
             if (await confirmDeleteButton.count() > 0) {
               await confirmDeleteButton.click();
               await page.waitForTimeout(1000);
 
-              // 验证已删除
-              const deletedCard = managerDialog.locator('text=可删除导入收藏');
+              // Verify it was deleted
+              const deletedCard = managerDialog.locator('text=Deletable Imported Favorite');
               expect(await deletedCard.count()).toBe(0);
             }
           }
