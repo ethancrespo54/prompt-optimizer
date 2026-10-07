@@ -1,20 +1,20 @@
-# MCP服务器模板参数改进
+# MCP Server Template Parameter Improvement
 
-## 问题描述
+## Problem Description
 
-MCP服务器的工具参数中的`template`参数原本是可选的字符串类型，用户不知道可以填写什么值，也没有默认值。这导致用户体验不佳，因为：
+The `template` parameter in the MCP server's tool parameters was originally an optional string. Users did not know what values could be entered, and there was no default value. This made for a poor user experience because:
 
-1. 用户不知道有哪些可用的模板选项
-2. 没有默认值，用户必须猜测或查看文档
-3. 容易输入错误的模板ID导致错误
+1. Users did not know which template options were available
+2. There was no default value, so users had to guess or read the documentation
+3. It was easy to enter a wrong template ID and cause an error
 
-## 解决方案
+## Solution
 
-将`template`参数改为枚举类型，并提供默认值：
+Change the `template` parameter to an enum type and provide a default value:
 
-### 1. 新增模板选项获取函数
+### 1. Added a function to get template options
 
-在`packages/mcp-server/src/config/templates.ts`中添加了`getTemplateOptions`函数：
+Added the `getTemplateOptions` function in `packages/mcp-server/src/config/templates.ts`:
 
 ```typescript
 export async function getTemplateOptions(
@@ -23,22 +23,22 @@ export async function getTemplateOptions(
 ): Promise<Array<{value: string, label: string, description?: string}>>
 ```
 
-该函数：
-- 根据模板类型获取所有可用模板
-- 返回格式化的选项数组，包含value、label和description
-- 确保默认模板始终在选项列表中
-- 提供错误处理和回退机制
+This function:
+- Gets all available templates by template type
+- Returns an array of formatted options containing value, label, and description
+- Ensures the default template is always in the option list
+- Provides error handling and a fallback mechanism
 
-### 2. 修改工具定义
+### 2. Modified the tool definitions
 
-在`packages/mcp-server/src/index.ts`中修改了三个工具的`inputSchema`：
+Modified the `inputSchema` of three tools in `packages/mcp-server/src/index.ts`:
 
 #### optimize-user-prompt
 ```json
 {
   "template": {
     "type": "string",
-    "description": "选择优化模板。不同模板有不同的优化策略和风格。",
+    "description": "Select an optimization template. Different templates have different optimization strategies and styles.",
     "enum": ["user-prompt-professional", "user-prompt-basic", "user-prompt-planning"],
     "default": "user-prompt-basic"
   }
@@ -50,7 +50,7 @@ export async function getTemplateOptions(
 {
   "template": {
     "type": "string",
-    "description": "选择优化模板。不同模板有不同的优化策略和风格。",
+    "description": "Select an optimization template. Different templates have different optimization strategies and styles.",
     "enum": ["general-optimize", "output-format-optimize", "analytical-optimize"],
     "default": "general-optimize"
   }
@@ -62,47 +62,47 @@ export async function getTemplateOptions(
 {
   "template": {
     "type": "string",
-    "description": "选择迭代优化模板。不同模板有不同的迭代策略。",
+    "description": "Select an iterative optimization template. Different templates have different iteration strategies.",
     "enum": ["iterate"],
     "default": "iterate"
   }
 }
 ```
 
-### 3. 添加CoreServicesManager方法
+### 3. Added a CoreServicesManager method
 
-在`packages/mcp-server/src/adapters/core-services.ts`中添加了`getTemplateManager()`方法，用于获取模板管理器实例。
+Added a `getTemplateManager()` method in `packages/mcp-server/src/adapters/core-services.ts` to obtain the template manager instance.
 
-## 改进效果
+## Results of the Improvement
 
-1. **用户友好**：用户现在可以看到所有可用的模板选项，不需要猜测
-2. **有默认值**：每个工具都有合理的默认模板，用户可以直接使用
-3. **类型安全**：枚举类型防止用户输入无效的模板ID
-4. **描述清晰**：每个参数都有详细的描述说明其用途
-5. **动态获取**：模板选项是动态获取的，支持未来添加新模板
+1. **User-friendly**: Users can now see all available template options without guessing
+2. **Has defaults**: Each tool has a reasonable default template that users can use directly
+3. **Type safety**: The enum type prevents users from entering invalid template IDs
+4. **Clear descriptions**: Each parameter has a detailed description explaining its purpose
+5. **Dynamic retrieval**: Template options are obtained dynamically, supporting the addition of new templates in the future
 
-## 测试验证
+## Test Verification
 
-通过测试验证了：
-- MCP服务器能够正常启动
-- 所有工具都正确注册
-- 模板参数包含正确的枚举值和默认值
-- 不同类型的模板被正确分类和映射
+Testing verified that:
+- The MCP server starts normally
+- All tools are registered correctly
+- The template parameter contains the correct enum values and default values
+- Different types of templates are correctly categorized and mapped
 
-## 技术细节
+## Technical Details
 
-- 使用了模板类型映射来处理Core模块和MCP服务器之间的类型差异
-- 实现了错误处理和回退机制，确保即使模板加载失败也能提供基本功能
-- 过滤掉了MCP服务器特有的`-default`后缀模板，只显示真正的内置模板
-- 修改了默认模板ID映射，使用内置模板而不是MCP服务器的简化模板
-- 保持了向后兼容性，现有的模板ID仍然有效
+- Used a template type mapping to handle type differences between the Core module and the MCP server
+- Implemented error handling and a fallback mechanism, ensuring basic functionality even if template loading fails
+- Filtered out the MCP-server-specific templates with the `-default` suffix, showing only genuine built-in templates
+- Modified the default template ID mapping to use built-in templates instead of the MCP server's simplified templates
+- Maintained backward compatibility; existing template IDs remain valid
 
-## 最终结果
+## Final Result
 
-修复后的模板选项：
+The template options after the fix:
 
-- **用户优化**: `user-prompt-professional`, `user-prompt-basic`, `user-prompt-planning` (默认: `user-prompt-basic`)
-- **系统优化**: `general-optimize`, `output-format-optimize`, `analytical-optimize` (默认: `general-optimize`)
-- **迭代优化**: `iterate` (默认: `iterate`)
+- **User optimization**: `user-prompt-professional`, `user-prompt-basic`, `user-prompt-planning` (default: `user-prompt-basic`)
+- **System optimization**: `general-optimize`, `output-format-optimize`, `analytical-optimize` (default: `general-optimize`)
+- **Iterative optimization**: `iterate` (default: `iterate`)
 
-所有模板ID都是真实存在的内置模板，用户可以放心使用。
+All template IDs are real built-in templates, so users can use them with confidence.

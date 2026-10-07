@@ -1,142 +1,142 @@
-# 开发过程归档
+# Development Process Archive
 
-这里按功能点归档了项目开发过程中的重构记录、设计文档、经验总结等，用于后续跟踪和排错。
+This directory archives, by feature, refactor records, design documents, lessons learned, and more from the development of the project, for later tracking and troubleshooting.
 
-## 📚 归档说明
+## 📚 Archive Notes
 
-### 编号规范
-- **起始编号**：101
-- **编号方式**：简单累加（101, 102, 103...）
-- **编号保留**：即使功能废弃，编号也不重复使用
+### Numbering convention
+- **Starting number**: 101
+- **Numbering method**: Simple increment (101, 102, 103...)
+- **Number retention**: Numbers are never reused, even if a feature is deprecated
 
-### 归档原则
-- **按功能点归档**：同一功能的所有相关文档放在一起
-- **完整上下文**：包含计划、设计、实现、经验等完整记录
-- **时间顺序**：通过编号体现开发的时间顺序
+### Archiving principles
+- **Archive by feature**: All documents related to the same feature are kept together
+- **Complete context**: Includes the full record of plans, designs, implementation, lessons, etc.
+- **Chronological order**: The numbering reflects the chronological order of development
 
-## 🗂️ 功能点列表
+## 🗂️ Feature List
 
-### 架构重构系列 (已完成)
-- [101-singleton-refactor](./101-singleton-refactor/) - 单例模式重构 ✅
-- [102-web-architecture-refactor](./102-web-architecture-refactor/) - Web架构重构 ✅
-- [103-desktop-architecture](./103-desktop-architecture/) - 桌面端架构 ✅
+### Architecture refactor series (completed)
+- [101-singleton-refactor](./101-singleton-refactor/) - Singleton pattern refactor ✅
+- [102-web-architecture-refactor](./102-web-architecture-refactor/) - Web architecture refactor ✅
+- [103-desktop-architecture](./103-desktop-architecture/) - Desktop architecture ✅
 
-### 功能开发系列
-- [104-test-panel-refactor](./104-test-panel-refactor/) - 测试面板重构 📋
-- [105-output-display-v2](./105-output-display-v2/) - 输出显示v2 📋
-- [106-template-management](./106-template-management/) - 模板管理功能 🔄
-- [107-component-standardization](./107-component-standardization/) - 组件标准化重构 🔄
+### Feature development series
+- [104-test-panel-refactor](./104-test-panel-refactor/) - Test panel refactor 📋
+- [105-output-display-v2](./105-output-display-v2/) - Output display v2 📋
+- [106-template-management](./106-template-management/) - Template management feature 🔄
+- [107-component-standardization](./107-component-standardization/) - Component standardization refactor 🔄
 
-### 系统优化系列 (已完成)
-- [108-layout-system](./108-layout-system/) - 布局系统经验总结 ✅
-- [109-theme-system](./109-theme-system/) - 主题系统开发 ✅
+### System optimization series (completed)
+- [108-layout-system](./108-layout-system/) - Layout system lessons learned ✅
+- [109-theme-system](./109-theme-system/) - Theme system development ✅
 
-### 问题修复系列 (已完成)
-- [110-desktop-indexeddb-fix](./110-desktop-indexeddb-fix/) - 桌面端IndexedDB问题修复 ✅
-- [111-electron-preference-architecture](./111-electron-preference-architecture/) - Electron PreferenceService架构重构与竞态条件修复 ✅
-- [112-desktop-ipc-fixes](./112-desktop-ipc-fixes/) - 桌面端IPC修复合集 ✅
+### Bug fix series (completed)
+- [110-desktop-indexeddb-fix](./110-desktop-indexeddb-fix/) - Desktop IndexedDB problem fix ✅
+- [111-electron-preference-architecture](./111-electron-preference-architecture/) - Electron PreferenceService architecture refactor and race condition fix ✅
+- [112-desktop-ipc-fixes](./112-desktop-ipc-fixes/) - Collection of desktop IPC fixes ✅
 
-### 服务重构系列
-- [113-full-service-refactoring](./113-full-service-refactoring/) - 全面服务重构 🔄
+### Service refactor series
+- [113-full-service-refactoring](./113-full-service-refactoring/) - Full service refactor 🔄
 
-### 数据架构系列 (已完成)
-- [114-desktop-file-storage](./114-desktop-file-storage/) - 桌面端文件存储实现 ✅
-- [115-ipc-serialization-fixes](./115-ipc-serialization-fixes/) - IPC序列化问题修复 ✅
-- [116-desktop-packaging-optimization](./116-desktop-packaging-optimization/) - 桌面端打包优化 ✅
-- [117-import-export-architecture-refactor](./117-import-export-architecture-refactor/) - 导入导出架构重构 ✅
+### Data architecture series (completed)
+- [114-desktop-file-storage](./114-desktop-file-storage/) - Desktop file storage implementation ✅
+- [115-ipc-serialization-fixes](./115-ipc-serialization-fixes/) - IPC serialization problem fixes ✅
+- [116-desktop-packaging-optimization](./116-desktop-packaging-optimization/) - Desktop packaging optimization ✅
+- [117-import-export-architecture-refactor](./117-import-export-architecture-refactor/) - Import/export architecture refactor ✅
 
-### 系统集成系列 (已完成)
-- [118-desktop-auto-update-system](./118-desktop-auto-update-system/) - 桌面端应用发布与智能更新系统 ✅
-- [119-csp-safe-template-processing](./119-csp-safe-template-processing/) - CSP 安全模板处理 ✅
-- [120-mcp-server-module](./120-mcp-server-module/) - MCP Server 模块开发 ✅
+### System integration series (completed)
+- [118-desktop-auto-update-system](./118-desktop-auto-update-system/) - Desktop application release and smart update system ✅
+- [119-csp-safe-template-processing](./119-csp-safe-template-processing/) - CSP-safe template processing ✅
+- [120-mcp-server-module](./120-mcp-server-module/) - MCP Server module development ✅
 
-### 功能扩展系列 (已完成)
-- [121-multi-custom-models-support](./121-multi-custom-models-support/) - 多自定义模型环境变量支持 ✅
-- [122-docker-api-proxy](./122-docker-api-proxy/) - Docker API代理功能实现 ✅
-- [123-advanced-features-implementation](./123-advanced-features-implementation/) - 高级功能完整实现 ✅
+### Feature extension series (completed)
+- [121-multi-custom-models-support](./121-multi-custom-models-support/) - Multi-custom-model environment variable support ✅
+- [122-docker-api-proxy](./122-docker-api-proxy/) - Docker API proxy feature implementation ✅
+- [123-advanced-features-implementation](./123-advanced-features-implementation/) - Full implementation of advanced features ✅
 
-### UI优化系列 (已完成)
-- [124-navigation-optimization](./124-navigation-optimization/) - 导航栏优化项目 ✅
+### UI optimization series (completed)
+- [124-navigation-optimization](./124-navigation-optimization/) - Navigation bar optimization project ✅
 
-### 状态管理系列 (已完成)
-- [126-submode-persistence](./126-submode-persistence/) - 子模式持久化功能 ✅
+### State management series (completed)
+- [126-submode-persistence](./126-submode-persistence/) - Submode persistence feature ✅
 
-### 上下文模式系列 (已完成)
-- [127-multi-turn-dialogue-mode-optimization](./127-multi-turn-dialogue-mode-optimization/) - 多轮对话模式优化（Pro-System / Conversation） ✅
-- [128-context-ui-and-variable-system-refactor](./128-context-ui-and-variable-system-refactor/) - 上下文 UI 改造与变量系统重构 ✅
+### Context mode series (completed)
+- [127-multi-turn-dialogue-mode-optimization](./127-multi-turn-dialogue-mode-optimization/) - Multi-turn dialogue mode optimization (Pro-System / Conversation) ✅
+- [128-context-ui-and-variable-system-refactor](./128-context-ui-and-variable-system-refactor/) - Context UI rework and variable system refactor ✅
 
-## 📋 文档结构
+## 📋 Document Structure
 
-每个功能点目录包含：
-- **README.md** - 功能点概述、时间线、状态
-- **核心文档**（根据实际情况）：
-  - `plan.md` - 计划文档
-  - `design.md` - 设计文档
-  - `implementation.md` - 实现记录
-  - `experience.md` - 经验总结
-  - `troubleshooting.md` - 排查清单
+Each feature directory contains:
+- **README.md** - Feature overview, timeline, status
+- **Core documents** (depending on the situation):
+  - `plan.md` - Plan document
+  - `design.md` - Design document
+  - `implementation.md` - Implementation record
+  - `experience.md` - Lessons learned
+  - `troubleshooting.md` - Troubleshooting checklist
 
-## 🔍 查找指南
+## 🔍 Lookup Guide
 
-### 按时间查找
-- **101-103**：2024年12月底的架构重构
-- **104-107**：2024年12月底至2025年7月的功能开发
-- **108-109**：2025年7月的系统优化
-- **110-113**：2025年1月至7月的修复和重构
+### Look up by time
+- **101-103**: Architecture refactor in late December 2024
+- **104-107**: Feature development from late December 2024 to July 2025
+- **108-109**: System optimization in July 2025
+- **110-113**: Fixes and refactors from January to July 2025
 
-### 按功能分类查找
-- **架构重构系列**：101, 102, 103
-- **功能开发系列**：104, 105, 106, 107
-- **系统优化系列**：108, 109
-- **问题修复系列**：110, 111, 112
-- **服务重构系列**：113
-- **UI优化系列**：124
-- **状态管理系列**：126
-- **上下文模式系列**：127
-- **上下文模式系列**：127, 128
+### Look up by feature category
+- **Architecture refactor series**: 101, 102, 103
+- **Feature development series**: 104, 105, 106, 107
+- **System optimization series**: 108, 109
+- **Bug fix series**: 110, 111, 112
+- **Service refactor series**: 113
+- **UI optimization series**: 124
+- **State management series**: 126
+- **Context mode series**: 127
+- **Context mode series**: 127, 128
 
-### 按状态查找
-- **已完成**：101, 102, 103, 108, 109, 110, 111, 112, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 126, 127, 128
-- **进行中**：106, 107, 113
-- **计划中**：104, 105
+### Look up by status
+- **Completed**: 101, 102, 103, 108, 109, 110, 111, 112, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 126, 127, 128
+- **In progress**: 106, 107, 113
+- **Planned**: 104, 105
 
-## 📝 使用说明
+## 📝 Usage Instructions
 
-1. **查找相关功能**：根据功能名称或编号找到对应目录
-2. **了解背景**：先阅读README.md了解功能概述
-3. **深入细节**：根据需要查看具体的计划、设计或经验文档
-4. **问题排查**：如有相关问题，查看troubleshooting.md
+1. **Find a related feature**: Locate the corresponding directory by feature name or number
+2. **Understand the background**: Read the README.md first for a feature overview
+3. **Dive into the details**: Look at the specific plan, design, or lessons-learned documents as needed
+4. **Troubleshooting**: If you have a related problem, see troubleshooting.md
 
-## 🔄 维护说明
+## 🔄 Maintenance Notes
 
-- **新功能归档**：从125开始继续编号
-- **文档更新**：功能完成后及时更新状态和经验总结
-- **交叉引用**：在相关功能点之间建立引用关系
-- **合并原则**：当同一功能领域有3个以上相关文档时考虑合并
-- **质量标准**：空目录或内容不足的文档应合并或删除
+- **Archiving new features**: Continue numbering from 125
+- **Document updates**: Update the status and lessons learned promptly once a feature is completed
+- **Cross-references**: Establish references between related features
+- **Merging principle**: Consider merging when a feature area has more than 3 related documents
+- **Quality standard**: Empty directories or documents with insufficient content should be merged or deleted
 
-## 📋 组织指南
+## 📋 Organization Guidelines
 
-### 归档标准
-1. **功能完整性**：每个功能点包含完整的计划→设计→实现→经验链条
-2. **避免重复编号**：严格按时间顺序分配编号，不重复使用
-3. **内容质量**：确保文档内容充实，有实际价值
+### Archiving standards
+1. **Feature completeness**: Each feature includes a complete plan → design → implementation → lessons chain
+2. **Avoid duplicate numbering**: Assign numbers strictly in chronological order, never reusing them
+3. **Content quality**: Ensure the documents have substantial content and real value
 
-### 文档结构规范
+### Document structure convention
 ```
-{编号}-{功能名称}/
-├── README.md (功能概述、时间线、状态)
-├── plan.md (计划文档，可选)
-├── design.md (设计文档，可选)
-├── implementation.md (实现记录，可选)
-├── experience.md (经验总结，必需)
-└── troubleshooting.md (排查清单，可选)
+{number}-{feature-name}/
+├── README.md (feature overview, timeline, status)
+├── plan.md (plan document, optional)
+├── design.md (design document, optional)
+├── implementation.md (implementation record, optional)
+├── experience.md (lessons learned, required)
+└── troubleshooting.md (troubleshooting checklist, optional)
 ```
 
-## 📊 统计信息
+## 📊 Statistics
 
-- **总归档数**: 25
-- **已完成**: 20
-- **进行中**: 3
-- **计划中**: 2
-- **下一个编号**: 127
+- **Total archives**: 25
+- **Completed**: 20
+- **In progress**: 3
+- **Planned**: 2
+- **Next number**: 127

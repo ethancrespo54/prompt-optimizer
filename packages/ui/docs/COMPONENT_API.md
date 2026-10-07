@@ -1,62 +1,62 @@
-# Naive UI 重构组件文档
+# Naive UI Refactored Components Documentation
 
-## 概述
+## Overview
 
-本文档记录了经过 Naive UI 重构后的所有核心组件，包括新增的可访问性功能、性能优化和响应式支持。所有组件均符合 WCAG 2.1 AA/AAA 标准，提供完整的键盘导航和屏幕阅读器支持。
+This document describes all core components refactored with Naive UI, including the newly added accessibility features, performance optimizations, and responsive support. All components comply with the WCAG 2.1 AA/AAA standards and provide complete keyboard navigation and screen reader support.
 
-## 组件架构
+## Component Architecture
 
-### 设计原则
-- **SOLID**: 单一职责、开闭原则、里氏替换、接口隔离、依赖倒置
-- **KISS**: 保持简单，避免过度复杂的设计
-- **DRY**: 避免重复代码，统一通用逻辑
-- **YAGNI**: 只实现当前需要的功能
+### Design Principles
+- **SOLID**: Single responsibility, open/closed, Liskov substitution, interface segregation, dependency inversion
+- **KISS**: Keep it simple and avoid overly complex designs
+- **DRY**: Avoid duplicated code and unify common logic
+- **YAGNI**: Only implement the features that are currently needed
 
-### 技术栈
+### Tech Stack
 - **Vue 3**: Composition API + TypeScript
-- **Naive UI**: 现代化组件库
-- **无障碍**: WCAG 2.1 AA/AAA 标准
-- **响应式**: 移动端优先设计
-- **性能**: 虚拟化、防抖节流、懒加载
+- **Naive UI**: Modern component library
+- **Accessibility**: WCAG 2.1 AA/AAA standards
+- **Responsive**: Mobile-first design
+- **Performance**: Virtualization, debounce/throttle, lazy loading
 
-## 核心组件
+## Core Components
 
-### 1. ContextEditor（上下文编辑器）
+### 1. ContextEditor (Context Editor)
 
-**描述**: 完全重构的上下文编辑器，提供消息管理、变量处理和工具配置功能。
+**Description**: A fully refactored context editor that provides message management, variable handling, and tool configuration.
 
-**文件位置**: `packages/ui/src/components/ContextEditor.vue`
+**File location**: `packages/ui/src/components/ContextEditor.vue`
 
 #### Props
 
 ```typescript
 interface ContextEditorProps {
-  /** 模态框可见性 */
+  /** Modal visibility */
   visible: boolean
-  /** 上下文状态数据 */
+  /** Context state data */
   state: ContextState
-  /** 只读模式 */
+  /** Read-only mode */
   readonly?: boolean
-  /** 自定义样式类名 */
+  /** Custom style class name */
   customClass?: string
-  /** 尺寸大小 */
+  /** Size */
   size?: 'small' | 'medium' | 'large'
-  /** 全局可用变量（用于变量解析和预览） */
+  /** Globally available variables (used for variable resolution and preview) */
   availableVariables?: Record<string, string>
 }
 
 interface ContextState {
-  /** 消息列表 */
+  /** Message list */
   messages: ConversationMessage[]
-  /** 变量映射 */
+  /** Variable mapping */
   variables: Record<string, string>
-  /** 工具配置 */
+  /** Tool configuration */
   tools: ToolConfig[]
-  /** 显示变量预览 */
+  /** Show variable preview */
   showVariablePreview: boolean
-  /** 显示工具管理器 */
+  /** Show tool manager */
   showToolManager: boolean
-  /** 编辑模式 */
+  /** Edit mode */
   mode: 'edit' | 'preview'
 }
 ```
@@ -65,15 +65,15 @@ interface ContextState {
 
 ```typescript
 interface ContextEditorEmits {
-  /** 保存上下文 */
+  /** Save context */
   save: (context: ContextState) => void
-  /** 取消编辑 */
+  /** Cancel editing */
   cancel: () => void
-  /** 更新可见性 */
+  /** Update visibility */
   'update:visible': (visible: boolean) => void
-  /** 上下文状态更新 */
+  /** Context state update */
   'update:state': (state: ContextState) => void
-  /** 上下文内容变更 */
+  /** Context content change */
   contextChange: (context: ContextState) => void
 }
 ```
@@ -83,51 +83,51 @@ interface ContextEditorEmits {
 ```vue
 <template>
   <ContextEditor>
-    <!-- 自定义工具栏 -->
+    <!-- Custom toolbar -->
     <template #toolbar>
-      <NButton>自定义按钮</NButton>
+      <NButton>Custom button</NButton>
     </template>
     
-    <!-- 自定义底部 -->
+    <!-- Custom footer -->
     <template #footer>
-      <div class="custom-footer">自定义内容</div>
+      <div class="custom-footer">Custom content</div>
     </template>
   </ContextEditor>
 </template>
 ```
 
-#### 功能特性
+#### Features
 
-- **多标签页界面**: 消息编辑、变量管理、工具配置三个标签页
-- **变量管理**: 上下文级变量覆盖，不影响全局变量
-- **预定义变量保护**: 防止覆盖系统预定义变量
-- **变量预览与缺失检测**: 实时显示变量替换结果和缺失变量
-- **直接持久化**: 编辑内容实时保存，无需手动保存
-- **导入导出支持**: 支持上下文集合的批量导入导出
+- **Multi-tab interface**: Three tabs: message editing, variable management, and tool configuration
+- **Variable management**: Context-level variable overrides that do not affect global variables
+- **Predefined variable protection**: Prevents overriding system predefined variables
+- **Variable preview and missing detection**: Shows variable replacement results and missing variables in real time
+- **Direct persistence**: Edits are saved in real time with no manual save needed
+- **Import/export support**: Supports bulk import/export of context collections
 
-#### 变量标签页
+#### Variables tab
 
-变量标签页专门用于管理上下文级变量覆盖：
+The Variables tab is dedicated to managing context-level variable overrides:
 
-1. **变量列表**: 显示变量名、当前值、来源（覆盖/全局/预定义）和状态
-2. **新增/编辑**: 支持添加或修改上下文变量，自动校验格式和预定义冲突
-3. **删除覆盖**: 删除覆盖项后回退到全局或预定义值
-4. **缺失变量处理**: 点击缺失变量按钮直接进入上下文变量编辑
+1. **Variable list**: Shows the variable name, current value, source (override/global/predefined), and status
+2. **Add/Edit**: Supports adding or modifying context variables, with automatic format validation and predefined-variable conflict checks
+3. **Delete override**: After an override is deleted, it falls back to the global or predefined value
+4. **Missing variable handling**: Clicking the missing variable button jumps straight to editing the context variable
 
-#### 可访问性特性
+#### Accessibility Features
 
-- **ARIA**: 完整的 `role`、`aria-label`、`aria-describedby` 支持
-- **键盘导航**: Tab、Enter、Escape、方向键导航
-- **屏幕阅读器**: 实时状态通知和上下文变更提示
-- **焦点管理**: 自动焦点陷阱和还原
+- **ARIA**: Complete support for `role`, `aria-label`, and `aria-describedby`
+- **Keyboard navigation**: Tab, Enter, Escape, and arrow key navigation
+- **Screen reader**: Live status announcements and context change hints
+- **Focus management**: Automatic focus trap and restoration
 
-#### 使用示例
+#### Usage Example
 
 ```vue
 <template>
   <div>
     <NButton @click="showEditor = true">
-      打开编辑器
+      Open editor
     </NButton>
     
     <ContextEditor
@@ -148,24 +148,24 @@ import { ContextEditor, type ContextState } from '@prompt-optimizer/ui'
 
 const showEditor = ref(false)
 
-// 上下文状态数据
+// Context state data
 const contextState = ref<ContextState>({
   messages: [
     { role: 'user', content: 'Hello {{name}}' },
     { role: 'assistant', content: 'Hi there!' }
   ],
-  variables: { name: 'World' }, // 上下文覆盖变量
+  variables: { name: 'World' }, // Context override variables
   tools: [],
   showVariablePreview: true,
   showToolManager: true,
   mode: 'edit'
 })
 
-// 全局可用变量（包括预定义和全局变量）
+// Globally available variables (including predefined and global variables)
 const availableVariables = ref<Record<string, string>>({
   currentDate: new Date().toISOString(),
   userName: 'Default User',
-  // 其他全局变量...
+  // Other global variables...
 })
 
 const handleSave = (context: ContextState) => {
@@ -179,65 +179,65 @@ const handleCancel = () => {
 
 const handleStateUpdate = (state: ContextState) => {
   console.log('State updated:', state)
-  // 实时持久化逻辑
+  // Real-time persistence logic
 }
 
 const handleContextChange = (context: ContextState) => {
   console.log('Context changed:', context)
-  // 上下文变更处理逻辑
+  // Context change handling logic
 }
 </script>
 ```
 
 ---
 
-### 2. ToolCallDisplay（工具调用显示）
+### 2. ToolCallDisplay (Tool Call Display)
 
-**描述**: 用于显示和管理工具调用结果的折叠面板组件。
+**Description**: A collapsible panel component for displaying and managing tool call results.
 
-**文件位置**: `packages/ui/src/components/ToolCallDisplay.vue`
+**File location**: `packages/ui/src/components/ToolCallDisplay.vue`
 
 #### Props
 
 ```typescript
 interface ToolCallDisplayProps {
-  /** 工具调用列表 */
+  /** Tool call list */
   toolCalls?: ToolCall[]
-  /** 初始折叠状态 */
+  /** Initial collapsed state */
   collapsed?: boolean
-  /** 组件大小 */
+  /** Component size */
   size?: 'small' | 'medium' | 'large'
-  /** 最大显示数量 */
+  /** Maximum display count */
   maxItems?: number
 }
 
 interface ToolCall {
-  /** 调用ID */
+  /** Call ID */
   id: string
-  /** 工具名称 */
+  /** Tool name */
   name: string
-  /** 调用参数 */
+  /** Call arguments */
   arguments?: Record<string, any>
-  /** 调用结果 */
+  /** Call result */
   result?: any
-  /** 错误信息 */
+  /** Error message */
   error?: string
-  /** 调用状态 */
+  /** Call status */
   status: 'pending' | 'success' | 'error'
-  /** 时间戳 */
+  /** Timestamp */
   timestamp: number
 }
 ```
 
-#### 特性
+#### Features
 
-- **智能折叠**: 根据内容长度自动调整显示
-- **状态标识**: 成功、失败、等待状态的视觉区分
-- **JSON 格式化**: 美化显示复杂参数和结果
-- **错误处理**: 优雅处理循环引用和无效数据
-- **性能优化**: 虚拟滚动支持大量数据
+- **Smart collapsing**: Automatically adjusts the display based on content length
+- **Status indicators**: Visual distinction between success, failure, and pending states
+- **JSON formatting**: Pretty-prints complex arguments and results
+- **Error handling**: Gracefully handles circular references and invalid data
+- **Performance optimization**: Virtual scrolling supports large amounts of data
 
-#### 使用示例
+#### Usage Example
 
 ```vue
 <template>
@@ -276,48 +276,48 @@ const toolCalls = ref<ToolCall[]>([
 
 ---
 
-### 3. ScreenReaderSupport（屏幕阅读器支持）
+### 3. ScreenReaderSupport (Screen Reader Support)
 
-**描述**: 专门为屏幕阅读器用户提供增强支持的组件。
+**Description**: A component that provides enhanced support specifically for screen reader users.
 
-**文件位置**: `packages/ui/src/components/ScreenReaderSupport.vue`
+**File location**: `packages/ui/src/components/ScreenReaderSupport.vue`
 
 #### Props
 
 ```typescript
 interface ScreenReaderSupportProps {
-  /** 增强模式 */
+  /** Enhanced mode */
   enhanced?: boolean
-  /** 显示导航帮助 */
+  /** Show navigation help */
   showNavigationHelp?: boolean
-  /** 显示快捷键帮助 */
+  /** Show shortcut help */
   showShortcutHelp?: boolean
-  /** 自动通知 */
+  /** Auto announcements */
   autoAnnounce?: boolean
 }
 ```
 
-#### 功能特性
+#### Features
 
-- **实时区域**: `aria-live` 区域用于状态更新通知
-- **快捷键支持**: 全局键盘快捷键处理
-- **导航提示**: 页面结构和导航帮助
-- **上下文感知**: 根据当前焦点提供相关提示
+- **Live region**: `aria-live` region used for status update announcements
+- **Shortcut support**: Global keyboard shortcut handling
+- **Navigation hints**: Page structure and navigation help
+- **Context awareness**: Provides relevant hints based on the current focus
 
 #### Methods
 
 ```typescript
 interface ScreenReaderSupportMethods {
-  /** 发送通知消息 */
+  /** Send an announcement message */
   announce(message: string, priority: 'polite' | 'assertive'): void
-  /** 显示快捷键帮助 */
+  /** Show shortcut help */
   showShortcuts(): void
-  /** 显示导航帮助 */
+  /** Show navigation help */
   showNavigation(): void
 }
 ```
 
-#### 使用示例
+#### Usage Example
 
 ```vue
 <template>
@@ -331,7 +331,7 @@ interface ScreenReaderSupportMethods {
     />
     
     <NButton @click="notifyUser">
-      发送通知
+      Send announcement
     </NButton>
   </div>
 </template>
@@ -346,30 +346,30 @@ const showNav = ref(false)
 const showShortcuts = ref(false)
 
 const notifyUser = () => {
-  screenReader.value?.announce('操作完成', 'polite')
+  screenReader.value?.announce('Operation complete', 'polite')
 }
 
 const handleShortcut = (key: string) => {
-  console.log('快捷键触发:', key)
+  console.log('Shortcut triggered:', key)
 }
 </script>
 ```
 
 ---
 
-## Composables（组合式函数）
+## Composables
 
-### 1. useAccessibility（可访问性支持）
+### 1. useAccessibility (Accessibility Support)
 
-**描述**: 提供全面的可访问性功能，包括键盘导航、ARIA 管理和屏幕阅读器支持。
+**Description**: Provides comprehensive accessibility features, including keyboard navigation, ARIA management, and screen reader support.
 
-**文件位置**: `packages/ui/src/composables/useAccessibility.ts`
+**File location**: `packages/ui/src/composables/useAccessibility.ts`
 
 #### API
 
 ```typescript
 function useAccessibility(componentName?: string): {
-  // 键盘导航
+  // Keyboard navigation
   keyboard: {
     handleKeyPress: (event: KeyboardEvent) => boolean
     setFocusableElements: (elements: HTMLElement[]) => void
@@ -379,7 +379,7 @@ function useAccessibility(componentName?: string): {
     focusLast: () => void
   }
   
-  // ARIA 标签管理
+  // ARIA label management
   aria: {
     getLabel: (key: string, fallback?: string) => string
     getDescription: (key: string, fallback?: string) => string
@@ -387,14 +387,14 @@ function useAccessibility(componentName?: string): {
     getLiveRegionText: (key: string) => string
   }
   
-  // 消息通知
+  // Message announcements
   announce: (message: string, priority?: 'polite' | 'assertive') => void
   
-  // 焦点管理
+  // Focus management
   enableFocusTrap: () => void
   disableFocusTrap: () => void
   
-  // 响应式状态
+  // Reactive state
   focusableElements: Ref<HTMLElement[]>
   currentFocusIndex: Ref<number>
   trapFocus: Ref<boolean>
@@ -413,7 +413,7 @@ interface AccessibilityFeatures {
 }
 ```
 
-#### 使用示例
+#### Usage Example
 
 ```vue
 <template>
@@ -442,9 +442,9 @@ import { onMounted, ref } from 'vue'
 import { useAccessibility } from '@prompt-optimizer/ui'
 
 const items = ref([
-  { id: 1, name: '项目1' },
-  { id: 2, name: '项目2' },
-  { id: 3, name: '项目3' }
+  { id: 1, name: 'Item 1' },
+  { id: 2, name: 'Item 2' },
+  { id: 3, name: 'Item 3' }
 ])
 
 const {
@@ -462,24 +462,24 @@ onMounted(() => {
   keyboard.setFocusableElements(Array.from(buttons) as HTMLElement[])
   enableFocusTrap()
   
-  announce('组件已加载', 'polite')
+  announce('Component loaded', 'polite')
 })
 </script>
 ```
 
 ---
 
-### 2. useFocusManager（焦点管理）
+### 2. useFocusManager (Focus Management)
 
-**描述**: 专业的焦点管理系统，支持焦点陷阱、键盘导航和自动焦点恢复。
+**Description**: A professional focus management system with support for focus traps, keyboard navigation, and automatic focus restoration.
 
-**文件位置**: `packages/ui/src/composables/useFocusManager.ts`
+**File location**: `packages/ui/src/composables/useFocusManager.ts`
 
 #### API
 
 ```typescript
 function useFocusManager(options: FocusManagerOptions = {}): {
-  // 核心方法
+  // Core methods
   trapFocus: () => Promise<void>
   releaseFocus: () => void
   moveFocusNext: () => boolean
@@ -487,11 +487,11 @@ function useFocusManager(options: FocusManagerOptions = {}): {
   focusFirstElement: () => boolean
   focusLastElement: () => boolean
   
-  // 工具方法
+  // Utility methods
   updateFocusableElements: () => HTMLElement[]
   isFocusable: (element: HTMLElement) => boolean
   
-  // 响应式状态
+  // Reactive state
   focusableElements: Ref<HTMLElement[]>
   currentFocusIndex: Ref<number>
   isTrapped: Ref<boolean>
@@ -506,17 +506,17 @@ interface FocusManagerOptions {
 }
 ```
 
-#### 使用示例
+#### Usage Example
 
 ```vue
 <template>
   <div ref="containerRef" class="focus-container">
-    <h2>焦点管理示例</h2>
-    <NButton @click="trapFocus">启用焦点陷阱</NButton>
-    <NButton @click="releaseFocus">释放焦点陷阱</NButton>
-    <NInput placeholder="输入框1" />
-    <NInput placeholder="输入框2" />
-    <NButton>确认</NButton>
+    <h2>Focus Management Example</h2>
+    <NButton @click="trapFocus">Enable Focus Trap</NButton>
+    <NButton @click="releaseFocus">Release Focus Trap</NButton>
+    <NInput placeholder="Input 1" />
+    <NInput placeholder="Input 2" />
+    <NButton>Confirm</NButton>
   </div>
 </template>
 
@@ -540,7 +540,7 @@ const {
 })
 
 onMounted(() => {
-  // 监听键盘事件
+  // Listen for keyboard events
   document.addEventListener('keydown', (e) => {
     if (!isTrapped.value) return
     
@@ -559,11 +559,11 @@ onMounted(() => {
 
 ---
 
-### 3. useAccessibilityTesting（可访问性测试）
+### 3. useAccessibilityTesting (Accessibility Testing)
 
-**描述**: WCAG 合规性自动化测试工具，用于检测和验证可访问性问题。
+**Description**: A WCAG compliance automated testing tool for detecting and verifying accessibility issues.
 
-**文件位置**: `packages/ui/src/composables/useAccessibilityTesting.ts`
+**File location**: `packages/ui/src/composables/useAccessibilityTesting.ts`
 
 #### API
 
@@ -598,7 +598,7 @@ interface AccessibilityIssue {
 }
 ```
 
-#### 使用示例
+#### Usage Example
 
 ```vue
 <script setup lang="ts">
@@ -608,26 +608,26 @@ import { useAccessibilityTesting } from '@prompt-optimizer/ui'
 const { runTest, runSingleRule } = useAccessibilityTesting()
 
 onMounted(async () => {
-  // 运行全面测试
+  // Run the full test
   const result = await runTest({
     scope: document.body,
     wcagLevel: 'AA',
     includeWarnings: true
   })
   
-  console.log('可访问性测试结果:', result)
+  console.log('Accessibility test results:', result)
   
   if (result.score < 80) {
-    console.warn('可访问性分数较低:', result.score)
+    console.warn('Accessibility score is low:', result.score)
     result.issues.forEach(issue => {
       console.error(`${issue.rule}: ${issue.message}`)
     })
   }
   
-  // 单独测试某个规则
+  // Test a single rule
   const imgAltResult = runSingleRule('img-alt')
   if (imgAltResult.issues.length > 0) {
-    console.warn('图片缺少alt属性')
+    console.warn('Image is missing the alt attribute')
   }
 })
 </script>
@@ -635,74 +635,74 @@ onMounted(async () => {
 
 ---
 
-## 样式系统
+## Style System
 
-### CSS 类命名约定
+### CSS Class Naming Conventions
 
-所有组件遵循统一的 CSS 类命名规范：
+All components follow a unified CSS class naming convention:
 
 ```scss
-// 基础组件类
+// Base component class
 .component-name {
-  // 基础样式
+  // Base styles
 }
 
-// 状态类
+// State class
 .component-name--state {
-  // 状态样式
+  // State styles
 }
 
-// 修饰符类
+// Modifier class
 .component-name__element {
-  // 元素样式
+  // Element styles
 }
 
-// 可访问性相关类
+// Accessibility-related classes
 .sr-only {
-  // 仅屏幕阅读器可见
+  // Visible to screen readers only
 }
 
 .keyboard-focus {
-  // 键盘焦点样式
+  // Keyboard focus styles
 }
 
 .accessibility-mode {
-  // 可访问性模式样式
+  // Accessibility mode styles
 }
 ```
 
-### 响应式断点
+### Responsive Breakpoints
 
 ```scss
-// 移动端
+// Mobile
 @media (max-width: 767px) {
-  .responsive-mobile { /* 样式 */ }
+  .responsive-mobile { /* styles */ }
 }
 
-// 平板端
+// Tablet
 @media (min-width: 768px) and (max-width: 1023px) {
-  .responsive-tablet { /* 样式 */ }
+  .responsive-tablet { /* styles */ }
 }
 
-// 桌面端
+// Desktop
 @media (min-width: 1024px) {
-  .responsive-desktop { /* 样式 */ }
+  .responsive-desktop { /* styles */ }
 }
 ```
 
 ---
 
-## 性能优化
+## Performance Optimization
 
-### 1. 懒加载和代码分割
+### 1. Lazy Loading and Code Splitting
 
 ```typescript
-// 组件懒加载
+// Lazy-load components
 const ContextEditor = defineAsyncComponent(
   () => import('./components/ContextEditor.vue')
 )
 
-// 路由级别代码分割
+// Route-level code splitting
 const routes = [
   {
     path: '/editor',
@@ -711,11 +711,11 @@ const routes = [
 ]
 ```
 
-### 2. 虚拟化支持
+### 2. Virtualization Support
 
 ```vue
 <template>
-  <!-- 大量数据的虚拟列表 -->
+  <!-- Virtual list for large amounts of data -->
   <VirtualList
     :items="largeDataset"
     :item-height="50"
@@ -728,64 +728,64 @@ const routes = [
 </template>
 ```
 
-### 3. 防抖和节流
+### 3. Debouncing and Throttling
 
 ```typescript
 import { useDebounceThrottle } from '@prompt-optimizer/ui'
 
 const { debounce, throttle } = useDebounceThrottle()
 
-// 搜索输入防抖
+// Debounce search input
 const handleSearch = debounce((query: string) => {
-  // 执行搜索逻辑
+  // Perform the search logic
 }, 300)
 
-// 滚动事件节流
+// Throttle scroll events
 const handleScroll = throttle(() => {
-  // 处理滚动逻辑
+  // Handle the scroll logic
 }, 16)
 ```
 
 ---
 
-## 国际化支持
+## Internationalization Support
 
-### 语言配置
+### Language Configuration
 
 ```typescript
 import { createI18n } from 'vue-i18n'
-import zhCN from './locales/zh-CN'
+// Additional locales can be imported here
 import enUS from './locales/en-US'
 
 const i18n = createI18n({
-  locale: 'zh-CN',
+  locale: 'en-US',
   fallbackLocale: 'en-US',
   messages: {
-    'zh-CN': zhCN,
     'en-US': enUS
+    // Additional locales can be registered here
   }
 })
 ```
 
-### 可访问性文本
+### Accessibility Text
 
 ```typescript
-// zh-CN.ts
+// en-US.ts
 export default {
   accessibility: {
     labels: {
-      contextEditor: '上下文编辑器',
-      closeButton: '关闭按钮',
-      saveButton: '保存按钮'
+      contextEditor: 'Context editor',
+      closeButton: 'Close button',
+      saveButton: 'Save button'
     },
     descriptions: {
-      contextEditor: '编辑消息、变量和工具配置',
-      navigationHelp: '使用Tab键在元素间导航'
+      contextEditor: 'Edit messages, variables, and tool configuration',
+      navigationHelp: 'Use the Tab key to navigate between elements'
     },
     announcements: {
-      saved: '内容已保存',
-      loading: '正在加载中',
-      error: '发生错误，请重试'
+      saved: 'Content saved',
+      loading: 'Loading',
+      error: 'An error occurred, please try again'
     }
   }
 }
@@ -793,9 +793,9 @@ export default {
 
 ---
 
-## 测试策略
+## Testing Strategy
 
-### 1. 单元测试
+### 1. Unit Tests
 
 ```typescript
 import { describe, it, expect } from 'vitest'
@@ -803,7 +803,7 @@ import { mount } from '@vue/test-utils'
 import ContextEditor from '../ContextEditor.vue'
 
 describe('ContextEditor', () => {
-  it('应该正确渲染基本结构', () => {
+  it('should render the basic structure correctly', () => {
     const wrapper = mount(ContextEditor, {
       props: {
         visible: true,
@@ -820,13 +820,13 @@ describe('ContextEditor', () => {
 })
 ```
 
-### 2. 可访问性测试
+### 2. Accessibility Tests
 
 ```typescript
 import { useAccessibilityTesting } from '@prompt-optimizer/ui'
 
 describe('Accessibility Tests', () => {
-  it('应该通过WCAG AA标准', async () => {
+  it('should pass the WCAG AA standard', async () => {
     const { runTest } = useAccessibilityTesting()
     const result = await runTest({ wcagLevel: 'AA' })
     
@@ -836,27 +836,27 @@ describe('Accessibility Tests', () => {
 })
 ```
 
-### 3. E2E 测试
+### 3. E2E Tests
 
 ```typescript
-describe('端到端测试', () => {
-  it('应该支持完整的用户流程', async () => {
-    // 测试完整的用户交互流程
+describe('End-to-end tests', () => {
+  it('should support the complete user flow', async () => {
+    // Test the complete user interaction flow
     await page.goto('/')
     await page.click('[data-testid="open-editor"]')
-    await page.fill('[aria-label="消息输入框"]', '测试内容')
-    await page.click('[aria-label="保存按钮"]')
+    await page.fill('[aria-label="Message input"]', 'Test content')
+    await page.click('[aria-label="Save button"]')
     
-    expect(await page.textContent('[role="status"]')).toContain('保存成功')
+    expect(await page.textContent('[role="status"]')).toContain('Saved successfully')
   })
 })
 ```
 
 ---
 
-## 部署和构建
+## Deployment and Build
 
-### 1. 构建配置
+### 1. Build Configuration
 
 ```typescript
 // vite.config.ts
@@ -884,7 +884,7 @@ export default defineConfig({
 })
 ```
 
-### 2. 包管理
+### 2. Package Management
 
 ```json
 {
@@ -906,23 +906,23 @@ export default defineConfig({
 
 ---
 
-## 最佳实践
+## Best Practices
 
-### 1. 组件开发指南
+### 1. Component Development Guidelines
 
-1. **始终使用TypeScript**: 提供类型安全和更好的开发体验
-2. **遵循可访问性标准**: 确保所有组件符合WCAG 2.1 AA标准
-3. **编写测试**: 单元测试、集成测试和E2E测试覆盖
-4. **性能优化**: 使用虚拟化、懒加载和防抖节流
-5. **响应式设计**: 移动端优先，适配不同屏幕尺寸
+1. **Always use TypeScript**: Provides type safety and a better development experience
+2. **Follow accessibility standards**: Make sure all components comply with WCAG 2.1 AA
+3. **Write tests**: Unit tests, integration tests, and E2E test coverage
+4. **Performance optimization**: Use virtualization, lazy loading, and debounce/throttle
+5. **Responsive design**: Mobile first, adapting to different screen sizes
 
-### 2. 代码风格
+### 2. Code Style
 
 ```typescript
-// 推荐的组件结构
+// Recommended component structure
 <template>
   <div class="component-name" :class="componentClasses">
-    <!-- 内容 -->
+    <!-- Content -->
   </div>
 </template>
 
@@ -930,7 +930,7 @@ export default defineConfig({
 import { computed, ref } from 'vue'
 import { useAccessibility } from '../composables/useAccessibility'
 
-// Props 定义
+// Props definition
 interface Props {
   visible: boolean
   readonly?: boolean
@@ -939,22 +939,22 @@ const props = withDefaults(defineProps<Props>(), {
   readonly: false
 })
 
-// Emits 定义
+// Emits definition
 interface Emits {
   'update:visible': [visible: boolean]
 }
 const emit = defineEmits<Emits>()
 
-// 可访问性支持
+// Accessibility support
 const { accessibility } = useAccessibility('ComponentName')
 
-// 响应式状态
+// Reactive state
 const localVisible = computed({
   get: () => props.visible,
   set: (value) => emit('update:visible', value)
 })
 
-// 计算属性
+// Computed properties
 const componentClasses = computed(() => ({
   'component-name--readonly': props.readonly,
   ...accessibility.classes.value
@@ -963,47 +963,47 @@ const componentClasses = computed(() => ({
 
 <style scoped>
 .component-name {
-  /* 基础样式 */
+  /* Base styles */
 }
 
 .component-name--readonly {
-  /* 只读状态样式 */
+  /* Read-only state styles */
 }
 </style>
 ```
 
-### 3. 可访问性检查清单
+### 3. Accessibility Checklist
 
-- [ ] 所有交互元素都有适当的ARIA标签
-- [ ] 键盘导航功能完整
-- [ ] 颜色对比度符合WCAG标准
-- [ ] 屏幕阅读器兼容性测试通过
-- [ ] 焦点管理正确实现
-- [ ] 状态变更有适当的通知
+- [ ] All interactive elements have appropriate ARIA labels
+- [ ] Keyboard navigation is complete
+- [ ] Color contrast meets WCAG standards
+- [ ] Screen reader compatibility tests pass
+- [ ] Focus management is implemented correctly
+- [ ] State changes have appropriate announcements
 
 ---
 
-## 更新日志
+## Changelog
 
 ### v1.0.0 (2024-XX-XX)
-- ✨ 完成Naive UI重构
-- ✨ 新增完整可访问性支持
-- ✨ 实现响应式布局
-- ✨ 添加性能优化特性
-- ✨ 完整的TypeScript类型支持
-- ✨ 国际化支持
-- ✨ 完整的测试套件
+- ✨ Completed the Naive UI refactor
+- ✨ Added complete accessibility support
+- ✨ Implemented responsive layout
+- ✨ Added performance optimization features
+- ✨ Complete TypeScript type support
+- ✨ Internationalization support
+- ✨ Complete test suite
 
 ---
 
-## 反馈和支持
+## Feedback and Support
 
-如有问题或建议，请通过以下方式联系：
+If you have questions or suggestions, please get in touch through the following:
 
-- **GitHub Issues**: [项目仓库](https://github.com/your-repo/prompt-optimizer)
-- **文档更新**: 欢迎提交PR改进文档
-- **功能请求**: 在Issues中标记为Feature Request
+- **GitHub Issues**: [Project repository](https://github.com/your-repo/prompt-optimizer)
+- **Documentation updates**: Pull requests to improve the documentation are welcome
+- **Feature requests**: Label them as Feature Request in Issues
 
 ---
 
-*最后更新时间: 2024年XX月XX日*
+*Last updated: XX/XX/2024*

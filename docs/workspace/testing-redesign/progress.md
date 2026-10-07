@@ -1,216 +1,216 @@
-# 测试方案重新设计 - 进度日志
+# Test Strategy Redesign - Progress Log
 
-## 会话信息
+## Session Info
 
-**开始时间**: 2026-01-09  
-**当前状态**: Phase 4 - P0 用例补齐（in_progress）  
-**下一阶段**: Phase 4 - 完整工作流覆盖（pending）
+**Start time**: 2026-01-09  
+**Current status**: Phase 4 - Filling in P0 test cases (in_progress)  
+**Next phase**: Phase 4 - Full workflow coverage (pending)
 
 ---
 
-## 2026-01-09 - 启动规划 + 技术选型调研（Phase 1）
+## 2026-01-09 - Planning Kickoff + Technology Selection Research (Phase 1)
 
-### 任务 1: 创建规划文件结构
+### Task 1: Create the Planning File Structure
 
-**执行**:
-- [x] 创建 `docs/workspace/testing-redesign/task_plan.md`
-- [x] 创建 `docs/workspace/testing-redesign/findings.md`
-- [x] 创建 `docs/workspace/testing-redesign/progress.md`
+**Execution**:
+- [x] Create `docs/workspace/testing-redesign/task_plan.md`
+- [x] Create `docs/workspace/testing-redesign/findings.md`
+- [x] Create `docs/workspace/testing-redesign/progress.md`
 
-### 任务 2: 技术选型调研
+### Task 2: Technology Selection Research
 
-**执行**:
-- [x] Vitest vs Jest（单元测试）
-- [x] Playwright vs Cypress（E2E）
-- [x] MSW vs nock vs Polly.js（HTTP Mock/VCR）
-- [x] 视觉回归测试方案（Playwright Visual 作为候选）
+**Execution**:
+- [x] Vitest vs Jest (unit tests)
+- [x] Playwright vs Cypress (E2E)
+- [x] MSW vs nock vs Polly.js (HTTP Mock/VCR)
+- [x] Visual regression testing options (Playwright Visual as the candidate)
 
-**技术栈总结**:
+**Tech stack summary**:
 
-| 层级 | 工具 | 决策 |
+| Layer | Tool | Decision |
 |------|------|------|
-| 单元/集成 | Vitest | 保持 |
-| E2E | Playwright | 保持 |
-| HTTP Mock/VCR | MSW + 自定义 VCR | 新增 |
-| UI 错误门禁 | Vitest + Playwright | 新增 |
+| Unit/integration | Vitest | Keep |
+| E2E | Playwright | Keep |
+| HTTP Mock/VCR | MSW + custom VCR | New |
+| UI error gate | Vitest + Playwright | New |
 
 ---
 
-## 2026-01-09 - Phase 2 完成：VCR 基础设施
+## 2026-01-09 - Phase 2 Complete: VCR Infrastructure
 
-### 任务: 实现 VCR 自动化录制-回放系统
+### Task: Implement the Automated VCR Record-Replay System
 
-**执行**:
-- [x] 创建 fixtures 目录：`packages/core/tests/fixtures/`
-- [x] VCR 工具：`packages/core/tests/utils/vcr.ts`
-- [x] 流式模拟：`packages/core/tests/utils/stream-simulator.ts`
-- [x] LLM Mock（MSW handlers）：`packages/core/tests/utils/llm-mock-service.ts`
-- [x] Core 测试集成 MSW：`packages/core/tests/setup.js`
-- [x] 根脚本：`pnpm test:record|test:replay|test:real`
-- [x] 文档：`docs/testing/vcr-usage-guide.md`
-- [x] 单元测试：`packages/core/tests/unit/utils/vcr.spec.ts`、`packages/core/tests/unit/utils/llm-mock-service.spec.ts`
-
----
-
-## 2026-01-09 - Phase 3 进展：UI 错误检测门禁
-
-### 已完成
-
-- [x] Vitest：捕获 `console.error/warn` + `window error/unhandledrejection` 并 fail 测试  
-  文件：`packages/ui/tests/utils/error-detection.ts`、`packages/ui/tests/setup.ts`
-- [x] Playwright：捕获 `pageerror` + `console error/warn` 并 fail 测试  
-  文件：`tests/e2e/fixtures.ts`（各 spec 引用 `./fixtures`）
-- [x] 修复门禁暴露出的噪音/误报  
-  - 避免重复注册 i18n 插件导致 Vue warn（多处测试修复）  
-  - 避免预期错误路径使用 `console.error`（`ImportExportDialog.vue` 调整为 dev-only debug）
-
-### 待补齐（最小可用范围）
-
-- [ ] 视觉回归：引入 1–2 个稳定截图用例（Playwright `toHaveScreenshot`）
-- [ ] P0 工作流用例（Phase 4）承接：用“真实交互 + 状态断言”覆盖状态同步/交互行为类错误
+**Execution**:
+- [x] Create the fixtures directory: `packages/core/tests/fixtures/`
+- [x] VCR utility: `packages/core/tests/utils/vcr.ts`
+- [x] Stream simulation: `packages/core/tests/utils/stream-simulator.ts`
+- [x] LLM Mock (MSW handlers): `packages/core/tests/utils/llm-mock-service.ts`
+- [x] Integrate MSW into Core tests: `packages/core/tests/setup.js`
+- [x] Root scripts: `pnpm test:record|test:replay|test:real`
+- [x] Documentation: `docs/testing/vcr-usage-guide.md`
+- [x] Unit tests: `packages/core/tests/unit/utils/vcr.spec.ts`, `packages/core/tests/unit/utils/llm-mock-service.spec.ts`
 
 ---
 
-## 2026-01-09 - Phase 4 进展：P0 工作流用例（最小集合）
+## 2026-01-09 - Phase 3 Progress: UI Error Detection Gate
 
-- [x] UI 集成：Basic 工作区逻辑（optimize/test/iterate）冒烟  
-  文件：`packages/ui/tests/integration/basic-workspace-logic.spec.ts`
-- [x] UI 集成：Context-User 优化/测试逻辑冒烟  
-  文件：`packages/ui/tests/integration/context-user-optimization.spec.ts`、`packages/ui/tests/integration/context-user-tester.spec.ts`
-- [x] UI 集成：Context-System 测试逻辑冒烟（V0 对比/变量合并）  
-  文件：`packages/ui/tests/integration/conversation-tester.spec.ts`
-- [x] UI 集成：Context-System 消息优化逻辑冒烟（优化→应用→链映射写入 session）  
-  文件：`packages/ui/tests/integration/conversation-optimization.spec.ts`
-- [x] UI 集成：Image 生成逻辑冒烟（load models + generate）  
-  文件：`packages/ui/tests/integration/image-generation.spec.ts`
-- [x] E2E：P0 路由冒烟（basic/pro/image 子路由可进入）  
-  文件：`tests/e2e/workflows/p0-route-smoke.spec.ts`
+### Completed
 
-- [x] Store 单元：6 个 Session Store 的持久化/迁移要点覆盖  
-  文件：`packages/ui/tests/unit/stores/session/basic-session-persistence.spec.ts`、`packages/ui/tests/unit/stores/session/pro-session-persistence.spec.ts`、`packages/ui/tests/unit/stores/session/image-session-persistence.spec.ts`
+- [x] Vitest: capture `console.error/warn` + `window error/unhandledrejection` and fail the test  
+  Files: `packages/ui/tests/utils/error-detection.ts`, `packages/ui/tests/setup.ts`
+- [x] Playwright: capture `pageerror` + `console error/warn` and fail the test  
+  File: `tests/e2e/fixtures.ts` (each spec imports from `./fixtures`)
+- [x] Fixed the noise/false positives exposed by the gate  
+  - Avoided registering the i18n plugin repeatedly, which caused Vue warnings (fixed in several tests)  
+  - Avoided using `console.error` on expected error paths (`ImportExportDialog.vue` changed to dev-only debug)
 
----
+### Remaining (minimum viable scope)
 
-## 2026-01-09 - Phase 5 完成：门禁集成（fast/full）
-
-- [x] 根脚本：`pnpm test:gate` / `pnpm test:gate:full`
-- [x] Husky：pre-commit 执行 `pnpm test:gate`（可用 `SKIP_TEST_GATE=1` 紧急跳过）
-- [x] CI：`.github/workflows/test.yml` 使用 `pnpm test:replay` + `pnpm test:gate:full`
+- [ ] Visual regression: introduce 1-2 stable screenshot cases (Playwright `toHaveScreenshot`)
+- [ ] P0 workflow cases (Phase 4) to follow up: cover state synchronization / interaction behavior errors with "real interaction + state assertions"
 
 ---
 
-## 2026-01-09 - 文件提交与门禁验证
+## 2026-01-09 - Phase 4 Progress: P0 Workflow Cases (Minimum Set)
 
-### 任务: 提交所有测试基础设施文件并验证门禁
+- [x] UI integration: Basic workspace logic (optimize/test/iterate) smoke test  
+  File: `packages/ui/tests/integration/basic-workspace-logic.spec.ts`
+- [x] UI integration: Context-User optimization/test logic smoke test  
+  Files: `packages/ui/tests/integration/context-user-optimization.spec.ts`, `packages/ui/tests/integration/context-user-tester.spec.ts`
+- [x] UI integration: Context-System test logic smoke test (V0 comparison / variable merging)  
+  File: `packages/ui/tests/integration/conversation-tester.spec.ts`
+- [x] UI integration: Context-System message optimization logic smoke test (optimize → apply → chain mapping written to the session)  
+  File: `packages/ui/tests/integration/conversation-optimization.spec.ts`
+- [x] UI integration: Image generation logic smoke test (load models + generate)  
+  File: `packages/ui/tests/integration/image-generation.spec.ts`
+- [x] E2E: P0 route smoke test (basic/pro/image sub-routes are reachable)  
+  File: `tests/e2e/workflows/p0-route-smoke.spec.ts`
 
-**执行**:
-- [x] 提交所有未跟踪的测试文件到 git 暂存区
-  - 文档：`docs/testing/`、`docs/workspace/testing-redesign/`
-  - VCR 基础设施：`packages/core/tests/fixtures/`、`packages/core/tests/utils/`
-  - 测试用例：`packages/ui/tests/integration/`、`packages/ui/tests/unit/stores/session/`
-  - E2E 测试：`tests/e2e/fixtures.ts`、`tests/e2e/workflows/`
-- [x] 验证快速门禁：`pnpm test:gate`（passed，240 tests）
-- [x] 验证 E2E 门禁：`pnpm test:gate:e2e`（passed，17/18 tests）
-
-**结果**:
-- ✅ 所有测试基础设施文件已加入版本控制
-- ✅ 门禁测试全部通过，执行时间远低于目标（< 10 分钟）
-- ✅ 零 flaky tests，测试稳定性良好
-- ✅ 创建 Phase 4 补充计划文档：`phase4-补充计划.md`
-
----
-
-## 2026-01-09 - Phase 4 补充计划制定
-
-### 任务: 分析遗漏测试用例并制定补充策略
-
-**执行**:
-- [x] 分析 Phase 4 待补充的测试用例
-- [x] 按优先级分类（P0/P1/P2）
-- [x] 制定渐进式补充策略
-- [x] 创建详细补充计划文档
-
-**输出**:
-- `docs/workspace/testing-redesign/phase4-补充计划.md` - 详细补充计划
-
-**优先级划分**:
-- 🔴 P0（高）: LLM 服务集成测试、Basic 完整工作流测试
-- 🟡 P1（中）: Session Store 集成测试、Context 完整工作流测试
-- 🟢 P2（低）: 图像生成+历史收藏测试
-
-**预估时间**:
-- MVP（最小可行）: 4-6 天（仅 P0）
-- Ideal（理想）: 10-14 天（P0 + P1）
+- [x] Store unit: coverage of the persistence/migration essentials of the 6 Session Stores  
+  Files: `packages/ui/tests/unit/stores/session/basic-session-persistence.spec.ts`, `packages/ui/tests/unit/stores/session/pro-session-persistence.spec.ts`, `packages/ui/tests/unit/stores/session/image-session-persistence.spec.ts`
 
 ---
 
-## 2026-01-09 - Phase 4 P0 测试：LLM 服务集成测试
+## 2026-01-09 - Phase 5 Complete: Gate Integration (fast/full)
 
-### 任务: 实现 LLM 服务集成测试（P0 高优先级）
-
-**执行**:
-- [x] 创建 LLM 服务集成测试文件
-- [x] 使用现有 `real-llm` 工具类（自动检测可用提供商）
-- [x] 修复 ModelManager 初始化问题（正确传入 storage provider）
-- [x] 实现测试用例：
-  - 基础功能验证
-  - 多提供商支持（自动选择）
-  - 流式响应处理
-  - 错误处理（4 个测试）
-  - 响应格式验证
-  - 多轮对话上下文
-
-**输出**:
-- `packages/core/tests/integration/llm-service.spec.ts` - LLM 服务集成测试（10 个测试）
-
-**测试结果**:
-- ✅ 5 个错误处理测试通过（离线可运行）
-- ⏭️  5 个功能测试跳过（等待 fixtures 录制或 API key 配置）
-- ✅ 门禁测试全部通过（240 tests）
-
-**技术发现**:
-1. ✅ 项目已有完整的 `real-llm` 工具类（`packages/core/tests/helpers/`）
-2. ✅ ModelManager 必须传入 storage provider（不能直接 new）
-3. ✅ 支持 VCR 录制/回放模式（`RUN_REAL_API=1` 控制）
-4. ✅ 自动检测可用提供商（根据环境变量中的 API Key）
-
-**下一步**:
-- 可选：配置 API Key 录制 fixtures（需要真实 API）
-- 继续：实现 Basic 完整工作流测试（P0）
+- [x] Root scripts: `pnpm test:gate` / `pnpm test:gate:full`
+- [x] Husky: pre-commit runs `pnpm test:gate` (can be skipped in an emergency with `SKIP_TEST_GATE=1`)
+- [x] CI: `.github/workflows/test.yml` uses `pnpm test:replay` + `pnpm test:gate:full`
 
 ---
 
-## 测试执行记录
+## 2026-01-09 - File Commit and Gate Verification
 
-- 2026-01-09: `pnpm -F @prompt-optimizer/core test -- tests/unit/utils/vcr.spec.ts tests/unit/utils/llm-mock-service.spec.ts`（passed）
-- 2026-01-09: `pnpm -F @prompt-optimizer/ui test`（passed；含 1 skipped）
-- 2026-01-09: `pnpm test:e2e -- tests/e2e/regression.spec.ts`（passed；含部分 skipped）
-- 2026-01-09: `pnpm test:gate:full`（passed）
-- 2026-01-09: **完整门禁验证**
-  - `pnpm test:gate`（passed，21 + 219 = 240 tests）
-  - `pnpm test:gate:e2e`（passed，17/18 tests，1 skipped）
-  - **总计**: Core 21 + UI 219 + E2E 17 = 257 个测试通过
-  - **执行时间**: 快速门禁 < 1 分钟，E2E < 16 秒
+### Task: Commit All Test Infrastructure Files and Verify the Gate
+
+**Execution**:
+- [x] Stage all untracked test files in git
+  - Docs: `docs/testing/`, `docs/workspace/testing-redesign/`
+  - VCR infrastructure: `packages/core/tests/fixtures/`, `packages/core/tests/utils/`
+  - Test cases: `packages/ui/tests/integration/`, `packages/ui/tests/unit/stores/session/`
+  - E2E tests: `tests/e2e/fixtures.ts`, `tests/e2e/workflows/`
+- [x] Verify the fast gate: `pnpm test:gate` (passed, 240 tests)
+- [x] Verify the E2E gate: `pnpm test:gate:e2e` (passed, 17/18 tests)
+
+**Results**:
+- ✅ All test infrastructure files are under version control
+- ✅ All gate tests pass, with execution time far below the target (< 10 minutes)
+- ✅ Zero flaky tests, good test stability
+- ✅ Created the Phase 4 supplementary plan document: `phase4-补充计划.md`
 
 ---
 
-## 里程碑进度
+## 2026-01-09 - Phase 4 Supplementary Plan
 
-| 里程碑 | 状态 | 完成日期 |
+### Task: Analyze Missing Test Cases and Define a Supplementation Strategy
+
+**Execution**:
+- [x] Analyze the test cases still to be added in Phase 4
+- [x] Categorize by priority (P0/P1/P2)
+- [x] Define an incremental supplementation strategy
+- [x] Create the detailed supplementary plan document
+
+**Output**:
+- `docs/workspace/testing-redesign/phase4-补充计划.md` - Detailed supplementary plan
+
+**Priority breakdown**:
+- 🔴 P0 (high): LLM service integration tests, complete Basic workflow tests
+- 🟡 P1 (medium): Session Store integration tests, complete Context workflow tests
+- 🟢 P2 (low): Image generation + history/favorites tests
+
+**Estimated time**:
+- MVP (minimum viable): 4-6 days (P0 only)
+- Ideal: 10-14 days (P0 + P1)
+
+---
+
+## 2026-01-09 - Phase 4 P0 Tests: LLM Service Integration Tests
+
+### Task: Implement LLM Service Integration Tests (P0 High Priority)
+
+**Execution**:
+- [x] Create the LLM service integration test file
+- [x] Use the existing `real-llm` utility class (automatically detects available providers)
+- [x] Fix the ModelManager initialization issue (pass in the storage provider correctly)
+- [x] Implement test cases:
+  - Basic functionality verification
+  - Multi-provider support (automatic selection)
+  - Streaming response handling
+  - Error handling (4 tests)
+  - Response format verification
+  - Multi-turn conversation context
+
+**Output**:
+- `packages/core/tests/integration/llm-service.spec.ts` - LLM service integration tests (10 tests)
+
+**Test results**:
+- ✅ 5 error handling tests passed (can run offline)
+- ⏭️  5 functional tests skipped (waiting for fixtures to be recorded or API keys to be configured)
+- ✅ All gate tests passed (240 tests)
+
+**Technical findings**:
+1. ✅ The project already has a complete `real-llm` utility class (`packages/core/tests/helpers/`)
+2. ✅ ModelManager must be given a storage provider (cannot be instantiated directly)
+3. ✅ Supports VCR record/replay modes (controlled by `RUN_REAL_API=1`)
+4. ✅ Automatically detects available providers (based on API keys in environment variables)
+
+**Next steps**:
+- Optional: configure API keys to record fixtures (requires real APIs)
+- Continue: implement the complete Basic workflow tests (P0)
+
+---
+
+## Test Execution Records
+
+- 2026-01-09: `pnpm -F @prompt-optimizer/core test -- tests/unit/utils/vcr.spec.ts tests/unit/utils/llm-mock-service.spec.ts` (passed)
+- 2026-01-09: `pnpm -F @prompt-optimizer/ui test` (passed; includes 1 skipped)
+- 2026-01-09: `pnpm test:e2e -- tests/e2e/regression.spec.ts` (passed; includes some skipped)
+- 2026-01-09: `pnpm test:gate:full` (passed)
+- 2026-01-09: **Full gate verification**
+  - `pnpm test:gate` (passed, 21 + 219 = 240 tests)
+  - `pnpm test:gate:e2e` (passed, 17/18 tests, 1 skipped)
+  - **Total**: Core 21 + UI 219 + E2E 17 = 257 tests passed
+  - **Execution time**: fast gate < 1 minute, E2E < 16 seconds
+
+---
+
+## Milestone Progress
+
+| Milestone | Status | Completion Date |
 |--------|------|---------|
-| M1: 方案设计完成 | 已完成 | 2026-01-09 |
-| M2: VCR 基础设施可用 | 已完成 | 2026-01-09 |
-| M3: UI 错误检测可用 | 已完成（门禁） | 2026-01-09 |
-| M4: 核心测试完成 | 进行中 | - |
-| M5: 门禁上线 | 已完成 | 2026-01-09 |
+| M1: Solution design complete | Completed | 2026-01-09 |
+| M2: VCR infrastructure available | Completed | 2026-01-09 |
+| M3: UI error detection available | Completed (gate) | 2026-01-09 |
+| M4: Core tests complete | In progress | - |
+| M5: Gate launched | Completed | 2026-01-09 |
 
 ---
 
-## 关键指标跟踪
+## Key Metrics Tracking
 
-| 指标 | 当前值 | 目标值 | 状态 |
+| Metric | Current | Target | Status |
 |------|--------|--------|------|
-| 测试执行时间（门禁） | < 1 分钟（快速）<br>< 16 秒（E2E） | < 10 分钟 | ✅ 达标 |
-| 控制台错误检测 | 已启用并验证 | 100% | ✅ 完成 |
-| P0 功能测试覆盖率 | 257 个测试通过 | 基础覆盖 | ✅ 已覆盖 |
-| Flaky tests 率 | 0/257 = 0% | < 1% | ✅ 达标 |
+| Test execution time (gate) | < 1 minute (fast)<br>< 16 seconds (E2E) | < 10 minutes | ✅ Met |
+| Console error detection | Enabled and verified | 100% | ✅ Done |
+| P0 functional test coverage | 257 tests passed | Basic coverage | ✅ Covered |
+| Flaky test rate | 0/257 = 0% | < 1% | ✅ Met |
