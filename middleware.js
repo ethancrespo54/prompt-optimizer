@@ -1,10 +1,10 @@
 export const config = {
   matcher: [
     /*
-     * 匹配除以下路径之外的所有路径:
-     * - api routes (以 /api/ 开头)
-     * - 静态文件 (以 . 结尾)
-     * - 其他静态资源
+     * Matches all paths except:
+     * - api routes (starting with /api/)
+     * - static files (ending with .)
+     * - other static assets
      */
     '/((?!api|_next/static|_next/image|favicon.ico|assets/|.*\\.).*)' 
   ],
@@ -14,15 +14,15 @@ export default function middleware(request) {
   const url = new URL(request.url);
   const pathname = url.pathname;
 
-  // 访问环境变量
+  // Access environment variables
   const accessPassword = process.env.ACCESS_PASSWORD;
   
-  // 如果没有设置密码，直接允许访问
+  // If no password is set, allow access directly
   if (!accessPassword) {
-    return; // 什么都不返回，表示继续处理请求
+    return; // Return nothing, meaning continue processing the request
   }
 
-  // 检查认证状态
+  // Check the authentication state
   const cookieHeader = request.headers.get('cookie');
   let authenticated = false;
   
@@ -38,17 +38,13 @@ export default function middleware(request) {
     }
   }
   
-  // 如果已认证，允许访问
+  // If already authenticated, allow access
   if (authenticated) {
-    return; // 什么都不返回，表示继续处理请求
+    return; // Return nothing, meaning continue processing the request
   }
 
-  // 获取浏览器语言设置
-  const acceptLanguage = request.headers.get('accept-language') || '';
-  const preferChinese = acceptLanguage.includes('zh');
-
-  // 未认证，返回认证页面
-  return new Response(generateAuthPage(preferChinese), {
+  // Not authenticated, return the authentication page
+  return new Response(generateAuthPage(), {
     status: 200,
     headers: {
       'Content-Type': 'text/html; charset=utf-8',
@@ -57,23 +53,23 @@ export default function middleware(request) {
   });
 }
 
-function generateAuthPage(isChinese = true) {
-  // 语言文本对象
+function generateAuthPage() {
+  // Text object
   const text = {
-    title: isChinese ? '访问验证 - Prompt Optimizer' : 'Access Verification - Prompt Optimizer',
+    title: 'Access Verification - Prompt Optimizer',
     heading: 'Prompt Optimizer',
-    subtitle: isChinese ? '此站点受密码保护' : 'This site is password protected',
-    passwordLabel: isChinese ? '访问密码' : 'Access Password',
-    passwordPlaceholder: isChinese ? '请输入访问密码' : 'Enter access password',
-    submitButton: isChinese ? '验证并访问' : 'Verify & Access',
-    loading: isChinese ? '验证中，请稍候...' : 'Verifying, please wait...',
-    footer: isChinese ? '安全访问控制 | Powered by Vercel' : 'Secure Access Control | Powered by Vercel',
-    errorNetwork: isChinese ? '网络错误，请重试' : 'Network error, please try again',
+    subtitle: 'This site is password protected',
+    passwordLabel: 'Access Password',
+    passwordPlaceholder: 'Enter access password',
+    submitButton: 'Verify & Access',
+    loading: 'Verifying, please wait...',
+    footer: 'Secure Access Control | Powered by Vercel',
+    errorNetwork: 'Network error, please try again',
   };
 
   return `
 <!DOCTYPE html>
-<html lang="${isChinese ? 'zh-CN' : 'en'}">
+<html lang="${'en'}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -244,11 +240,10 @@ function generateAuthPage(isChinese = true) {
         const loading = document.getElementById('loading');
         const passwordInput = document.getElementById('password');
         
-        // 语言设置
-        const isChinese = document.documentElement.lang === 'zh-CN';
+        // Language settings
         const errorMessages = {
             network: '${text.errorNetwork}',
-            invalidPassword: isChinese ? '密码错误，请重试' : 'Invalid password, please try again'
+            invalidPassword: 'Invalid password, please try again'
         };
 
         form.addEventListener('submit', async (e) => {
@@ -257,14 +252,14 @@ function generateAuthPage(isChinese = true) {
             const password = passwordInput.value.trim();
             if (!password) return;
 
-            // 显示加载状态
+            // Show the loading state
             submitBtn.disabled = true;
             btnText.style.display = 'none';
             loading.style.display = 'block';
             errorMessage.style.display = 'none';
 
             try {
-                console.log('开始验证密码');
+                console.log('Starting password verification');
                 const response = await fetch('/api/auth', {
                     method: 'POST',
                     headers: {
@@ -280,37 +275,37 @@ function generateAuthPage(isChinese = true) {
                 const data = await response.json();
 
                 if (data.success) {
-                    // 认证成功，刷新页面
+                    // Authentication succeeded, refresh the page
                     window.location.reload();
                 } else {
-                    // 认证失败
-                    console.log('认证失败', { message: data.message });
+                    // Authentication failed
+                    console.log('Authentication failed', { message: data.message });
                     errorMessage.textContent = data.message || errorMessages.invalidPassword;
                     errorMessage.style.display = 'block';
                     passwordInput.value = '';
                     passwordInput.focus();
                 }
             } catch (error) {
-                console.error('认证请求失败:', error);
+                console.error('Authentication request failed:', error);
                 errorMessage.textContent = errorMessages.network;
                 errorMessage.style.display = 'block';
             } finally {
-                // 恢复按钮状态
+                // Restore the button state
                 submitBtn.disabled = false;
                 btnText.style.display = 'inline';
                 loading.style.display = 'none';
             }
         });
 
-        // 密码输入框获得焦点
+        // Focus the password input
         passwordInput.focus();
 
-        // 清除错误信息当用户开始输入
+        // Clear the error message when the user starts typing
         passwordInput.addEventListener('input', () => {
             errorMessage.style.display = 'none';
         });
         
-        // 按ESC键聚焦到密码输入框
+        // Press the ESC key to focus the password input
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 passwordInput.focus();

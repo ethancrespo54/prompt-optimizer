@@ -1,22 +1,22 @@
 /**
- * MCP 服务器模型配置
- * 完全复用 core 包的模型管理功能
+ * MCP server model config
+ * Fully reuses the model management features of the core package
  */
 
 import { ModelManager } from '@prompt-optimizer/core';
 
 /**
- * 为 MCP 服务器设置默认模型
- * 完全基于 core 的 defaultModels，根据环境变量和配置选择合适的模型
+ * Set the default model for the MCP server
+ * Based entirely on the defaultModels of core, choosing a suitable model from the environment variables and config
  */
 export async function setupDefaultModel(
   modelManager: ModelManager,
   preferredProvider?: string
 ): Promise<void> {
-  // 动态导入 defaultModels，确保环境变量已经加载
+  // Dynamically import defaultModels to make sure the environment variables are already loaded
   const { defaultModels } = await import('@prompt-optimizer/core');
 
-  // 获取所有可用的默认模型（已启用的）
+  // Get all available default models (enabled ones)
   const availableModels = Object.entries(defaultModels).filter(([_, config]) => config.enabled);
 
   if (availableModels.length === 0) {
@@ -25,42 +25,42 @@ export async function setupDefaultModel(
 
   let selectedModel: [string, any] | undefined;
 
-  // 1. 如果指定了 preferredProvider，尝试匹配
+  // 1. If preferredProvider is specified, try to match it
   if (preferredProvider) {
     const normalizedPreferred = preferredProvider.toLowerCase();
 
     selectedModel = availableModels.find(([key, config]) =>
-      // 直接匹配模型 key（支持 custom_<suffix>）
+      // Match the model key directly (supports custom_<suffix>)
       key.toLowerCase() === normalizedPreferred ||
-      // 匹配 provider id
+      // Match the provider id
       String(config.providerMeta?.id || config.modelMeta?.providerId || config.provider || '').toLowerCase() === normalizedPreferred ||
-      // 兼容通过名称模糊匹配
+      // Compatible with fuzzy matching by name
       String(config.name || '').toLowerCase().includes(normalizedPreferred)
     );
   }
 
-  // 2. 如果没有找到匹配的或没有指定，使用第一个可用的模型
+  // 2. If no match is found or none is specified, use the first available model
   if (!selectedModel) {
     selectedModel = availableModels[0];
   }
 
   const [modelKey, modelConfig] = selectedModel;
 
-  // 3. 使用 core 的模型配置，确保模型启用
+  // 3. Use the model config of core and make sure the model is enabled
   const finalConfig = {
     ...modelConfig,
-    // 确保模型启用
+    // Make sure the model is enabled
     enabled: true
   };
 
-  // 4. 使用 ModelManager 的标准 API 添加或更新模型
+  // 4. Use the standard API of ModelManager to add or update the model
   const mcpModelKey = `mcp-default`;
 
   try {
-    // 尝试更新现有模型
+    // Try to update the existing model
     await modelManager.updateModel(mcpModelKey, finalConfig);
   } catch (error) {
-    // 如果模型不存在，则添加新模型
+    // If the model does not exist, add a new one
     await modelManager.addModel(mcpModelKey, finalConfig);
   }
 }

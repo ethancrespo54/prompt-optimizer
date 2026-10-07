@@ -1,10 +1,10 @@
 /**
- * 静态常量定义
- * 这个文件只包含纯静态常量，没有任何动态逻辑或副作用
- * 可以安全地在 Electron preload 脚本的沙箱环境中加载
+ * Static constant definitions
+ * This file only contains pure static constants, with no dynamic logic or side effects
+ * It can be loaded safely in the sandbox environment of the Electron preload script
  */
 
-// IPC事件名称常量
+// IPC event name constants
 const IPC_EVENTS = {
   UPDATE_CHECK: 'updater-check-update',
   UPDATE_CHECK_ALL_VERSIONS: 'updater-check-all-versions',
@@ -16,7 +16,7 @@ const IPC_EVENTS = {
   UPDATE_DOWNLOAD_SPECIFIC_VERSION: 'updater-download-specific-version',
   UPDATE_DOWNLOAD_STARTED: 'updater-download-started',
 
-  // 主进程发送给渲染进程的事件
+  // Events sent from the main process to the renderer process
   UPDATE_AVAILABLE_INFO: 'update-available-info',
   UPDATE_NOT_AVAILABLE: 'update-not-available',
   UPDATE_DOWNLOAD_PROGRESS: 'update-download-progress',
@@ -24,16 +24,16 @@ const IPC_EVENTS = {
   UPDATE_ERROR: 'update-error'
 };
 
-// 偏好设置键名常量
+// Preference key name constants
 const PREFERENCE_KEYS = {
-  IGNORED_VERSIONS: 'updater.ignoredVersions' // 多版本忽略存储
+  IGNORED_VERSIONS: 'updater.ignoredVersions' // Multi-version ignore storage
 };
 
-// 默认配置
+// Default config
 const DEFAULT_CONFIG = {
   autoDownload: false,
-  checkInterval: 24 * 60 * 60 * 1000, // 24小时
-  timeout: 30000 // 30秒
+  checkInterval: 24 * 60 * 60 * 1000, // 24 hours
+  timeout: 30000 // 30 seconds
 };
 
 module.exports = {

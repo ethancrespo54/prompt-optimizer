@@ -1,6 +1,6 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
-// IPC事件名称常量 - 直接内联避免沙箱环境的模块加载问题
+// IPC event name constants - inlined directly to avoid module loading problems in the sandbox environment
 const IPC_EVENTS = {
   UPDATE_CHECK: 'updater-check-update',
   UPDATE_START_DOWNLOAD: 'updater-start-download',
@@ -9,9 +9,9 @@ const IPC_EVENTS = {
   UPDATE_UNIGNORE_VERSION: 'updater-unignore-version',
   UPDATE_GET_IGNORED_VERSIONS: 'updater-get-ignored-versions',
   UPDATE_DOWNLOAD_SPECIFIC_VERSION: 'updater-download-specific-version',
-  UPDATE_CHECK_ALL_VERSIONS: 'updater-check-all-versions', // 新增常量
+  UPDATE_CHECK_ALL_VERSIONS: 'updater-check-all-versions', // New constant
 
-  // 主进程发送给渲染进程的事件
+  // Events sent from the main process to the renderer process
   UPDATE_AVAILABLE_INFO: 'update-available-info',
   UPDATE_NOT_AVAILABLE: 'update-not-available',
   UPDATE_DOWNLOAD_PROGRESS: 'update-download-progress',
@@ -20,7 +20,7 @@ const IPC_EVENTS = {
   UPDATE_DOWNLOAD_STARTED: 'updater-download-started'
 };
 
-// 简单的超时包装器，避免过度设计
+// A simple timeout wrapper, to avoid over-engineering
 const withTimeout = (promise, timeoutMs = 30000) => {
   return Promise.race([
     promise,
@@ -35,7 +35,7 @@ const withTimeout = (promise, timeoutMs = 30000) => {
   ]);
 };
 
-// 生成唯一的流式请求ID
+// Generate a unique streaming request ID
 function generateStreamId() {
   return `stream_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 }
@@ -408,7 +408,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
        return result.data;
      },
  
-     // 显式模式：避免根据 inputImage 是否存在隐式推断
+     // Explicit mode: avoid implicitly inferring from whether inputImage is present
      generateText2Image: async (request) => {
        const result = await ipcRenderer.invoke('image-generateText2Image', request);
        if (!result.success) {
@@ -446,7 +446,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
        return result.data;
      },
  
-     // 新增：连接测试在主进程执行
+     // New: the connection test runs in the main process
      testConnection: async (config) => {
        const result = await ipcRenderer.invoke('image-testConnection', config);
        if (!result.success) {
@@ -454,7 +454,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
        }
        return result.data;
      },
-     // 新增：动态模型列表在主进程获取
+     // New: the dynamic model list is fetched in the main process
      getDynamicModels: async (providerId, connectionConfig) => {
        const result = await ipcRenderer.invoke('image-getDynamicModels', providerId, connectionConfig);
        if (!result.success) {
@@ -623,7 +623,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
       }
     },
 
-    // 添加缺失的历史记录链功能
+    // Add the missing history chain features
     getIterationChain: async (recordId) => {
       const result = await ipcRenderer.invoke('history-getIterationChain', recordId);
       if (!result.success) {
@@ -789,7 +789,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
       }
       return result.data;
     },
-    // 统一的流式封装（与 llm.sendMessageStream 同模式）
+    // Unified streaming wrapper (same pattern as llm.sendMessageStream)
     optimizePromptStream: async (request, callbacks) => {
       const streamId = generateStreamId();
 
@@ -898,7 +898,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
         throw createIpcError(result.error);
       }
     },
-    // 自定义会话测试（支持工具调用）
+    // Custom conversation test (supports tool calls)
     testCustomConversationStream: async (request, callbacks) => {
       const streamId = generateStreamId();
 
@@ -970,9 +970,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
     },
   },
 
-  // 配置同步接口 - 从主进程获取统一配置
+  // Config sync interface - get the unified config from the main process
   config: {
-    // 获取环境变量（主进程作为唯一源）
+    // Get environment variables (the main process is the single source)
     getEnvironmentVariables: async () => {
       const result = await ipcRenderer.invoke('config-getEnvironmentVariables');
       if (!result.success) {
@@ -1245,7 +1245,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getVersion: async () => {
       const result = await withTimeout(
         ipcRenderer.invoke('app-get-version'),
-        5000 // 5秒超时，获取版本应该很快
+        5000 // 5-second timeout; getting the version should be fast
       );
       if (!result.success) {
         throw createIpcError(result.error);
@@ -1271,11 +1271,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
     checkUpdate: async () => {
       const result = await withTimeout(
         ipcRenderer.invoke(IPC_EVENTS.UPDATE_CHECK),
-        30000 // 30秒超时，检查更新可能需要网络请求
+        30000 // 30-second timeout; checking for updates may need network requests
       );
       if (!result.success) {
         console.error('[DEBUG] Preload received error result:', result);
-        // 保留完整的错误信息，不要创建新的 Error 对象
+        // Keep the complete error info and do not create a new Error object
         const error = new Error(result.error);
         error.originalError = result.error;
         error.detailedMessage = result.error;
@@ -1288,7 +1288,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     checkAllVersions: async () => {
       const result = await withTimeout(
         ipcRenderer.invoke(IPC_EVENTS.UPDATE_CHECK_ALL_VERSIONS),
-        60000 // 60秒超时，需要检查两个版本
+        60000 // 60-second timeout; two versions need to be checked
       );
       if (!result.success) {
         throw createIpcError(result.error);
@@ -1299,10 +1299,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     startDownload: async () => {
       const result = await withTimeout(
         ipcRenderer.invoke(IPC_EVENTS.UPDATE_START_DOWNLOAD),
-        10000 // 10秒超时，启动下载应该很快
+        10000 // 10-second timeout; starting a download should be fast
       );
       if (!result.success) {
-        // 保留完整的错误信息
+        // Keep the complete error info
         const error = new Error(result.error);
         error.originalError = result.error;
         error.detailedMessage = result.error;
@@ -1313,10 +1313,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     installUpdate: async () => {
       const result = await withTimeout(
         ipcRenderer.invoke(IPC_EVENTS.UPDATE_INSTALL),
-        10000 // 10秒超时，安装启动应该很快
+        10000 // 10-second timeout; starting the install should be fast
       );
       if (!result.success) {
-        // 保留完整的错误信息
+        // Keep the complete error info
         const error = new Error(result.error);
         error.originalError = result.error;
         error.detailedMessage = result.error;
@@ -1327,10 +1327,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ignoreVersion: async (version, versionType) => {
       const result = await withTimeout(
         ipcRenderer.invoke(IPC_EVENTS.UPDATE_IGNORE_VERSION, version, versionType),
-        5000 // 5秒超时，设置偏好应该很快
+        5000 // 5-second timeout; setting the preference should be fast
       );
       if (!result.success) {
-        // 保留完整的错误信息
+        // Keep the complete error info
         const error = new Error(result.error);
         error.originalError = result.error;
         error.detailedMessage = result.error;
@@ -1342,7 +1342,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getIgnoredVersions: async () => {
       const result = await withTimeout(
         ipcRenderer.invoke(IPC_EVENTS.UPDATE_GET_IGNORED_VERSIONS),
-        5000 // 5秒超时，读取偏好应该很快
+        5000 // 5-second timeout; reading the preference should be fast
       );
       if (!result.success) {
         const error = new Error(result.error);
@@ -1356,7 +1356,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     unignoreVersion: async (versionType) => {
       const result = await withTimeout(
         ipcRenderer.invoke(IPC_EVENTS.UPDATE_UNIGNORE_VERSION, versionType),
-        5000 // 5秒超时，设置偏好应该很快
+        5000 // 5-second timeout; setting the preference should be fast
       );
       if (!result.success) {
         const error = new Error(result.error);
@@ -1370,7 +1370,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     downloadSpecificVersion: async (versionType) => {
       const result = await withTimeout(
         ipcRenderer.invoke(IPC_EVENTS.UPDATE_DOWNLOAD_SPECIFIC_VERSION, versionType),
-        30000 // 30秒超时，现在只等待下载启动，不等待完成，所以30秒足够
+        30000 // 30-second timeout; now it only waits for the download to start, not to finish, so 30 seconds is enough
       );
       if (!result.success) {
         const error = new Error(result.error || 'Failed to download specific version');

@@ -1,12 +1,12 @@
 /**
- * 错误处理适配器
+ * Error handling adapter
  * 
- * 将 Core 模块的错误转换为 MCP 协议兼容的错误格式
+ * Converts errors from the Core module into an error format compatible with the MCP protocol
  */
 
 import { McpError } from '@modelcontextprotocol/sdk/types.js';
 
-// 定义 MCP 错误代码
+// Define the MCP error codes
 export const MCP_ERROR_CODES = {
   INTERNAL_ERROR: -32000,
   PROMPT_OPTIMIZATION_FAILED: -32001,
@@ -18,20 +18,20 @@ export const MCP_ERROR_CODES = {
 
 export class MCPErrorHandler {
   /**
-   * 转换 Core 模块错误为 MCP 错误
+   * Convert Core module errors into MCP errors
    */
   static convertCoreError(error: Error): McpError {
-    // 优化相关错误
+    // Optimization-related errors
     if (error.name.includes('OptimizationError') || error.name.includes('IterationError') || error.name.includes('TestError')) {
       return new McpError(
         MCP_ERROR_CODES.PROMPT_OPTIMIZATION_FAILED,
-        `提示词优化失败: ${error.message}`,
+        `Prompt optimization failed: ${error.message}`,
         { originalError: error.name }
       );
     }
 
-    // 参数验证错误
-    if (error.message.includes('必须是') || error.message.includes('不能为空') || error.message.includes('过长')) {
+    // Parameter validation errors
+    if (error.message.includes('must be') || error.message.includes('cannot be empty') || error.message.includes('too long')) {
       return new McpError(
         MCP_ERROR_CODES.INVALID_PARAMS,
         error.message,
@@ -39,32 +39,32 @@ export class MCPErrorHandler {
       );
     }
 
-    // 配置相关错误
+    // Configuration-related errors
     if (error.message.includes('Model') || error.message.includes('API key') || error.message.includes('Template')) {
       return new McpError(
         MCP_ERROR_CODES.INTERNAL_ERROR,
-        `配置错误: ${error.message}`,
+        `Configuration error: ${error.message}`,
         { originalError: error.name }
       );
     }
 
-    // 默认内部错误
+    // Default internal error
     return new McpError(
       MCP_ERROR_CODES.INTERNAL_ERROR,
-      `内部错误: ${error.message}`,
+      `Internal error: ${error.message}`,
       { originalError: error.name }
     );
   }
 
   /**
-   * 创建参数验证错误
+   * Create a parameter validation error
    */
   static createValidationError(message: string): McpError {
-    return new McpError(MCP_ERROR_CODES.INVALID_PARAMS, `参数验证失败: ${message}`);
+    return new McpError(MCP_ERROR_CODES.INVALID_PARAMS, `Parameter validation failed: ${message}`);
   }
 
   /**
-   * 创建内部错误
+   * Create an internal error
    */
   static createInternalError(message: string): McpError {
     return new McpError(MCP_ERROR_CODES.INTERNAL_ERROR, message);

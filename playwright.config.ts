@@ -2,29 +2,29 @@ import { defineConfig, devices } from '@playwright/test';
 import * as os from 'node:os';
 
 /**
- * Playwright E2E 测试配置
- * 用于测试 Web 应用的完整用户流程
+ * Playwright E2E test config
+ * Used to test the complete user flows of the web app
  */
 
-// E2E 测试专用端口,避免与开发服务器冲突
+// Dedicated port for E2E tests, to avoid conflicts with the dev server
 const E2E_PORT = process.env.E2E_PORT || 15555;
 const BASE_URL = `http://localhost:${E2E_PORT}`;
 
 export default defineConfig({
-  // 测试目录
+  // Test directory
   testDir: './tests/e2e',
 
-  // 完全并行运行测试
-  // 每个测试使用独立的 BrowserContext 和数据库名称，完全隔离
+  // Run tests fully in parallel
+  // Each test uses an independent BrowserContext and database name, fully isolated
   fullyParallel: true,
 
-  // CI 环境下失败时不重试,本地开发时重试一次
+  // No retries on failure in CI; retry once in local development
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
 
-  // CI 环境下使用更少的 worker；本地默认限制并发，避免 Windows/Chromium 在高并发下出现
-  // ERR_CONNECTION_RESET / ERR_INSUFFICIENT_RESOURCES / worker crash 等不稳定问题。
-  // 如需提速可通过 E2E_WORKERS 覆盖。
+  // Use fewer workers in CI; locally the concurrency is limited by default, to avoid instability on Windows/Chromium under high concurrency such as
+  // ERR_CONNECTION_RESET / ERR_INSUFFICIENT_RESOURCES / worker crashes.
+  // Override with E2E_WORKERS if you want it faster.
   workers: (() => {
     if (process.env.CI) return 1
 
@@ -34,39 +34,39 @@ export default defineConfig({
       if (Number.isFinite(parsed) && parsed > 0) return Math.floor(parsed)
     }
 
-    // 默认取 2（或更小），在资源紧张机器上更稳。
+    // Defaults to 2 (or fewer), which is more stable on resource-constrained machines.
     return Math.min(2, os.cpus().length || 1)
   })(),
 
-  // 测试报告配置
+  // Test report config
   reporter: [
     ['html', { open: 'never' }],
     ['list']
   ],
 
-  // 共享设置
+  // Shared settings
   use: {
-    // 基础 URL
+    // Base URL
     baseURL: BASE_URL,
 
-    // 收集失败测试的 trace
+    // Collect the trace of failed tests
     trace: 'on-first-retry',
 
-    // 截图配置
+    // Screenshot config
     screenshot: 'only-on-failure',
 
-    // 视频配置
+    // Video config
     video: 'retain-on-failure',
   },
 
-  // 项目配置 - 不同浏览器
+  // Project config - different browsers
   projects: [
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
 
-    // 如果需要测试其他浏览器,可以取消注释
+    // Uncomment if you need to test other browsers
     // {
     //   name: 'firefox',
     //   use: { ...devices['Desktop Firefox'] },
@@ -78,20 +78,20 @@ export default defineConfig({
     // },
   ],
 
-  // 自动启动 E2E 测试专用开发服务器
+  // Automatically start the dev server dedicated to E2E tests
   webServer: {
-    // E2E 依赖 workspace 包的 dist 产物（@prompt-optimizer/core/@prompt-optimizer/ui），
-    // 先构建再启动 web dev server，避免跑到过期 dist 导致交互/事件异常。
+    // E2E depends on the dist artifacts of the workspace packages (@prompt-optimizer/core/@prompt-optimizer/ui),
+    // build first and then start the web dev server, to avoid running against a stale dist causing abnormal interactions/events.
     command: `pnpm -F @prompt-optimizer/core build && pnpm -F @prompt-optimizer/ui build && pnpm -F @prompt-optimizer/web dev --port ${E2E_PORT}`,
     url: BASE_URL,
-    // 为 Vite 提供最小的“启用”环境变量：让内置 SiliconFlow 图像模型在 E2E (VCR replay) 下可选，
-    // 避免因本机缺少真实 key 而导致 UI 不渲染对应选项，从而无法命中既有 VCR fixtures。
+    // Provide a minimal "enable" environment variable for Vite: make the built-in SiliconFlow image model selectable under E2E (VCR replay),
+    // avoiding the UI not rendering the corresponding option for lack of a real key on the local machine, which would make the existing VCR fixtures unreachable.
     env: {
       ...process.env,
       VITE_SILICONFLOW_API_KEY: process.env.VITE_SILICONFLOW_API_KEY || 'vcr',
       VITE_DEEPSEEK_API_KEY: process.env.VITE_DEEPSEEK_API_KEY || 'vcr',
     },
-    // 为了保证每次测试都使用最新构建产物，默认不复用已有 server。
+    // By default, do not reuse an existing server, so that every test uses the latest build artifacts.
     reuseExistingServer: false,
     timeout: 120 * 1000,
   },

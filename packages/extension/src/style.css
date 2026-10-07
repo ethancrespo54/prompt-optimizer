@@ -2,21 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
-/* 基础样式设置 */
+/* Basic style settings */
 :root {
-  font-size: 16px;  /* 确保基础字体大小 */
-  zoom: 1;          /* 确保不被缩放 */
+  font-size: 16px;  /* Make sure the base font size */
+  zoom: 1;          /* Make sure it is not scaled */
 }
 
-/* 确保正确的字体大小继承 */
+/* Make sure the font size is inherited correctly */
 html {
-  font-size: 100%;  /* 使用百分比确保正确缩放 */
-  -webkit-text-size-adjust: 100%;  /* 防止 Chrome 自动调整字体大小 */
+  font-size: 100%;  /* Use a percentage to ensure correct scaling */
+  -webkit-text-size-adjust: 100%;  /* Prevent Chrome from adjusting the font size automatically */
 }
 
 body {
-  font-size: 1rem;  /* 使用相对单位 */
-  text-rendering: optimizeLegibility;  /* 优化文本渲染 */
-  -webkit-font-smoothing: antialiased;  /* 字体平滑 */
+  font-size: 1rem;  /* Use a relative unit */
+  text-rendering: optimizeLegibility;  /* Optimize text rendering */
+  -webkit-font-smoothing: antialiased;  /* Font smoothing */
   -moz-osx-font-smoothing: grayscale;
 } 

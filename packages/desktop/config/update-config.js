@@ -1,23 +1,23 @@
 /**
- * 自动更新配置
- * 集中管理更新相关的配置信息，避免硬编码
+ * Auto-update config
+ * Manages the update-related config in one place, avoiding hard-coding
  */
 
-// 导入静态常量
+// Import the static constants
 const { IPC_EVENTS, PREFERENCE_KEYS, DEFAULT_CONFIG } = require('./constants');
 
-// 从package.json读取仓库信息
+// Read the repository info from package.json
 const packageJson = require('../package.json');
 
-// 从环境变量或package.json获取仓库信息
+// Get the repository info from the environment variables or package.json
 const getRepositoryInfo = () => {
-  // 优先使用环境变量
+  // Prefer the environment variables
   if (process.env.GITHUB_REPOSITORY) {
     const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
     return { owner, repo };
   }
   
-  // 从package.json的repository字段获取
+  // Get it from the repository field of package.json
   if (packageJson.repository && packageJson.repository.url) {
     const repoUrl = packageJson.repository.url;
     const match = repoUrl.match(/github\.com[/:]([\w-]+)\/([\w-]+)/);
@@ -26,7 +26,7 @@ const getRepositoryInfo = () => {
     }
   }
   
-  // 从build.publish配置获取
+  // Get it from the build.publish config
   if (packageJson.build && packageJson.build.publish) {
     const { owner, repo } = packageJson.build.publish;
     if (owner && repo) {
@@ -34,23 +34,23 @@ const getRepositoryInfo = () => {
     }
   }
   
-  // 最后的fallback（应该避免到达这里）
+  // The last fallback (this should be avoided)
   console.warn('[Update Config] No repository info found, using fallback');
   return { owner: 'unknown', repo: 'unknown' };
 };
 
-// 验证版本号格式
+// Validate the version number format
 const validateVersion = (version) => {
   if (!version || typeof version !== 'string') {
     return false;
   }
   
-  // 基本的版本号格式验证（支持语义化版本）
+  // Basic version number format validation (supports semantic versions)
   const versionRegex = /^v?\d+\.\d+\.\d+(-[\w.-]+)?(\+[\w.-]+)?$/;
   return versionRegex.test(version);
 };
 
-// 构建安全的Release URL
+// Build a safe Release URL
 const buildReleaseUrl = (version) => {
   if (!validateVersion(version)) {
     throw new Error(`Invalid version format: ${version}`);
@@ -62,24 +62,24 @@ const buildReleaseUrl = (version) => {
     throw new Error('Repository information not available');
   }
   
-  // 确保版本号以v开头
+  // Make sure the version number starts with v
   const versionTag = version.startsWith('v') ? version : `v${version}`;
   
-  // 使用URL构造器确保安全性
+  // Use the URL constructor to ensure safety
   const baseUrl = 'https://github.com';
   return `${baseUrl}/${owner}/${repo}/releases/tag/${encodeURIComponent(versionTag)}`;
 };
 
-// 注意：静态常量已移至 constants.js 文件
-// 这里只保留动态逻辑函数
+// Note: the static constants have moved to the constants.js file
+// Only the dynamic logic functions are kept here
 
 module.exports = {
-  // 动态函数
+  // Dynamic functions
   getRepositoryInfo,
   validateVersion,
   buildReleaseUrl,
 
-  // 重新导出静态常量（保持向后兼容）
+  // Re-export the static constants (keeping backward compatibility)
   IPC_EVENTS,
   PREFERENCE_KEYS,
   DEFAULT_CONFIG

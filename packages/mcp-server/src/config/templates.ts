@@ -1,19 +1,19 @@
 /**
- * MCP 服务器模板配置
- * 完全复用 core 包的内置模板系统
+ * MCP server template config
+ * Fully reuses the built-in template system of the core package
  */
 
 import { TemplateManager } from '@prompt-optimizer/core';
 
 /**
- * 获取默认模板 ID
- * 动态从 core 的模板管理器中获取指定类型的第一个模板
+ * Get the default template ID
+ * Dynamically gets the first template of the given type from the template manager of core
  */
 export async function getDefaultTemplateId(
   templateManager: TemplateManager,
   optimizationMode: 'user' | 'system' | 'iterate'
 ): Promise<string> {
-  // 映射优化模式到模板类型
+  // Map the optimization mode to a template type
   const templateTypeMap = {
     'user': 'userOptimize' as const,
     'system': 'optimize' as const,
@@ -25,34 +25,34 @@ export async function getDefaultTemplateId(
     throw new Error(`Unknown optimization mode: ${optimizationMode}`);
   }
 
-  // 从 core 获取指定类型的模板列表
+  // Get the template list of the given type from core
   const templates = await templateManager.listTemplatesByType(templateType);
 
   if (templates.length === 0) {
     throw new Error(`No templates found for type: ${templateType}`);
   }
 
-  // 返回第一个模板的 ID（内置模板会排在前面）
+  // Return the ID of the first template (built-in templates are sorted first)
   return templates[0].id;
 }
 
 /**
- * 获取指定类型的所有可用模板选项
- * 直接使用 core 包的 TemplateManager，无需过滤
+ * Get all available template options of the given type
+ * Uses the TemplateManager of the core package directly, no filtering needed
  */
 export async function getTemplateOptions(
   templateManager: TemplateManager,
   templateType: 'optimize' | 'userOptimize' | 'iterate'
 ): Promise<Array<{value: string, label: string, description?: string}>> {
   try {
-    // 直接使用 core 的模板管理器获取模板
+    // Use the template manager of core directly to get the templates
     const templates = await templateManager.listTemplatesByType(templateType);
 
-    // 将模板转换为选项格式
+    // Convert the templates to the option format
     const options = templates.map(template => ({
       value: template.id,
       label: template.name,
-      description: template.metadata.description || (template.isBuiltin ? '内置模板' : '用户模板')
+      description: template.metadata.description || (template.isBuiltin ? 'Built-in template' : 'User template')
     }));
 
     return options;

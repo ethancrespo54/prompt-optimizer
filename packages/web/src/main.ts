@@ -1,5 +1,5 @@
 /*
- * Prompt Optimizer - AI提示词优化工具
+ * Prompt Optimizer - AI prompt optimization tool
  * Copyright (C) 2025 linshenkx
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,14 +21,14 @@ import '@prompt-optimizer/ui/dist/style.css'
 import App from './App.vue'
 
 const app = createApp(App)
-// 只安装i18n插件，语言初始化将在App.vue中服务准备好后进行
+// Only install the i18n plugin; the language initialization happens in App.vue after the services are ready
 installI18nOnly(app)
 installPinia(app)
 
-// 第1步：安装 router 插件
+// Step 1: install the router plugin
 app.use(router)
 
-// 同步文档标题和语言属性
+// Sync the document title and language attribute
 if (typeof document !== 'undefined') {
   const syncDocumentTitle = () => {
     document.title = i18n.global.t('common.appName')
@@ -41,26 +41,26 @@ if (typeof document !== 'undefined') {
   watch(i18n.global.locale, syncDocumentTitle)
 }
 
-// 等待 router 完成首航解析（Hash URL -> route），避免初始化逻辑在短暂的 "/" 状态下误重定向
+// Wait for the router to finish its first navigation resolution (Hash URL -> route), avoiding initialization logic wrongly redirecting while briefly at "/"
 void router.isReady().then(() => {
   app.mount('#app')
 })
 
-// 只在Vercel环境中加载Analytics
-// 当环境变量VITE_VERCEL_DEPLOYMENT为true时才尝试加载
+// Only load Analytics in the Vercel environment
+// Only try to load it when the environment variable VITE_VERCEL_DEPLOYMENT is true
 if (import.meta.env.VITE_VERCEL_DEPLOYMENT === 'true') {
-  // 使用完全运行时方式加载Vercel Analytics
+  // Load Vercel Analytics fully at runtime
   const loadAnalytics = () => {
     const script = document.createElement('script')
     script.src = '/_vercel/insights/script.js'
     script.defer = true
-    script.onload = () => console.log('Vercel Analytics 已加载')
-    script.onerror = () => console.log('Vercel Analytics 加载失败')
+    script.onload = () => console.log('Vercel Analytics loaded')
+    script.onerror = () => console.log('Vercel Analytics failed to load')
     document.head.appendChild(script)
   }
   
-  // 延迟执行以确保DOM已完全加载
+  // Delay execution to make sure the DOM is fully loaded
   window.addEventListener('DOMContentLoaded', loadAnalytics)
 }else{
-    console.log('Vercel Analytics 未加载')
+    console.log('Vercel Analytics not loaded')
 }

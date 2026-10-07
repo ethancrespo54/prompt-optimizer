@@ -1,40 +1,40 @@
 /**
- * 参数验证工具
- * 简化的参数验证，移除过度抽象
+ * Parameter validation utilities
+ * Simplified parameter validation, removing excessive abstraction
  */
 
 export class ParameterValidator {
 
   /**
-   * 验证提示词输入
+   * Validate the prompt input
    */
   static validatePrompt(prompt: string): void {
     if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
-      throw new Error('提示词必须是非空字符串');
+      throw new Error('Prompt must be a non-empty string');
     }
     if (prompt.length > 50000) {
-      throw new Error('提示词过长（最大 50,000 字符）');
+      throw new Error('Prompt is too long (max 50,000 characters)');
     }
   }
 
   /**
-   * 验证模板输入
+   * Validate the template input
    */
   static validateTemplate(template?: string): void {
     if (template !== undefined && (typeof template !== 'string' || template.trim().length === 0)) {
-      throw new Error('模板必须是非空字符串');
+      throw new Error('Template must be a non-empty string');
     }
   }
 
   /**
-   * 验证需求描述输入
+   * Validate the requirement description input
    */
   static validateRequirements(requirements: string): void {
     if (!requirements || typeof requirements !== 'string' || requirements.trim().length === 0) {
-      throw new Error('需求描述必须是非空字符串');
+      throw new Error('Requirement description must be a non-empty string');
     }
     if (requirements.length > 10000) {
-      throw new Error('需求描述过长（最大 10,000 字符）');
+      throw new Error('Requirement description is too long (max 10,000 characters)');
     }
   }
 }

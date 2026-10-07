@@ -1,25 +1,25 @@
 <template>
     <!--
-        Web App 入口组件
+        Web App entry component
 
-        职责:
-        - 作为 web 应用的入口点
-        - 渲染 PromptOptimizerApp 主组件
+        Responsibilities:
+        - Serve as the entry point of the web app
+        - Render the PromptOptimizerApp main component
 
-        说明:
-        - 所有核心逻辑已迁移至 @prompt-optimizer/ui 的 PromptOptimizerApp
-        - 此文件仅作为应用壳，减少代码重复
+        Notes:
+        - All core logic has moved to PromptOptimizerApp in @prompt-optimizer/ui
+        - This file only serves as the app shell, reducing code duplication
     -->
     <PromptOptimizerApp />
 </template>
 
 <script setup lang="ts">
 /**
- * Web App 入口组件
+ * Web App entry component
  *
  * @description
- * 轻量级入口组件，渲染 PromptOptimizerApp 主应用。
- * 所有业务逻辑、状态管理和事件处理均在 PromptOptimizerApp 中实现。
+ * A lightweight entry component that renders the PromptOptimizerApp main app.
+ * All business logic, state management, and event handling are implemented in PromptOptimizerApp.
  */
 import { PromptOptimizerApp } from "@prompt-optimizer/ui";
 </script>

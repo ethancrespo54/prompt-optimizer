@@ -1,30 +1,30 @@
 #!/usr/bin/env node
 /**
- * 智能 E2E 测试运行器
+ * Smart E2E test runner
  *
- * 使用 VCR auto 模式：每个测试独立检查自己的 fixture
- * - fixture 存在 → 回放（快速）
- * - fixture 不存在 → 录制（自动创建）
+ * Uses the VCR auto mode: each test checks its own fixture independently
+ * - fixture exists → replay (fast)
+ * - fixture does not exist → record (created automatically)
  *
- * 使用：
+ * Usage:
  * node scripts/smart-e2e.js
  */
 
 const { execSync } = require('child_process')
 
 /**
- * 主函数
+ * Main function
  */
 function main() {
-  console.log('\n🎬 使用 VCR auto 模式运行 E2E 测试')
-  console.log('   - 有 fixture 的测试：回放')
-  console.log('   - 无 fixture 的测试：录制\n')
+  console.log('\n🎬 Running E2E tests in VCR auto mode')
+  console.log('   - Tests with a fixture: replay')
+  console.log('   - Tests without a fixture: record\n')
 
   try {
-    // 不设置 E2E_VCR_MODE，使用默认的 auto 模式
+    // Do not set E2E_VCR_MODE; use the default auto mode
     execSync('playwright test', {
       stdio: 'inherit',
-      env: process.env // 继承现有环境变量，不覆盖 E2E_VCR_MODE
+      env: process.env // Inherit the existing environment variables without overriding E2E_VCR_MODE
     })
   } catch (error) {
     process.exit(error.status || 1)

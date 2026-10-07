@@ -1,28 +1,28 @@
 /**
- * 环境变量配置管理
+ * Environment variable config management
  *
- * 注意：环境变量已通过 preload-env.js 在应用启动前加载
- * 这里的 config() 调用是备用加载机制
+ * Note: the environment variables are already loaded before the app starts via preload-env.js
+ * The config() call here is a fallback loading mechanism
  */
 
 import { config } from 'dotenv';
 
-// 备用环境变量加载（preload-env.js 已经处理了主要加载）
+// Fallback environment variable loading (preload-env.js already handles the main loading)
 config();
 
-// 导入共享常量
+// Import the shared constants
 const CUSTOM_API_PATTERN = /^VITE_CUSTOM_API_(KEY|BASE_URL|MODEL)_(.+)$/;
 const SUFFIX_PATTERN = /^[a-zA-Z0-9_-]+$/;
 const MAX_SUFFIX_LENGTH = 50;
 
 /**
- * 扫描动态自定义模型环境变量
- * 查找 VITE_CUSTOM_API_*_suffix 模式的环境变量
+ * Scan dynamic custom model environment variables
+ * Finds environment variables matching the VITE_CUSTOM_API_*_suffix pattern
  */
 function scanDynamicCustomEnvVars(): Record<string, string> {
   const dynamicMappings: Record<string, string> = {};
 
-  // 使用共享的正则表达式模式
+  // Use the shared regular expression pattern
   const customApiPattern = CUSTOM_API_PATTERN;
 
   Object.keys(process.env).forEach(key => {
@@ -30,13 +30,13 @@ function scanDynamicCustomEnvVars(): Record<string, string> {
     if (match) {
       const [, configType, suffix] = match;
 
-      // 验证后缀名（不能为空，不能包含特殊字符，不能超过长度限制）
+      // Validate the suffix name (cannot be empty, cannot contain special characters, cannot exceed the length limit)
       if (!suffix || suffix.length > MAX_SUFFIX_LENGTH || !SUFFIX_PATTERN.test(suffix)) {
         console.warn(`[MCP Environment] Invalid suffix in ${key}: ${suffix}`);
         return;
       }
 
-      // 生成对应的MCP环境变量名（保持suffix原始大小写）
+      // Generate the corresponding MCP environment variable name (keeping the original case of the suffix)
       const mcpKey = `CUSTOM_API_${configType}_${suffix}`;
       dynamicMappings[key] = mcpKey;
     }
@@ -47,7 +47,7 @@ function scanDynamicCustomEnvVars(): Record<string, string> {
   return dynamicMappings;
 }
 
-// 静态环境变量映射
+// Static environment variable mapping
 const staticEnvMappings = {
   'VITE_OPENAI_API_KEY': 'OPENAI_API_KEY',
   'VITE_GEMINI_API_KEY': 'GEMINI_API_KEY',
@@ -59,16 +59,16 @@ const staticEnvMappings = {
   'VITE_CUSTOM_API_MODEL': 'CUSTOM_API_MODEL'
 };
 
-// 动态环境变量映射
+// Dynamic environment variable mapping
 const dynamicEnvMappings = scanDynamicCustomEnvVars();
 
-// 合并所有环境变量映射
+// Merge all environment variable mappings
 const allEnvMappings = {
   ...staticEnvMappings,
   ...dynamicEnvMappings
 };
 
-// 执行环境变量映射
+// Perform the environment variable mapping
 Object.entries(allEnvMappings).forEach(([viteKey, mcpKey]) => {
   if (process.env[viteKey] && !process.env[mcpKey]) {
     process.env[mcpKey] = process.env[viteKey];
@@ -87,7 +87,7 @@ export function loadConfig(): MCPServerConfig {
   return {
     httpPort: parseInt(process.env.MCP_HTTP_PORT || '3000'),
     logLevel: (process.env.MCP_LOG_LEVEL as 'debug' | 'info' | 'warn' | 'error') || 'debug',
-    defaultLanguage: process.env.MCP_DEFAULT_LANGUAGE || 'zh',
+    defaultLanguage: process.env.MCP_DEFAULT_LANGUAGE || 'en',
     preferredModelProvider: process.env.MCP_DEFAULT_MODEL_PROVIDER
   };
 }

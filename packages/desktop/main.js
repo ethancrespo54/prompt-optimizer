@@ -1,5 +1,5 @@
 /*
- * Prompt Optimizer - AI提示词优化工具
+ * Prompt Optimizer - AI prompt optimization tool
  * Copyright (C) 2025 linshenkx
  *
  * This program is free software: you can redistribute it and/or modify
@@ -15,11 +15,11 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-// 在所有其他模块之前初始化日志系统
+// Initialize the logging system before all other modules
 const ConsoleLogger = require('./config/console-logger');
 const consoleLogger = new ConsoleLogger();
 
-// 立即设置全局错误处理器，确保任何异常都能被记录
+// Set up global error handlers immediately, so any exception can be recorded
 consoleLogger.setupGlobalErrorHandlers();
 
 const { app, BrowserWindow, ipcMain, shell, session, Menu } = require('electron');
@@ -33,20 +33,20 @@ const {
 } = require('./config/update-config');
 const path = require('path');
 
-// 确定正确的配置文件路径
-// 在生产环境中，优先从exe所在目录查找.env.local文件
+// Determine the correct config file path
+// In production, look for the .env.local file in the directory of the exe first
 let envLocalPath;
 if (app.isPackaged) {
-  // 生产环境：exe所在目录
+  // Production: the directory of the exe
   envLocalPath = path.join(process.resourcesPath, '..', '.env.local');
 } else {
-  // 开发环境：项目根目录
+  // Development: the project root directory
   envLocalPath = path.resolve(__dirname, '../../.env.local');
 }
 
 const envPath = path.join(__dirname, '.env');
 
-// 加载环境变量
+// Load environment variables
 require('dotenv').config({ path: envLocalPath });
 require('dotenv').config({ path: envPath });
 
@@ -66,26 +66,26 @@ const {
   createContextRepo,
   FavoriteManager,
   FileStorageProvider,
-  // 导入共享的环境变量扫描常量
+  // Import the shared environment variable scanning constants
   CUSTOM_API_PATTERN,
   SUFFIX_PATTERN,
   MAX_SUFFIX_LENGTH,
 } = require('@prompt-optimizer/core');
 
 /**
- * 安全序列化函数，用于清理Vue响应式对象
- * 确保所有通过IPC传递的对象都是纯净的JavaScript对象
+ * Safe serialization function used to clean Vue reactive objects
+ * Ensures that all objects passed over IPC are plain JavaScript objects
  *
- * 这个函数解决的是IPC序列化问题，与存储层的数据一致性问题是不同的：
- * - IPC问题：Vue响应式对象无法被Electron序列化传递
- * - 存储问题：FileStorageProvider的数据一致性和恢复机制
+ * This function solves the IPC serialization problem, which differs from the data consistency problem of the storage layer:
+ * - IPC problem: Vue reactive objects cannot be serialized and passed by Electron
+ * - Storage problem: the data consistency and recovery mechanisms of FileStorageProvider
  */
 function safeSerialize(obj) {
   if (obj === null || obj === undefined) {
     return obj;
   }
 
-  // 对于基本类型，直接返回
+  // Primitive types are returned directly
   if (typeof obj !== 'object') {
     return obj;
   }
@@ -101,12 +101,12 @@ function safeSerialize(obj) {
 let mainWindow;
 let modelManager, templateManager, historyManager, llmService, promptService, templateLanguageService, preferenceService, dataManager, contextRepo, favoriteManager;
 let imageModelManager, imageService;
-let imageAdapterRegistry; // 全局引用以供 IPC 处理器使用
-let storageProvider; // 全局存储提供器引用，用于退出时保存数据
+let imageAdapterRegistry; // Global reference for the IPC handlers to use
+let storageProvider; // Global storage provider reference, used to save data on exit
 
-// UI 当前语言（由渲染进程 i18n 选择决定）。
-// 说明：Electron 默认不会为输入框提供浏览器那种右键编辑菜单，
-// 我们在主进程中自行弹出菜单，并用该 locale 来决定菜单文案。
+// The current UI language (decided by the renderer process i18n selection).
+// Note: Electron does not provide the browser-style right-click editing menu for input boxes by default,
+// so we pop up the menu ourselves in the main process, and use this locale to decide the menu text.
 let uiLocale = null;
 
 const SUPPORTED_UI_LOCALES = new Set(['en-US']);
@@ -146,14 +146,14 @@ function getContextMenuLabels(locale) {
   const normalized = normalizeUiLocale(locale) || 'en-US';
   return CONTEXT_MENU_LABELS[normalized] || CONTEXT_MENU_LABELS['en-US'];
 }
-let isQuitting = false; // 防止重复保存数据的标志
-let isUpdaterQuitting = false; // 标识是否为更新安装退出，跳过数据保存
-let forceQuitTimer = null; // 强制退出定时器
-const MAX_SAVE_TIME = 5000; // 最大保存时间：5秒
-let emergencyExitTimer = null; // 应急退出定时器
-const EMERGENCY_EXIT_TIME = 10000; // 应急退出时间：10秒
+let isQuitting = false; // Flag preventing duplicate data saves
+let isUpdaterQuitting = false; // Marks an exit for update installation, skipping the data save
+let forceQuitTimer = null; // Force-quit timer
+const MAX_SAVE_TIME = 5000; // Maximum save time: 5 seconds
+let emergencyExitTimer = null; // Emergency exit timer
+const EMERGENCY_EXIT_TIME = 10000; // Emergency exit time: 10 seconds
 
-// 应急退出机制：无论如何都要在10秒内退出
+// Emergency exit mechanism: exit within 10 seconds no matter what
 function setupEmergencyExit() {
   if (emergencyExitTimer) {
     clearTimeout(emergencyExitTimer);
@@ -161,15 +161,15 @@ function setupEmergencyExit() {
 
   emergencyExitTimer = setTimeout(() => {
     console.error('[DESKTOP] EMERGENCY EXIT: Force terminating process after 10 seconds');
-    process.exit(1); // 强制终止进程
+    process.exit(1); // Force-terminate the process
   }, EMERGENCY_EXIT_TIME);
 }
 
-// === System Proxy → Undici Global Dispatcher (A1 方案) ===
-// 说明：在主进程中尽量早地设置 undici 全局代理分发器，使 Node/SDK 请求复用系统代理。
-// 安全：任意步骤失败将优雅跳过，绝不影响启动流程。
+// === System Proxy → Undici Global Dispatcher (Plan A1) ===
+// Note: set the undici global proxy dispatcher as early as possible in the main process, so Node/SDK requests reuse the system proxy.
+// Safety: any failing step is skipped gracefully and never affects the startup flow.
 async function setupGlobalProxyDispatcherFromSystem() {
-  // 动态加载 undici，兼容不同 Node/Electron 版本
+  // Load undici dynamically, compatible with different Node/Electron versions
   let undici;
   try {
     try {
@@ -178,34 +178,34 @@ async function setupGlobalProxyDispatcherFromSystem() {
       undici = require('node:undici');
     }
   } catch (e) {
-    console.log('[Proxy] undici 不可用，跳过全局代理设置');
-    return; // 无 undici 时直接跳过，不影响启动
+    console.log('[Proxy] undici is unavailable, skipping the global proxy setup');
+    return; // Skip directly when undici is missing, without affecting startup
   }
 
   const { setGlobalDispatcher, ProxyAgent, Agent } = undici || {};
   if (!setGlobalDispatcher || !ProxyAgent) {
-    console.log('[Proxy] undici 不支持 setGlobalDispatcher/ProxyAgent，跳过');
+    console.log('[Proxy] undici does not support setGlobalDispatcher/ProxyAgent, skipping');
     return;
   }
 
-  // 解析 Electron 系统代理（包含 PAC/WPAD）
-  // 选择常见外网目标进行解析；解析失败则回退为直连。
+  // Resolve the Electron system proxy (including PAC/WPAD)
+  // Pick a common external target to resolve; fall back to a direct connection if resolution fails.
   let proxyDecision = 'DIRECT';
   let rawResolve = 'DIRECT';
   try {
-    // 确保 session 可用（需在 app ready 之后调用）
+    // Make sure the session is available (must be called after app ready)
     const targetUrl = 'https://www.example.com';
     const result = await session.defaultSession.resolveProxy(targetUrl);
-    // result 形如："PROXY host:port; SOCKS5 host:port; DIRECT"
+    // result looks like: "PROXY host:port; SOCKS5 host:port; DIRECT"
     rawResolve = result || 'DIRECT';
     proxyDecision = rawResolve.split(';')[0].trim();
   } catch (e) {
-    console.log('[Proxy] 解析系统代理失败，使用直连:', e && e.message);
+    console.log('[Proxy] Failed to resolve the system proxy, using a direct connection:', e && e.message);
     proxyDecision = 'DIRECT';
   }
 
-  // 将代理决策映射为 undici 的代理 URL
-  // 支持：PROXY/HTTPS/SOCKS/SOCKS5/DIRECT
+  // Map the proxy decision to a proxy URL for undici
+  // Supports: PROXY/HTTPS/SOCKS/SOCKS5/DIRECT
   let dispatcher;
   let mappedProxyUrl = 'DIRECT';
   try {
@@ -222,30 +222,30 @@ async function setupGlobalProxyDispatcherFromSystem() {
       mappedProxyUrl = `socks://${hostPort}`;
       dispatcher = new ProxyAgent(mappedProxyUrl);
     } else {
-      // DIRECT 或未知，使用默认直连 Agent
+      // DIRECT or unknown: use the default direct Agent
       dispatcher = new Agent();
     }
 
     setGlobalDispatcher(dispatcher);
-    // 基础日志（始终输出）
-    console.log('[Proxy] 系统代理解析结果(raw):', rawResolve);
-    console.log('[Proxy] 选用决策(decision):', proxyDecision);
-    console.log('[Proxy] undici 全局代理:', mappedProxyUrl);
+    // Basic logs (always output)
+    console.log('[Proxy] System proxy resolution result (raw):', rawResolve);
+    console.log('[Proxy] Selected decision (decision):', proxyDecision);
+    console.log('[Proxy] undici global proxy:', mappedProxyUrl);
 
-    // 诊断信息（仅在环境变量开启时输出）
+    // Diagnostic info (only output when enabled by an environment variable)
     const debug = process.env.DEBUG_PROXY === '1' || process.env.PROXY_DEBUG === '1';
     if (debug) {
-      console.log('[Proxy][DEBUG] 环境变量: HTTPS_PROXY=', process.env.HTTPS_PROXY || '');
-      console.log('[Proxy][DEBUG] 环境变量: HTTP_PROXY =', process.env.HTTP_PROXY || '');
-      console.log('[Proxy][DEBUG] 环境变量: NO_PROXY   =', process.env.NO_PROXY || '');
-      console.log('[Proxy][DEBUG] Node/Electron 版本:', {
+      console.log('[Proxy][DEBUG] Environment variable: HTTPS_PROXY=', process.env.HTTPS_PROXY || '');
+      console.log('[Proxy][DEBUG] Environment variable: HTTP_PROXY =', process.env.HTTP_PROXY || '');
+      console.log('[Proxy][DEBUG] Environment variable: NO_PROXY   =', process.env.NO_PROXY || '');
+      console.log('[Proxy][DEBUG] Node/Electron versions:', {
         node: process.versions.node,
         electron: process.versions.electron,
         chrome: process.versions.chrome
       });
     }
   } catch (e) {
-    console.log('[Proxy] 设置全局代理分发器失败，使用直连:', e && e.message);
+    console.log('[Proxy] Failed to set the global proxy dispatcher, using a direct connection:', e && e.message);
     try {
       const { Agent } = undici;
       if (Agent) setGlobalDispatcher(new Agent());
@@ -299,7 +299,7 @@ function setupPreferenceHandlers() {
 
   ipcMain.handle('preference-importData', async (event, data) => {
     try {
-      // 清理Vue响应式对象，防止IPC序列化错误
+      // Clean Vue reactive objects to prevent IPC serialization errors
       const safeData = safeSerialize(data);
       await preferenceService.importData(safeData);
       return createSuccessResponse(null);
@@ -319,7 +319,7 @@ function setupPreferenceHandlers() {
 
   ipcMain.handle('preference-validateData', async (event, data) => {
     try {
-      // 清理Vue响应式对象，防止IPC序列化错误
+      // Clean Vue reactive objects to prevent IPC serialization errors
       const safeData = safeSerialize(data);
       const result = await preferenceService.validateData(safeData);
       return createSuccessResponse(result);
@@ -329,7 +329,7 @@ function setupPreferenceHandlers() {
   });
 }
 
-// 构建注入到渲染进程的运行时配置脚本（双份键：带前缀与不带前缀）
+// Build the runtime config script injected into the renderer process (two sets of keys: with and without the prefix)
 function buildRuntimeConfigScriptFromEnv() {
   try {
     const entries = Object.entries(process.env)
@@ -357,14 +357,14 @@ function buildRuntimeConfigScriptFromEnv() {
 
 function createWindow() {
   // Create the browser window.
-  // 根据平台选择合适的图标文件
+  // Choose an appropriate icon file for the platform
   let iconPath;
   if (process.platform === 'win32') {
     iconPath = path.join(__dirname, 'icons', 'app-icon.ico');
   } else if (process.platform === 'darwin') {
     iconPath = path.join(__dirname, 'icons', 'app-icon.icns');
   } else {
-    // Linux 和其他平台，优先使用高分辨率 PNG
+    // Linux and other platforms: prefer the high-resolution PNG
     const linuxIcons = [
       path.join(__dirname, 'icons', '512x512.png'),
       path.join(__dirname, 'icons', '256x256.png'),
@@ -373,7 +373,7 @@ function createWindow() {
     iconPath = linuxIcons.find(icon => require('fs').existsSync(icon)) || linuxIcons[2];
   }
 
-  // 检查图标文件是否存在
+  // Check whether the icon file exists
   if (require('fs').existsSync(iconPath)) {
     console.log('[Main Process] Using icon:', iconPath);
   } else {
@@ -383,7 +383,7 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
-    icon: iconPath, // 设置窗口图标
+    icon: iconPath, // Set the window icon
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
@@ -446,22 +446,22 @@ function createWindow() {
     }
   }
 
-  // 窗口关闭前保存数据
+  // Save data before the window closes
   mainWindow.on('close', async (event) => {
-    // 如果是更新安装退出，直接关闭窗口，不保存数据
+    // If this is an exit for update installation, close the window directly without saving data
     if (isUpdaterQuitting) {
       console.log('[DESKTOP] Updater quit detected, skipping data save');
       return;
     }
 
     if (!isQuitting && storageProvider && typeof storageProvider.flush === 'function') {
-      event.preventDefault(); // 阻止立即关闭
-      isQuitting = true; // 设置退出标志
+      event.preventDefault(); // Prevent closing immediately
+      isQuitting = true; // Set the quit flag
 
-      // 启动应急退出机制
+      // Start the emergency exit mechanism
       setupEmergencyExit();
 
-      // 设置强制退出定时器，确保程序不会卡住
+      // Set the force-quit timer to make sure the program does not hang
       forceQuitTimer = setTimeout(() => {
         console.warn('[DESKTOP] Force closing window due to timeout');
         if (mainWindow && !mainWindow.isDestroyed()) {
@@ -507,11 +507,11 @@ async function initializeServices() {
   try {
     console.log('[Main Process] Initializing core services...');
     
-    // 设置环境变量，确保主进程能访问API密钥
-    // 这些环境变量应该在启动桌面应用之前设置
+    // Set environment variables so the main process can access the API keys
+    // These environment variables should be set before starting the desktop app
     console.log('[Main Process] Checking environment variables...');
 
-    // 静态环境变量
+    // Static environment variables
     const staticEnvVars = [
       'VITE_OPENAI_API_KEY',
       'VITE_GEMINI_API_KEY',
@@ -527,8 +527,8 @@ async function initializeServices() {
       'VITE_CUSTOM_API_MODEL'
     ];
 
-    // 扫描动态自定义模型环境变量
-    // 使用统一的正则表达式模式和验证规则
+    // Scan dynamic custom model environment variables
+    // Use the unified regular expression pattern and validation rules
 
     const dynamicEnvVars = Object.keys(process.env).filter(key => {
       const match = key.match(CUSTOM_API_PATTERN);
@@ -566,7 +566,7 @@ async function initializeServices() {
     
     console.log('[DESKTOP] Creating file storage provider for desktop environment');
 
-    // 使用标准用户数据目录，支持自动更新
+    // Use the standard user data directory to support auto-update
     const userDataPath = app.getPath('userData');
     console.log('[DESKTOP] Using standard user data directory for auto-update compatibility:', userDataPath);
     storageProvider = new FileStorageProvider(userDataPath);
@@ -590,13 +590,13 @@ async function initializeServices() {
     
     console.log('[DESKTOP] Initializing model manager...');
     await modelManager.ensureInitialized();
-    // 图像模型管理器
+    // Image model manager
     console.log('[DESKTOP] Creating image model manager...');
     imageAdapterRegistry = createImageAdapterRegistry();
     imageModelManager = createImageModelManager(storageProvider, imageAdapterRegistry);
     await imageModelManager.ensureInitialized();
     
-    // 在创建任何网络相关服务前，先根据系统代理设置 undici 全局分发器
+    // Before creating any network-related service, set the undici global dispatcher based on the system proxy settings
     await setupGlobalProxyDispatcherFromSystem();
 
     console.log('[DESKTOP] Creating LLM service...');
@@ -666,12 +666,12 @@ function createStructuredErrorResponse(error) {
   return createErrorResponse(error)
 }
 
-// 创建详细的错误响应，确保100%信息保真
+// Create a detailed error response to ensure 100% information fidelity
 function createDetailedErrorResponse(error) {
   const timestamp = new Date().toISOString();
   let detailedMessage = `[${timestamp}] Error Details:\n\n`;
 
-  // 详细序列化错误信息
+  // Serialize the error info in detail
   if (error instanceof Error) {
     detailedMessage += `Message: ${error.message}\n`;
 
@@ -695,7 +695,7 @@ function createDetailedErrorResponse(error) {
       detailedMessage += `\nStack Trace:\n${error.stack}\n`;
     }
 
-    // 捕获其他可能的属性
+    // Capture other possible properties
     const otherProps = {};
     for (const key in error) {
       if (!['message', 'name', 'code', 'statusCode', 'url', 'stack'].includes(key)) {
@@ -711,12 +711,12 @@ function createDetailedErrorResponse(error) {
       detailedMessage += `\nAdditional Properties:\n${JSON.stringify(otherProps, null, 2)}\n`;
     }
   } else {
-    // 非 Error 对象的处理
+    // Handling for non-Error objects
     detailedMessage += `Value: ${String(error)}\n`;
     detailedMessage += `Type: ${typeof error}\n`;
   }
 
-  // 兜底：完整的 JSON 序列化
+  // Fallback: full JSON serialization
   try {
     const jsonError = JSON.stringify(error, Object.getOwnPropertyNames(error), 2);
     if (jsonError && jsonError !== '{}' && jsonError !== 'null') {
@@ -726,7 +726,7 @@ function createDetailedErrorResponse(error) {
     detailedMessage += `\nJSON Serialization Failed: ${jsonError.message}`;
   }
 
-  // 同时在控制台输出详细信息
+  // Also output detailed info to the console
   console.error('[Detailed Error Info]', detailedMessage);
 
   return { success: false, error: detailedMessage };
@@ -808,7 +808,7 @@ function setupIPC() {
   // Streaming handler - more complex due to callbacks
   ipcMain.handle('llm-sendMessageStream', async (event, messages, provider, streamId) => {
     try {
-      // 使用符合 StreamHandlers 接口的回调名称
+      // Use callback names that match the StreamHandlers interface
       const callbacks = {
         onToken: (token) => {
           if (mainWindow && !mainWindow.isDestroyed()) {
@@ -936,7 +936,7 @@ function setupIPC() {
       }
     },
     onToolCall: (toolCall) => {
-      // 工具调用事件单独通道
+      // Tool call events use a separate channel
       if (window && !window.isDestroyed()) {
         window.webContents.send(`stream-tool-call-${streamId}`, toolCall);
       }
@@ -986,7 +986,7 @@ function setupIPC() {
     }
   });
 
-  // 在页面加载前拦截 /config.js 并注入运行时环境变量（双份键）
+  // Intercept /config.js before the page loads and inject runtime environment variables (two sets of keys)
   try {
     const ses = (mainWindow && mainWindow.webContents && mainWindow.webContents.session) || session.defaultSession;
     if (ses && ses.webRequest && typeof ses.webRequest.onBeforeRequest === 'function') {
@@ -1005,7 +1005,7 @@ function setupIPC() {
     console.warn('[Main Process] Unable to register runtime config interceptor:', e);
   }
 
-  // 自定义会话测试（支持工具、变量、对话消息）
+  // Custom conversation test (supports tools, variables, conversation messages)
   ipcMain.handle('prompt-testCustomConversationStream', async (event, request, streamId) => {
     const streamHandlers = createIpcStreamHandlers(mainWindow, streamId);
     try {
@@ -1029,9 +1029,9 @@ function setupIPC() {
 
   ipcMain.handle('model-addModel', async (event, model) => {
     try {
-      // 清理Vue响应式对象，防止IPC序列化错误
+      // Clean Vue reactive objects to prevent IPC serialization errors
       const safeModel = safeSerialize(model);
-      // model应该包含key和config，需要分离
+      // model should contain key and config, which need to be separated
       const { key, ...config } = safeModel;
       await modelManager.addModel(key, config);
       return createSuccessResponse(null);
@@ -1042,7 +1042,7 @@ function setupIPC() {
 
   ipcMain.handle('model-updateModel', async (event, id, updates) => {
     try {
-      // 清理Vue响应式对象，防止IPC序列化错误
+      // Clean Vue reactive objects to prevent IPC serialization errors
       const safeUpdates = safeSerialize(updates);
       await modelManager.updateModel(id, safeUpdates);
       return createSuccessResponse(null);
@@ -1167,7 +1167,7 @@ function setupIPC() {
     }
   })
 
-  // 显式模式：避免根据 inputImage 是否存在隐式推断
+  // Explicit mode: avoid implicitly inferring from whether inputImage is present
   ipcMain.handle('image-generateText2Image', async (e, request) => {
     try {
       const safeReq = safeSerialize(request)
@@ -1218,7 +1218,7 @@ function setupIPC() {
     }
   })
 
-  // 新增：连接测试（在主进程执行，避免渲染端网络请求）
+  // New: connection test (runs in the main process, avoiding network requests in the renderer)
   ipcMain.handle('image-testConnection', async (e, config) => {
     try {
       const safeCfg = safeSerialize(config)
@@ -1232,7 +1232,7 @@ function setupIPC() {
     }
   })
 
-  // 新增：动态模型拉取（在主进程执行）
+  // New: dynamic model fetching (runs in the main process)
   ipcMain.handle('image-getDynamicModels', async (e, providerId, connectionConfig) => {
     try {
       const safeConn = safeSerialize(connectionConfig)
@@ -1245,7 +1245,7 @@ function setupIPC() {
 
   ipcMain.handle('model-importData', async (event, data) => {
     try {
-      // 清理Vue响应式对象，防止IPC序列化错误
+      // Clean Vue reactive objects to prevent IPC serialization errors
       const safeData = safeSerialize(data);
       await modelManager.importData(safeData);
       return createSuccessResponse(null);
@@ -1265,7 +1265,7 @@ function setupIPC() {
 
   ipcMain.handle('model-validateData', async (event, data) => {
     try {
-      // 清理Vue响应式对象，防止IPC序列化错误
+      // Clean Vue reactive objects to prevent IPC serialization errors
       const safeData = safeSerialize(data);
       const result = await modelManager.validateData(safeData);
       return createSuccessResponse(result);
@@ -1295,7 +1295,7 @@ function setupIPC() {
 
   ipcMain.handle('template-createTemplate', async (event, template) => {
     try {
-      // 清理Vue响应式对象，防止IPC序列化错误
+      // Clean Vue reactive objects to prevent IPC serialization errors
       const safeTemplate = safeSerialize(template);
       await templateManager.saveTemplate(safeTemplate);
       return createSuccessResponse(null);
@@ -1308,7 +1308,7 @@ function setupIPC() {
     try {
       // Get existing template and merge with updates
       const existingTemplate = await templateManager.getTemplate(id);
-      // 清理Vue响应式对象，防止IPC序列化错误
+      // Clean Vue reactive objects to prevent IPC serialization errors
       const safeUpdates = safeSerialize(updates);
       const updatedTemplate = { ...existingTemplate, ...safeUpdates, id };
       await templateManager.saveTemplate(updatedTemplate);
@@ -1367,7 +1367,7 @@ function setupIPC() {
 
   ipcMain.handle('template-importData', async (event, data) => {
     try {
-      // 清理Vue响应式对象，防止IPC序列化错误
+      // Clean Vue reactive objects to prevent IPC serialization errors
       const safeData = safeSerialize(data);
       await templateManager.importData(safeData);
       return createSuccessResponse(null);
@@ -1387,7 +1387,7 @@ function setupIPC() {
 
   ipcMain.handle('template-validateData', async (event, data) => {
     try {
-      // 清理Vue响应式对象，防止IPC序列化错误
+      // Clean Vue reactive objects to prevent IPC serialization errors
       const safeData = safeSerialize(data);
       const result = templateManager.validateData(safeData);
       return createSuccessResponse(result);
@@ -1445,7 +1445,7 @@ function setupIPC() {
 
   ipcMain.handle('history-addRecord', async (event, record) => {
     try {
-      // 清理Vue响应式对象，防止IPC序列化错误
+      // Clean Vue reactive objects to prevent IPC serialization errors
       const safeRecord = safeSerialize(record);
       const result = await historyManager.addRecord(safeRecord);
       return createSuccessResponse(result);
@@ -1472,7 +1472,7 @@ function setupIPC() {
     }
   });
 
-  // 添加缺失的历史记录链功能
+  // Add the missing history chain features
   ipcMain.handle('history-getIterationChain', async (event, recordId) => {
     try {
       const result = await historyManager.getIterationChain(recordId);
@@ -1502,7 +1502,7 @@ function setupIPC() {
 
   ipcMain.handle('history-createNewChain', async (event, record) => {
     try {
-      // 清理Vue响应式对象，防止IPC序列化错误
+      // Clean Vue reactive objects to prevent IPC serialization errors
       const safeRecord = safeSerialize(record);
       const result = await historyManager.createNewChain(safeRecord);
       return createSuccessResponse(result);
@@ -1513,7 +1513,7 @@ function setupIPC() {
 
   ipcMain.handle('history-addIteration', async (event, params) => {
     try {
-      // 清理Vue响应式对象，防止IPC序列化错误
+      // Clean Vue reactive objects to prevent IPC serialization errors
       const safeParams = safeSerialize(params);
       const result = await historyManager.addIteration(safeParams);
       return createSuccessResponse(result);
@@ -1543,7 +1543,7 @@ function setupIPC() {
 
   ipcMain.handle('history-importData', async (event, data) => {
     try {
-      // 清理Vue响应式对象，防止IPC序列化错误
+      // Clean Vue reactive objects to prevent IPC serialization errors
       const safeData = safeSerialize(data);
       await historyManager.importData(safeData);
       return createSuccessResponse(null);
@@ -1563,7 +1563,7 @@ function setupIPC() {
 
   ipcMain.handle('history-validateData', async (event, data) => {
     try {
-      // 清理Vue响应式对象，防止IPC序列化错误
+      // Clean Vue reactive objects to prevent IPC serialization errors
       const safeData = safeSerialize(data);
       const result = await historyManager.validateData(safeData);
       return createSuccessResponse(result);
@@ -2008,10 +2008,10 @@ function setupIPC() {
 
 
 
-  // 环境配置同步 - 主进程作为唯一配置源
+  // Environment config sync - the main process is the single source of config
   ipcMain.handle('config-getEnvironmentVariables', async (event) => {
     try {
-      // 自动透传所有 VITE_* 变量并附加无前缀副本
+      // Automatically pass through all VITE_* variables and add unprefixed copies
       const viteEnv = Object.fromEntries(
         Object.entries(process.env)
           .filter(([k, v]) => k.startsWith('VITE_') && v !== undefined)
@@ -2033,11 +2033,11 @@ function setupIPC() {
     }
   });
 
-  // 外部链接处理器
+  // External link handler
   ipcMain.handle('shell-openExternal', async (event, url) => {
     try {
       console.log('[Main Process] Opening external URL:', url);
-      // 安全性检查：仅允许 http/https 协议
+      // Security check: only allow the http/https protocols
       const urlObj = new URL(url);
       if (!['http:', 'https:'].includes(urlObj.protocol)) {
         throw new Error(`Unsupported protocol: ${urlObj.protocol}`);
@@ -2050,7 +2050,7 @@ function setupIPC() {
     }
   });
 
-  // 应用信息处理器
+  // App info handler
   ipcMain.handle('app-get-version', () => {
     try {
       const packageJson = require('./package.json');
@@ -2072,7 +2072,7 @@ function setupIPC() {
     }
   });
 
-  // 日志相关处理器
+  // Log-related handlers
   ipcMain.handle('logs-get-paths', () => {
     try {
       const paths = consoleLogger.getLogPaths();
@@ -2092,7 +2092,7 @@ function setupIPC() {
     }
   });
 
-  // 自动更新相关处理器
+  // Auto-update-related handlers
   setupUpdateHandlers();
 
   console.log('[Main Process] High-level service IPC handlers ready.');
@@ -2102,8 +2102,8 @@ function setupIPC() {
 app.whenReady().then(async () => {
   const servicesInitialized = await initializeServices();
   if (servicesInitialized) {
-    // 必须先设置IPC监听器，再创建窗口
-    // 以防止窗口中的代码在监听器准备好之前就发送IPC消息
+    // The IPC listeners must be set up before creating the window
+    // To prevent code in the window from sending IPC messages before the listeners are ready
     setupIPC();
     createWindow();
   } else {
@@ -2122,7 +2122,7 @@ app.whenReady().then(async () => {
   });
 });
 
-// 进程信号处理器 - 最后的保障
+// Process signal handlers - the last safeguard
 process.on('SIGINT', () => {
   console.log('[DESKTOP] Received SIGINT, forcing exit...');
   process.exit(0);
@@ -2133,27 +2133,27 @@ process.on('SIGTERM', () => {
   process.exit(0);
 });
 
-// 全局异常处理已在 console-logger 中设置
+// The global exception handling is already set up in console-logger
 
-// 应用退出前保存数据
+// Save data before the app quits
 app.on('before-quit', async (event) => {
-  // 如果是更新安装退出，直接退出，不保存数据
+  // If this is an exit for update installation, quit directly without saving data
   if (isUpdaterQuitting) {
     console.log('[DESKTOP] Updater quit detected, allowing immediate quit');
     return;
   }
 
   if (!isQuitting && storageProvider && typeof storageProvider.flush === 'function') {
-    event.preventDefault(); // 阻止立即退出
-    isQuitting = true; // 设置退出标志
+    event.preventDefault(); // Prevent quitting immediately
+    isQuitting = true; // Set the quit flag
 
-    // 启动应急退出机制
+    // Start the emergency exit mechanism
     setupEmergencyExit();
 
-    // 设置强制退出定时器，确保应用不会卡住
+    // Set the force-quit timer to make sure the app does not hang
     const forceAppQuitTimer = setTimeout(() => {
       console.warn('[DESKTOP] Force quitting app due to timeout');
-      process.exit(0); // 强制退出进程
+      process.exit(0); // Force-exit the process
     }, MAX_SAVE_TIME);
 
     try {
@@ -2173,10 +2173,10 @@ app.on('before-quit', async (event) => {
         clearTimeout(emergencyExitTimer);
         emergencyExitTimer = null;
       }
-      // 使用setImmediate确保在下一个事件循环中退出
+      // Use setImmediate to make sure we exit in the next event loop
       setImmediate(() => {
-        isQuitting = false; // 重置标志以允许正常退出
-        app.quit(); // 手动退出
+        isQuitting = false; // Reset the flag to allow a normal exit
+        app.quit(); // Quit manually
       });
     }
   }
@@ -2189,7 +2189,7 @@ app.on('window-all-closed', function () {
   }
 });
 
-// 忽略版本管理辅助函数（全局作用域）
+// Ignored-version management helper functions (global scope)
 const getIgnoredVersions = async () => {
   try {
     const ignoredVersions = await preferenceService.get(PREFERENCE_KEYS.IGNORED_VERSIONS, null);
@@ -2207,7 +2207,7 @@ const isVersionIgnored = async (version) => {
   const ignoredVersions = await getIgnoredVersions();
   const versionType = version.includes('-') ? 'prerelease' : 'stable';
 
-  // 检查对应类型的忽略版本
+  // Check the ignored version of the corresponding type
   if (versionType === 'stable' && ignoredVersions.stable === version) {
     return true;
   }
@@ -2218,34 +2218,34 @@ const isVersionIgnored = async (version) => {
   return false;
 };
 
-// 自动更新处理器设置
+// Auto-update handler setup
 async function setupUpdateHandlers() {
   console.log('[Main Process] Setting up auto-update handlers...');
 
 
 
-  // 更新操作状态锁，防止并发调用
+  // Update operation state locks, preventing concurrent calls
   let isCheckingForUpdate = false;
   let isDownloadingUpdate = false;
   let isInstallingUpdate = false;
 
-  // 配置更新器基本设置
+  // Configure the basic updater settings
   autoUpdater.autoDownload = DEFAULT_CONFIG.autoDownload;
   autoUpdater.allowPrerelease = DEFAULT_CONFIG.allowPrerelease;
-  autoUpdater.allowDowngrade = false; // 默认不允许降级，只在渠道切换时临时启用
+  autoUpdater.allowDowngrade = false; // Downgrade is not allowed by default; only temporarily enabled when switching channels
 
-  // 环境变量动态配置支持（仅支持公开仓库）
+  // Environment variable dynamic config support (public repositories only)
   const defaultRepo = 'linshenkx/prompt-optimizer';
   let currentRepo = null;
 
-  // 检测环境变量中的仓库信息
+  // Detect the repository info in the environment variables
   if (process.env.GITHUB_REPOSITORY) {
     currentRepo = process.env.GITHUB_REPOSITORY;
   } else if (process.env.DEV_REPO_OWNER && process.env.DEV_REPO_NAME) {
     currentRepo = `${process.env.DEV_REPO_OWNER}/${process.env.DEV_REPO_NAME}`;
   }
 
-  // 如果环境变量中的仓库与默认仓库不同，使用setFeedURL动态配置
+  // If the repository in the environment variables differs from the default one, use setFeedURL for dynamic config
   if (currentRepo && currentRepo !== defaultRepo) {
     try {
       const [owner, repo] = currentRepo.split('/');
@@ -2254,7 +2254,7 @@ async function setupUpdateHandlers() {
         provider: 'github',
         owner,
         repo,
-        private: false // 只支持公开仓库
+        private: false // Only public repositories are supported
       };
 
       console.log('[Updater] Using custom repository configuration:', {
@@ -2273,22 +2273,22 @@ async function setupUpdateHandlers() {
     console.log('[Updater] Using default repository configuration:', defaultRepo);
   }
 
-  // 开发模式下的更新检查配置
+  // Update check config in development mode
   if (process.env.NODE_ENV === 'development' || !app.isPackaged) {
     console.log('[Updater] Development mode detected');
     
-    // 设置开发环境专用的日志器（官方推荐）
+    // Set up a dedicated logger for the development environment (officially recommended)
     const log = require('electron-log');
     autoUpdater.logger = log;
     autoUpdater.logger.transports.file.level = 'debug';
     autoUpdater.logger.transports.console.level = 'debug';
     
-    // 为更新器创建专门的日志文件
+    // Create a dedicated log file for the updater
     const userDataPath = app.getPath('userData');
     autoUpdater.logger.transports.file.resolvePathFn = () => 
       path.join(userDataPath, 'logs', 'auto-updater.log');
     
-    // 强制启用开发模式更新检查
+    // Force-enable update checks in development mode
     autoUpdater.forceDevUpdateConfig = true;
     
     console.log('[Updater] Development mode configuration:');
@@ -2300,18 +2300,18 @@ async function setupUpdateHandlers() {
     console.log('[Updater] Auto-updater logs will be saved to:', path.join(userDataPath, 'logs', 'auto-updater.log'));
   }
 
-  // 设置更新事件处理 - 仅在应用启动时设置一次
+  // Set up the update event handlers - only once at app startup
   autoUpdater.on('update-available', async (info) => {
     console.log('[Updater] Update available:', info);
 
     try {
-      // 验证版本号格式
+      // Validate the version number format
       if (!validateVersion(info.version)) {
         console.error('[Updater] Invalid version format:', info.version);
         return;
       }
 
-      // 检查版本是否被忽略
+      // Check whether the version is ignored
       try {
         const isIgnored = await isVersionIgnored(info.version);
         if (isIgnored) {
@@ -2320,20 +2320,20 @@ async function setupUpdateHandlers() {
         }
       } catch (prefError) {
         console.warn('[Updater] Failed to check ignored versions, continuing with update check:', prefError);
-        // 继续执行，不阻断更新流程
+        // Continue without interrupting the update flow
       }
 
-      // 构建安全的GitHub Release页面链接
+      // Build a safe GitHub Release page link
       let releaseUrl;
       try {
         releaseUrl = buildReleaseUrl(info.version);
       } catch (urlError) {
         console.error('[Updater] Failed to build release URL:', urlError);
-        // 使用fallback URL或跳过URL
+        // Use the fallback URL or skip the URL
         releaseUrl = null;
       }
 
-      // 发送更新可用通知到UI
+      // Send the update-available notification to the UI
       if (mainWindow && !mainWindow.isDestroyed()) {
         mainWindow.webContents.send(IPC_EVENTS.UPDATE_AVAILABLE_INFO, {
           version: info.version,
@@ -2344,7 +2344,7 @@ async function setupUpdateHandlers() {
       }
     } catch (error) {
       console.error('[Updater] Critical error in update-available handler:', error);
-      // 即使出错也要通知用户有更新可用，但不包含详细信息
+      // Even on error, notify the user that an update is available, but without detailed info
       if (mainWindow && !mainWindow.isDestroyed()) {
         mainWindow.webContents.send(IPC_EVENTS.UPDATE_AVAILABLE_INFO, {
           version: info.version || 'Unknown',
@@ -2359,15 +2359,15 @@ async function setupUpdateHandlers() {
 
   autoUpdater.on('update-not-available', (info) => {
     console.log('[Updater] No update available:', info);
-    // 注意：现在这个事件监听器主要用于日志记录
-    // 实际的UI更新逻辑已经移到前端的请求-响应模式中
-    // 这样避免了竞争条件和全局状态的问题
+    // Note: this event listener is now mainly used for logging
+    // The actual UI update logic has moved to the frontend's request-response pattern
+    // This avoids race conditions and global state problems
   });
 
   autoUpdater.on('error', (error) => {
     console.error('[Updater] Update error:', error);
 
-    // 如果是 403 错误，提供基本的调试信息
+    // For a 403 error, provide basic debugging info
     if (error.code === 'HTTP_ERROR_403' || (error.message && error.message.includes('403'))) {
       console.log('[Updater Debug] ===== 403 ERROR DEBUGGING =====');
       console.log('[Updater Debug] This is a 403 Forbidden error, likely repository access issue');
@@ -2386,15 +2386,15 @@ async function setupUpdateHandlers() {
       console.log('[Updater Debug] =====================================');
     }
 
-    // 重置所有状态锁，允许用户重试
+    // Reset all state locks to allow the user to retry
     isCheckingForUpdate = false;
     isDownloadingUpdate = false;
     isInstallingUpdate = false;
 
-    // 创建详细的错误信息
+    // Create detailed error info
     const detailedErrorResponse = createDetailedErrorResponse(error);
 
-    // 发送详细错误事件到UI
+    // Send the detailed error event to the UI
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send(IPC_EVENTS.UPDATE_ERROR, {
         message: detailedErrorResponse.error,
@@ -2420,11 +2420,11 @@ async function setupUpdateHandlers() {
     console.log('[Updater] The application will automatically restart after installation');
     console.log('[Updater] =============================================');
     
-    // 下载完成，重置下载状态
+    // Download complete, reset the download state
     isDownloadingUpdate = false;
     
     if (mainWindow && !mainWindow.isDestroyed()) {
-      // 发送更详细的信息给前端，包含安装提示
+      // Send more detailed info to the frontend, including the install hint
       mainWindow.webContents.send(IPC_EVENTS.UPDATE_DOWNLOADED, {
         ...info,
         message: 'Update downloaded successfully. Click "Install and Restart" to complete the installation.',
@@ -2435,9 +2435,9 @@ async function setupUpdateHandlers() {
     }
   });
 
-  // 检查更新 - 直接返回完整结果，避免全局状态
+  // Check for updates - return the full result directly, avoiding global state
   ipcMain.handle(IPC_EVENTS.UPDATE_CHECK, async () => {
-    // 检查是否已有更新检查在进行中
+    // Check whether an update check is already in progress
     if (isCheckingForUpdate) {
       console.log('[Updater] Update check already in progress, ignoring request');
       return createSuccessResponse({
@@ -2446,20 +2446,20 @@ async function setupUpdateHandlers() {
       });
     }
 
-    // 设置检查状态锁
+    // Set the check state lock
     isCheckingForUpdate = true;
 
     try {
-      // 读取用户偏好设置，使用错误边界处理和明确的备用方案
+      // Read the user preferences, using an error boundary and a clear fallback
       let allowPrerelease = DEFAULT_CONFIG.allowPrerelease;
       try {
         allowPrerelease = await preferenceService.get(PREFERENCE_KEYS.ALLOW_PRERELEASE, DEFAULT_CONFIG.allowPrerelease);
         console.log('[Updater] Successfully read prerelease preference:', allowPrerelease);
       } catch (prefError) {
         console.warn('[Updater] PreferenceService unavailable, using safe default (stable releases only):', prefError);
-        allowPrerelease = false; // 明确的安全默认值
+        allowPrerelease = false; // Explicit safe default
 
-        // 可选：通知用户偏好设置不可用
+        // Optional: notify the user that the preferences are unavailable
         if (mainWindow && !mainWindow.isDestroyed()) {
           mainWindow.webContents.send('preference-service-warning', {
             message: 'Settings temporarily unavailable, using default configuration',
@@ -2470,13 +2470,13 @@ async function setupUpdateHandlers() {
 
       console.log('[Updater] Checking for updates with settings:', { allowPrerelease });
 
-      // 配置更新器
+      // Configure the updater
       autoUpdater.allowPrerelease = allowPrerelease;
 
-      // 执行更新检查
+      // Run the update check
       console.log('[Updater] Starting update check...');
       
-      // 在实际调用 checkForUpdates 前检查配置
+      // Check the config before actually calling checkForUpdates
       console.log('[Updater Debug] ===== PRE-CHECK CONFIGURATION =====');
       console.log('[Updater Debug] autoUpdater.allowPrerelease:', autoUpdater.allowPrerelease);
       console.log('[Updater Debug] autoUpdater.autoDownload:', autoUpdater.autoDownload);
@@ -2495,7 +2495,7 @@ async function setupUpdateHandlers() {
       }
       console.log('[DEBUG] ==========================================');
 
-      // 构建完整的响应数据，包含所有必要信息
+      // Build the complete response data, including all necessary info
       const currentVersion = require('./package.json').version;
       let responseData = {
         checkResult: result,
@@ -2511,7 +2511,7 @@ async function setupUpdateHandlers() {
         responseData.remoteVersion = updateInfo.version;
         responseData.hasUpdate = updateInfo.version !== currentVersion;
 
-        // 构建发布页面URL
+        // Build the release page URL
         try {
           responseData.remoteReleaseUrl = buildReleaseUrl(updateInfo.version);
         } catch (urlError) {
@@ -2530,10 +2530,10 @@ async function setupUpdateHandlers() {
           releaseUrl: responseData.remoteReleaseUrl
         });
       } else {
-        // 没有获取到远程版本信息，这可能是配置或网络问题
+        // No remote version info was obtained, which may be a config or network problem
         console.log('[Updater] No update info received - checking possible causes...');
 
-        // 生产环境或配置了开发环境但仍然没有获取到信息
+        // Production, or the development environment is configured but still no info was obtained
         console.warn('[Updater] No update info received - this may indicate a configuration or network issue');
         console.warn('[Updater] Possible causes:');
         console.warn('  - app-update.yml missing or misconfigured');
@@ -2552,17 +2552,17 @@ async function setupUpdateHandlers() {
       console.error('[DEBUG] Detailed error response being sent:', detailedResponse);
       return detailedResponse;
     } finally {
-      // 无论成功还是失败，都要释放锁
+      // Release the lock whether it succeeds or fails
       isCheckingForUpdate = false;
       console.log('[Updater] Update check completed, lock released');
     }
   });
 
-  // 统一检查所有版本（解决并发冲突问题）
+  // Check all versions uniformly (solves the concurrency conflict problem)
   ipcMain.handle(IPC_EVENTS.UPDATE_CHECK_ALL_VERSIONS, async () => {
     console.log('[Updater] Starting unified version check for all versions');
     
-    // 检查是否已有更新检查在进行中
+    // Check whether an update check is already in progress
     if (isCheckingForUpdate) {
       console.log('[Updater] Update check already in progress, ignoring request');
       return createSuccessResponse({
@@ -2571,11 +2571,11 @@ async function setupUpdateHandlers() {
       });
     }
 
-    // 设置检查状态锁
+    // Set the check state lock
     isCheckingForUpdate = true;
 
     try {
-      // 获取当前版本
+      // Get the current version
       const currentVersion = require('./package.json').version;
       const results = {
         currentVersion,
@@ -2583,7 +2583,7 @@ async function setupUpdateHandlers() {
         prerelease: null
       };
 
-      // 辅助函数：处理单个版本检查结果
+      // Helper function: handle a single version check result
       const processResult = (result, versionType) => {
         if (!result || !result.updateInfo) {
           console.log(`[Updater] No ${versionType} update available`);
@@ -2600,7 +2600,7 @@ async function setupUpdateHandlers() {
         const updateInfo = result.updateInfo;
         const remoteVersion = updateInfo.version;
 
-        // 预览版检查时，过滤掉正式版
+        // When checking the preview version, filter out the stable version
         if (versionType === 'prerelease') {
           const isPrerelease = remoteVersion.includes('-');
           if (!isPrerelease) {
@@ -2616,8 +2616,8 @@ async function setupUpdateHandlers() {
           }
         }
 
-        // 简单但有效的版本比较：让前端处理复杂的语义化版本比较
-        // 这里只需要确保返回远程版本信息，前端会进行准确的版本比较
+        // Simple but effective version comparison: let the frontend handle the complex semantic version comparison
+        // Here we only need to make sure the remote version info is returned, and the frontend does the accurate version comparison
         const hasUpdate = remoteVersion !== currentVersion;
 
         console.log(`[Updater] Version check for ${versionType}:`, {
@@ -2627,7 +2627,7 @@ async function setupUpdateHandlers() {
         });
         let remoteReleaseUrl = null;
 
-        // 构建发布页面URL
+        // Build the release page URL
         try {
           remoteReleaseUrl = buildReleaseUrl(updateInfo.version);
         } catch (urlError) {
@@ -2653,7 +2653,7 @@ async function setupUpdateHandlers() {
         };
       };
 
-      // 1. 检查正式版
+      // 1. Check the stable version
       console.log('[Updater] Checking stable version...');
       autoUpdater.allowPrerelease = false;
       
@@ -2672,7 +2672,7 @@ async function setupUpdateHandlers() {
         };
       }
 
-      // 2. 延迟后检查预览版（避免状态冲突）
+      // 2. Check the preview version after a delay (avoiding state conflicts)
       console.log('[Updater] Waiting before checking prerelease version...');
       await new Promise(resolve => setTimeout(resolve, 1000));
 
@@ -2694,16 +2694,16 @@ async function setupUpdateHandlers() {
         };
       }
 
-      // 3. 恢复用户偏好设置
+      // 3. Restore the user preferences
       try {
         const userPreference = await preferenceService.get(PREFERENCE_KEYS.ALLOW_PRERELEASE, DEFAULT_CONFIG.allowPrerelease);
         autoUpdater.allowPrerelease = userPreference;
-        autoUpdater.allowDowngrade = false; // 总是恢复为 false
+        autoUpdater.allowDowngrade = false; // Always restore to false
         console.log('[Updater] Restored user preference:', { allowPrerelease: userPreference, allowDowngrade: false });
       } catch (prefError) {
         console.warn('[Updater] Failed to restore user preference, using default:', prefError);
         autoUpdater.allowPrerelease = DEFAULT_CONFIG.allowPrerelease;
-        autoUpdater.allowDowngrade = false; // 确保在错误情况下也恢复
+        autoUpdater.allowDowngrade = false; // Make sure it is restored in error cases too
       }
 
       console.log('[Updater] Unified version check completed:', {
@@ -2716,15 +2716,15 @@ async function setupUpdateHandlers() {
       console.error('[Updater] Unified version check failed:', error);
       return createDetailedErrorResponse(error);
     } finally {
-      // 无论成功还是失败，都要释放锁
+      // Release the lock whether it succeeds or fails
       isCheckingForUpdate = false;
       console.log('[Updater] Unified version check completed, lock released');
     }
   });
 
-  // 开始下载更新
+  // Start downloading the update
   ipcMain.handle(IPC_EVENTS.UPDATE_START_DOWNLOAD, async () => {
-    // 检查是否已有下载在进行中
+    // Check whether a download is already in progress
     if (isDownloadingUpdate) {
       console.log('[Updater] Download already in progress, ignoring request');
       return createSuccessResponse({
@@ -2733,7 +2733,7 @@ async function setupUpdateHandlers() {
       });
     }
 
-    // 设置下载状态锁
+    // Set the download state lock
     isDownloadingUpdate = true;
 
     try {
@@ -2742,14 +2742,14 @@ async function setupUpdateHandlers() {
       return createSuccessResponse(null);
     } catch (error) {
       console.error('[Updater] Download failed:', error);
-      isDownloadingUpdate = false; // 失败时重置状态
+      isDownloadingUpdate = false; // Reset the state on failure
       return createDetailedErrorResponse(error);
     }
   });
 
-  // 安装更新
+  // Install the update
   ipcMain.handle(IPC_EVENTS.UPDATE_INSTALL, async () => {
-    // 检查是否已有安装在进行中
+    // Check whether an install is already in progress
     if (isInstallingUpdate) {
       console.log('[Updater] Install already in progress, ignoring request');
       return createSuccessResponse({
@@ -2758,7 +2758,7 @@ async function setupUpdateHandlers() {
       });
     }
 
-    // 设置安装状态锁
+    // Set the install state lock
     isInstallingUpdate = true;
 
     try {
@@ -2768,18 +2768,18 @@ async function setupUpdateHandlers() {
       console.log('[Updater] If the application does not restart automatically, please launch it manually');
       console.log('[Updater] ==========================================');
       
-      // 设置更新安装退出标志，跳过数据保存逻辑
+      // Set the exit-for-update-install flag to skip the data saving logic
       isUpdaterQuitting = true;
       console.log('[Updater] Set updater quit flag to skip data save');
       
-      // 注意：quitAndInstall会立即退出应用，所以不会执行到finally
-      // 这个方法会：
-      // 1. 关闭当前应用
-      // 2. 安装新版本
-      // 3. 启动新版本的应用
+      // Note: quitAndInstall exits the app immediately, so finally will not run
+      // This method will:
+      // 1. Close the current app
+      // 2. Install the new version
+      // 3. Launch the new version of the app
       autoUpdater.quitAndInstall();
       
-      // 这行代码通常不会执行到，因为 quitAndInstall() 会立即退出应用
+      // This line is usually not reached, because quitAndInstall() exits the app immediately
       return createSuccessResponse({
         message: 'Installation started, application will restart'
       });
@@ -2797,12 +2797,12 @@ async function setupUpdateHandlers() {
       
       return createDetailedErrorResponse(error);
     } finally {
-      // 确保锁总是被释放（虽然quitAndInstall成功时不会执行到这里）
+      // Make sure the lock is always released (although it is not reached when quitAndInstall succeeds)
       isInstallingUpdate = false;
     }
   });
 
-  // 获取忽略版本状态
+  // Get the ignored version state
   ipcMain.handle(IPC_EVENTS.UPDATE_GET_IGNORED_VERSIONS, async () => {
     try {
       const ignoredVersions = await getIgnoredVersions();
@@ -2814,28 +2814,28 @@ async function setupUpdateHandlers() {
     }
   });
 
-  // 忽略版本
+  // Ignore a version
   ipcMain.handle(IPC_EVENTS.UPDATE_IGNORE_VERSION, async (event, version, versionType) => {
     try {
-      // 验证版本号格式
+      // Validate the version number format
       if (!validateVersion(version)) {
         throw new Error(`Invalid version format: ${version}`);
       }
 
-      // 如果没有指定类型，根据版本号自动判断
+      // If no type is specified, determine it automatically from the version number
       if (!versionType) {
         versionType = version.includes('-') ? 'prerelease' : 'stable';
       }
 
       console.log('[Updater] Ignoring version:', version, 'type:', versionType);
 
-      // 获取当前忽略版本数据
+      // Get the current ignored version data
       const ignoredVersions = await getIgnoredVersions();
 
-      // 更新对应类型的忽略版本
+      // Update the ignored version of the corresponding type
       ignoredVersions[versionType] = version;
 
-      // 保存更新后的数据
+      // Save the updated data
       await preferenceService.set(PREFERENCE_KEYS.IGNORED_VERSIONS, ignoredVersions);
 
       return createSuccessResponse(null);
@@ -2845,23 +2845,23 @@ async function setupUpdateHandlers() {
     }
   });
 
-  // 取消忽略版本
+  // Unignore a version
   ipcMain.handle(IPC_EVENTS.UPDATE_UNIGNORE_VERSION, async (event, versionType) => {
     try {
-      // 验证版本类型
+      // Validate the version type
       if (!['stable', 'prerelease'].includes(versionType)) {
         throw new Error(`Invalid version type: ${versionType}`);
       }
 
       console.log('[Updater] Unignoring version type:', versionType);
 
-      // 获取当前忽略版本数据
+      // Get the current ignored version data
       const ignoredVersions = await getIgnoredVersions();
 
-      // 清除对应类型的忽略版本
+      // Clear the ignored version of the corresponding type
       ignoredVersions[versionType] = null;
 
-      // 保存更新后的数据
+      // Save the updated data
       await preferenceService.set(PREFERENCE_KEYS.IGNORED_VERSIONS, ignoredVersions);
 
       return createSuccessResponse(null);
@@ -2871,26 +2871,26 @@ async function setupUpdateHandlers() {
     }
   });
 
-  // 下载特定版本（原子操作）
+  // Download a specific version (atomic operation)
   ipcMain.handle(IPC_EVENTS.UPDATE_DOWNLOAD_SPECIFIC_VERSION, async (event, versionType) => {
     try {
       console.log('[Updater] Starting atomic download for version type:', versionType);
 
-      // 验证版本类型
+      // Validate the version type
       if (!['stable', 'prerelease'].includes(versionType)) {
         throw new Error(`Invalid version type: ${versionType}`);
       }
 
-      // 防止并发下载 - 立即设置状态锁
+      // Prevent concurrent downloads - set the state lock immediately
       if (isDownloadingUpdate) {
         console.log('[Updater] Download already in progress');
         return createErrorResponse('Download already in progress');
       }
 
-      // 立即设置下载状态，防止竞态条件
+      // Set the download state immediately to prevent race conditions
       isDownloadingUpdate = true;
 
-      // 1. 保存当前配置（包括偏好设置和autoUpdater实例配置）
+      // 1. Save the current config (including the preferences and the autoUpdater instance config)
       const originalPreference = await preferenceService.get(PREFERENCE_KEYS.ALLOW_PRERELEASE, false);
       const originalAutoUpdaterConfig = {
         allowPrerelease: autoUpdater.allowPrerelease,
@@ -2900,13 +2900,13 @@ async function setupUpdateHandlers() {
       console.log('[Updater] Original autoUpdater config:', originalAutoUpdaterConfig);
 
       try {
-        // 2. 设置目标通道（同时修改偏好设置和autoUpdater实例）
+        // 2. Set the target channel (modify both the preferences and the autoUpdater instance)
         const targetPreference = versionType === 'prerelease';
         await preferenceService.set(PREFERENCE_KEYS.ALLOW_PRERELEASE, targetPreference);
 
-        // 直接配置autoUpdater实例，确保本次操作使用正确配置
+        // Configure the autoUpdater instance directly to make sure this operation uses the correct config
         autoUpdater.allowPrerelease = targetPreference;
-        autoUpdater.allowDowngrade = true; // 允许降级，支持从预览版切换到正式版
+        autoUpdater.allowDowngrade = true; // Allow downgrade, supporting a switch from the preview version to the stable version
 
         console.log('[Updater] Set preference to:', targetPreference);
         console.log('[Updater] Set autoUpdater config:', {
@@ -2914,13 +2914,13 @@ async function setupUpdateHandlers() {
           allowDowngrade: autoUpdater.allowDowngrade
         });
 
-        // 3. 检查更新
+        // 3. Check for updates
         console.log('[Updater] Checking for updates...');
         const checkResult = await autoUpdater.checkForUpdates();
 
         if (!checkResult || !checkResult.updateInfo) {
           console.log('[Updater] No update available for', versionType);
-          isDownloadingUpdate = false; // 重置状态
+          isDownloadingUpdate = false; // Reset the state
           return createSuccessResponse({
             hasUpdate: false,
             message: `No ${versionType} update available`,
@@ -2930,11 +2930,11 @@ async function setupUpdateHandlers() {
           });
         }
 
-        // 检查版本是否被忽略
+        // Check whether the version is ignored
         const isIgnored = await isVersionIgnored(checkResult.updateInfo.version);
         if (isIgnored) {
           console.log('[Updater] Version is ignored:', checkResult.updateInfo.version);
-          isDownloadingUpdate = false; // 重置状态
+          isDownloadingUpdate = false; // Reset the state
           return createSuccessResponse({
             hasUpdate: false,
             message: `Version ${checkResult.updateInfo.version} is ignored`,
@@ -2944,19 +2944,19 @@ async function setupUpdateHandlers() {
           });
         }
 
-        // 4. 立即开始下载
+        // 4. Start downloading immediately
         console.log('[Updater] Starting download for version:', checkResult.updateInfo.version);
-        // 注意：isDownloadingUpdate 已在函数开始时设置
+        // Note: isDownloadingUpdate was already set at the start of the function
 
-        // 由于 autoDownload = false，必须手动调用 downloadUpdate()
-        // 注意：不要 await downloadUpdate()，因为它会等到下载完成
-        // 我们只需要启动下载，然后立即返回，避免超时问题
+        // Since autoDownload = false, downloadUpdate() must be called manually
+        // Note: do not await downloadUpdate(), because it waits until the download completes
+        // We only need to start the download and return immediately, avoiding timeout problems
         try {
-          // 启动下载（不等待完成）
+          // Start the download (without waiting for completion)
           autoUpdater.downloadUpdate().catch(downloadError => {
             console.error('[Updater] Download failed:', downloadError);
             isDownloadingUpdate = false;
-            // 发送错误事件到前端
+            // Send the error event to the frontend
             if (mainWindow && !mainWindow.isDestroyed()) {
               mainWindow.webContents.send(IPC_EVENTS.UPDATE_ERROR, {
                 message: downloadError.message || 'Download failed',
@@ -2967,7 +2967,7 @@ async function setupUpdateHandlers() {
           });
           console.log('[Updater] Download started successfully');
 
-          // 立即发送下载开始事件到前端，确保UI状态同步
+          // Send the download start event to the frontend immediately to keep the UI state in sync
           if (mainWindow && !mainWindow.isDestroyed()) {
             mainWindow.webContents.send(IPC_EVENTS.UPDATE_DOWNLOAD_STARTED, {
               versionType,
@@ -2989,13 +2989,13 @@ async function setupUpdateHandlers() {
         });
 
       } finally {
-        // 5. 确保恢复原始配置（偏好设置和autoUpdater实例）
+        // 5. Make sure the original config is restored (the preferences and the autoUpdater instance)
         try {
-          // 恢复偏好设置
+          // Restore the preferences
           await preferenceService.set(PREFERENCE_KEYS.ALLOW_PRERELEASE, originalPreference);
           console.log('[Updater] Restored preference to:', originalPreference);
 
-          // 恢复autoUpdater实例配置
+          // Restore the autoUpdater instance config
           autoUpdater.allowPrerelease = originalAutoUpdaterConfig.allowPrerelease;
           autoUpdater.allowDowngrade = originalAutoUpdaterConfig.allowDowngrade;
           console.log('[Updater] Restored autoUpdater config to:', originalAutoUpdaterConfig);
@@ -3006,7 +3006,7 @@ async function setupUpdateHandlers() {
 
     } catch (error) {
       console.error('[Updater] Atomic download failed:', error);
-      // 确保下载状态被重置
+      // Make sure the download state is reset
       if (isDownloadingUpdate) {
         isDownloadingUpdate = false;
       }

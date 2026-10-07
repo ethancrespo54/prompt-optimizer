@@ -5,8 +5,8 @@ import path from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
-  // 在 monorepo 中，脚本可能从不同的 cwd 启动；不要依赖 process.cwd() 去定位 .env。
-  // 这里用配置文件所在位置推导出 monorepo root，并让 Vite 将 VITE_* 注入 import.meta.env。
+  // In a monorepo, scripts may be launched from different cwds; do not rely on process.cwd() to locate .env.
+  // Here the monorepo root is derived from the config file location, and Vite is told to inject VITE_* into import.meta.env.
   const monorepoRoot = resolve(__dirname, '../..')
   const env = loadEnv(mode, monorepoRoot)
   
@@ -17,12 +17,12 @@ export default defineConfig(({ mode }) => {
       port: 18181,
       host: true,
       fs: {
-        // 允许为工作区依赖提供服务
+        // Allow serving workspace dependencies
         allow: ['..']
       },
       hmr: true,
       watch: {
-        // 确保监视monorepo中其他包的变化
+        // Make sure changes in the other packages of the monorepo are watched
         ignored: ['!**/node_modules/@prompt-optimizer/**']
       }
     },
@@ -45,7 +45,7 @@ export default defineConfig(({ mode }) => {
       }
     },
     optimizeDeps: {
-      // 预构建依赖
+      // Pre-bundled dependencies
       include: ['element-plus'],
     },
     define: {

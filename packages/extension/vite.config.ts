@@ -12,7 +12,7 @@ export default defineConfig({
       '@prompt-optimizer/ui': resolve(__dirname, '../ui')
     },
   },
-  base: './',  // 使用相对路径
+  base: './',  // Use relative paths
   build: {
     outDir: 'dist',
     rollupOptions: {

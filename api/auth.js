@@ -1,5 +1,5 @@
 export default function handler(req, res) {
-  // 设置CORS头
+  // Set the CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -11,7 +11,7 @@ export default function handler(req, res) {
 
   const accessPassword = process.env.ACCESS_PASSWORD;
   
-  // 如果没有设置密码，直接返回成功
+  // If no password is set, return success directly
   if (!accessPassword) {
     return res.status(200).json({ 
       success: true, 
@@ -24,8 +24,8 @@ export default function handler(req, res) {
     
     if (action === 'verify') {
       if (password === accessPassword) {
-        // 设置Cookie以记住用户身份验证状态
-        const maxAge = 60 * 60 * 24 * 7; // 7天
+        // Set a Cookie to remember the user's authentication state
+        const maxAge = 60 * 60 * 24 * 7; // 7 days
         res.setHeader('Set-Cookie', [
           `vercel_access_token=${accessPassword}; HttpOnly; Path=/; Max-Age=${maxAge}; SameSite=Strict${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`
         ]);
@@ -47,7 +47,7 @@ export default function handler(req, res) {
     const { action } = req.query;
     
     if (action === 'logout') {
-      // 清除Cookie
+      // Clear the Cookie
       res.setHeader('Set-Cookie', [
         'vercel_access_token=; HttpOnly; Path=/; Max-Age=0; SameSite=Strict'
       ]);

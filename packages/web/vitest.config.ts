@@ -5,22 +5,22 @@ import vue from '@vitejs/plugin-vue'
 export default defineConfig({
   plugins: [vue()],
   test: {
-    // 全局超时设置为5秒
+    // Global timeout set to 5 seconds
     testTimeout: 5000,
-    // 环境设置
+    // Environment settings
     environment: 'jsdom',
-    // 包含的文件模式
+    // File patterns to include
     include: ['tests/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
-    // 排除的文件模式
+    // File patterns to exclude
     exclude: [
       '**/node_modules/**',
       '**/dist/**',
       '**/.{idea,git,cache,output,temp}/**',
-      '**/tests/e2e/**', // 排除 Playwright E2E 测试
+      '**/tests/e2e/**', // Exclude Playwright E2E tests
     ],
-    // 全局测试设置
+    // Global test setup
     globals: true,
-    // 测试覆盖率配置
+    // Test coverage config
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

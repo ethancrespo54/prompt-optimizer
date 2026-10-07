@@ -1,8 +1,8 @@
 /**
- * Core 服务管理器
+ * Core service manager
  * 
- * 负责初始化和管理所有 Core 模块服务
- * 采用单例模式确保服务实例的唯一性
+ * Responsible for initializing and managing all Core module services
+ * Uses the singleton pattern to ensure the uniqueness of the service instances
  */
 
 import {
@@ -37,7 +37,7 @@ export class CoreServicesManager {
   private initialized = false;
 
   private constructor() {
-    // 构造函数现在更简洁
+    // The constructor is now more concise
   }
 
   static getInstance(): CoreServicesManager {
@@ -56,37 +56,37 @@ export class CoreServicesManager {
     try {
       logger.info('Initializing Core services...');
 
-      // 1. 创建内存存储提供者
+      // 1. Create the in-memory storage provider
       logger.debug('Creating memory storage provider');
       const storage = new MemoryStorageProvider();
 
-      // 2. 初始化模型管理器
+      // 2. Initialize the model manager
       logger.debug('Initializing ModelManager');
       this.modelManager = createModelManager(storage);
 
-      // 3. 配置默认模型
+      // 3. Configure the default model
       await this.setupDefaultModel(config);
 
-      // 4. 初始化 LLM 服务
+      // 4. Initialize the LLM service
       logger.debug('Initializing LLMService');
       this.llmService = createLLMService(this.modelManager);
 
-      // 5. 初始化语言服务
+      // 5. Initialize the language service
       logger.debug('Initializing LanguageService');
-      const defaultLanguage = config.defaultLanguage || process.env.MCP_DEFAULT_LANGUAGE || 'zh';
+      const defaultLanguage = config.defaultLanguage || process.env.MCP_DEFAULT_LANGUAGE || 'en';
       this.languageService = createSimpleLanguageService(defaultLanguage);
       await this.languageService.initialize();
 
-      // 6. 初始化模板管理器
+      // 6. Initialize the template manager
       logger.debug('Initializing TemplateManager');
       this.templateManager = createTemplateManager(storage, this.languageService);
-      // 注意：core 的内置模板会自动可用，无需额外设置
+      // Note: the built-in templates of core are available automatically, no extra setup needed
 
-      // 8. 初始化历史管理器
+      // 8. Initialize the history manager
       logger.debug('Initializing HistoryManager');
       this.historyManager = createHistoryManager(storage, this.modelManager);
 
-      // 9. 创建提示词服务
+      // 9. Create the prompt service
       logger.debug('Creating PromptService');
       this.promptService = createPromptService(
         this.modelManager,
@@ -95,17 +95,17 @@ export class CoreServicesManager {
         this.historyManager
       );
 
-      // 10. 验证服务健康状态
+      // 10. Validate the service health
       await this.validateServices();
 
       this.initialized = true;
       logger.info('Core services initialized successfully');
 
     } catch (error) {
-      // 记录详细错误信息
+      // Record detailed error info
       logger.error('Failed to initialize Core services', error as Error);
 
-      // 检查是否有任何可用的模型配置
+      // Check whether any model config is available
       this.showEnvironmentHint();
 
       throw new Error(`Core services initialization failed: ${(error as Error).message}`);
@@ -118,13 +118,13 @@ export class CoreServicesManager {
     }
 
     try {
-      // 使用重构后的 setupDefaultModel 函数，只传递 preferredProvider
+      // Use the refactored setupDefaultModel function, passing only preferredProvider
       await setupDefaultModel(
         this.modelManager,
         config.preferredModelProvider
       );
 
-      // 获取并显示当前使用的模型信息
+      // Get and display the info of the model currently in use
       const mcpModel = await this.modelManager.getModel('mcp-default');
       if (mcpModel) {
         logger.info(`✅ Using model: ${mcpModel.name} (${mcpModel.provider})`);
@@ -141,11 +141,11 @@ export class CoreServicesManager {
 
 
   /**
-   * 显示环境变量配置提示
+   * Show environment variable configuration hints
    */
   private showEnvironmentHint(): void {
     try {
-      // 检查当前环境变量状态
+      // Check the current environment variable state
       const staticEnvVars = [
         'VITE_OPENAI_API_KEY',
         'VITE_GEMINI_API_KEY',
@@ -155,7 +155,7 @@ export class CoreServicesManager {
         'VITE_CUSTOM_API_KEY'
       ];
 
-      // 扫描动态自定义模型环境变量（使用统一的验证逻辑）
+      // Scan dynamic custom model environment variables (using the unified validation logic)
       const CUSTOM_API_KEY_PATTERN = /^VITE_CUSTOM_API_KEY_(.+)$/;
       const SUFFIX_PATTERN = /^[a-zA-Z0-9_-]+$/;
       const MAX_SUFFIX_LENGTH = 50;
@@ -176,7 +176,7 @@ export class CoreServicesManager {
       });
 
       if (setVars.length === 0) {
-        // 没有设置任何环境变量
+        // No environment variables are set
         console.error('💡 No API keys found. Please set at least one:');
         console.error('   VITE_OPENAI_API_KEY=your-openai-key');
         console.error('   VITE_GEMINI_API_KEY=your-gemini-key');
@@ -188,7 +188,7 @@ export class CoreServicesManager {
         console.error('   VITE_CUSTOM_API_KEY_qwen3=your-qwen-key');
         console.error('   VITE_CUSTOM_API_KEY_claude=your-claude-key');
       } else {
-        // 有设置但可能无效
+        // Some are set but may be invalid
         console.error('💡 Found API keys but no models are enabled:');
         setVars.forEach(key => {
           const value = process.env[key];
@@ -198,7 +198,7 @@ export class CoreServicesManager {
         console.error('   Please check if your API keys are valid.');
       }
     } catch (error) {
-      // 如果检查环境变量失败，显示通用提示
+      // If checking the environment variables fails, show a generic hint
       console.error('💡 Please ensure you have set valid API keys.');
     }
   }

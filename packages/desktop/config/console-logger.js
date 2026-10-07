@@ -18,26 +18,26 @@ class ConsoleLogger {
   }
 
   setupElectronLog() {
-    // 获取用户数据目录
+    // Get the user data directory
     const userDataPath = app ? app.getPath('userData') : process.cwd();
     const logDir = path.join(userDataPath, 'logs');
 
-    // 主日志配置
+    // Main log config
     log.transports.file.level = 'info';
     log.transports.file.maxSize = 10 * 1024 * 1024; // 10MB
     log.transports.file.format = '[{y}-{m}-{d} {h}:{i}:{s}.{ms}] [{level}] {text}';
     log.transports.file.resolvePathFn = () => path.join(logDir, 'main.log');
 
-    // 控制台配置
+    // Console config
     log.transports.console.level = process.env.NODE_ENV === 'development' ? 'debug' : 'info';
     log.transports.console.format = '[{y}-{m}-{d} {h}:{i}:{s}] [{level}] {text}';
 
-    // 禁用IPC传输
+    // Disable IPC transport
     log.transports.ipc.level = false;
   }
 
   setupModuleLoggers() {
-    // 创建不同模块的日志器
+    // Create loggers for different modules
     this.loggers = {
       main: this.createModuleLogger('main'),
       desktop: this.createModuleLogger('desktop'),
@@ -46,7 +46,7 @@ class ConsoleLogger {
       error: this.createModuleLogger('error')
     };
 
-    // 错误日志特殊配置
+    // Special config for the error log
     this.loggers.error.transports.file.level = 'error';
     this.loggers.error.transports.console.level = 'error';
   }
@@ -64,11 +64,11 @@ class ConsoleLogger {
     return moduleLog;
   }
 
-  // 智能解析日志消息，确定使用哪个日志器
+  // Parse the log message intelligently to decide which logger to use
   parseLogMessage(message) {
     const messageStr = typeof message === 'string' ? message : String(message);
     
-    // 模块映射规则
+    // Module mapping rules
     const modulePatterns = [
       { pattern: /^\[Main Process\]/i, logger: this.loggers.main, prefix: '[Main Process]' },
       { pattern: /^\[DESKTOP\]/i, logger: this.loggers.desktop, prefix: '[DESKTOP]' },
@@ -76,7 +76,7 @@ class ConsoleLogger {
       { pattern: /^\[.*IPC.*\]/i, logger: this.loggers.ipc, prefix: '[IPC]' },
     ];
 
-    // 查找匹配的模块
+    // Find the matching module
     for (const { pattern, logger, prefix } of modulePatterns) {
       if (pattern.test(messageStr)) {
         const cleanMessage = messageStr.replace(pattern, '').trim();
@@ -84,57 +84,57 @@ class ConsoleLogger {
       }
     }
 
-    // 默认使用主日志器
+    // Use the main logger by default
     return { logger: this.loggers.main, message: messageStr, originalPrefix: null };
   }
 
-  // 劫持 console 方法
+  // Hijack the console methods
   hijackConsole() {
-    // 劫持 console.log
+    // Hijack console.log
     console.log = (...args) => {
       const firstArg = args[0];
       const { logger, message, originalPrefix } = this.parseLogMessage(firstArg);
       
       if (originalPrefix && args.length === 1) {
-        // 单个带前缀的消息
+        // A single message with a prefix
         logger.info(message);
       } else if (originalPrefix) {
-        // 带前缀的消息和额外参数
+        // A message with a prefix and extra arguments
         const restArgs = args.slice(1);
         logger.info(message, ...restArgs);
       } else {
-        // 普通日志
+        // Normal log
         logger.info(...args);
       }
 
-      // 开发环境下同时输出到原始控制台
+      // In development, also output to the original console
       if (process.env.NODE_ENV === 'development') {
         this.originalConsole.log(...args);
       }
     };
 
-    // 劫持 console.error
+    // Hijack console.error
     console.error = (...args) => {
       const firstArg = args[0];
       const { logger, message, originalPrefix } = this.parseLogMessage(firstArg);
       
-      // 错误总是同时记录到错误日志
+      // Errors are always also recorded in the error log
       this.loggers.error.error(...args);
       
       if (originalPrefix && args.length >= 2) {
-        // 带前缀的错误消息
+        // An error message with a prefix
         const restArgs = args.slice(1);
         logger.error(message, ...restArgs);
       } else {
-        // 普通错误
+        // Normal error
         logger.error(...args);
       }
 
-      // 总是输出到原始控制台（错误很重要）
+      // Always output to the original console (errors are important)
       this.originalConsole.error(...args);
     };
 
-    // 劫持 console.warn
+    // Hijack console.warn
     console.warn = (...args) => {
       const firstArg = args[0];
       const { logger, message, originalPrefix } = this.parseLogMessage(firstArg);
@@ -148,13 +148,13 @@ class ConsoleLogger {
         logger.warn(...args);
       }
 
-      // 开发环境下同时输出到原始控制台
+      // In development, also output to the original console
       if (process.env.NODE_ENV === 'development') {
         this.originalConsole.warn(...args);
       }
     };
 
-    // 劫持 console.info
+    // Hijack console.info
     console.info = (...args) => {
       const firstArg = args[0];
       const { logger, message } = this.parseLogMessage(firstArg);
@@ -165,7 +165,7 @@ class ConsoleLogger {
       }
     };
 
-    // 劫持 console.debug
+    // Hijack console.debug
     console.debug = (...args) => {
       const firstArg = args[0];
       const { logger, message } = this.parseLogMessage(firstArg);
@@ -177,14 +177,14 @@ class ConsoleLogger {
     };
   }
 
-  // 恢复原始 console（如果需要）
+  // Restore the original console (if needed)
   restore() {
     Object.assign(console, this.originalConsole);
   }
 
-  // 设置全局错误处理器
+  // Set up global error handlers
   setupGlobalErrorHandlers() {
-    // 捕获未处理的异常
+    // Capture unhandled exceptions
     process.on('uncaughtException', (error) => {
       const errorInfo = {
         type: 'uncaughtException',
@@ -194,19 +194,19 @@ class ConsoleLogger {
         pid: process.pid
       };
 
-      // 记录到错误日志
+      // Record to the error log
       this.loggers.error.error('CRITICAL - Uncaught Exception:', JSON.stringify(errorInfo, null, 2));
 
-      // 同时输出到控制台（确保能看到）
+      // Also output to the console (to make sure it can be seen)
       this.originalConsole.error('[CRITICAL] Uncaught Exception:', error);
 
-      // 给日志系统一点时间写入文件
+      // Give the log system a moment to write to the file
       setTimeout(() => {
         process.exit(1);
       }, 1000);
     });
 
-    // 捕获未处理的Promise拒绝
+    // Capture unhandled Promise rejections
     process.on('unhandledRejection', (reason, promise) => {
       const errorInfo = {
         type: 'unhandledRejection',
@@ -219,19 +219,19 @@ class ConsoleLogger {
         pid: process.pid
       };
 
-      // 记录到错误日志
+      // Record to the error log
       this.loggers.error.error('CRITICAL - Unhandled Rejection:', JSON.stringify(errorInfo, null, 2));
 
-      // 同时输出到控制台
+      // Also output to the console
       this.originalConsole.error('[CRITICAL] Unhandled Rejection at:', promise, 'reason:', reason);
 
-      // 给日志系统一点时间写入文件
+      // Give the log system a moment to write to the file
       setTimeout(() => {
         process.exit(1);
       }, 1000);
     });
 
-    // 捕获进程警告
+    // Capture process warnings
     process.on('warning', (warning) => {
       const warningInfo = {
         type: 'processWarning',
@@ -248,7 +248,7 @@ class ConsoleLogger {
     console.log('[Console Logger] Global error handlers setup completed');
   }
 
-  // 获取日志文件路径
+  // Get the log file path
   getLogPaths() {
     const userDataPath = app ? app.getPath('userData') : process.cwd();
     const logDir = path.join(userDataPath, 'logs');

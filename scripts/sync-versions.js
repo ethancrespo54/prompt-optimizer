@@ -4,21 +4,21 @@ const path = require('path');
 const rootPackage = require('../package.json');
 const targetVersion = rootPackage.version;
 
-console.log(`🔄 开始同步版本号至 ${targetVersion}`);
+console.log(`🔄 Starting to sync the version to ${targetVersion}`);
 
-// 需要同步版本的文件列表
+// List of files whose version needs syncing
 const versionFiles = [
   {
     path: 'packages/extension/public/manifest.json',
     field: 'version',
-    description: '浏览器扩展清单文件'
+    description: 'Browser extension manifest file'
   },
   {
     path: 'packages/desktop/package.json',
     field: 'version',
-    description: 'Desktop应用包文件'
+    description: 'Desktop app package file'
   }
-  // 未来可以添加更多需要同步的文件
+  // More files that need syncing can be added in the future
 ];
 
 let syncCount = 0;
@@ -28,32 +28,32 @@ versionFiles.forEach(file => {
   try {
     const filePath = path.resolve(__dirname, '..', file.path);
     
-    // 检查文件是否存在
+    // Check whether the file exists
     if (!fs.existsSync(filePath)) {
-      console.log(`⚠️  文件不存在: ${file.path}`);
+      console.log(`⚠️  File does not exist: ${file.path}`);
       errorCount++;
       return;
     }
     
-    // 读取并更新文件
+    // Read and update the file
     const content = JSON.parse(fs.readFileSync(filePath, 'utf8'));
     const oldVersion = content[file.field];
     
     if (oldVersion === targetVersion) {
-      console.log(`✅ ${file.description}: ${file.path} 版本已是最新 (${targetVersion})`);
+      console.log(`✅ ${file.description}: ${file.path} version is already up to date (${targetVersion})`);
     } else {
       content[file.field] = targetVersion;
       fs.writeFileSync(filePath, JSON.stringify(content, null, 2) + '\n');
-      console.log(`✅ ${file.description}: ${file.path} 版本已更新 ${oldVersion} → ${targetVersion}`);
+      console.log(`✅ ${file.description}: ${file.path} version updated ${oldVersion} → ${targetVersion}`);
       syncCount++;
     }
   } catch (error) {
-    console.error(`❌ 更新 ${file.path} 时出错:`, error.message);
+    console.error(`❌ Error updating ${file.path}:`, error.message);
     errorCount++;
   }
 });
 
-console.log(`\n📊 同步完成: ${syncCount} 个文件已更新, ${errorCount} 个错误`);
+console.log(`\n📊 Sync complete: ${syncCount} files updated, ${errorCount} errors`);
 
 if (errorCount > 0) {
   process.exit(1);
