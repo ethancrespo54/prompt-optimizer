@@ -5,16 +5,16 @@ import { TypeMapper } from '../../../src/services/favorite/type-mapper';
 import type { PromptRecordType } from '../../../src/services/history/types';
 
 /**
- * FavoriteManager 集成测试
- * 测试完整的业务流程和跨功能交互
+ * FavoriteManager integration test
+ * Tests the complete business flows and cross-feature interactions
  */
-describe('FavoriteManager - 集成测试', () => {
+describe('FavoriteManager - integration test', () => {
   let manager: FavoriteManager;
   let mockStorage: Map<string, string>;
   let storageProvider: IStorageProvider;
 
   beforeEach(() => {
-    // 创建模拟存储
+    // Create a mock storage
     mockStorage = new Map<string, string>();
 
     storageProvider = {
@@ -48,127 +48,127 @@ describe('FavoriteManager - 集成测试', () => {
     manager = new FavoriteManager(storageProvider);
   });
 
-  describe('收藏 CRUD 完整流程', () => {
-    it('应该完成完整的增删改查流程', async () => {
-      // 1. 创建分类
+  describe('Complete favorite CRUD flow', () => {
+    it('should complete the full create/read/update/delete flow', async () => {
+      // 1. Create a category
       const categoryId = await manager.addCategory({
-        name: '测试分类',
-        description: '用于集成测试',
+        name: 'Test category',
+        description: 'Used for the integration test',
         color: '#FF5722'
       });
 
-      // 2. 添加收藏
+      // 2. Add a favorite
       const favoriteId = await manager.addFavorite({
-        title: '测试收藏',
-        content: '测试内容',
-        tags: ['测试', '集成'],
+        title: 'Test favorite',
+        content: 'Test content',
+        tags: ['test', 'integration'],
         category: categoryId,
         functionMode: 'basic',
         optimizationMode: 'system',
         metadata: {
-          originalContent: '原始内容',
+          originalContent: 'Original content',
           sourceHistoryId: 'history-001'
         }
       });
 
       expect(favoriteId).toBeTruthy();
 
-      // 3. 查询单个收藏
+      // 3. Query a single favorite
       const favorite = await manager.getFavorite(favoriteId);
       expect(favorite.id).toBe(favoriteId);
-      expect(favorite.title).toBe('测试收藏');
-      expect(favorite.tags).toEqual(['测试', '集成']);
+      expect(favorite.title).toBe('Test favorite');
+      expect(favorite.tags).toEqual(['test', 'integration']);
       expect(favorite.category).toBe(categoryId);
       expect(favorite.functionMode).toBe('basic');
       expect(favorite.optimizationMode).toBe('system');
-      expect(favorite.metadata?.originalContent).toBe('原始内容');
+      expect(favorite.metadata?.originalContent).toBe('Original content');
       expect(favorite.metadata?.sourceHistoryId).toBe('history-001');
 
-      // 4. 查询列表
+      // 4. Query the list
       const favorites = await manager.getFavorites();
       expect(favorites.length).toBe(1);
       expect(favorites[0].id).toBe(favoriteId);
 
-      // 5. 更新收藏
+      // 5. Update the favorite
       await manager.updateFavorite(favoriteId, {
-        title: '更新后的标题',
-        tags: ['测试', '集成', '更新'],
+        title: 'Updated title',
+        tags: ['test', 'integration', 'update'],
         functionMode: 'context',
         optimizationMode: 'user'
       });
 
       const updated = await manager.getFavorite(favoriteId);
-      expect(updated.title).toBe('更新后的标题');
-      expect(updated.tags).toEqual(['测试', '集成', '更新']);
+      expect(updated.title).toBe('Updated title');
+      expect(updated.tags).toEqual(['test', 'integration', 'update']);
       expect(updated.functionMode).toBe('context');
       expect(updated.optimizationMode).toBe('user');
       expect(updated.updatedAt).not.toBe(favorite.updatedAt);
 
-      // 6. 删除收藏
+      // 6. Delete the favorite
       await manager.deleteFavorite(favoriteId);
       const allFavorites = await manager.getFavorites();
       expect(allFavorites.length).toBe(0);
 
-      // 7. 验证分类仍然存在
+      // 7. Verify the category still exists
       const categories = await manager.getCategories();
       expect(categories.find(c => c.id === categoryId)).toBeDefined();
     });
 
-    it('应该正确处理多个收藏的关联关系', async () => {
-      // 创建2个分类
-      const cat1Id = await manager.addCategory({ name: '分类1', color: '#FF0000' });
-      const cat2Id = await manager.addCategory({ name: '分类2', color: '#00FF00' });
+    it('should handle relationships among multiple favorites correctly', async () => {
+      // Create 2 categories
+      const cat1Id = await manager.addCategory({ name: 'Category 1', color: '#FF0000' });
+      const cat2Id = await manager.addCategory({ name: 'Category 2', color: '#00FF00' });
 
-      // 创建3个收藏
+      // Create 3 favorites
       const fav1Id = await manager.addFavorite({
-        title: '收藏1',
-        content: '内容1',
-        tags: ['共享标签', '标签1'],
+        title: 'Favorite 1',
+        content: 'Content 1',
+        tags: ['shared tag', 'tag 1'],
         category: cat1Id,
         functionMode: 'basic',
         optimizationMode: 'system'
       });
 
       const fav2Id = await manager.addFavorite({
-        title: '收藏2',
-        content: '内容2',
-        tags: ['共享标签', '标签2'],
+        title: 'Favorite 2',
+        content: 'Content 2',
+        tags: ['shared tag', 'tag 2'],
         category: cat1Id,
         functionMode: 'basic',
         optimizationMode: 'user'
       });
 
       const fav3Id = await manager.addFavorite({
-        title: '收藏3',
-        content: '内容3',
-        tags: ['标签3'],
+        title: 'Favorite 3',
+        content: 'Content 3',
+        tags: ['tag 3'],
         category: cat2Id,
         functionMode: 'image',
         imageSubMode: 'text2image'
       });
 
-      // 验证标签统计
+      // Verify the tag statistics
       const tags = await manager.getAllTags();
-      const sharedTag = tags.find(t => t.tag === '共享标签');
+      const sharedTag = tags.find(t => t.tag === 'shared tag');
       expect(sharedTag?.count).toBe(2);
 
-      // 验证分类使用统计
+      // Verify the category usage statistics
       const cat1Usage = await manager.getCategoryUsage(cat1Id);
       const cat2Usage = await manager.getCategoryUsage(cat2Id);
       expect(cat1Usage).toBe(2);
       expect(cat2Usage).toBe(1);
 
-      // 按分类查询
+      // Query by category
       const cat1Favorites = await manager.getFavorites({ categoryId: cat1Id });
       expect(cat1Favorites.length).toBe(2);
 
-      // 按标签查询
-      const sharedTagFavorites = await manager.getFavorites({ tags: ['共享标签'] });
+      // Query by tag
+      const sharedTagFavorites = await manager.getFavorites({ tags: ['shared tag'] });
       expect(sharedTagFavorites.length).toBe(2);
     });
 
-    it('应该支持功能模式验证的完整流程', async () => {
-      // 添加各种模式的收藏
+    it('should support the full flow of function mode validation', async () => {
+      // Add favorites of various modes
       const basicId = await manager.addFavorite({
         title: 'Basic Mode',
         content: 'Content',
@@ -193,7 +193,7 @@ describe('FavoriteManager - 集成测试', () => {
         imageSubMode: 'text2image'
       });
 
-      // 验证每个收藏的模式
+      // Verify the mode of each favorite
       const basic = await manager.getFavorite(basicId);
       expect(basic.functionMode).toBe('basic');
       expect(basic.optimizationMode).toBe('system');
@@ -209,7 +209,7 @@ describe('FavoriteManager - 集成测试', () => {
       expect(image.imageSubMode).toBe('text2image');
       expect(image.optimizationMode).toBeUndefined();
 
-      // 更新模式应该生效
+      // An updated mode should take effect
       await manager.updateFavorite(basicId, {
         functionMode: 'context',
         optimizationMode: 'system'
@@ -221,43 +221,43 @@ describe('FavoriteManager - 集成测试', () => {
     });
   });
 
-  describe('从优化历史保存收藏集成测试', () => {
-    it('应该从 optimize 类型正确创建收藏', async () => {
-      // 模拟历史记录
+  describe('Integration test for saving favorites from optimization history', () => {
+    it('should create a favorite correctly from the optimize type', async () => {
+      // Mock the history record
       const recordType: PromptRecordType = 'optimize';
       const mapping = TypeMapper.mapFromRecordType(recordType);
 
-      // 创建收藏
+      // Create the favorite
       const favoriteId = await manager.addFavorite({
-        title: '优化后的提示词',
-        content: '这是优化后的内容',
-        tags: ['AI', '优化'],
+        title: 'Optimized prompt',
+        content: 'This is the optimized content',
+        tags: ['AI', 'optimization'],
         ...mapping,
         metadata: {
-          originalContent: '这是原始内容',
+          originalContent: 'This is the original content',
           sourceHistoryId: 'hist-123'
         }
       });
 
-      // 验证
+      // Verify
       const favorite = await manager.getFavorite(favoriteId);
       expect(favorite.functionMode).toBe('basic');
       expect(favorite.optimizationMode).toBe('system');
-      expect(favorite.metadata?.originalContent).toBe('这是原始内容');
+      expect(favorite.metadata?.originalContent).toBe('This is the original content');
       expect(favorite.metadata?.sourceHistoryId).toBe('hist-123');
     });
 
-    it('应该从 contextUserOptimize 类型正确创建收藏', async () => {
+    it('should create a favorite correctly from the contextUserOptimize type', async () => {
       const recordType: PromptRecordType = 'contextUserOptimize';
       const mapping = TypeMapper.mapFromRecordType(recordType);
 
       const favoriteId = await manager.addFavorite({
-        title: '用户上下文优化',
-        content: '优化内容',
+        title: 'User context optimization',
+        content: 'Optimized content',
         tags: [],
         ...mapping,
         metadata: {
-          originalContent: '原始内容',
+          originalContent: 'Original content',
           sourceHistoryId: 'hist-456'
         }
       });
@@ -267,14 +267,14 @@ describe('FavoriteManager - 集成测试', () => {
       expect(favorite.optimizationMode).toBe('user');
     });
 
-    it('应该从 imageOptimize 类型正确创建收藏', async () => {
+    it('should create a favorite correctly from the imageOptimize type', async () => {
       const recordType: PromptRecordType = 'imageOptimize';
       const mapping = TypeMapper.mapFromRecordType(recordType);
 
       const favoriteId = await manager.addFavorite({
-        title: '图像提示词优化',
-        content: '优化后的图像提示词',
-        tags: ['图像生成'],
+        title: 'Image prompt optimization',
+        content: 'Optimized image prompt',
+        tags: ['image generation'],
         ...mapping
       });
 
@@ -283,13 +283,13 @@ describe('FavoriteManager - 集成测试', () => {
       expect(favorite.imageSubMode).toBe('text2image');
     });
 
-    it('应该从 image2imageOptimize 类型正确创建收藏', async () => {
+    it('should create a favorite correctly from the image2imageOptimize type', async () => {
       const recordType: PromptRecordType = 'image2imageOptimize';
       const mapping = TypeMapper.mapFromRecordType(recordType);
 
       const favoriteId = await manager.addFavorite({
-        title: '图生图提示词',
-        content: '图生图优化内容',
+        title: 'Image-to-image prompt',
+        content: 'Image-to-image optimization content',
         tags: [],
         ...mapping
       });
@@ -299,7 +299,7 @@ describe('FavoriteManager - 集成测试', () => {
       expect(favorite.imageSubMode).toBe('image2image');
     });
 
-    it('应该处理所有历史记录类型', async () => {
+    it('should handle all history record types', async () => {
       const allTypes: PromptRecordType[] = [
         'optimize',
         'userOptimize',
@@ -320,21 +320,21 @@ describe('FavoriteManager - 集成测试', () => {
       for (const type of allTypes) {
         const mapping = TypeMapper.mapFromRecordType(type);
         const id = await manager.addFavorite({
-          title: `收藏-${type}`,
-          content: `内容-${type}`,
+          title: `Favorite-${type}`,
+          content: `Content-${type}`,
           tags: [type],
           ...mapping
         });
         ids.push(id);
       }
 
-      // 验证所有收藏都创建成功
+      // Verify all favorites were created successfully
       expect(ids.length).toBe(allTypes.length);
 
       const favorites = await manager.getFavorites();
       expect(favorites.length).toBe(allTypes.length);
 
-      // 验证每个收藏的功能模式都有效
+      // Verify the function mode of every favorite is valid
       for (const favorite of favorites) {
         const mapping = {
           functionMode: favorite.functionMode,
@@ -346,151 +346,151 @@ describe('FavoriteManager - 集成测试', () => {
     });
   });
 
-  describe('标签和分类管理集成测试', () => {
-    it('标签重命名应该更新所有关联收藏', async () => {
-      // 创建多个使用相同标签的收藏
+  describe('Tag and category management integration test', () => {
+    it('renaming a tag should update all associated favorites', async () => {
+      // Create multiple favorites that use the same tag
       await manager.addFavorite({
-        title: '收藏1',
-        content: '内容1',
-        tags: ['旧标签', '其他标签'],
+        title: 'Favorite 1',
+        content: 'Content 1',
+        tags: ['old tag', 'other tag'],
         functionMode: 'basic',
         optimizationMode: 'system'
       });
 
       await manager.addFavorite({
-        title: '收藏2',
-        content: '内容2',
-        tags: ['旧标签'],
+        title: 'Favorite 2',
+        content: 'Content 2',
+        tags: ['old tag'],
         functionMode: 'basic',
         optimizationMode: 'user'
       });
 
       await manager.addFavorite({
-        title: '收藏3',
-        content: '内容3',
-        tags: ['不相关标签'],
+        title: 'Favorite 3',
+        content: 'Content 3',
+        tags: ['unrelated tag'],
         functionMode: 'basic',
         optimizationMode: 'system'
       });
 
-      // 重命名标签
-      await manager.renameTag('旧标签', '新标签');
+      // Rename the tag
+      await manager.renameTag('old tag', 'new tag');
 
-      // 验证所有收藏更新
+      // Verify all favorites were updated
       const favorites = await manager.getFavorites();
-      const fav1 = favorites.find(f => f.title === '收藏1');
-      const fav2 = favorites.find(f => f.title === '收藏2');
-      const fav3 = favorites.find(f => f.title === '收藏3');
+      const fav1 = favorites.find(f => f.title === 'Favorite 1');
+      const fav2 = favorites.find(f => f.title === 'Favorite 2');
+      const fav3 = favorites.find(f => f.title === 'Favorite 3');
 
-      expect(fav1?.tags).toContain('新标签');
-      expect(fav1?.tags).not.toContain('旧标签');
-      expect(fav1?.tags).toContain('其他标签');
+      expect(fav1?.tags).toContain('new tag');
+      expect(fav1?.tags).not.toContain('old tag');
+      expect(fav1?.tags).toContain('other tag');
 
-      expect(fav2?.tags).toContain('新标签');
-      expect(fav2?.tags).not.toContain('旧标签');
+      expect(fav2?.tags).toContain('new tag');
+      expect(fav2?.tags).not.toContain('old tag');
 
-      expect(fav3?.tags).toContain('不相关标签');
-      expect(fav3?.tags).not.toContain('新标签');
+      expect(fav3?.tags).toContain('unrelated tag');
+      expect(fav3?.tags).not.toContain('new tag');
 
-      // 验证标签统计
+      // Verify the tag statistics
       const tags = await manager.getAllTags();
-      const newTag = tags.find(t => t.tag === '新标签');
-      const oldTag = tags.find(t => t.tag === '旧标签');
+      const newTag = tags.find(t => t.tag === 'new tag');
+      const oldTag = tags.find(t => t.tag === 'old tag');
 
       expect(newTag?.count).toBe(2);
       expect(oldTag).toBeUndefined();
     });
 
-    it('标签合并应该正确去重', async () => {
-      // 创建测试数据
+    it('merging tags should deduplicate correctly', async () => {
+      // Create the test data
       await manager.addFavorite({
-        title: '收藏1',
-        content: '内容',
-        tags: ['标签A', '标签B'],
+        title: 'Favorite 1',
+        content: 'Content',
+        tags: ['Tag A', 'Tag B'],
         functionMode: 'basic',
         optimizationMode: 'system'
       });
 
       await manager.addFavorite({
-        title: '收藏2',
-        content: '内容',
-        tags: ['标签A', '标签C'],
+        title: 'Favorite 2',
+        content: 'Content',
+        tags: ['Tag A', 'Tag C'],
         functionMode: 'basic',
         optimizationMode: 'system'
       });
 
       await manager.addFavorite({
-        title: '收藏3',
-        content: '内容',
-        tags: ['标签B', '标签C'],
+        title: 'Favorite 3',
+        content: 'Content',
+        tags: ['Tag B', 'Tag C'],
         functionMode: 'basic',
         optimizationMode: 'system'
       });
 
-      // 合并标签A和标签B -> 标签B
-      await manager.mergeTags(['标签A'], '标签B');
+      // Merge Tag A and Tag B -> Tag B
+      await manager.mergeTags(['Tag A'], 'Tag B');
 
       const favorites = await manager.getFavorites();
-      const fav1 = favorites.find(f => f.title === '收藏1');
-      const fav2 = favorites.find(f => f.title === '收藏2');
-      const fav3 = favorites.find(f => f.title === '收藏3');
+      const fav1 = favorites.find(f => f.title === 'Favorite 1');
+      const fav2 = favorites.find(f => f.title === 'Favorite 2');
+      const fav3 = favorites.find(f => f.title === 'Favorite 3');
 
-      // 收藏1: 原本 [A, B] -> [B] (去重)
-      expect(fav1?.tags).toEqual(['标签B']);
+      // Favorite 1: originally [A, B] -> [B] (deduplicated)
+      expect(fav1?.tags).toEqual(['Tag B']);
 
-      // 收藏2: 原本 [A, C] -> [B, C]
-      expect(fav2?.tags).toContain('标签B');
-      expect(fav2?.tags).toContain('标签C');
-      expect(fav2?.tags).not.toContain('标签A');
+      // Favorite 2: originally [A, C] -> [B, C]
+      expect(fav2?.tags).toContain('Tag B');
+      expect(fav2?.tags).toContain('Tag C');
+      expect(fav2?.tags).not.toContain('Tag A');
 
-      // 收藏3: 原本 [B, C] -> [B, C] (不变)
-      expect(fav3?.tags).toContain('标签B');
-      expect(fav3?.tags).toContain('标签C');
+      // Favorite 3: originally [B, C] -> [B, C] (unchanged)
+      expect(fav3?.tags).toContain('Tag B');
+      expect(fav3?.tags).toContain('Tag C');
 
-      // 验证标签统计
+      // Verify the tag statistics
       const tags = await manager.getAllTags();
-      const tagA = tags.find(t => t.tag === '标签A');
-      const tagB = tags.find(t => t.tag === '标签B');
+      const tagA = tags.find(t => t.tag === 'Tag A');
+      const tagB = tags.find(t => t.tag === 'Tag B');
 
       expect(tagA).toBeUndefined();
-      expect(tagB?.count).toBe(3); // 所有3个收藏都有标签B
+      expect(tagB?.count).toBe(3); // All 3 favorites have Tag B
     });
 
-    it('标签删除应该从所有收藏中移除', async () => {
+    it('deleting a tag should remove it from all favorites', async () => {
       await manager.addFavorite({
-        title: '收藏1',
-        content: '内容',
-        tags: ['要删除', '保留'],
+        title: 'Favorite 1',
+        content: 'Content',
+        tags: ['to delete', 'keep'],
         functionMode: 'basic',
         optimizationMode: 'system'
       });
 
       await manager.addFavorite({
-        title: '收藏2',
-        content: '内容',
-        tags: ['要删除'],
+        title: 'Favorite 2',
+        content: 'Content',
+        tags: ['to delete'],
         functionMode: 'basic',
         optimizationMode: 'system'
       });
 
-      await manager.deleteTag('要删除');
+      await manager.deleteTag('to delete');
 
       const favorites = await manager.getFavorites();
       favorites.forEach(fav => {
-        expect(fav.tags).not.toContain('要删除');
+        expect(fav.tags).not.toContain('to delete');
       });
 
       const tags = await manager.getAllTags();
-      expect(tags.find(t => t.tag === '要删除')).toBeUndefined();
-      expect(tags.find(t => t.tag === '保留')).toBeDefined();
+      expect(tags.find(t => t.tag === 'to delete')).toBeUndefined();
+      expect(tags.find(t => t.tag === 'keep')).toBeDefined();
     });
 
-    it('分类排序应该更新所有分类的 sortOrder', async () => {
-      const cat1 = await manager.addCategory({ name: '分类1', color: '#FF0000' });
-      const cat2 = await manager.addCategory({ name: '分类2', color: '#00FF00' });
-      const cat3 = await manager.addCategory({ name: '分类3', color: '#0000FF' });
+    it('reordering categories should update the sortOrder of all categories', async () => {
+      const cat1 = await manager.addCategory({ name: 'Category 1', color: '#FF0000' });
+      const cat2 = await manager.addCategory({ name: 'Category 2', color: '#00FF00' });
+      const cat3 = await manager.addCategory({ name: 'Category 3', color: '#0000FF' });
 
-      // 新顺序: 3, 1, 2
+      // New order: 3, 1, 2
       await manager.reorderCategories([cat3, cat1, cat2]);
 
       const categories = await manager.getCategories();
@@ -504,16 +504,16 @@ describe('FavoriteManager - 集成测试', () => {
       expect(sorted[2].sortOrder).toBe(2);
     });
 
-    it('分类使用统计应该实时更新', async () => {
-      const catId = await manager.addCategory({ name: '测试分类', color: '#FF0000' });
+    it('category usage statistics should update in real time', async () => {
+      const catId = await manager.addCategory({ name: 'Test category', color: '#FF0000' });
 
-      // 初始使用为0
+      // Initial usage is 0
       expect(await manager.getCategoryUsage(catId)).toBe(0);
 
-      // 添加收藏
+      // Add favorites
       const fav1 = await manager.addFavorite({
-        title: '收藏1',
-        content: '内容',
+        title: 'Favorite 1',
+        content: 'Content',
         tags: [],
         category: catId,
         functionMode: 'basic',
@@ -523,8 +523,8 @@ describe('FavoriteManager - 集成测试', () => {
       expect(await manager.getCategoryUsage(catId)).toBe(1);
 
       const fav2 = await manager.addFavorite({
-        title: '收藏2',
-        content: '内容',
+        title: 'Favorite 2',
+        content: 'Content',
         tags: [],
         category: catId,
         functionMode: 'basic',
@@ -533,21 +533,21 @@ describe('FavoriteManager - 集成测试', () => {
 
       expect(await manager.getCategoryUsage(catId)).toBe(2);
 
-      // 删除一个收藏
+      // Delete a favorite
       await manager.deleteFavorite(fav1);
       expect(await manager.getCategoryUsage(catId)).toBe(1);
 
-      // 更新收藏移除分类
+      // Update a favorite to remove the category
       await manager.updateFavorite(fav2, { category: undefined });
       expect(await manager.getCategoryUsage(catId)).toBe(0);
     });
 
-    it('删除分类应该清空关联收藏的分类字段', async () => {
-      const catId = await manager.addCategory({ name: '要删除的分类', color: '#FF0000' });
+    it('deleting a category should clear the category field of associated favorites', async () => {
+      const catId = await manager.addCategory({ name: 'Category to delete', color: '#FF0000' });
 
       const fav1 = await manager.addFavorite({
-        title: '收藏1',
-        content: '内容',
+        title: 'Favorite 1',
+        content: 'Content',
         tags: [],
         category: catId,
         functionMode: 'basic',
@@ -555,8 +555,8 @@ describe('FavoriteManager - 集成测试', () => {
       });
 
       const fav2 = await manager.addFavorite({
-        title: '收藏2',
-        content: '内容',
+        title: 'Favorite 2',
+        content: 'Content',
         tags: [],
         category: catId,
         functionMode: 'basic',
@@ -574,74 +574,74 @@ describe('FavoriteManager - 集成测试', () => {
     });
   });
 
-  describe('导入导出集成测试', () => {
-    it('应该正确导出和导入包含所有关联数据', async () => {
-      // 创建完整的测试数据
+  describe('Import/export integration test', () => {
+    it('should export and import correctly including all associated data', async () => {
+      // Create the full test data
       const catId = await manager.addCategory({
-        name: '测试分类',
-        description: '描述',
+        name: 'Test category',
+        description: 'Description',
         color: '#FF5722'
       });
 
       await manager.addFavorite({
-        title: '完整收藏',
-        content: '内容',
-        tags: ['标签1', '标签2'],
+        title: 'Complete favorite',
+        content: 'Content',
+        tags: ['tag 1', 'tag 2'],
         category: catId,
         functionMode: 'basic',
         optimizationMode: 'system',
         metadata: {
-          originalContent: '原始内容',
+          originalContent: 'Original content',
           sourceHistoryId: 'hist-001',
-          customField: '自定义值'
+          customField: 'Custom value'
         }
       });
 
-      // 导出
+      // Export
       const exportData = await manager.exportFavorites();
 
-      // 清空数据
+      // Clear the data
       await storageProvider.clearAll();
 
-      // 导入
+      // Import
       await manager.importFavorites(exportData);
 
-      // 验证
+      // Verify
       const favorites = await manager.getFavorites();
       expect(favorites.length).toBe(1);
 
       const favorite = favorites[0];
-      expect(favorite.title).toBe('完整收藏');
-      expect(favorite.tags).toEqual(['标签1', '标签2']);
+      expect(favorite.title).toBe('Complete favorite');
+      expect(favorite.tags).toEqual(['tag 1', 'tag 2']);
       expect(favorite.category).toBe(catId);
       expect(favorite.functionMode).toBe('basic');
       expect(favorite.optimizationMode).toBe('system');
-      expect(favorite.metadata?.originalContent).toBe('原始内容');
+      expect(favorite.metadata?.originalContent).toBe('Original content');
       expect(favorite.metadata?.sourceHistoryId).toBe('hist-001');
-      expect(favorite.metadata?.customField).toBe('自定义值');
+      expect(favorite.metadata?.customField).toBe('Custom value');
 
       const categories = await manager.getCategories();
       expect(categories.length).toBe(1);
-      expect(categories[0].name).toBe('测试分类');
+      expect(categories[0].name).toBe('Test category');
     });
 
-    it('应该正确处理导入时的分类和标签关联', async () => {
-      const cat1 = await manager.addCategory({ name: '分类1', color: '#FF0000' });
-      const cat2 = await manager.addCategory({ name: '分类2', color: '#00FF00' });
+    it('should correctly handle category and tag associations on import', async () => {
+      const cat1 = await manager.addCategory({ name: 'Category 1', color: '#FF0000' });
+      const cat2 = await manager.addCategory({ name: 'Category 2', color: '#00FF00' });
 
       await manager.addFavorite({
-        title: '收藏1',
-        content: '内容1',
-        tags: ['共享', 'A'],
+        title: 'Favorite 1',
+        content: 'Content 1',
+        tags: ['shared', 'A'],
         category: cat1,
         functionMode: 'basic',
         optimizationMode: 'system'
       });
 
       await manager.addFavorite({
-        title: '收藏2',
-        content: '内容2',
-        tags: ['共享', 'B'],
+        title: 'Favorite 2',
+        content: 'Content 2',
+        tags: ['shared', 'B'],
         category: cat2,
         functionMode: 'context',
         optimizationMode: 'user'
@@ -651,30 +651,30 @@ describe('FavoriteManager - 集成测试', () => {
       await storageProvider.clearAll();
       await manager.importFavorites(exportData);
 
-      // 验证分类
+      // Verify the categories
       const categories = await manager.getCategories();
       expect(categories.length).toBe(2);
 
-      // 验证标签
+      // Verify the tags
       const tags = await manager.getAllTags();
-      const sharedTag = tags.find(t => t.tag === '共享');
+      const sharedTag = tags.find(t => t.tag === 'shared');
       expect(sharedTag?.count).toBe(2);
 
-      // 验证收藏
+      // Verify the favorites
       const favorites = await manager.getFavorites();
       expect(favorites.length).toBe(2);
     });
   });
 
-  describe('搜索和过滤集成测试', () => {
+  describe('Search and filter integration test', () => {
     beforeEach(async () => {
-      // 创建测试数据集
-      const cat1 = await manager.addCategory({ name: 'AI工具', color: '#FF0000' });
-      const cat2 = await manager.addCategory({ name: '写作助手', color: '#00FF00' });
+      // Create the test dataset
+      const cat1 = await manager.addCategory({ name: 'AI tools', color: '#FF0000' });
+      const cat2 = await manager.addCategory({ name: 'Writing assistant', color: '#00FF00' });
 
       await manager.addFavorite({
-        title: 'ChatGPT提示词',
-        content: '帮助我写一个关于AI的文章',
+        title: 'ChatGPT prompt',
+        content: 'Help me write an article about AI',
         tags: ['AI', 'ChatGPT'],
         category: cat1,
         functionMode: 'basic',
@@ -682,57 +682,57 @@ describe('FavoriteManager - 集成测试', () => {
       });
 
       await manager.addFavorite({
-        title: '创意写作助手',
-        content: '帮我生成创意故事大纲',
-        tags: ['写作', '创意'],
+        title: 'Creative writing assistant',
+        content: 'Help me generate a creative story outline',
+        tags: ['writing', 'creative'],
         category: cat2,
         functionMode: 'context',
         optimizationMode: 'user'
       });
 
       await manager.addFavorite({
-        title: 'AI绘图提示词',
+        title: 'AI drawing prompt',
         content: 'a beautiful sunset over mountains',
-        tags: ['AI', '绘图'],
+        tags: ['AI', 'drawing'],
         category: cat1,
         functionMode: 'image',
         imageSubMode: 'text2image'
       });
     });
 
-    it('应该能按关键词搜索', async () => {
+    it('should be able to search by keyword', async () => {
       const results = await manager.searchFavorites('AI');
       expect(results.length).toBe(2);
       expect(results.every(f => f.title.includes('AI') || f.content.includes('AI'))).toBe(true);
     });
 
-    it('应该能按分类过滤', async () => {
+    it('should be able to filter by category', async () => {
       const categories = await manager.getCategories();
-      const aiCategory = categories.find(c => c.name === 'AI工具');
+      const aiCategory = categories.find(c => c.name === 'AI tools');
 
       const results = await manager.getFavorites({ categoryId: aiCategory!.id });
       expect(results.length).toBe(2);
       expect(results.every(f => f.category === aiCategory!.id)).toBe(true);
     });
 
-    it('应该能按标签过滤', async () => {
+    it('should be able to filter by tag', async () => {
       const results = await manager.getFavorites({ tags: ['AI'] });
       expect(results.length).toBe(2);
       expect(results.every(f => f.tags.includes('AI'))).toBe(true);
     });
 
-    it('应该支持组合过滤', async () => {
+    it('should support combined filtering', async () => {
       const categories = await manager.getCategories();
-      const aiCategory = categories.find(c => c.name === 'AI工具');
+      const aiCategory = categories.find(c => c.name === 'AI tools');
 
-      const results = await manager.searchFavorites('提示词', {
+      const results = await manager.searchFavorites('prompt', {
         tags: ['AI'],
         categoryId: aiCategory!.id
       });
 
       expect(results.length).toBeGreaterThan(0);
       results.forEach(f => {
-        expect(f.title.includes('提示词') || f.content.includes('提示词')).toBe(true);
+        expect(f.title.includes('prompt') || f.content.includes('prompt')).toBe(true);
         expect(f.tags.includes('AI')).toBe(true);
         expect(f.category).toBe(aiCategory!.id);
       });

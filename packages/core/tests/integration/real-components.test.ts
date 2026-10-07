@@ -14,8 +14,8 @@ import { TextAdapterRegistry } from '../../src/services/llm/adapters/registry'
 import { TEMPLATE_ERROR_CODES } from '../../src/constants/error-codes'
 
 /**
- * 真实组件集成测试
- * 使用真实的LocalStorageProvider而不是Mock，验证组件协作
+ * Real component integration test
+ * Uses the real LocalStorageProvider instead of a Mock to verify component collaboration
  */
 describe('Real Components Integration Tests', () => {
   let storage: LocalStorageProvider
@@ -27,7 +27,7 @@ describe('Real Components Integration Tests', () => {
   let mockContextRepo: ContextRepo
   let registry: TextAdapterRegistry
 
-  // 辅助函数：创建 TextModelConfig
+  // Helper function: create a TextModelConfig
   const createTextModelConfig = (
     id: string,
     name: string,
@@ -52,7 +52,7 @@ describe('Real Components Integration Tests', () => {
   };
 
   beforeEach(async () => {
-    // 清理存储，确保测试隔离
+    // Clean up the storage to ensure test isolation
     storage = new LocalStorageProvider()
     registry = new TextAdapterRegistry()
     modelManager = createModelManager(storage)
@@ -62,7 +62,7 @@ describe('Real Components Integration Tests', () => {
     const languageService = createTemplateLanguageService(storage, preferenceService)
     templateManager = createTemplateManager(storage, languageService)
 
-    // 创建 mockContextRepo
+    // Create the mockContextRepo
     mockContextRepo = {
       list: vi.fn().mockResolvedValue([]),
       getCurrentId: vi.fn().mockResolvedValue('default'),
@@ -89,34 +89,34 @@ describe('Real Components Integration Tests', () => {
   })
 
   afterEach(async () => {
-    // 测试后清理
+    // Clean up after the test
     await storage.clearAll()
   })
 
-  describe('真实存储层测试', () => {
-    it('应该能正确保存和读取模型配置', async () => {
+  describe('Real storage layer test', () => {
+    it('should be able to save and read model configs correctly', async () => {
       const testModel = createTextModelConfig('test-model', 'Test Model');
 
-      // 清理存储，确保从空状态开始
+      // Clean up the storage to start from an empty state
       await storage.clearAll()
 
-      // 添加模型
+      // Add the model
       await modelManager.addModel('test-model', testModel)
 
-      // 验证保存
+      // Verify the save
       const saved = await modelManager.getModel('test-model')
       expect(saved).toBeDefined()
       expect(saved?.name).toBe('Test Model')
 
-      // 验证在所有模型列表中（注意：新架构返回数组且包含默认模型）
+      // Verify it is in the list of all models (note: the new architecture returns an array and includes the default models)
       const allModels = await modelManager.getAllModels()
       const userModel = allModels.find(m => m.id === 'test-model')
       expect(userModel).toBeDefined()
       expect(userModel?.name).toBe('Test Model')
     })
 
-    it('应该能正确处理历史记录的完整生命周期', async () => {
-      // 创建历史记录
+    it('should handle the full lifecycle of history records correctly', async () => {
+      // Create the history record
       const record = {
         id: 'test-record-1',
         originalPrompt: 'Original test prompt',
@@ -131,24 +131,24 @@ describe('Real Components Integration Tests', () => {
 
       await historyManager.addRecord(record)
 
-      // 验证记录存在
+      // Verify the record exists
       const retrieved = await historyManager.getRecord('test-record-1')
       expect(retrieved).toBeDefined()
       expect(retrieved.originalPrompt).toBe('Original test prompt')
 
-      // 验证在记录列表中
+      // Verify it is in the record list
       const records = await historyManager.getRecords()
       expect(records.length).toBe(1)
 
-      // 删除记录
+      // Delete the record
       await historyManager.deleteRecord('test-record-1')
       
-      // 验证已删除
+      // Verify it was deleted
       await expect(historyManager.getRecord('test-record-1'))
         .rejects.toThrow('Record with ID test-record-1 not found')
     })
 
-    it('应该能正确处理用户模板管理', async () => {
+    it('should handle user template management correctly', async () => {
       const template = {
         id: 'user-test-template',
         name: 'User Test Template',
@@ -161,43 +161,43 @@ describe('Real Components Integration Tests', () => {
         }
       }
 
-      // 清理存储，确保从空状态开始
+      // Clean up the storage to start from an empty state
       await storage.clearAll()
 
-      // 保存模板
+      // Save the template
       await templateManager.saveTemplate(template)
 
-      // 获取模板
+      // Get the template
       const retrieved = await templateManager.getTemplate('user-test-template')
       expect(retrieved).toBeDefined()
       expect(retrieved.name).toBe('User Test Template')
       expect(retrieved.content).toBe('This is a user test template: {{input}}')
 
-      // 验证在模板列表中（注意：真实环境可能有内置模板）
+      // Verify it is in the template list (note: the real environment may have built-in templates)
       const templates = await templateManager.listTemplates()
       const userTemplate = templates.find(t => t.id === 'user-test-template')
       expect(userTemplate).toBeDefined()
 
-      // 删除模板
+      // Delete the template
       await templateManager.deleteTemplate('user-test-template')
       
-      // 验证已删除
+      // Verify it was deleted
       await expect(templateManager.getTemplate('user-test-template'))
         .rejects.toMatchObject({ code: TEMPLATE_ERROR_CODES.NOT_FOUND })
     })
   })
 
-  describe('组件协作测试', () => {
-    it('完整的提示词优化流程应该正常工作', async () => {
-      // 清理存储
+  describe('Component collaboration test', () => {
+    it('the full prompt optimization flow should work', async () => {
+      // Clean up the storage
       await storage.clearAll()
 
-      // 1. 添加模型
-      // 1. 添加测试模型
+      // 1. Add the model
+      // 1. Add the test model
       const model = createTextModelConfig('test-model', 'Test Model');
       await modelManager.addModel('test-model', model)
 
-      // 2. 添加用户模板（避免与内置模板冲突）
+      // 2. Add the user template (avoiding conflicts with built-in templates)
       const template = {
         id: 'user-optimize-template',
         name: 'User Optimize Template',
@@ -211,7 +211,7 @@ describe('Real Components Integration Tests', () => {
       }
       await templateManager.saveTemplate(template)
 
-      // 3. 验证组件配置而不是实际调用API（避免网络依赖）
+      // 3. Verify the component config instead of making actual API calls (avoiding network dependency)
       const retrievedModel = await modelManager.getModel('test-model')
       expect(retrievedModel).toBeDefined()
       expect(retrievedModel?.name).toBe('Test Model')
@@ -220,14 +220,14 @@ describe('Real Components Integration Tests', () => {
       expect(retrievedTemplate).toBeDefined()
       expect(retrievedTemplate.name).toBe('User Optimize Template')
       
-      console.log('组件配置验证成功，跳过实际API调用以避免网络依赖')
-    }, 5000) // 减少超时时间，因为不再进行API调用
+      console.log('Component config verified successfully, skipping the actual API call to avoid network dependency')
+    }, 5000) // Reduce the timeout, since no API call is made anymore
 
-    it('数据导入导出应该正常工作', async () => {
-      // 清理存储
+    it('data import/export should work', async () => {
+      // Clean up the storage
       await storage.clearAll()
 
-      // 准备测试数据
+      // Prepare the test data
       const model = createTextModelConfig('export-model', 'Export Test Model');
       
       const template: Template = {
@@ -254,12 +254,12 @@ describe('Real Components Integration Tests', () => {
         templateId: 'user-export-template'
       }
 
-      // 添加测试数据
+      // Add the test data
       await modelManager.addModel('export-model', model)
       await templateManager.saveTemplate(template)
       await historyManager.addRecord(record)
 
-      // 导出数据
+      // Export the data
       const exportedDataString = await dataManager.exportAllData()
       const exportedData = JSON.parse(exportedDataString)
       
@@ -272,21 +272,21 @@ describe('Real Components Integration Tests', () => {
       expect(exportedData.data.userTemplates.length).toBeGreaterThan(0)
       expect(exportedData.data.history.length).toBe(1)
 
-      // 清空数据
+      // Clear the data
       await storage.clearAll()
 
-      // 验证数据已清空
+      // Verify the data was cleared
       const emptyModels = await modelManager.getAllModels()
       const emptyTemplates = await templateManager.listTemplates()
       const emptyHistory = await historyManager.getRecords()
       
-      // 注意：真实环境可能有内置模型和模板，不一定为空
-      expect(emptyHistory.length).toBe(0) // 历史记录应该清空
+      // Note: the real environment may have built-in models and templates, so it is not necessarily empty
+      expect(emptyHistory.length).toBe(0) // The history should be cleared
 
-      // 导入数据
+      // Import the data
       await dataManager.importAllData(exportedDataString)
 
-      // 验证数据已恢复
+      // Verify the data was restored
       const restoredModels = await modelManager.getAllModels()
       const restoredTemplates = await templateManager.listTemplates()
       const restoredHistory = await historyManager.getRecords()
@@ -303,8 +303,8 @@ describe('Real Components Integration Tests', () => {
     })
   })
 
-  describe('并发和边界情况测试', () => {
-    it('应该能正确处理重复ID的情况', async () => {
+  describe('Concurrency and edge case test', () => {
+    it('should handle duplicate IDs correctly', async () => {
       const record1 = {
         id: 'duplicate-id',
         originalPrompt: 'First record',
@@ -318,7 +318,7 @@ describe('Real Components Integration Tests', () => {
       }
 
       const record2 = {
-        id: 'duplicate-id', // 相同ID
+        id: 'duplicate-id', // The same ID
         originalPrompt: 'Second record',
         optimizedPrompt: 'Second result',
         type: 'optimize' as const,
@@ -329,15 +329,15 @@ describe('Real Components Integration Tests', () => {
         templateId: 'test-template'
       }
 
-      // 添加第一条记录
+      // Add the first record
       await historyManager.addRecord(record1)
 
-      // 尝试添加重复ID的记录应该失败
+      // Trying to add a record with a duplicate ID should fail
       await expect(historyManager.addRecord(record2))
         .rejects.toThrow('Record with ID duplicate-id already exists')
     })
 
-    it('应该能正确处理大量数据', async () => {
+    it('should handle a large amount of data correctly', async () => {
       const recordCount = 10
       const records: Array<{
         id: string;
@@ -351,7 +351,7 @@ describe('Real Components Integration Tests', () => {
         templateId: string;
       }> = []
 
-      // 创建多条记录
+      // Create multiple records
       for (let i = 0; i < recordCount; i++) {
         records.push({
           id: `bulk-record-${i}`,
@@ -366,28 +366,28 @@ describe('Real Components Integration Tests', () => {
         })
       }
 
-      // 批量添加记录
+      // Add the records in a batch
       for (const record of records) {
         await historyManager.addRecord(record)
       }
 
-      // 验证所有记录都已保存
+      // Verify all records were saved
       const savedRecords = await historyManager.getRecords()
       expect(savedRecords.length).toBe(recordCount)
 
-      // 验证记录按时间戳排序（最新的在前）
+      // Verify the records are sorted by timestamp (newest first)
       for (let i = 0; i < recordCount - 1; i++) {
         expect(savedRecords[i].timestamp).toBeGreaterThanOrEqual(savedRecords[i + 1].timestamp)
       }
     })
 
-    it('应该能正确处理存储容量管理', async () => {
-      // 测试超过maxRecords限制的情况
-      const maxRecords = 50 // HistoryManager的默认限制
+    it('should handle storage capacity management correctly', async () => {
+      // Test the case of exceeding the maxRecords limit
+      const maxRecords = 50 // The default limit of HistoryManager
       const extraRecords = 5
       const totalRecords = maxRecords + extraRecords
 
-      // 添加超出限制的记录
+      // Add records beyond the limit
       for (let i = 0; i < totalRecords; i++) {
         await historyManager.addRecord({
           id: `capacity-record-${i}`,
@@ -396,48 +396,48 @@ describe('Real Components Integration Tests', () => {
           type: 'optimize' as const,
           chainId: 'capacity-chain',
           version: 1,
-          timestamp: Date.now() + i, // 确保时间戳递增
+          timestamp: Date.now() + i, // Make sure the timestamps increase
           modelKey: 'capacity-model',
           templateId: 'capacity-template'
         })
       }
 
-      // 验证只保留了maxRecords条记录
+      // Verify only maxRecords records were kept
       const savedRecords = await historyManager.getRecords()
       expect(savedRecords.length).toBe(maxRecords)
 
-      // 验证保留的是最新的记录
+      // Verify the newest records were kept
       expect(savedRecords[0].id).toBe(`capacity-record-${totalRecords - 1}`)
     })
   })
 
-  describe('错误恢复和数据一致性测试', () => {
-    it('应该能从损坏的数据中恢复', async () => {
-      // 直接在存储中放入无效数据
+  describe('Error recovery and data consistency test', () => {
+    it('should be able to recover from corrupted data', async () => {
+      // Put invalid data directly into the storage
       await storage.setItem('prompt_models', 'invalid json')
       
-      // ModelManager应该能处理无效数据并返回空数组
+      // ModelManager should be able to handle invalid data and return an empty array
       const models = await modelManager.getAllModels()
       expect(Array.isArray(models)).toBe(true)
-      // 真实环境可能有内置模型，只验证返回的是数组
+      // The real environment may have built-in models; only verify that an array is returned
     })
 
-    it('应该能处理部分数据丢失的情况', async () => {
-      // 清理存储
+    it('should be able to handle partial data loss', async () => {
+      // Clean up the storage
       await storage.clearAll()
 
-      // 添加一些数据
+      // Add some data
       await modelManager.addModel('test-model', createTextModelConfig('test-model', 'Test Model'))
 
-      // 模拟模板数据丢失
+      // Simulate template data loss
       await storage.removeItem('prompt_templates')
 
-      // 系统应该能继续工作
+      // The system should be able to keep working
       const models = await modelManager.getAllModels()
-      expect(models.length).toBeGreaterThan(0) // 应该有添加的模型
+      expect(models.length).toBeGreaterThan(0) // The added model should be there
 
       const templates = await templateManager.listTemplates()
-      // 真实环境可能有内置模板，只验证不崩溃
+      // The real environment may have built-in templates; only verify it does not crash
       expect(Array.isArray(templates)).toBe(true)
     })
   })

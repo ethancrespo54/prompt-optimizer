@@ -1,8 +1,8 @@
 /**
- * 真实LLM测试辅助工具
+ * Real LLM test helper
  *
- * 提供基础方法用于在单元测试中获取真实的LLM接口
- * 根据本地环境变量自动选择可用的提供商和模型
+ * Provides basic methods for getting a real LLM interface in unit tests
+ * Automatically chooses the available providers and models based on local environment variables
  */
 
 import { getDefaultTextModels } from '../../src/services/model/defaults';
@@ -15,50 +15,50 @@ import type { IModelManager } from '../../src/services/model/types';
 import dotenv from 'dotenv';
 import path from 'path';
 
-// 加载环境变量
+// Load environment variables
 dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 
 /**
- * 可用提供商信息
+ * Available provider info
  */
 export interface AvailableProvider {
-  /** 提供商ID */
+  /** Provider ID */
   providerId: string;
-  /** 提供商显示名称 */
+  /** Provider display name */
   providerName: string;
-  /** 完整的模型配置 */
+  /** Full model config */
   modelConfig: TextModelConfig;
 }
 
 /**
- * 真实LLM测试上下文
+ * Real LLM test context
  */
 export interface RealLLMTestContext {
-  /** 提供商信息 */
+  /** Provider info */
   provider: AvailableProvider;
-  /** 模型配置（使用第一个可用模型） */
+  /** Model config (uses the first available model) */
   modelConfig: TextModelConfig;
-  /** LLM服务实例 */
+  /** LLM service instance */
   llmService: ILLMService;
-  /** 模型管理器实例 */
+  /** Model manager instance */
   modelManager: IModelManager;
-  /** 模型键（已添加到modelManager） */
+  /** Model key (added to the modelManager) */
   modelKey: string;
 }
 
 /**
- * 获取所有可用的提供商
+ * Get all available providers
  *
- * 使用系统内置的配置加载逻辑，自动处理API密钥和baseURL
+ * Uses the system's built-in config loading logic, handling API keys and baseURLs automatically
  *
- * @returns 可用的提供商列表
+ * @returns List of available providers
  */
 export function getAvailableProviders(): AvailableProvider[] {
-  // 使用系统自带的配置加载器
+  // Use the system's built-in config loader
   const allConfigs = getDefaultTextModels();
   const available: AvailableProvider[] = [];
 
-  // 筛选已启用（有API密钥）的提供商
+  // Filter the providers that are enabled (have an API key)
   for (const [providerId, config] of Object.entries(allConfigs)) {
     if (config.enabled && config.connectionConfig.apiKey) {
       available.push({
@@ -73,9 +73,9 @@ export function getAvailableProviders(): AvailableProvider[] {
 }
 
 /**
- * 获取第一个可用的提供商
+ * Get the first available provider
  *
- * @returns 第一个可用的提供商，如果没有可用提供商则返回undefined
+ * @returns The first available provider, or undefined if there is none
  */
 export function getFirstAvailableProvider(): AvailableProvider | undefined {
   const available = getAvailableProviders();
@@ -83,17 +83,17 @@ export function getFirstAvailableProvider(): AvailableProvider | undefined {
 }
 
 /**
- * 从提供商信息创建测试配置
+ * Create the test config from the provider info
  *
- * @param provider - 提供商信息
- * @param paramOverrides - 参数覆盖（可选）
- * @returns 模型配置
+ * @param provider - Provider info
+ * @param paramOverrides - Parameter overrides (optional)
+ * @returns Model config
  */
 export function createTestConfig(
   provider: AvailableProvider,
   paramOverrides: Record<string, any> = {}
 ): TextModelConfig {
-  // 直接使用系统加载的配置，只覆盖参数
+  // Use the system-loaded config directly, only overriding the parameters
   return {
     ...provider.modelConfig,
     paramOverrides: {
@@ -104,13 +104,13 @@ export function createTestConfig(
 }
 
 /**
- * 创建真实LLM测试上下文
+ * Create the real LLM test context
  *
- * 自动选择第一个可用的提供商，创建LLM服务和模型管理器
+ * Automatically selects the first available provider and creates the LLM service and model manager
  *
- * @param options - 可选配置
- * @param options.paramOverrides - 参数覆盖
- * @returns 测试上下文，如果没有可用提供商则返回undefined
+ * @param options - Optional config
+ * @param options.paramOverrides - Parameter overrides
+ * @returns The test context, or undefined if there is no available provider
  *
  * @example
  * ```typescript
@@ -133,20 +133,20 @@ export async function createRealLLMTestContext(options?: {
     return undefined;
   }
 
-  // 创建存储和模型管理器
+  // Create the storage and model manager
   const storage = new LocalStorageProvider();
   await storage.clearAll();
 
   const modelManager = createModelManager(storage);
 
-  // 直接使用默认模型键（= providerId），避免跨测试依赖存储写入
+  // Use the default model key directly (= providerId), avoiding cross-test dependencies on storage writes
   const modelKey = provider.providerId;
   const baseConfig = await modelManager.getModel(modelKey);
   if (!baseConfig || !baseConfig.enabled) {
     return undefined;
   }
 
-  // 可选：覆盖参数（写入到 modelManager，使 LLMService 能读取到）
+  // Optional: override the parameters (written into the modelManager so the LLMService can read them)
   if (options?.paramOverrides && Object.keys(options.paramOverrides).length > 0) {
     await modelManager.updateModel(modelKey, {
       paramOverrides: {
@@ -161,7 +161,7 @@ export async function createRealLLMTestContext(options?: {
     return undefined;
   }
 
-  // 创建LLM服务
+  // Create the LLM service
   const llmService = createLLMService(modelManager);
 
   return {
@@ -174,28 +174,28 @@ export async function createRealLLMTestContext(options?: {
 }
 
 /**
- * 检查是否有可用的API密钥
+ * Check whether any API key is available
  *
- * @returns 是否有至少一个可用的提供商
+ * @returns Whether at least one provider is available
  */
 export function hasAvailableProvider(): boolean {
   return getAvailableProviders().length > 0;
 }
 
 /**
- * 打印可用提供商信息（用于调试）
+ * Print the available provider info (for debugging)
  */
 export function printAvailableProviders(): void {
   const available = getAvailableProviders();
 
   if (available.length === 0) {
-    console.log('❌ 没有可用的API密钥');
-    console.log('\n请在 .env.local 文件中配置至少一个提供商的 API 密钥');
-    console.log('例如：VITE_OPENAI_API_KEY=your_api_key');
+    console.log('❌ No API key available');
+    console.log('\nPlease configure the API key of at least one provider in the .env.local file');
+    console.log('For example: VITE_OPENAI_API_KEY=your_api_key');
     return;
   }
 
-  console.log(`✅ 找到 ${available.length} 个可用提供商：\n`);
+  console.log(`✅ Found ${available.length} available providers:\n`);
   available.forEach((p, index) => {
     console.log(`${index + 1}. ${p.providerName}`);
     console.log(`   - Provider ID: ${p.providerId}`);

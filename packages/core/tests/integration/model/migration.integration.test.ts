@@ -5,7 +5,7 @@ import { MemoryStorageProvider } from '../../../src/services/storage/memoryStora
 import { isLegacyConfig, isTextModelConfig } from '../../../src/services/model/converter';
 import type { ModelConfig, TextModelConfig } from '../../../src/services/model/types';
 
-describe('配置迁移集成测试', () => {
+describe('Config migration integration test', () => {
   let storage: MemoryStorageProvider;
   let registry: TextAdapterRegistry;
 
@@ -15,9 +15,9 @@ describe('配置迁移集成测试', () => {
     await storage.clearAll();
   });
 
-  describe('传统配置自动转换', () => {
-    it('应该自动转换OpenAI传统配置', async () => {
-      // 准备传统配置
+  describe('Automatic conversion of legacy configs', () => {
+    it('should automatically convert the legacy OpenAI config', async () => {
+      // Prepare the legacy config
       const legacyConfig: ModelConfig = {
         name: 'OpenAI',
         provider: 'openai',
@@ -32,28 +32,28 @@ describe('配置迁移集成测试', () => {
         }
       };
 
-      // 写入Storage
+      // Write to Storage
       const modelsData = {
         openai: legacyConfig
       };
       await storage.setItem('models', JSON.stringify(modelsData));
 
-      // 验证写入的是传统格式
+      // Verify that the legacy format was written
       const storedRaw = await storage.getItem('models');
       const storedModels = JSON.parse(storedRaw!);
       expect(isLegacyConfig(storedModels.openai)).toBe(true);
 
-      // 初始化ModelManager（会触发自动转换）
+      // Initialize ModelManager (this triggers the automatic conversion)
       const modelManager = new ModelManager(storage, registry);
       
 
-      // 验证转换后的配置
+      // Verify the converted config
       const convertedConfig = await modelManager.getModel('openai') as TextModelConfig;
       expect(convertedConfig).toBeDefined();
       expect(isTextModelConfig(convertedConfig)).toBe(true);
       expect(isLegacyConfig(convertedConfig)).toBe(false);
 
-      // 验证字段映射正确
+      // Verify the field mapping is correct
       expect(convertedConfig.id).toBe('openai');
       expect(convertedConfig.name).toBe('OpenAI');
       expect(convertedConfig.enabled).toBe(true);
@@ -64,14 +64,14 @@ describe('配置迁移集成测试', () => {
       expect(convertedConfig.paramOverrides.temperature).toBe(0.7);
       expect(convertedConfig.paramOverrides.max_tokens).toBe(2000);
 
-      // 验证元数据来自Adapter
+      // Verify the metadata comes from the Adapter
       const adapter = registry.getAdapter('openai');
       const expectedProvider = adapter.getProvider();
       expect(convertedConfig.providerMeta.name).toBe(expectedProvider.name);
       expect(convertedConfig.providerMeta.defaultBaseURL).toBe(expectedProvider.defaultBaseURL);
     });
 
-    it('应该自动转换Gemini传统配置', async () => {
+    it('should automatically convert the legacy Gemini config', async () => {
       const legacyConfig: ModelConfig = {
         name: 'Gemini',
         provider: 'gemini',
@@ -100,7 +100,7 @@ describe('配置迁移集成测试', () => {
       expect(convertedConfig.paramOverrides.temperature).toBe(0.8);
     });
 
-    it('应该自动转换Anthropic传统配置', async () => {
+    it('should automatically convert the legacy Anthropic config', async () => {
       const legacyConfig: ModelConfig = {
         name: 'Anthropic',
         provider: 'anthropic',
@@ -123,7 +123,7 @@ describe('配置迁移集成测试', () => {
       expect(convertedConfig.modelMeta.providerId).toBe('anthropic');
     });
 
-    it('应该转换DeepSeek配置并保持DeepSeek Provider', async () => {
+    it('should convert the DeepSeek config and keep the DeepSeek Provider', async () => {
       const legacyConfig: ModelConfig = {
         name: 'DeepSeek',
         provider: 'deepseek',
@@ -147,7 +147,7 @@ describe('配置迁移集成测试', () => {
       expect(convertedConfig.connectionConfig.baseURL).toBe('https://api.deepseek.com/v1');
     });
 
-    it('应该转换Zhipu配置并保持Zhipu Provider', async () => {
+    it('should convert the Zhipu config and keep the Zhipu Provider', async () => {
       const legacyConfig: ModelConfig = {
         name: 'Zhipu',
         provider: 'zhipu',
@@ -170,7 +170,7 @@ describe('配置迁移集成测试', () => {
       expect(convertedConfig.modelMeta.providerId).toBe('zhipu');
     });
 
-    it('应该将Custom配置映射到OpenAI Adapter', async () => {
+    it('should map the Custom config to the OpenAI Adapter', async () => {
       const legacyConfig: ModelConfig = {
         name: 'Custom Model',
         provider: 'custom',
@@ -193,8 +193,8 @@ describe('配置迁移集成测试', () => {
     });
   });
 
-  describe('转换后持久化', () => {
-    it('应该将转换后的配置保存到Storage', async () => {
+  describe('Persistence after conversion', () => {
+    it('should save the converted config to Storage', async () => {
       const legacyConfig: ModelConfig = {
         name: 'OpenAI',
         provider: 'openai',
@@ -208,11 +208,11 @@ describe('配置迁移集成测试', () => {
       const modelsData = { openai: legacyConfig };
       await storage.setItem('models', JSON.stringify(modelsData));
 
-      // 第一次初始化 - 触发转换
+      // First initialization - triggers the conversion
       const modelManager1 = new ModelManager(storage, registry);
       await modelManager1.ensureInitialized();
 
-      // 验证Storage中的数据已更新
+      // Verify the data in Storage was updated
       const storedRaw = await storage.getItem('models');
       const storedModels = JSON.parse(storedRaw!);
       expect(isTextModelConfig(storedModels.openai)).toBe(true);
@@ -220,7 +220,7 @@ describe('配置迁移集成测试', () => {
       expect(storedModels.openai.modelMeta).toBeDefined();
     });
 
-    it('应该确保转换幂等性（第二次加载不再转换）', async () => {
+    it('should ensure the conversion is idempotent (the second load no longer converts)', async () => {
       const legacyConfig: ModelConfig = {
         name: 'OpenAI',
         provider: 'openai',
@@ -234,17 +234,17 @@ describe('配置迁移集成测试', () => {
       const modelsData = { openai: legacyConfig };
       await storage.setItem('models', JSON.stringify(modelsData));
 
-      // 第一次初始化
+      // First initialization
       const modelManager1 = new ModelManager(storage, registry);
       
       const config1 = await modelManager1.getModel('openai') as TextModelConfig;
 
-      // 第二次初始化（重新加载）
+      // Second initialization (reload)
       const modelManager2 = new ModelManager(storage, registry);
       
       const config2 = await modelManager2.getModel('openai') as TextModelConfig;
 
-      // 验证两次加载结果一致
+      // Verify both loads give the same result
       expect(config1).toMatchObject({
         id: config2.id,
         name: config2.name,
@@ -254,15 +254,15 @@ describe('配置迁移集成测试', () => {
         connectionConfig: config2.connectionConfig,
         paramOverrides: config2.paramOverrides
       });
-      // 验证Storage中是新格式
+      // Verify that Storage holds the new format
       const storedRaw = await storage.getItem('models');
       const storedModels = JSON.parse(storedRaw!);
       expect(isTextModelConfig(storedModels.openai)).toBe(true);
     });
   });
 
-  describe('未知模型处理', () => {
-    it('应该为未知模型使用buildDefaultModel', async () => {
+  describe('Unknown model handling', () => {
+    it('should use buildDefaultModel for unknown models', async () => {
       const legacyConfig: ModelConfig = {
         name: 'OpenAI',
         provider: 'openai',
@@ -287,10 +287,10 @@ describe('配置迁移集成测试', () => {
     });
   });
 
-  // 删除"转换失败场景"测试 - 这是过度测试内部错误处理实现细节
+  // Removed the "conversion failure scenario" test - it over-tests internal error handling implementation details
 
-  describe('新格式配置处理', () => {
-    it('应该直接识别并保留新格式配置', async () => {
+  describe('New format config handling', () => {
+    it('should directly recognize and keep the new format config', async () => {
       const adapter = registry.getAdapter('openai');
       const model = adapter.getModels().find(m => m.id === 'gpt-5-mini')!;
 
@@ -315,7 +315,7 @@ describe('配置迁移集成测试', () => {
 
       const loadedConfig = await modelManager.getModel('openai') as TextModelConfig;
       expect(isTextModelConfig(loadedConfig)).toBe(true);
-      // 使用toMatchObject允许adapter更新元数据字段
+      // Use toMatchObject to allow the adapter to update metadata fields
       expect(loadedConfig).toMatchObject({
         id: newConfig.id,
         name: newConfig.name,
@@ -324,7 +324,7 @@ describe('配置迁移集成测试', () => {
         paramOverrides: newConfig.paramOverrides
       });
 
-      // 验证Storage中是新格式
+      // Verify that Storage holds the new format
       const storedRaw2 = await storage.getItem('models');
       const storedModels2 = JSON.parse(storedRaw2!);
       expect(isTextModelConfig(storedModels2.openai)).toBe(true);

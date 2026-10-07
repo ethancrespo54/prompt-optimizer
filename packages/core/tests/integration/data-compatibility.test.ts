@@ -3,19 +3,19 @@ import { FavoriteManager } from '../../src/services/favorite/manager';
 import type { IStorageProvider } from '../../src/services/storage/types';
 
 /**
- * 数据兼容性回归测试
+ * Data compatibility regression test
  *
- * 目的: 确保旧版本的收藏数据能够正常导入和使用
- * 场景:
- * 1. 旧数据缺少 functionMode 字段
- * 2. 旧数据使用旧的 metadata 结构
- * 3. 旧数据缺少新增的可选字段
+ * Purpose: make sure favorite data from old versions can be imported and used normally
+ * Scenarios:
+ * 1. Old data lacks the functionMode field
+ * 2. Old data uses the old metadata structure
+ * 3. Old data lacks the newly added optional fields
  */
-describe('数据兼容性回归测试', () => {
+describe('Data compatibility regression test', () => {
   let manager: FavoriteManager;
   let storage: Map<string, string>;
 
-  // 创建内存存储提供者
+  // Create an in-memory storage provider
   const createMemoryStorage = (): IStorageProvider => {
     storage = new Map();
     return {
@@ -58,25 +58,25 @@ describe('数据兼容性回归测试', () => {
     await manager.initialize();
   });
 
-  it('应该能够导入缺少 functionMode 的旧数据', async () => {
-    // 1. 创建旧格式的收藏数据（无 functionMode）
+  it('should be able to import old data lacking functionMode', async () => {
+    // 1. Create old-format favorite data (without functionMode)
     const oldData = {
       favorites: [
         {
           id: 'old-fav-001',
-          title: '旧版收藏1',
-          content: '这是没有 functionMode 的旧收藏',
-          tags: ['测试', '旧数据'],
+          title: 'Legacy favorite 1',
+          content: 'This is an old favorite without functionMode',
+          tags: ['test', 'legacy data'],
           category: undefined,
           createdAt: new Date('2024-01-01').toISOString(),
           updatedAt: new Date('2024-01-01').toISOString()
-          // 注意：没有 functionMode 字段
+          // Note: there is no functionMode field
         },
         {
           id: 'old-fav-002',
-          title: '旧版收藏2',
-          content: '另一个旧收藏',
-          tags: ['兼容性'],
+          title: 'Legacy favorite 2',
+          content: 'Another old favorite',
+          tags: ['compatibility'],
           category: undefined,
           createdAt: new Date('2024-01-02').toISOString(),
           updatedAt: new Date('2024-01-02').toISOString()
@@ -86,44 +86,44 @@ describe('数据兼容性回归测试', () => {
       tags: []
     };
 
-    // 2. 导入旧数据
+    // 2. Import the old data
     const result = await manager.importFavorites(JSON.stringify(oldData));
 
-    // 3. 验证导入成功
+    // 3. Verify the import succeeded
     expect(result.imported).toBe(2);
     expect(result.skipped).toBe(0);
     expect(result.errors.length).toBe(0);
 
-    // 4. 验证数据已正确导入并设置了默认 functionMode
+    // 4. Verify the data was imported correctly and the default functionMode was set
     const allFavorites = await manager.getFavorites();
     expect(allFavorites.length).toBe(2);
 
-    // 使用 title 查找，因为ID会被重新生成
-    const fav1 = allFavorites.find(f => f.title === '旧版收藏1');
+    // Look up by title, because the IDs are regenerated
+    const fav1 = allFavorites.find(f => f.title === 'Legacy favorite 1');
     expect(fav1).toBeDefined();
-    expect(fav1!.functionMode).toBe('basic'); // 应该有默认值
-    expect(fav1!.content).toBe('这是没有 functionMode 的旧收藏');
-    expect(fav1!.tags).toEqual(['测试', '旧数据']);
+    expect(fav1!.functionMode).toBe('basic'); // Should have a default value
+    expect(fav1!.content).toBe('This is an old favorite without functionMode');
+    expect(fav1!.tags).toEqual(['test', 'legacy data']);
 
-    const fav2 = allFavorites.find(f => f.title === '旧版收藏2');
+    const fav2 = allFavorites.find(f => f.title === 'Legacy favorite 2');
     expect(fav2).toBeDefined();
-    expect(fav2!.functionMode).toBe('basic'); // 应该有默认值
+    expect(fav2!.functionMode).toBe('basic'); // Should have a default value
   });
 
-  it('应该能够导入使用旧 metadata 结构的数据', async () => {
-    // 1. 创建使用旧 metadata 结构的数据
+  it('should be able to import data using the old metadata structure', async () => {
+    // 1. Create data using the old metadata structure
     const oldData = {
       favorites: [
         {
           id: 'old-meta-001',
-          title: '旧 metadata 结构',
-          content: '优化后的内容',
-          tags: ['测试'],
+          title: 'Old metadata structure',
+          content: 'Optimized content',
+          tags: ['test'],
           category: undefined,
-          // 旧结构：直接在顶层
-          originalContent: '原始内容',
+          // Old structure: directly at the top level
+          originalContent: 'Original content',
           sourceHistoryId: 'hist-001',
-          functionMode: 'basic', // 有 functionMode
+          functionMode: 'basic', // Has functionMode
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
         }
@@ -132,31 +132,31 @@ describe('数据兼容性回归测试', () => {
       tags: []
     };
 
-    // 2. 导入
+    // 2. Import
     const result = await manager.importFavorites(JSON.stringify(oldData));
 
-    // 3. 验证导入成功
+    // 3. Verify the import succeeded
     expect(result.imported).toBe(1);
 
-    // 4. 验证数据正确导入
+    // 4. Verify the data was imported correctly
     const favorites = await manager.getFavorites();
     expect(favorites.length).toBeGreaterThan(0);
 
-    const imported = favorites.find(f => f.title === '旧 metadata 结构');
+    const imported = favorites.find(f => f.title === 'Old metadata structure');
     expect(imported).toBeDefined();
     expect(imported!.functionMode).toBe('basic');
-    // metadata字段可能存在也可能不存在，取决于导入逻辑是否保留
+    // The metadata field may or may not exist, depending on whether the import logic keeps it
   });
 
-  it('应该能够正常查询和搜索迁移后的旧数据', async () => {
-    // 1. 导入旧数据
+  it('should be able to query and search migrated old data normally', async () => {
+    // 1. Import the old data
     const oldData = {
       favorites: [
         {
           id: 'search-test-001',
-          title: '可搜索的旧收藏',
-          content: '这是一个可以被搜索到的内容',
-          tags: ['搜索', '测试'],
+          title: 'Searchable legacy favorite',
+          content: 'This is content that can be found by search',
+          tags: ['search', 'test'],
           category: undefined,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
@@ -168,28 +168,28 @@ describe('数据兼容性回归测试', () => {
 
     await manager.importFavorites(JSON.stringify(oldData));
 
-    // 2. 测试查询功能
+    // 2. Test the query feature
     const allFavorites = await manager.getFavorites();
     expect(allFavorites.length).toBeGreaterThan(0);
 
-    // 3. 测试搜索功能
-    const searchResults = await manager.searchFavorites('可搜索');
+    // 3. Test the search feature
+    const searchResults = await manager.searchFavorites('Searchable');
     expect(searchResults.length).toBeGreaterThan(0);
-    expect(searchResults[0].title).toContain('可搜索');
+    expect(searchResults[0].title).toContain('Searchable');
 
-    // 4. 测试按标签过滤
-    const tagResults = await manager.getFavorites({ tags: ['搜索'] });
+    // 4. Test filtering by tag
+    const tagResults = await manager.getFavorites({ tags: ['search'] });
     expect(tagResults.length).toBeGreaterThan(0);
   });
 
-  it('应该能够更新迁移后的旧数据', async () => {
-    // 1. 导入旧数据
+  it('should be able to update migrated old data', async () => {
+    // 1. Import the old data
     const oldData = {
       favorites: [
         {
-          title: '可更新的旧收藏',
-          content: '原始内容',
-          tags: ['测试'],
+          title: 'Updatable legacy favorite',
+          content: 'Original content',
+          tags: ['test'],
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
         }
@@ -200,33 +200,33 @@ describe('数据兼容性回归测试', () => {
 
     await manager.importFavorites(JSON.stringify(oldData));
 
-    // 2. 获取导入的收藏ID
+    // 2. Get the ID of the imported favorite
     const favorites = await manager.getFavorites();
-    const imported = favorites.find(f => f.title === '可更新的旧收藏');
+    const imported = favorites.find(f => f.title === 'Updatable legacy favorite');
     expect(imported).toBeDefined();
 
-    // 3. 更新数据
+    // 3. Update the data
     await manager.updateFavorite(imported!.id, {
-      title: '更新后的标题',
-      content: '更新后的内容'
+      title: 'Updated title',
+      content: 'Updated content'
     });
 
-    // 4. 验证更新成功
+    // 4. Verify the update succeeded
     const updated = await manager.getFavorite(imported!.id);
     expect(updated).toBeDefined();
-    expect(updated!.title).toBe('更新后的标题');
-    expect(updated!.content).toBe('更新后的内容');
-    expect(updated!.functionMode).toBe('basic'); // functionMode 应该保持
+    expect(updated!.title).toBe('Updated title');
+    expect(updated!.content).toBe('Updated content');
+    expect(updated!.functionMode).toBe('basic'); // functionMode should be kept
   });
 
-  it('应该能够删除迁移后的旧数据', async () => {
-    // 1. 导入旧数据
+  it('should be able to delete migrated old data', async () => {
+    // 1. Import the old data
     const oldData = {
       favorites: [
         {
-          title: '可删除的旧收藏',
-          content: '这个收藏将被删除',
-          tags: ['测试'],
+          title: 'Deletable legacy favorite',
+          content: 'This favorite will be deleted',
+          tags: ['test'],
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
         }
@@ -237,68 +237,68 @@ describe('数据兼容性回归测试', () => {
 
     await manager.importFavorites(JSON.stringify(oldData));
 
-    // 2. 获取导入的收藏并验证存在
+    // 2. Get the imported favorite and verify it exists
     let favorites = await manager.getFavorites();
-    const imported = favorites.find(f => f.title === '可删除的旧收藏');
+    const imported = favorites.find(f => f.title === 'Deletable legacy favorite');
     expect(imported).toBeDefined();
 
-    // 3. 删除数据
+    // 3. Delete the data
     await manager.deleteFavorite(imported!.id);
 
-    // 4. 验证删除成功
+    // 4. Verify the deletion succeeded
     favorites = await manager.getFavorites();
-    expect(favorites.find(f => f.title === '可删除的旧收藏')).toBeUndefined();
+    expect(favorites.find(f => f.title === 'Deletable legacy favorite')).toBeUndefined();
   });
 
-  it('应该能够导出迁移后的数据并保持完整性', async () => {
-    // 1. 导入旧数据
+  it('should be able to export migrated data while keeping integrity', async () => {
+    // 1. Import the old data
     const oldData = {
       favorites: [
         {
-          title: '导出测试收藏',
-          content: '这个数据将被导出',
-          tags: ['导出', '测试'],
+          title: 'Export test favorite',
+          content: 'This data will be exported',
+          tags: ['export', 'test'],
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
         }
       ],
       categories: [],
-      tags: ['导出', '测试']
+      tags: ['export', 'test']
     };
 
     await manager.importFavorites(JSON.stringify(oldData));
 
-    // 2. 导出数据
+    // 2. Export the data
     const exported = await manager.exportFavorites();
     const exportedData = JSON.parse(exported);
 
-    // 3. 验证导出的数据包含必要字段
+    // 3. Verify the exported data contains the necessary fields
     expect(exportedData.favorites).toBeDefined();
     expect(exportedData.favorites.length).toBeGreaterThan(0);
 
-    const exportedFav = exportedData.favorites.find((f: any) => f.title === '导出测试收藏');
+    const exportedFav = exportedData.favorites.find((f: any) => f.title === 'Export test favorite');
     expect(exportedFav).toBeDefined();
-    expect(exportedFav.functionMode).toBe('basic'); // 应该有默认的 functionMode
-    expect(exportedFav.title).toBe('导出测试收藏');
-    expect(exportedFav.tags).toEqual(['导出', '测试']);
+    expect(exportedFav.functionMode).toBe('basic'); // Should have the default functionMode
+    expect(exportedFav.title).toBe('Export test favorite');
+    expect(exportedFav.tags).toEqual(['export', 'test']);
   });
 
-  it('应该能够处理混合新旧格式的数据', async () => {
-    // 1. 创建混合数据（一些有 functionMode，一些没有）
+  it('should be able to handle data in mixed old and new formats', async () => {
+    // 1. Create mixed data (some with functionMode, some without)
     const mixedData = {
       favorites: [
         {
-          title: '旧格式收藏',
-          content: '没有 functionMode',
-          tags: ['旧'],
+          title: 'Old format favorite',
+          content: 'No functionMode',
+          tags: ['old'],
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
-          // 无 functionMode
+          // No functionMode
         },
         {
-          title: '新格式收藏',
-          content: '有 functionMode',
-          tags: ['新'],
+          title: 'New format favorite',
+          content: 'Has functionMode',
+          tags: ['new'],
           functionMode: 'context',
           optimizationMode: 'user',
           createdAt: new Date().toISOString(),
@@ -309,22 +309,22 @@ describe('数据兼容性回归测试', () => {
       tags: []
     };
 
-    // 2. 导入混合数据
+    // 2. Import the mixed data
     const result = await manager.importFavorites(JSON.stringify(mixedData));
 
-    // 3. 验证都导入成功
+    // 3. Verify both were imported successfully
     expect(result.imported).toBe(2);
 
-    // 4. 验证两种数据都正确处理
+    // 4. Verify both kinds of data are handled correctly
     const favorites = await manager.getFavorites();
 
-    const oldFav = favorites.find(f => f.title === '旧格式收藏');
+    const oldFav = favorites.find(f => f.title === 'Old format favorite');
     expect(oldFav).toBeDefined();
-    expect(oldFav!.functionMode).toBe('basic'); // 旧数据应该有默认值
+    expect(oldFav!.functionMode).toBe('basic'); // Old data should have the default value
 
-    const newFav = favorites.find(f => f.title === '新格式收藏');
+    const newFav = favorites.find(f => f.title === 'New format favorite');
     expect(newFav).toBeDefined();
-    expect(newFav!.functionMode).toBe('context'); // 新数据保持原值
+    expect(newFav!.functionMode).toBe('context'); // New data keeps its original value
     expect(newFav!.optimizationMode).toBe('user');
   });
 });

@@ -67,7 +67,7 @@ describe('PromptService Enhanced Features', () => {
 
       expect(result).toBe('optimized result')
       expect(mockLLMService.sendMessage).toHaveBeenCalled()
-      // 注意：历史记录保存由UI层处理，Service层不保存历史记录
+      // Note: history saving is handled by the UI layer; the service layer does not save history
     })
 
     it('should optimize user prompt successfully', async () => {
@@ -189,7 +189,7 @@ describe('PromptService Enhanced Features', () => {
       mockLLMService.sendMessageStream.mockImplementation(async (messages, modelKey, streamCallbacks) => {
         streamCallbacks.onToken('test')
         streamCallbacks.onToken(' result')
-        // 模拟结构化响应
+        // Mock the structured response
         const mockResponse = {
           content: 'test result',
           reasoning: 'some reasoning'
@@ -202,7 +202,7 @@ describe('PromptService Enhanced Features', () => {
       expect(callbacks.onToken).toHaveBeenCalledWith('test')
       expect(callbacks.onToken).toHaveBeenCalledWith(' result')
       expect(callbacks.onComplete).toHaveBeenCalled()
-      // 注意：历史记录保存由UI层处理，Service层不保存历史记录
+      // Note: history saving is handled by the UI layer; the service layer does not save history
     })
 
     it('should handle missing model key', async () => {

@@ -1,8 +1,8 @@
 /**
- * 变量值生成服务 - 真实API集成测试
+ * Variable value generation service - real API integration test
  *
- * 测试变量值生成服务与真实LLM API的集成
- * 只有在环境变量存在时才执行
+ * Tests the integration of the variable value generation service with the real LLM API
+ * Only runs when the environment variables exist
  */
 
 import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
@@ -31,23 +31,23 @@ describe.skipIf(!RUN_REAL_API)('VariableValueGenerationService - Real API Integr
   let storage: LocalStorageProvider;
 
   beforeAll(() => {
-    console.log('\n=== 变量值生成服务 - 真实API测试 ===\n');
+    console.log('\n=== Variable value generation service - real API test ===\n');
     printAvailableProviders();
 
     if (!hasAvailableProvider()) {
-      console.log('⚠️  跳过真实API测试：未设置任何API密钥环境变量');
+      console.log('⚠️  Skipping the real API test: no API key environment variable is set');
     }
   });
 
   beforeEach(async () => {
-    // 创建存储和模板管理器
+    // Create the storage and template manager
     storage = new LocalStorageProvider();
     await storage.clearAll();
 
     const languageService = createTemplateLanguageService(storage);
     templateManager = createTemplateManager(storage, languageService);
 
-    // 创建真实LLM测试上下文
+    // Create the real LLM test context
     context = await createRealLLMTestContext({
       paramOverrides: {
         temperature: 0.7,
@@ -55,63 +55,63 @@ describe.skipIf(!RUN_REAL_API)('VariableValueGenerationService - Real API Integr
     });
 
     if (!context) {
-      console.log('⚠️  无可用的LLM提供商，跳过测试');
+      console.log('⚠️  No available LLM provider, skipping the test');
       return;
     }
 
-    // 使用context的modelManager创建变量值生成服务
+    // Create the variable value generation service using the context's modelManager
     variableValueGenerationService = createVariableValueGenerationService(
       context.llmService,
       context.modelManager,
       templateManager
     );
 
-    console.log(`\n✅ 使用提供商: ${context.provider.providerName}`);
-    console.log(`   模型: ${context.modelConfig.modelMeta.name} (${context.modelConfig.modelMeta.id})\n`);
+    console.log(`\n✅ Using provider: ${context.provider.providerName}`);
+    console.log(`   Model: ${context.modelConfig.modelMeta.name} (${context.modelConfig.modelMeta.id})\n`);
   });
 
-  describe('基础变量值生成测试', () => {
-    it.skipIf(!hasAvailableProvider())('应该能成功为简单提示词生成变量值', async () => {
+  describe('Basic variable value generation test', () => {
+    it.skipIf(!hasAvailableProvider())('should successfully generate variable values for a simple prompt', async () => {
       if (!context) {
-        console.log('跳过测试：无可用的LLM提供商');
+        console.log('Skipping the test: no available LLM provider');
         return;
       }
 
       const request: VariableValueGenerationRequest = {
-        promptContent: '请写一篇关于{{主题}}的文章，字数要求在{{字数}}字以内。',
+        promptContent: 'Please write an article about {{topic}}, within {{word_count}} words.',
         variables: [
-          { name: '主题' },
-          { name: '字数' }
+          { name: 'topic' },
+          { name: 'word_count' }
         ],
         generationModelKey: context.modelKey,
       };
 
       const result = await variableValueGenerationService.generate(request);
 
-      // 验证返回结构
+      // Verify the returned structure
       expect(result).toBeDefined();
       expect(result.values).toBeInstanceOf(Array);
       expect(result.summary).toBeDefined();
       expect(typeof result.summary).toBe('string');
 
-      // 应该为所有变量都生成了值
+      // Values should be generated for all variables
       expect(result.values.length).toBe(2);
 
-      // 打印结果
-      console.log('\n📝 生成结果:');
-      console.log(`   总结: ${result.summary}`);
-      console.log(`   生成的变量值数量: ${result.values.length}`);
+      // Print the result
+      console.log('\n📝 Generation result:');
+      console.log(`   Summary: ${result.summary}`);
+      console.log(`   Number of generated variable values: ${result.values.length}`);
 
-      console.log('\n   变量值详情:');
+      console.log('\n   Variable value details:');
       result.values.forEach((v, index) => {
         console.log(`   ${index + 1}. ${v.name} = "${v.value}"`);
-        console.log(`      理由: ${v.reason}`);
+        console.log(`      Reason: ${v.reason}`);
         if (v.confidence !== undefined) {
-          console.log(`      置信度: ${(v.confidence * 100).toFixed(0)}%`);
+          console.log(`      Confidence: ${(v.confidence * 100).toFixed(0)}%`);
         }
       });
 
-      // 验证第一个变量值的结构
+      // Verify the structure of the first variable value
       const firstValue = result.values[0];
       expect(firstValue.name).toBeDefined();
       expect(typeof firstValue.name).toBe('string');
@@ -120,114 +120,114 @@ describe.skipIf(!RUN_REAL_API)('VariableValueGenerationService - Real API Integr
       expect(firstValue.reason).toBeDefined();
       expect(typeof firstValue.reason).toBe('string');
 
-      // 验证变量名匹配
+      // Verify the variable names match
       const names = result.values.map(v => v.name);
-      expect(names).toContain('主题');
-      expect(names).toContain('字数');
+      expect(names).toContain('topic');
+      expect(names).toContain('word_count');
     }, 60000);
 
-    it.skipIf(!hasAvailableProvider())('应该能生成包含多个变量的复杂场景值', async () => {
+    it.skipIf(!hasAvailableProvider())('should be able to generate values for a complex scenario with multiple variables', async () => {
       if (!context) {
-        console.log('跳过测试：无可用的LLM提供商');
+        console.log('Skipping the test: no available LLM provider');
         return;
       }
 
       const request: VariableValueGenerationRequest = {
-        promptContent: `作为一名专业的{{职业}}，请创作一篇{{文体}}。
-要求：
-- 主题：{{主题}}
-- 风格：{{风格}}
-- 字数：{{字数}}字
-- 目标读者：{{读者}}`,
+        promptContent: `As a professional {{profession}}, please write a {{genre}}.
+Requirements:
+- Theme: {{topic}}
+- Style: {{style}}
+- Word count: {{word_count}} words
+- Target readers: {{audience}}`,
         variables: [
-          { name: '职业' },
-          { name: '文体' },
-          { name: '主题' },
-          { name: '风格' },
-          { name: '字数' },
-          { name: '读者' }
+          { name: 'profession' },
+          { name: 'genre' },
+          { name: 'topic' },
+          { name: 'style' },
+          { name: 'word_count' },
+          { name: 'audience' }
         ],
         generationModelKey: context.modelKey,
       };
 
       const result = await variableValueGenerationService.generate(request);
 
-      console.log('\n📝 复杂场景生成结果:');
-      console.log(`   总结: ${result.summary}`);
-      console.log(`   生成的变量值数量: ${result.values.length}`);
+      console.log('\n📝 Complex scenario generation result:');
+      console.log(`   Summary: ${result.summary}`);
+      console.log(`   Number of generated variable values: ${result.values.length}`);
 
-      // 应该为所有6个变量都生成了值
+      // Values should be generated for all 6 variables
       expect(result.values.length).toBe(6);
 
-      console.log('\n   变量值详情:');
+      console.log('\n   Variable value details:');
       result.values.forEach((v, index) => {
         console.log(`   ${index + 1}. ${v.name} = "${v.value}"`);
-        console.log(`      理由: ${v.reason}`);
+        console.log(`      Reason: ${v.reason}`);
       });
 
-      // 验证所有变量都有值
+      // Verify all variables have values
       result.values.forEach((v) => {
         expect(v.value).toBeTruthy();
         expect(v.value.trim().length).toBeGreaterThan(0);
       });
     }, 60000);
 
-    it.skipIf(!hasAvailableProvider())('应该能参考当前值生成新值', async () => {
+    it.skipIf(!hasAvailableProvider())('should be able to generate new values with reference to the current values', async () => {
       if (!context) {
-        console.log('跳过测试：无可用的LLM提供商');
+        console.log('Skipping the test: no available LLM provider');
         return;
       }
 
       const request: VariableValueGenerationRequest = {
-        promptContent: '请写一篇关于{{主题}}的{{文体}}，字数{{字数}}字。',
+        promptContent: 'Please write a {{genre}} about {{topic}}, {{word_count}} words.',
         variables: [
-          { name: '主题', currentValue: '人工智能' },
-          { name: '文体', currentValue: '科普文章' },
-          { name: '字数' }  // 这个没有当前值
+          { name: 'topic', currentValue: 'Artificial intelligence' },
+          { name: 'genre', currentValue: 'Popular science article' },
+          { name: 'word_count' }  // This one has no current value
         ],
         generationModelKey: context.modelKey,
       };
 
       const result = await variableValueGenerationService.generate(request);
 
-      console.log('\n📝 参考当前值生成结果:');
-      console.log(`   总结: ${result.summary}`);
+      console.log('\n📝 Generation result with reference to the current values:');
+      console.log(`   Summary: ${result.summary}`);
 
-      console.log('\n   变量值详情:');
+      console.log('\n   Variable value details:');
       result.values.forEach((v, index) => {
         const currentValue = request.variables.find(rv => rv.name === v.name)?.currentValue;
-        console.log(`   ${index + 1}. ${v.name} = "${v.value}" ${currentValue ? `(当前值: ${currentValue})` : ''}`);
-        console.log(`      理由: ${v.reason}`);
+        console.log(`   ${index + 1}. ${v.name} = "${v.value}" ${currentValue ? `(current value: ${currentValue})` : ''}`);
+        console.log(`      Reason: ${v.reason}`);
       });
 
       expect(result.values.length).toBe(3);
     }, 60000);
   });
 
-  describe('错误处理测试', () => {
-    it.skipIf(!hasAvailableProvider())('应该在提示词为空时抛出验证错误', async () => {
+  describe('Error handling test', () => {
+    it.skipIf(!hasAvailableProvider())('should throw a validation error when the prompt is empty', async () => {
       if (!context) {
-        console.log('跳过测试：无可用的LLM提供商');
+        console.log('Skipping the test: no available LLM provider');
         return;
       }
 
       const request: VariableValueGenerationRequest = {
         promptContent: '',
-        variables: [{ name: '主题' }],
+        variables: [{ name: 'topic' }],
         generationModelKey: context.modelKey,
       };
 
       await expect(variableValueGenerationService.generate(request)).rejects.toThrow();
     });
 
-    it.skipIf(!hasAvailableProvider())('应该在变量列表为空时抛出验证错误', async () => {
+    it.skipIf(!hasAvailableProvider())('should throw a validation error when the variable list is empty', async () => {
       if (!context) {
-        console.log('跳过测试：无可用的LLM提供商');
+        console.log('Skipping the test: no available LLM provider');
         return;
       }
 
       const request: VariableValueGenerationRequest = {
-        promptContent: '测试提示词',
+        promptContent: 'Test prompt',
         variables: [],
         generationModelKey: context.modelKey,
       };
@@ -235,15 +235,15 @@ describe.skipIf(!RUN_REAL_API)('VariableValueGenerationService - Real API Integr
       await expect(variableValueGenerationService.generate(request)).rejects.toThrow();
     });
 
-    it.skipIf(!hasAvailableProvider())('应该在模型不存在时抛出模型错误', async () => {
+    it.skipIf(!hasAvailableProvider())('should throw a model error when the model does not exist', async () => {
       if (!context) {
-        console.log('跳过测试：无可用的LLM提供商');
+        console.log('Skipping the test: no available LLM provider');
         return;
       }
 
       const request: VariableValueGenerationRequest = {
-        promptContent: '测试提示词',
-        variables: [{ name: '主题' }],
+        promptContent: 'Test prompt',
+        variables: [{ name: 'topic' }],
         generationModelKey: 'non-existent-model',
       };
 
@@ -251,10 +251,10 @@ describe.skipIf(!RUN_REAL_API)('VariableValueGenerationService - Real API Integr
     });
   });
 
-  describe('特殊场景测试', () => {
-    it.skipIf(!hasAvailableProvider())('应该能处理纯英文提示词', async () => {
+  describe('Special scenario test', () => {
+    it.skipIf(!hasAvailableProvider())('should be able to handle a pure English prompt', async () => {
       if (!context) {
-        console.log('跳过测试：无可用的LLM提供商');
+        console.log('Skipping the test: no available LLM provider');
         return;
       }
 
@@ -270,13 +270,13 @@ describe.skipIf(!RUN_REAL_API)('VariableValueGenerationService - Real API Integr
 
       const result = await variableValueGenerationService.generate(request);
 
-      console.log('\n📝 英文提示词生成结果:');
-      console.log(`   总结: ${result.summary}`);
+      console.log('\n📝 English prompt generation result:');
+      console.log(`   Summary: ${result.summary}`);
 
-      console.log('\n   变量值详情:');
+      console.log('\n   Variable value details:');
       result.values.forEach((v, index) => {
         console.log(`   ${index + 1}. ${v.name} = "${v.value}"`);
-        console.log(`      理由: ${v.reason}`);
+        console.log(`      Reason: ${v.reason}`);
       });
 
       expect(result.values.length).toBe(3);
@@ -285,90 +285,90 @@ describe.skipIf(!RUN_REAL_API)('VariableValueGenerationService - Real API Integr
       });
     }, 60000);
 
-    it.skipIf(!hasAvailableProvider())('应该能处理带变量来源标识的请求', async () => {
+    it.skipIf(!hasAvailableProvider())('should be able to handle a request with variable source identifiers', async () => {
       if (!context) {
-        console.log('跳过测试：无可用的LLM提供商');
+        console.log('Skipping the test: no available LLM provider');
         return;
       }
 
       const request: VariableValueGenerationRequest = {
-        promptContent: '请写一篇关于{{主题}}的文章，风格为{{风格}}。',
+        promptContent: 'Please write an article about {{topic}} in the style of {{style}}.',
         variables: [
-          { name: '主题', source: 'global' },
-          { name: '风格', source: 'test', currentValue: '轻松幽默' }
+          { name: 'topic', source: 'global' },
+          { name: 'style', source: 'test', currentValue: 'Light and humorous' }
         ],
         generationModelKey: context.modelKey,
       };
 
       const result = await variableValueGenerationService.generate(request);
 
-      console.log('\n📝 带来源标识的生成结果:');
-      console.log(`   总结: ${result.summary}`);
+      console.log('\n📝 Generation result with source identifiers:');
+      console.log(`   Summary: ${result.summary}`);
 
-      console.log('\n   变量值详情:');
+      console.log('\n   Variable value details:');
       result.values.forEach((v, index) => {
         const variable = request.variables.find(rv => rv.name === v.name);
         console.log(`   ${index + 1}. ${v.name} = "${v.value}" [${variable?.source || 'unknown'}]`);
-        console.log(`      理由: ${v.reason}`);
+        console.log(`      Reason: ${v.reason}`);
       });
 
       expect(result.values.length).toBe(2);
     }, 60000);
   });
 
-  describe('数据质量测试', () => {
-    it.skipIf(!hasAvailableProvider())('生成的值应该与提示词上下文相关', async () => {
+  describe('Data quality test', () => {
+    it.skipIf(!hasAvailableProvider())('the generated values should be relevant to the prompt context', async () => {
       if (!context) {
-        console.log('跳过测试：无可用的LLM提供商');
+        console.log('Skipping the test: no available LLM provider');
         return;
       }
 
       const request: VariableValueGenerationRequest = {
-        promptContent: '请作为一名儿童教育专家，编写一个针对5-7岁儿童的{{课程类型}}课程计划，主题是{{主题}}。',
+        promptContent: 'As a children education expert, write a {{course_type}} course plan for children aged 5-7, with the theme {{topic}}.',
         variables: [
-          { name: '课程类型' },
-          { name: '主题' }
+          { name: 'course_type' },
+          { name: 'topic' }
         ],
         generationModelKey: context.modelKey,
       };
 
       const result = await variableValueGenerationService.generate(request);
 
-      console.log('\n📝 上下文相关性测试结果:');
+      console.log('\n📝 Context relevance test result:');
       result.values.forEach((v) => {
         console.log(`   ${v.name}: "${v.value}"`);
-        console.log(`   理由: ${v.reason}`);
+        console.log(`   Reason: ${v.reason}`);
       });
 
-      // 验证生成的理由字段不为空（说明LLM理解了上下文）
+      // Verify the generated reason field is not empty (indicating the LLM understood the context)
       result.values.forEach((v) => {
-        expect(v.reason.length).toBeGreaterThan(10); // 理由应该有一定长度
+        expect(v.reason.length).toBeGreaterThan(10); // The reason should have a certain length
       });
     }, 60000);
 
-    it.skipIf(!hasAvailableProvider())('应该为所有请求的变量都生成值', async () => {
+    it.skipIf(!hasAvailableProvider())('should generate values for all requested variables', async () => {
       if (!context) {
-        console.log('跳过测试：无可用的LLM提供商');
+        console.log('Skipping the test: no available LLM provider');
         return;
       }
 
-      const variableNames = ['变量1', '变量2', '变量3', '变量4', '变量5'];
+      const variableNames = ['variable_1', 'variable_2', 'variable_3', 'variable_4', 'variable_5'];
       const request: VariableValueGenerationRequest = {
-        promptContent: `测试提示词，包含多个变量：${variableNames.map(name => `{{${name}}}`).join('、')}`,
+        promptContent: `Test prompt containing multiple variables: ${variableNames.map(name => `{{${name}}}`).join(', ')}`,
         variables: variableNames.map(name => ({ name })),
         generationModelKey: context.modelKey,
       };
 
       const result = await variableValueGenerationService.generate(request);
 
-      console.log('\n📝 完整性测试结果:');
-      console.log(`   请求变量数: ${variableNames.length}`);
-      console.log(`   生成变量数: ${result.values.length}`);
+      console.log('\n📝 Completeness test result:');
+      console.log(`   Number of requested variables: ${variableNames.length}`);
+      console.log(`   Number of generated variables: ${result.values.length}`);
 
-      // 应该为所有变量都生成值
+      // Values should be generated for all variables
       expect(result.values.length).toBe(variableNames.length);
 
-      // 验证变量名都匹配
+      // Verify the variable names all match
       const generatedNames = result.values.map(v => v.name);
       variableNames.forEach(name => {
         expect(generatedNames).toContain(name);

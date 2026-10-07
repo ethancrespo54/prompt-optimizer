@@ -3,15 +3,15 @@ import { expect, describe, it, beforeEach, beforeAll } from 'vitest';
 import dotenv from 'dotenv';
 import path from 'path';
 
-// 加载环境变量
+// Load environment variables
 beforeAll(() => {
   dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 });
 
 const RUN_REAL_API = process.env.RUN_REAL_API === '1'
 
-describe.skipIf(!RUN_REAL_API)('OpenAI API 真实连接测试', () => {
-  // 检查OpenAI兼容的环境变量（任何一个存在就可以运行测试）
+describe.skipIf(!RUN_REAL_API)('OpenAI API real connection test', () => {
+  // Check the OpenAI-compatible environment variables (the tests can run if any one exists)
   const openaiCompatibleKeys = [
     'OPENAI_API_KEY', 'VITE_OPENAI_API_KEY',
     'DEEPSEEK_API_KEY', 'VITE_DEEPSEEK_API_KEY', 
@@ -25,14 +25,14 @@ describe.skipIf(!RUN_REAL_API)('OpenAI API 真实连接测试', () => {
   );
 
   if (availableKeys.length === 0) {
-    console.log('跳过 OpenAI 真实API测试：未设置任何 OpenAI 兼容的 API 密钥');
-    it.skip('应该能正确调用 OpenAI 兼容的 API', () => {});
-    it.skip('应该能正确处理多轮对话', () => {});
-    it.skip('应该能正确使用高级参数', () => {});
+    console.log('Skipping the OpenAI real API test: no OpenAI-compatible API key is set');
+    it.skip('should be able to call an OpenAI-compatible API correctly', () => {});
+    it.skip('should be able to handle multi-turn conversation correctly', () => {});
+    it.skip('should be able to use advanced parameters correctly', () => {});
     return;
   }
 
-  // 选择第一个可用的密钥和对应的配置
+  // Choose the first available key and its corresponding config
   const getModelConfig = () => {
     if (process.env.SILICONFLOW_API_KEY || process.env.VITE_SILICONFLOW_API_KEY) {
       return {
@@ -70,7 +70,7 @@ describe.skipIf(!RUN_REAL_API)('OpenAI API 真实连接测试', () => {
       const baseURL = process.env.CUSTOM_API_BASE_URL || process.env.VITE_CUSTOM_API_BASE_URL;
       const model = process.env.CUSTOM_API_MODEL || process.env.VITE_CUSTOM_API_MODEL;
       
-      // 只有当baseURL和model都有值时才返回custom配置
+      // Only return the custom config when both baseURL and model have values
       if (baseURL && model) {
         return {
           key: 'custom',
@@ -86,22 +86,22 @@ describe.skipIf(!RUN_REAL_API)('OpenAI API 真实连接测试', () => {
   const modelConfig = getModelConfig();
   
   if (!modelConfig) {
-    console.log('跳过 OpenAI 真实API测试：无有效的模型配置');
-    it.skip('应该能正确调用 OpenAI 兼容的 API', () => {});
-    it.skip('应该能正确处理多轮对话', () => {});
-    it.skip('应该能正确使用高级参数', () => {});
+    console.log('Skipping the OpenAI real API test: no valid model config');
+    it.skip('should be able to call an OpenAI-compatible API correctly', () => {});
+    it.skip('should be able to handle multi-turn conversation correctly', () => {});
+    it.skip('should be able to use advanced parameters correctly', () => {});
     return;
   }
 
-  console.log(`使用 ${modelConfig.key} 进行 OpenAI 兼容 API 测试，模型: ${modelConfig.defaultModel}`);
+  console.log(`Running the OpenAI-compatible API test with ${modelConfig.key}, model: ${modelConfig.defaultModel}`);
 
-  it('应该能正确调用 OpenAI 兼容的 API', async () => {
+  it('should be able to call an OpenAI-compatible API correctly', async () => {
     const storage = new LocalStorageProvider();
     const modelManager = new ModelManager(storage);
     const llmService = createLLMService(modelManager);
 
     try {
-      // 更新模型配置
+      // Update the model config
       await modelManager.updateModel(modelConfig.key, {
         apiKey: modelConfig.apiKey,
         baseURL: modelConfig.baseURL,
@@ -111,7 +111,7 @@ describe.skipIf(!RUN_REAL_API)('OpenAI API 真实连接测试', () => {
       });
 
       const messages = [
-        { role: 'user', content: '你好，请用一句话介绍你自己' }
+        { role: 'user', content: 'Hello, please introduce yourself in one sentence' }
       ];
 
       const response = await llmService.sendMessage(messages, modelConfig.key);
@@ -119,23 +119,23 @@ describe.skipIf(!RUN_REAL_API)('OpenAI API 真实连接测试', () => {
       expect(typeof response).toBe('string');
       expect(response.length).toBeGreaterThan(0);
     } catch (error) {
-      console.error(`API调用失败 (${modelConfig.key}):`, error.message);
-      // 如果是400错误，可能是配置问题，跳过测试
+      console.error(`API call failed (${modelConfig.key}):`, error.message);
+      // A 400 error may be a config problem; skip the test
       if (error.message.includes('400')) {
-        console.log(`跳过测试：${modelConfig.key} API配置可能有问题`);
+        console.log(`Skipping the test: the ${modelConfig.key} API config may have a problem`);
         return;
       }
       throw error;
     }
   }, 300000);
 
-  it('应该能正确处理多轮对话', async () => {
+  it('should be able to handle multi-turn conversation correctly', async () => {
     const storage = new LocalStorageProvider();
     const modelManager = new ModelManager(storage);
     const llmService = createLLMService(modelManager);
 
     try {
-      // 更新模型配置
+      // Update the model config
       await modelManager.updateModel(modelConfig.key, {
         apiKey: modelConfig.apiKey,
         baseURL: modelConfig.baseURL,
@@ -145,9 +145,9 @@ describe.skipIf(!RUN_REAL_API)('OpenAI API 真实连接测试', () => {
       });
 
       const messages = [
-        { role: 'user', content: '你好，我们来玩个游戏' },
-        { role: 'assistant', content: '好啊，你想玩什么游戏？' },
-        { role: 'user', content: '我们来玩猜数字游戏，1到100之间' }
+        { role: 'user', content: 'Hello, let us play a game' },
+        { role: 'assistant', content: 'Sure, what game do you want to play?' },
+        { role: 'user', content: 'Let us play a number guessing game, between 1 and 100' }
       ];
 
       const response = await llmService.sendMessage(messages, modelConfig.key);
@@ -155,22 +155,22 @@ describe.skipIf(!RUN_REAL_API)('OpenAI API 真实连接测试', () => {
       expect(typeof response).toBe('string');
       expect(response.length).toBeGreaterThan(0);
     } catch (error) {
-      console.error(`多轮对话测试失败 (${modelConfig.key}):`, error.message);
+      console.error(`Multi-turn conversation test failed (${modelConfig.key}):`, error.message);
       if (error.message.includes('400')) {
-        console.log(`跳过测试：${modelConfig.key} API配置可能有问题`);
+        console.log(`Skipping the test: the ${modelConfig.key} API config may have a problem`);
         return;
       }
       throw error;
     }
   }, 300000);
 
-  it('应该能正确使用高级参数', async () => {
+  it('should be able to use advanced parameters correctly', async () => {
     const storage = new LocalStorageProvider();
     const modelManager = new ModelManager(storage);
     const llmService = createLLMService(modelManager);
 
     try {
-      // 更新模型配置，包含高级参数
+      // Update the model config, including the advanced parameters
       await modelManager.updateModel(modelConfig.key, {
         apiKey: modelConfig.apiKey,
         baseURL: modelConfig.baseURL,
@@ -184,32 +184,32 @@ describe.skipIf(!RUN_REAL_API)('OpenAI API 真实连接测试', () => {
       });
 
       const messages = [
-        { role: 'user', content: '请用一句话回答：什么是人工智能？' }
+        { role: 'user', content: 'Answer in one sentence: what is artificial intelligence?' }
       ];
 
       const response = await llmService.sendMessage(messages, modelConfig.key);
       expect(response).toBeDefined();
       expect(typeof response).toBe('string');
       expect(response.length).toBeGreaterThan(0);
-      // 由于设置了max_tokens=100，响应应该相对较短
+      // Since max_tokens=100 is set, the response should be relatively short
       expect(response.length).toBeLessThan(200);
     } catch (error) {
-      console.error(`高级参数测试失败 (${modelConfig.key}):`, error.message);
+      console.error(`Advanced parameters test failed (${modelConfig.key}):`, error.message);
       if (error.message.includes('400')) {
-        console.log(`跳过测试：${modelConfig.key} API配置可能有问题`);
+        console.log(`Skipping the test: the ${modelConfig.key} API config may have a problem`);
         return;
       }
       throw error;
     }
   }, 300000);
 
-  it('应该能兼容处理所有模型的响应格式（reasoning_content + think标签 + 普通文本）', async () => {
+  it('should be able to handle the response formats of all models compatibly (reasoning_content + think tags + plain text)', async () => {
     const storage = new LocalStorageProvider();
     const modelManager = new ModelManager(storage);
     const llmService = createLLMService(modelManager);
 
     try {
-      // 测试通用兼容性处理
+      // Test the generic compatibility handling
       await modelManager.updateModel(modelConfig.key, {
         apiKey: modelConfig.apiKey,
         baseURL: modelConfig.baseURL,
@@ -225,24 +225,24 @@ describe.skipIf(!RUN_REAL_API)('OpenAI API 真实连接测试', () => {
       const testMessages = [
         {
           role: 'user',
-          content: '请简单回答：什么是AI？'
+          content: 'Answer briefly: what is AI?'
         }
       ];
 
-      // 测试非流式处理
+      // Test non-streaming handling
       const result = await llmService.sendMessage(testMessages, modelConfig.key);
       
       expect(result).toBeTruthy();
       expect(typeof result).toBe('string');
       expect(result.length).toBeGreaterThan(0);
       
-      console.log('兼容性测试结果:', {
+      console.log('Compatibility test result:', {
         hasThinkTags: result.includes('<think>'),
         hasContent: result.length > 0,
         result: result
       });
 
-      // 测试流式处理
+      // Test streaming handling
       let streamResult = '';
       let tokenCount = 0;
       let isCompleted = false;
@@ -258,7 +258,7 @@ describe.skipIf(!RUN_REAL_API)('OpenAI API 真实连接测试', () => {
         },
         onError: (error) => {
           hasError = true;
-          console.error('流式测试错误:', error);
+          console.error('Streaming test error:', error);
         }
       });
 
@@ -267,7 +267,7 @@ describe.skipIf(!RUN_REAL_API)('OpenAI API 真实连接测试', () => {
       expect(streamResult.length).toBeGreaterThan(0);
       expect(tokenCount).toBeGreaterThan(0);
 
-      console.log('流式兼容性测试结果:', {
+      console.log('Streaming compatibility test result:', {
         tokenCount,
         hasThinkTags: streamResult.includes('<think>'),
         streamLength: streamResult.length,
@@ -275,18 +275,18 @@ describe.skipIf(!RUN_REAL_API)('OpenAI API 真实连接测试', () => {
       });
 
     } catch (error) {
-      console.error('兼容性测试失败:', error);
+      console.error('Compatibility test failed:', error);
       throw error;
     }
   },300000);
 
-  it('应该能正确处理reasoning_content的流式输出', async () => {
+  it('should be able to handle the streaming output of reasoning_content correctly', async () => {
     const storage = new LocalStorageProvider();
     const modelManager = new ModelManager(storage);
     const llmService = createLLMService(modelManager);
 
     try {
-      // 配置模型
+      // Configure the model
       await modelManager.updateModel(modelConfig.key, {
         apiKey: modelConfig.apiKey,
         baseURL: modelConfig.baseURL,
@@ -302,11 +302,11 @@ describe.skipIf(!RUN_REAL_API)('OpenAI API 真实连接测试', () => {
       const testMessages = [
         {
           role: 'user',
-          content: '你是谁'
+          content: 'Who are you'
         }
       ];
 
-      // 模拟包含reasoning_content的流式响应
+      // Mock a streaming response containing reasoning_content
       let fullResult = '';
       let tokenCount = 0;
       let hasThinkTags = false;
@@ -319,7 +319,7 @@ describe.skipIf(!RUN_REAL_API)('OpenAI API 真实连接测试', () => {
           fullResult += token;
           tokenCount++;
           
-          // 检查think标签的完整性
+          // Check the integrity of the think tags
           if (token.includes('<think>')) {
             hasThinkTags = true;
           }
@@ -332,14 +332,14 @@ describe.skipIf(!RUN_REAL_API)('OpenAI API 真实连接测试', () => {
         },
         onError: (error) => {
           hasError = true;
-          console.error('流式测试错误:', error);
+          console.error('Streaming test error:', error);
         }
       });
 
-      // 等待流式完成
+      // Wait for the streaming to complete
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      console.log('reasoning_content流式测试结果:', {
+      console.log('reasoning_content streaming test result:', {
         tokenCount,
         hasThinkTags,
         thinkTagsClosed,
@@ -354,28 +354,28 @@ describe.skipIf(!RUN_REAL_API)('OpenAI API 真实连接测试', () => {
       expect(tokenCount).toBeGreaterThan(0);
       expect(fullResult.length).toBeGreaterThan(0);
       
-      // 如果有think标签，检查它们是否正确闭合
+      // If there are think tags, check that they are closed correctly
       const thinkOpenCount = (fullResult.match(/<think>/g) || []).length;
       const thinkCloseCount = (fullResult.match(/<\/think>/g) || []).length;
       
       if (thinkOpenCount > 0) {
         expect(thinkOpenCount).toBe(thinkCloseCount);
-        console.log(`✅ Think标签匹配: ${thinkOpenCount} 个开始标签, ${thinkCloseCount} 个结束标签`);
+        console.log(`✅ Think tags matched: ${thinkOpenCount} opening tags, ${thinkCloseCount} closing tags`);
       }
 
     } catch (error) {
-      console.error('reasoning_content流式测试失败:', error);
+      console.error('reasoning_content streaming test failed:', error);
       throw error;
     }
   },300000);
 
-  it('应该能使用结构化API发送消息', async () => {
+  it('should be able to send messages using the structured API', async () => {
     const storage = new LocalStorageProvider();
     const modelManager = new ModelManager(storage);
     const llmService = createLLMService(modelManager);
 
     try {
-      // 配置模型
+      // Configure the model
       await modelManager.updateModel(modelConfig.key, {
         apiKey: modelConfig.apiKey,
         baseURL: modelConfig.baseURL,
@@ -391,11 +391,11 @@ describe.skipIf(!RUN_REAL_API)('OpenAI API 真实连接测试', () => {
       const testMessages = [
         {
           role: 'user',
-          content: '请简单回答：什么是AI？'
+          content: 'Answer briefly: what is AI?'
         }
       ];
 
-      // 测试结构化API
+      // Test the structured API
       const response = await llmService.sendMessageStructured(testMessages, modelConfig.key);
       
       expect(response).toBeDefined();
@@ -404,11 +404,11 @@ describe.skipIf(!RUN_REAL_API)('OpenAI API 真实连接测试', () => {
       expect(typeof response.content).toBe('string');
       expect(response.content.length).toBeGreaterThan(0);
       
-      // 检查元数据
+      // Check the metadata
       expect(response.metadata).toBeDefined();
       expect(response.metadata.model).toBe(modelConfig.defaultModel);
       
-      console.log('结构化API测试结果:', {
+      console.log('Structured API test result:', {
         hasContent: response.content.length > 0,
         hasReasoning: !!response.reasoning,
         content: response.content,
@@ -417,18 +417,18 @@ describe.skipIf(!RUN_REAL_API)('OpenAI API 真实连接测试', () => {
       });
 
     } catch (error) {
-      console.error('结构化API测试失败:', error);
+      console.error('Structured API test failed:', error);
       throw error;
     }
   }, 300000);
 
-  it('应该能使用结构化回调进行流式处理', async () => {
+  it('should be able to stream using structured callbacks', async () => {
     const storage = new LocalStorageProvider();
     const modelManager = new ModelManager(storage);
     const llmService = createLLMService(modelManager);
 
     try {
-      // 配置模型
+      // Configure the model
       await modelManager.updateModel(modelConfig.key, {
         apiKey: modelConfig.apiKey,
         baseURL: modelConfig.baseURL,
@@ -444,7 +444,7 @@ describe.skipIf(!RUN_REAL_API)('OpenAI API 真实连接测试', () => {
       const testMessages = [
         {
           role: 'user',
-          content: '请简单回答：什么是AI？'
+          content: 'Answer briefly: what is AI?'
         }
       ];
 
@@ -471,14 +471,14 @@ describe.skipIf(!RUN_REAL_API)('OpenAI API 真实连接测试', () => {
         },
         onError: (error) => {
           hasError = true;
-          console.error('结构化流式测试错误:', error);
+          console.error('Structured streaming test error:', error);
         }
       });
 
-      // 等待流式完成
+      // Wait for the streaming to complete
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      console.log('结构化流式测试结果:', {
+      console.log('Structured streaming test result:', {
         contentTokenCount,
         reasoningTokenCount,
         isCompleted,
@@ -495,16 +495,16 @@ describe.skipIf(!RUN_REAL_API)('OpenAI API 真实连接测试', () => {
       expect(contentTokenCount).toBeGreaterThan(0);
       expect(contentTokens.length).toBeGreaterThan(0);
       
-      // 验证内容一致性
+      // Verify content consistency
       expect(contentTokens).toBe(finalResponse.content);
       
-      // 如果有推理内容，验证一致性
+      // If there is reasoning content, verify consistency
       if (reasoningTokenCount > 0) {
         expect(reasoningTokens).toBe(finalResponse.reasoning || '');
       }
 
     } catch (error) {
-      console.error('结构化流式测试失败:', error);
+      console.error('Structured streaming test failed:', error);
       throw error;
     }
   }, 300000);

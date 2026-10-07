@@ -6,14 +6,14 @@ import { TextAdapterRegistry } from '../../src/services/llm/adapters/registry';
 import type { ModelConfig, TextModelConfig } from '../../src/services/model/types';
 
 /**
- * 回归测试 - 验证新架构不破坏现有功能
+ * Regression test - verifies that the new architecture does not break existing features
  *
- * 测试重点:
- * 1. API兼容性: createLLMService、ModelManager等核心API保持不变
- * 2. 配置兼容性: 支持传统ModelConfig自动转换
- * 3. 功能完整性: sendMessage、sendMessageStream等核心功能正常
+ * Test focus:
+ * 1. API compatibility: core APIs such as createLLMService and ModelManager stay unchanged
+ * 2. Config compatibility: automatic conversion of the legacy ModelConfig is supported
+ * 3. Feature completeness: core features such as sendMessage and sendMessageStream work normally
  */
-describe('架构重构回归测试', () => {
+describe('Architecture refactoring regression test', () => {
   let storage: MemoryStorageProvider;
   let registry: TextAdapterRegistry;
 
@@ -23,8 +23,8 @@ describe('架构重构回归测试', () => {
     await storage.clearAll();
   });
 
-  describe('API兼容性', () => {
-    it('createLLMService应该成功创建服务实例', () => {
+  describe('API compatibility', () => {
+    it('createLLMService should create a service instance successfully', () => {
       const modelManager = new ModelManager(storage);
       const llmService = createLLMService(modelManager);
 
@@ -33,11 +33,11 @@ describe('架构重构回归测试', () => {
       expect(typeof llmService.sendMessageStream).toBe('function');
     });
 
-    it('ModelManager应该保持原有API', async () => {
+    it('ModelManager should keep the original API', async () => {
       const modelManager = new ModelManager(storage, registry);
       
 
-      // 验证核心方法存在
+      // Verify the core methods exist
       expect(typeof modelManager.getModel).toBe('function');
       expect(typeof modelManager.getAllModels).toBe('function');
       expect(typeof modelManager.addModel).toBe('function');
@@ -46,8 +46,8 @@ describe('架构重构回归测试', () => {
     });
   });
 
-  describe('配置兼容性', () => {
-    it('应该支持传统ModelConfig格式(自动转换)', async () => {
+  describe('Config compatibility', () => {
+    it('should support the legacy ModelConfig format (automatic conversion)', async () => {
       const legacyConfig: ModelConfig = {
         name: 'Test OpenAI',
         provider: 'openai',
@@ -72,7 +72,7 @@ describe('架构重构回归测试', () => {
       expect(config.enabled).toBe(true);
     });
 
-    it('应该支持新TextModelConfig格式', async () => {
+    it('should support the new TextModelConfig format', async () => {
       const adapter = registry.getAdapter('openai');
       const newConfig: TextModelConfig = {
         id: 'openai',
@@ -99,7 +99,7 @@ describe('架构重构回归测试', () => {
       expect(config.modelMeta).toBeDefined();
     });
 
-    it('应该支持混合格式(传统+新格式共存)', async () => {
+    it('should support mixed formats (legacy + new coexisting)', async () => {
       const legacyConfig: ModelConfig = {
         name: 'Legacy Model',
         provider: 'openai',
@@ -142,8 +142,8 @@ describe('架构重构回归测试', () => {
     });
   });
 
-  describe('ModelManager核心功能', () => {
-    it('addModel应该正常工作', async () => {
+  describe('ModelManager core features', () => {
+    it('addModel should work normally', async () => {
       const modelManager = new ModelManager(storage, registry);
       
 
@@ -168,7 +168,7 @@ describe('架构重构回归测试', () => {
       expect(result.id).toBe('new-model');
     });
 
-    it('updateModel应该正常工作', async () => {
+    it('updateModel should work normally', async () => {
       const adapter = registry.getAdapter('openai');
       const config: TextModelConfig = {
         id: 'test',
@@ -201,7 +201,7 @@ describe('架构重构回归测试', () => {
       expect(result.connectionConfig.apiKey).toBe('updated-key');
     });
 
-    it('deleteModel应该正常工作', async () => {
+    it('deleteModel should work normally', async () => {
       const adapter = registry.getAdapter('openai');
       const config: TextModelConfig = {
         id: 'test',
@@ -227,7 +227,7 @@ describe('架构重构回归测试', () => {
       expect(result).toBeUndefined();
     });
 
-    it('getAllModels应该返回所有模型', async () => {
+    it('getAllModels should return all models', async () => {
       const adapter = registry.getAdapter('openai');
       const config1: TextModelConfig = {
         id: 'model1',
@@ -255,15 +255,15 @@ describe('架构重构回归测试', () => {
       
 
       const allModels = await modelManager.getAllModels();
-      // 新架构返回数组，并且会自动添加默认模型
+      // The new architecture returns an array and automatically adds the default models
       expect(allModels.length).toBeGreaterThanOrEqual(2);
       expect(allModels.find(m => m.id === 'model1')).toBeDefined();
       expect(allModels.find(m => m.id === 'model2')).toBeDefined();
     });
   });
 
-  describe('持久化兼容性', () => {
-    it('配置应该正确保存到Storage', async () => {
+  describe('Persistence compatibility', () => {
+    it('the config should be saved to Storage correctly', async () => {
       const modelManager = new ModelManager(storage, registry);
       
 
@@ -283,7 +283,7 @@ describe('架构重构回归测试', () => {
 
       await modelManager.addModel('persist-test', config);
 
-      // 验证Storage中的数据
+      // Verify the data in Storage
       const storedRaw = await storage.getItem('models');
       const storedModels = JSON.parse(storedRaw!);
       expect(storedModels['persist-test']).toBeDefined();
@@ -291,7 +291,7 @@ describe('架构重构回归测试', () => {
       expect(storedModels['persist-test'].paramOverrides.temperature).toBe(0.5);
     });
 
-    it('重新加载后配置应该保持一致', async () => {
+    it('the config should stay consistent after reloading', async () => {
       const adapter = registry.getAdapter('openai');
       const config: TextModelConfig = {
         id: 'reload-test',
@@ -308,11 +308,11 @@ describe('架构重构回归测试', () => {
 
       await storage.setItem('models', JSON.stringify({ 'reload-test': config }));
 
-      // 第一次加载
+      // First load
       const modelManager1 = new ModelManager(storage, registry);
       const config1 = await modelManager1.getModel('reload-test');
 
-      // 第二次加载
+      // Second load
       const modelManager2 = new ModelManager(storage, registry);
       const config2 = await modelManager2.getModel('reload-test');
 
@@ -320,15 +320,15 @@ describe('架构重构回归测试', () => {
     });
   });
 
-  describe('多Provider支持', () => {
-    it('应该支持所有Provider类型', async () => {
+  describe('Multi-Provider support', () => {
+    it('should support all Provider types', async () => {
       const providers = ['openai', 'gemini', 'anthropic'] as const;
       const modelManager = new ModelManager(storage, registry);
 
 
       for (const providerId of providers) {
         const adapter = registry.getAdapter(providerId);
-        // 使用唯一的 key 避免与默认模型冲突
+        // Use a unique key to avoid conflicts with the default models
         const modelKey = `test-${providerId}`;
         const config: TextModelConfig = {
           id: modelKey,
@@ -349,7 +349,7 @@ describe('架构重构回归测试', () => {
       }
     });
 
-    it('应该为OpenAI兼容Provider加载对应Adapter', async () => {
+    it('should load the corresponding Adapter for OpenAI-compatible Providers', async () => {
       const providerExpectations = [
         ['deepseek', 'deepseek'],
         ['zhipu', 'zhipu'],
@@ -384,8 +384,8 @@ describe('架构重构回归测试', () => {
     });
   });
 
-  describe('错误处理', () => {
-    it('获取不存在的模型应该返回null', async () => {
+  describe('Error handling', () => {
+    it('getting a non-existent model should return null', async () => {
       const modelManager = new ModelManager(storage, registry);
       
 
@@ -393,15 +393,15 @@ describe('架构重构回归测试', () => {
       expect(result).toBeUndefined();
     });
 
-    it('删除不存在的模型应该抛出错误', async () => {
+    it('deleting a non-existent model should throw an error', async () => {
       const modelManager = new ModelManager(storage, registry);
 
 
-      // 新架构中，删除不存在的模型会抛出 ModelConfigError
+      // In the new architecture, deleting a non-existent model throws ModelConfigError
       await expect(modelManager.deleteModel('non-existent')).rejects.toThrow();
     });
 
-    it('无效的配置应该被拒绝', async () => {
+    it('an invalid config should be rejected', async () => {
       const modelManager = new ModelManager(storage, registry);
       
 
@@ -409,7 +409,7 @@ describe('架构重构回归测试', () => {
         id: 'invalid',
         name: 'Invalid',
         enabled: true,
-        // 缺少必需字段
+        // Missing required fields
       } as any;
 
       await expect(modelManager.addModel('invalid', invalidConfig))

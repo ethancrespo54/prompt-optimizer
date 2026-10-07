@@ -14,12 +14,12 @@ import { TextModelConfig } from '../../../src/services/model/types';
 import { TextAdapterRegistry } from '../../../src/services/llm/adapters/registry';
 
 /**
- * PromptService集成测试 - 使用真实的Gemini API
+ * PromptService integration test - uses the real Gemini API
  */
 describe('PromptService Integration Tests', () => {
   const hasGeminiKey = !!process.env.VITE_GEMINI_API_KEY;
-  const DELAY_BETWEEN_TESTS = 60000; // 1分钟延迟避免速率限制
-  const TEST_TIMEOUT = 120000; // 2分钟超时
+  const DELAY_BETWEEN_TESTS = 60000; // 1-minute delay to avoid rate limiting
+  const TEST_TIMEOUT = 120000; // 2-minute timeout
 
 
   let promptService: PromptService;
@@ -31,7 +31,7 @@ describe('PromptService Integration Tests', () => {
   let registry: TextAdapterRegistry;
   let lastTestTime = 0;
 
-  // 在测试之间添加延迟以避免 API 速率限制
+  // Add a delay between tests to avoid API rate limits
   const delayBetweenTests = async () => {
     const now = Date.now();
     const timeSinceLastTest = now - lastTestTime;
@@ -51,7 +51,7 @@ describe('PromptService Integration Tests', () => {
   });
 
   beforeEach(async () => {
-    // 初始化存储和管理器
+    // Initialize the storage and managers
     storage = new LocalStorageProvider();
     registry = new TextAdapterRegistry();
     modelManager = createModelManager(storage);
@@ -63,16 +63,16 @@ describe('PromptService Integration Tests', () => {
 
     historyManager = createHistoryManager(storage, modelManager);
 
-    // 初始化服务
+    // Initialize the services
     promptService = new PromptService(modelManager, llmService, templateManager, historyManager);
 
-    // 清理存储
+    // Clean up the storage
     await storage.clearAll();
 
-    // 只有在有API密钥时才添加模型
+    // Only add the model when there is an API key
     if (hasGeminiKey) {
       const adapter = registry.getAdapter('gemini');
-      // 自动使用 adapter 提供的第一个可用模型，避免硬编码模型 ID
+      // Automatically use the first available model provided by the adapter, avoiding hard-coded model IDs
       const availableModels = adapter.getModels();
       if (availableModels.length === 0) {
         throw new Error('No Gemini models available from adapter');
@@ -83,16 +83,16 @@ describe('PromptService Integration Tests', () => {
         name: 'Test Gemini Model',
         enabled: true,
         providerMeta: adapter.getProvider(),
-        modelMeta: availableModels[0], // 使用第一个可用模型
+        modelMeta: availableModels[0], // Use the first available model
         connectionConfig: {
           apiKey: process.env.VITE_GEMINI_API_KEY!
-          // 不覆盖 baseURL，使用 adapter 的默认值
+          // Do not override baseURL, use the adapter's default value
         },
         paramOverrides: {
           temperature: 0.7,
           maxOutputTokens: 1000,
-          // 禁用 Gemini 2.5 的思考功能以获得稳定的测试结果
-          // 参考：https://ai.google.dev/gemini-api/docs/text-generation
+          // Disable the thinking feature of Gemini 2.5 for stable test results
+          // Reference: https://ai.google.dev/gemini-api/docs/text-generation
           thinkingBudget: 0
         }
       };
@@ -115,7 +115,7 @@ describe('PromptService Integration Tests', () => {
       expect(typeof result).toBe('string');
       expect(result.length).toBeGreaterThan(0);
 
-      // 模拟UI层保存历史记录
+      // Simulate the UI layer saving the history record
       await historyManager.createNewChain({
         id: `test_${Date.now()}`,
         originalPrompt: request.targetPrompt,
@@ -125,7 +125,7 @@ describe('PromptService Integration Tests', () => {
         timestamp: Date.now()
       });
 
-      // 验证历史记录
+      // Verify the history record
       const records = await historyManager.getRecords();
       expect(records.length).toBe(1);
       expect(records[0].type).toBe('optimize');
@@ -133,7 +133,7 @@ describe('PromptService Integration Tests', () => {
 
     it.runIf(hasGeminiKey)('should work with message-based templates', async () => {
       await delayBetweenTests();
-      // 添加一个消息模板 - 使用实际存在的变量
+      // Add a message template - using variables that actually exist
       const messageTemplate: Template = {
         id: 'test-message-template',
         name: 'Test Message Template',
@@ -157,7 +157,7 @@ describe('PromptService Integration Tests', () => {
 
       await templateManager.saveTemplate(messageTemplate);
 
-      // 使用spy来模拟getTemplate返回我们的模板
+      // Use a spy to mock getTemplate returning our template
       const getTemplateSpy = vi.spyOn(templateManager, 'getTemplate').mockReturnValue(messageTemplate);
 
       const request = {
@@ -171,10 +171,10 @@ describe('PromptService Integration Tests', () => {
       expect(typeof result).toBe('string');
       expect(result.length).toBeGreaterThan(0);
 
-      // 验证模板被调用
+      // Verify the template was called
       expect(getTemplateSpy).toHaveBeenCalled();
 
-      // 恢复spy
+      // Restore the spy
       getTemplateSpy.mockRestore();
     }, TEST_TIMEOUT);
 
@@ -186,7 +186,7 @@ describe('PromptService Integration Tests', () => {
   describe('iteratePrompt with different template formats', () => {
     it.runIf(hasGeminiKey)('should work with string-based iterate templates', async () => {
       await delayBetweenTests();
-      // 添加一个简单的迭代模板供测试使用
+      // Add a simple iterate template for the test
       const simpleIterateTemplate: Template = {
         id: 'simple-iterate-template',
         name: 'Simple Iterate Template',
@@ -210,7 +210,7 @@ describe('PromptService Integration Tests', () => {
 
       await templateManager.saveTemplate(simpleIterateTemplate);
 
-      // 模拟getTemplate返回迭代模板
+      // Mock getTemplate returning the iterate template
       const getTemplateSpy = vi.spyOn(templateManager, 'getTemplate').mockReturnValue(simpleIterateTemplate);
 
       const result = await promptService.iteratePrompt(
@@ -224,10 +224,10 @@ describe('PromptService Integration Tests', () => {
       expect(typeof result).toBe('string');
       expect(result.length).toBeGreaterThan(0);
 
-      // 恢复spy
+      // Restore the spy
       getTemplateSpy.mockRestore();
 
-      // 模拟UI层保存历史记录 - 对于迭代，需要先创建一个链，然后添加迭代
+      // Simulate the UI layer saving the history record - for an iteration, a chain must be created first, then the iteration added
       const chain = await historyManager.createNewChain({
         id: `test_${Date.now()}`,
         originalPrompt: 'Write a simple greeting',
@@ -246,15 +246,15 @@ describe('PromptService Integration Tests', () => {
         iterationNote: 'Make it more formal'
       });
 
-      // 验证历史记录
+      // Verify the history record
       const records = await historyManager.getRecords();
-      expect(records.length).toBe(2); // 一个初始记录 + 一个迭代记录
+      expect(records.length).toBe(2); // One initial record + one iteration record
       expect(records.find(r => r.type === 'iterate')).toBeDefined();
     }, TEST_TIMEOUT);
 
     it.runIf(hasGeminiKey)('should work with message-based iterate templates', async () => {
       await delayBetweenTests();
-      // 添加迭代模板 - 合并为单个 user 消息
+      // Add the iterate template - merged into a single user message
       const iterateTemplate: Template = {
         id: 'test-iterate-template',
         name: 'Test Iterate Template',
@@ -278,7 +278,7 @@ describe('PromptService Integration Tests', () => {
 
       await templateManager.saveTemplate(iterateTemplate);
 
-      // 模拟getTemplate返回迭代模板
+      // Mock getTemplate returning the iterate template
       const getTemplateSpy = vi.spyOn(templateManager, 'getTemplate').mockReturnValue(iterateTemplate);
 
       const result = await promptService.iteratePrompt(
@@ -292,10 +292,10 @@ describe('PromptService Integration Tests', () => {
       expect(typeof result).toBe('string');
       expect(result.length).toBeGreaterThan(0);
 
-      // 验证模板被调用
+      // Verify the template was called
       expect(getTemplateSpy).toHaveBeenCalled();
 
-      // 恢复spy
+      // Restore the spy
       getTemplateSpy.mockRestore();
     }, TEST_TIMEOUT);
 
@@ -317,7 +317,7 @@ describe('PromptService Integration Tests', () => {
         templateId: 'general-optimize'
       };
 
-      // 使用Promise来确保onComplete被正确等待
+      // Use a Promise to make sure onComplete is awaited correctly
       await new Promise<void>((resolve, reject) => {
         promptService.optimizePromptStream(
           request,
@@ -337,7 +337,7 @@ describe('PromptService Integration Tests', () => {
       expect(tokens.length).toBeGreaterThan(0);
       expect(completed).toBe(true);
 
-      // 验证接收到的内容
+      // Verify the received content
       const fullContent = tokens.join('');
       expect(fullContent.length).toBeGreaterThan(0);
     }, TEST_TIMEOUT);
@@ -347,7 +347,7 @@ describe('PromptService Integration Tests', () => {
       const tokens: string[] = [];
       let completed = false;
 
-      // 添加流式迭代模板
+      // Add the streaming iterate template
       const streamIterateTemplate: Template = {
         id: 'stream-iterate-template',
         name: 'Stream Iterate Template',
@@ -371,10 +371,10 @@ describe('PromptService Integration Tests', () => {
 
       await templateManager.saveTemplate(streamIterateTemplate);
 
-      // 模拟getTemplate返回流式迭代模板
+      // Mock getTemplate returning the streaming iterate template
       const getTemplateSpy = vi.spyOn(templateManager, 'getTemplate').mockReturnValue(streamIterateTemplate);
 
-      // 使用Promise来确保onComplete被正确等待
+      // Use a Promise to make sure onComplete is awaited correctly
       await new Promise<void>((resolve, reject) => {
         promptService.iteratePromptStream(
           'Write a simple greeting',
@@ -398,11 +398,11 @@ describe('PromptService Integration Tests', () => {
       expect(tokens.length).toBeGreaterThan(0);
       expect(completed).toBe(true);
 
-      // 验证接收到的内容
+      // Verify the received content
       const fullContent = tokens.join('');
       expect(fullContent.length).toBeGreaterThan(0);
 
-      // 恢复spy
+      // Restore the spy
       getTemplateSpy.mockRestore();
     }, TEST_TIMEOUT);
 
@@ -413,7 +413,7 @@ describe('PromptService Integration Tests', () => {
 
   describe('error handling', () => {
     it.runIf(hasGeminiKey)('should handle template not found errors', async () => {
-      // 模拟模板未找到
+      // Mock the template not being found
       const getTemplateSpy = vi.spyOn(templateManager, 'getTemplate').mockImplementation(() => {
         throw new Error('Template not found');
       });
@@ -427,7 +427,7 @@ describe('PromptService Integration Tests', () => {
         promptService.optimizePrompt(request)
       ).rejects.toThrow(/Template not found/);
 
-      // 恢复spy
+      // Restore the spy
       getTemplateSpy.mockRestore();
     });
 
@@ -455,7 +455,7 @@ describe('PromptService Integration Tests', () => {
         promptService.optimizePrompt(request)
       ).rejects.toThrow(/Template not found or invalid/);
 
-      // 恢复spy
+      // Restore the spy
       getTemplateSpy.mockRestore();
     });
 

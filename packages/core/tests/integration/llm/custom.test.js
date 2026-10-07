@@ -4,12 +4,12 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { createMockStorage } from '../../mocks/mockStorage';
 
-// 加载环境变量
+// Load environment variables
 beforeAll(() => {
   dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 });
 
-describe('自定义模型测试', () => {
+describe('Custom model test', () => {
   let llmService;
   let modelManager;
   let mockStorage;
@@ -21,7 +21,7 @@ describe('自定义模型测试', () => {
     modelManager = new ModelManager(mockStorage);
     llmService = createLLMService(modelManager);
     
-    // 创建自定义模型配置
+    // Create the custom model config
     const customConfig = {
       name: 'Custom',
       baseURL: process.env.VITE_CUSTOM_API_BASE_URL || 'https://api.custom.test',
@@ -32,7 +32,7 @@ describe('自定义模型测试', () => {
       provider: 'custom'
     };
     
-    // 模拟获取自定义模型
+    // Mock fetching the custom model
     vi.spyOn(modelManager, 'getModel').mockImplementation(async (key) => {
       if (key === 'custom') {
         return customConfig;
@@ -41,13 +41,13 @@ describe('自定义模型测试', () => {
     });
   });
 
-  it('应该能正确加载和使用自定义模型', async () => {
+  it('should be able to load and use the custom model correctly', async () => {
     const model = await modelManager.getModel('custom');
     
     expect(model).toBeDefined();
     expect(model.name).toBe('Custom');
     
-    // 处理环境变量可能为空的情况
+    // Handle the case where the environment variable may be empty
     if (process.env.VITE_CUSTOM_API_BASE_URL) {
       expect(model.baseURL).toBe(process.env.VITE_CUSTOM_API_BASE_URL);
     }
@@ -60,7 +60,7 @@ describe('自定义模型测试', () => {
     expect(model.enabled).toBe(!!process.env.VITE_CUSTOM_API_KEY);
   });
 
-  it('应该能正确处理自定义模型的配置更新', async () => {
+  it('should handle custom model config updates correctly', async () => {
     const updatedConfig = {
       name: 'Updated Custom Model',
       baseURL: process.env.VITE_CUSTOM_API_BASE_URL || 'https://api.custom.test',
@@ -70,7 +70,7 @@ describe('自定义模型测试', () => {
       provider: 'custom'
     };
 
-    // 模拟更新后的模型
+    // Mock the updated model
     vi.spyOn(modelManager, 'getModel').mockImplementation(async (key) => {
       if (key === 'custom') {
         return updatedConfig;
@@ -89,17 +89,17 @@ describe('自定义模型测试', () => {
     expect(model.defaultModel).toBe(updatedConfig.defaultModel);
   });
 
-  it('应该能正确调用自定义模型的 API', async () => {
+  it('should be able to call the API of the custom model correctly', async () => {
     if (!process.env.VITE_CUSTOM_API_KEY) {
-      console.log('跳过测试：未设置 VITE_CUSTOM_API_KEY 环境变量');
+      console.log('Skipping the test: the VITE_CUSTOM_API_KEY environment variable is not set');
       return;
     }
 
-    // 模拟API调用
-    vi.spyOn(llmService, 'sendMessage').mockResolvedValue('这是模拟的API响应');
+    // Mock the API call
+    vi.spyOn(llmService, 'sendMessage').mockResolvedValue('This is a mocked API response');
 
     const messages = [
-      { role: 'user', content: '你好，请用一句话介绍你自己' }
+      { role: 'user', content: 'Hello, please introduce yourself in one sentence' }
     ];
 
     const response = await llmService.sendMessage(messages, 'custom');
@@ -108,19 +108,19 @@ describe('自定义模型测试', () => {
     expect(response.length).toBeGreaterThan(0);
   }, 25000);
 
-  it('应该能正确处理自定义模型的多轮对话', async () => {
+  it('should handle multi-turn conversation with the custom model correctly', async () => {
     if (!process.env.VITE_CUSTOM_API_KEY) {
-      console.log('跳过测试：未设置 VITE_CUSTOM_API_KEY 环境变量');
+      console.log('Skipping the test: the VITE_CUSTOM_API_KEY environment variable is not set');
       return;
     }
 
-    // 模拟API调用
-    vi.spyOn(llmService, 'sendMessage').mockResolvedValue('这是多轮对话的模拟响应');
+    // Mock the API call
+    vi.spyOn(llmService, 'sendMessage').mockResolvedValue('This is a mocked multi-turn conversation response');
 
     const messages = [
-      { role: 'user', content: '你好' },
-      { role: 'assistant', content: '你好！有什么我可以帮你的吗？' },
-      { role: 'user', content: '再见' }
+      { role: 'user', content: 'Hello' },
+      { role: 'assistant', content: 'Hello! How can I help you?' },
+      { role: 'user', content: 'Goodbye' }
     ];
 
     const response = await llmService.sendMessage(messages, 'custom');

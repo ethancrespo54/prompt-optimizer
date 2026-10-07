@@ -55,7 +55,7 @@ const fakeAdapter: IImageProviderAdapter = {
 
 const stubRegistry: IImageAdapterRegistry = {
   getAdapter(providerId: string) {
-    if (providerId.toLowerCase() !== 'test') throw new Error(`未知提供商: ${providerId}`)
+    if (providerId.toLowerCase() !== 'test') throw new Error(`Unknown provider: ${providerId}`)
     return fakeAdapter
   },
   getAllProviders() { return [stubProvider] },
@@ -72,7 +72,7 @@ const stubRegistry: IImageAdapterRegistry = {
   }
 }
 
-// Mock defaults.ts 以避免在模块加载时执行 getDefaultImageModels()
+// Mock defaults.ts to avoid executing getDefaultImageModels() when the module loads
 vi.mock('../../src/services/image-model/defaults', () => {
   return {
     getDefaultImageModels: () => ({}),
@@ -81,9 +81,9 @@ vi.mock('../../src/services/image-model/defaults', () => {
 })
 
 // Mock the registry factory used by ImageService so it uses our stub registry
-// 注意：vi.mock 会被提升到文件顶部，所以需要在 mock 内部定义所有依赖
+// Note: vi.mock is hoisted to the top of the file, so all dependencies must be defined inside the mock
 vi.mock('../../src/services/image/adapters/registry', () => {
-  // 在 mock 内部定义 stub 数据
+  // Define the stub data inside the mock
   const mockStubProvider = {
     id: 'test',
     name: 'Test Provider',
@@ -126,7 +126,7 @@ vi.mock('../../src/services/image/adapters/registry', () => {
 
   const mockStubRegistry = {
     getAdapter(providerId: string) {
-      if (providerId.toLowerCase() !== 'test') throw new Error(`未知提供商: ${providerId}`)
+      if (providerId.toLowerCase() !== 'test') throw new Error(`Unknown provider: ${providerId}`)
       return mockFakeAdapter
     },
     getAllProviders() { return [mockStubProvider] },
@@ -144,7 +144,7 @@ vi.mock('../../src/services/image/adapters/registry', () => {
     }
   }
 
-  // 创建一个构造函数形式的 mock 类
+  // Create a mock class in constructor form
   const MockImageAdapterRegistry = function() {
     return mockStubRegistry
   }
@@ -174,7 +174,7 @@ describe('Acceptance - Image Service E2E', () => {
       enabled: true,
       connectionConfig: {},
       paramOverrides: { outputMimeType: 'image/png' },
-      // 自包含字段
+      // Self-contained fields
       provider: stubProvider,
       model: stubModel
     }
@@ -206,7 +206,7 @@ describe('Acceptance - Image Service E2E', () => {
       enabled: true,
       connectionConfig: {},
       paramOverrides: {},
-      // 自包含字段
+      // Self-contained fields
       provider: stubProvider,
       model: stubModel
     }
@@ -233,7 +233,7 @@ describe('Acceptance - Image Service E2E', () => {
       enabled: true,
       connectionConfig: {},
       paramOverrides: {},
-      // 自包含字段
+      // Self-contained fields
       provider: stubProvider,
       model: stubModel
     }

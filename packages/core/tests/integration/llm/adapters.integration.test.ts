@@ -4,7 +4,7 @@ import type { TextModelConfig, Message, TextAdapter } from '../../../src/service
 import dotenv from 'dotenv';
 import path from 'path';
 
-// 加载环境变量
+// Load environment variables
 beforeAll(() => {
   dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 });
@@ -12,8 +12,8 @@ beforeAll(() => {
 const RUN_REAL_API = process.env.RUN_REAL_API === '1';
 
 /**
- * 辅助函数：从 adapter 创建测试配置
- * 避免硬编码模型和 baseURL，统一使用 adapter 的默认值
+ * Helper function: create the test config from an adapter
+ * Avoid hard-coding the model and baseURL, and use the adapter's default values uniformly
  */
 function createTestConfig(
   adapter: TextAdapter,
@@ -30,10 +30,10 @@ function createTestConfig(
     name: adapter.getProvider().name,
     enabled: true,
     providerMeta: adapter.getProvider(),
-    modelMeta: models[0], // 使用第一个可用模型
+    modelMeta: models[0], // Use the first available model
     connectionConfig: {
       apiKey
-      // 不覆盖 baseURL，使用 adapter 的默认值
+      // Do not override baseURL, use the adapter's default value
     },
     paramOverrides
   };
@@ -59,7 +59,7 @@ describe.skipIf(!RUN_REAL_API)('Adapter Integration Tests - Real SDK', () => {
       });
 
       const messages: Message[] = [
-        { role: 'user', content: '请用一句话介绍你自己' }
+        { role: 'user', content: 'Please introduce yourself in one sentence' }
       ];
 
       const response = await adapter.sendMessage(messages, config);
@@ -79,7 +79,7 @@ describe.skipIf(!RUN_REAL_API)('Adapter Integration Tests - Real SDK', () => {
       const config = createTestConfig(adapter, apiKey!);
 
       const messages: Message[] = [
-        { role: 'user', content: '请说"你好"' }
+        { role: 'user', content: 'Please say "hello"' }
       ];
 
       let contentTokens = '';
@@ -140,7 +140,7 @@ describe.skipIf(!RUN_REAL_API)('Adapter Integration Tests - Real SDK', () => {
       });
 
       const messages: Message[] = [
-        { role: 'user', content: '请用一句话介绍你自己' }
+        { role: 'user', content: 'Please introduce yourself in one sentence' }
       ];
 
       const response = await adapter.sendMessage(messages, config);
@@ -158,7 +158,7 @@ describe.skipIf(!RUN_REAL_API)('Adapter Integration Tests - Real SDK', () => {
       const config = createTestConfig(adapter, apiKey!);
 
       const messages: Message[] = [
-        { role: 'user', content: '请说"你好"' }
+        { role: 'user', content: 'Please say "hello"' }
       ];
 
       let contentTokens = '';
@@ -197,7 +197,7 @@ describe.skipIf(!RUN_REAL_API)('Adapter Integration Tests - Real SDK', () => {
       });
 
       const messages: Message[] = [
-        { role: 'user', content: '请用一句话介绍你自己' }
+        { role: 'user', content: 'Please introduce yourself in one sentence' }
       ];
 
       const response = await adapter.sendMessage(messages, config);
@@ -215,7 +215,7 @@ describe.skipIf(!RUN_REAL_API)('Adapter Integration Tests - Real SDK', () => {
       const config = createTestConfig(adapter, apiKey!);
 
       const messages: Message[] = [
-        { role: 'user', content: '请说"你好"' }
+        { role: 'user', content: 'Please say "hello"' }
       ];
 
       let contentTokens = '';
@@ -251,7 +251,7 @@ describe.skipIf(!RUN_REAL_API)('Adapter Integration Tests - Real SDK', () => {
       const config = createTestConfig(adapter, apiKey!);
 
       const messages: Message[] = [
-        { role: 'user', content: '现在北京的天气怎么样?' }
+        { role: 'user', content: 'What is the weather like in Beijing now?' }
       ];
 
       const tools = [
@@ -259,13 +259,13 @@ describe.skipIf(!RUN_REAL_API)('Adapter Integration Tests - Real SDK', () => {
           type: 'function' as const,
           function: {
             name: 'get_weather',
-            description: '获取指定城市的天气信息',
+            description: 'Get the weather info of the given city',
             parameters: {
               type: 'object',
               properties: {
                 city: {
                   type: 'string',
-                  description: '城市名称'
+                  description: 'City name'
                 }
               },
               required: ['city']
@@ -313,7 +313,7 @@ describe.skipIf(!RUN_REAL_API)('Adapter Integration Tests - Real SDK', () => {
       });
 
       const messages: Message[] = [
-        { role: 'user', content: '请用一句话介绍你自己' }
+        { role: 'user', content: 'Please introduce yourself in one sentence' }
       ];
 
       const response = await adapter.sendMessage(messages, config);
@@ -332,7 +332,7 @@ describe.skipIf(!RUN_REAL_API)('Adapter Integration Tests - Real SDK', () => {
       const config = createTestConfig(adapter, apiKey!);
 
       const messages: Message[] = [
-        { role: 'user', content: '请说"你好"' }
+        { role: 'user', content: 'Please say "hello"' }
       ];
 
       let contentTokens = '';
@@ -365,7 +365,7 @@ describe.skipIf(!RUN_REAL_API)('Adapter Integration Tests - Real SDK', () => {
   describe('Error Handling', () => {
     it('should throw clear error for unknown provider', () => {
       expect(() => registry.getAdapter('unknown-provider'))
-        .toThrow(/Unknown (provider|文本模型提供商): unknown-provider/);
+        .toThrow(/Unknown (provider|text model provider): unknown-provider/);
     });
 
     it('should return correct static models for each provider', () => {

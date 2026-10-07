@@ -8,8 +8,8 @@ import { createModelManager } from '../../src/services/model/manager'
 import { createHistoryManager } from '../../src/services/history/manager'
 
 /**
- * 真实API集成测试
- * 只有在相应的环境变量存在时才执行
+ * Real API integration test
+ * Only runs when the corresponding environment variables exist
  */
 const RUN_REAL_API = process.env.RUN_REAL_API === '1'
 
@@ -41,10 +41,10 @@ describe.skipIf(!RUN_REAL_API)('Real API Integration Tests', () => {
     const llmService = createLLMService(modelManager)
     promptService = new PromptService(modelManager, llmService, templateManager, historyManager)
 
-    // 清理存储
+    // Clean up the storage
     await storage.clearAll()
 
-    // 添加通用模板
+    // Add the generic template
     const template = {
       id: 'test-optimize',
       name: 'Test Optimize',
@@ -59,14 +59,14 @@ describe.skipIf(!RUN_REAL_API)('Real API Integration Tests', () => {
     await templateManager.saveTemplate(template)
   })
 
-  describe('OpenAI API 测试', () => {
+  describe('OpenAI API test', () => {
     const runOpenAITests = hasOpenAIKey
 
-    it.runIf(runOpenAITests)('应该能使用OpenAI API优化提示词', async () => {
-      // 执行优化
+    it.runIf(runOpenAITests)('should be able to optimize a prompt with the OpenAI API', async () => {
+      // Run the optimization
       const request = {
         optimizationMode: 'system' as const,
-        targetPrompt: '请优化这个提示词：写一个关于人工智能的故事',
+        targetPrompt: 'Please optimize this prompt: write a story about artificial intelligence',
         modelKey: 'openai'
       };
       const result = await promptService.optimizePrompt(request)
@@ -75,25 +75,25 @@ describe.skipIf(!RUN_REAL_API)('Real API Integration Tests', () => {
       expect(typeof result).toBe('string')
       expect(result.length).toBeGreaterThan(0)
 
-      // 验证历史记录已保存
+      // Verify the history record was saved
       const records = await historyManager.getRecords()
       expect(records.length).toBe(1)
       expect(records[0].type).toBe('optimize')
     }, 60000)
 
-    it.skipIf(!runOpenAITests)('跳过OpenAI测试 - 未设置API密钥', () => {
+    it.skipIf(!runOpenAITests)('skip the OpenAI test - API key not set', () => {
       expect(true).toBe(true)
     })
   })
 
-  describe('Custom API 测试', () => {
+  describe('Custom API test', () => {
     const runCustomTests = hasCustomKey
 
-    it.runIf(runCustomTests)('应该能使用Custom API优化提示词', async () => {
-      // 执行优化
+    it.runIf(runCustomTests)('should be able to optimize a prompt with the Custom API', async () => {
+      // Run the optimization
       const request = {
         optimizationMode: 'system' as const,
-        targetPrompt: '请优化这个提示词：写一个关于机器人的故事',
+        targetPrompt: 'Please optimize this prompt: write a story about a robot',
         modelKey: 'custom'
       };
       const result = await promptService.optimizePrompt(request)
@@ -102,25 +102,25 @@ describe.skipIf(!RUN_REAL_API)('Real API Integration Tests', () => {
       expect(typeof result).toBe('string')
       expect(result.length).toBeGreaterThan(0)
 
-      // 验证历史记录已保存
+      // Verify the history record was saved
       const records = await historyManager.getRecords()
       expect(records.length).toBe(1)
       expect(records[0].type).toBe('optimize')
     }, 60000)
 
-    it.skipIf(!runCustomTests)('跳过Custom API测试 - 未设置API密钥或基础URL', () => {
+    it.skipIf(!runCustomTests)('skip the Custom API test - API key or base URL not set', () => {
       expect(true).toBe(true)
     })
   })
 
-  describe('Gemini API 测试', () => {
+  describe('Gemini API test', () => {
     const runGeminiTests = hasGeminiKey
 
-    it.runIf(runGeminiTests)('应该能使用Gemini API优化提示词', async () => {
-      // 执行优化
+    it.runIf(runGeminiTests)('should be able to optimize a prompt with the Gemini API', async () => {
+      // Run the optimization
       const request = {
         optimizationMode: 'system' as const,
-        targetPrompt: '请优化这个提示词：写一个关于太空探索的故事',
+        targetPrompt: 'Please optimize this prompt: write a story about space exploration',
         modelKey: 'gemini'
       };
       const result = await promptService.optimizePrompt(request)
@@ -129,7 +129,7 @@ describe.skipIf(!RUN_REAL_API)('Real API Integration Tests', () => {
       expect(typeof result).toBe('string')
       expect(result.length).toBeGreaterThan(0)
 
-      // 模拟UI层保存历史记录
+      // Simulate the UI layer saving the history record
       await historyManager.createNewChain({
         id: `test_${Date.now()}`,
         originalPrompt: request.targetPrompt,
@@ -139,25 +139,25 @@ describe.skipIf(!RUN_REAL_API)('Real API Integration Tests', () => {
         timestamp: Date.now()
       })
 
-      // 验证历史记录已保存
+      // Verify the history record was saved
       const records = await historyManager.getRecords()
       expect(records.length).toBe(1)
       expect(records[0].type).toBe('optimize')
     }, 60000)
 
-    it.skipIf(!runGeminiTests)('跳过Gemini测试 - 未设置API密钥', () => {
+    it.skipIf(!runGeminiTests)('skip the Gemini test - API key not set', () => {
       expect(true).toBe(true)
     })
   })
 
-  describe('DeepSeek API 测试', () => {
+  describe('DeepSeek API test', () => {
     const runDeepSeekTests = hasDeepSeekKey
 
-    it.runIf(runDeepSeekTests)('应该能使用DeepSeek API优化提示词', async () => {
-      // 执行优化
+    it.runIf(runDeepSeekTests)('should be able to optimize a prompt with the DeepSeek API', async () => {
+      // Run the optimization
       const request = {
         optimizationMode: 'system' as const,
-        targetPrompt: '请优化这个提示词：写一个关于人工智能的故事',
+        targetPrompt: 'Please optimize this prompt: write a story about artificial intelligence',
         modelKey: 'deepseek'
       };
       const result = await promptService.optimizePrompt(request)
@@ -166,7 +166,7 @@ describe.skipIf(!RUN_REAL_API)('Real API Integration Tests', () => {
       expect(typeof result).toBe('string')
       expect(result.length).toBeGreaterThan(0)
 
-      // 模拟UI层保存历史记录
+      // Simulate the UI layer saving the history record
       await historyManager.createNewChain({
         id: `test_${Date.now()}`,
         originalPrompt: request.targetPrompt,
@@ -176,28 +176,28 @@ describe.skipIf(!RUN_REAL_API)('Real API Integration Tests', () => {
         timestamp: Date.now()
       })
 
-      // 验证历史记录已保存
+      // Verify the history record was saved
       const records = await historyManager.getRecords()
       expect(records.length).toBe(1)
       expect(records[0].type).toBe('optimize')
     }, 60000)
 
-    it.skipIf(!runDeepSeekTests)('跳过DeepSeek测试 - 未设置API密钥', () => {
+    it.skipIf(!runDeepSeekTests)('skip the DeepSeek test - API key not set', () => {
       expect(true).toBe(true)
     })
   })
 
-  describe('轻量级工作流测试', () => {
+  describe('Lightweight workflow test', () => {
     const runWorkflowTests = hasOpenAIKey || (hasCustomKey && !!process.env.VITE_CUSTOM_BASE_URL)
 
-    it.runIf(runWorkflowTests)('应该能完成基本的优化流程', async () => {
-      // 选择可用的模型
+    it.runIf(runWorkflowTests)('should be able to complete the basic optimization flow', async () => {
+      // Choose an available model
       const modelKey = hasOpenAIKey ? 'openai' : 'custom'
 
-      // 优化原始提示词
+      // Optimize the original prompt
       const request = {
         optimizationMode: 'system' as const,
-        targetPrompt: '写一个故事',
+        targetPrompt: 'Write a story',
         modelKey: modelKey
       };
       const optimizeResult = await promptService.optimizePrompt(request)
@@ -205,7 +205,7 @@ describe.skipIf(!RUN_REAL_API)('Real API Integration Tests', () => {
       expect(typeof optimizeResult).toBe('string')
       expect(optimizeResult.length).toBeGreaterThan(0)
 
-      // 模拟UI层保存历史记录
+      // Simulate the UI layer saving the history record
       await historyManager.createNewChain({
         id: `test_${Date.now()}`,
         originalPrompt: request.targetPrompt,
@@ -215,27 +215,27 @@ describe.skipIf(!RUN_REAL_API)('Real API Integration Tests', () => {
         timestamp: Date.now()
       })
 
-      // 验证历史记录已保存
+      // Verify the history record was saved
       const records = await historyManager.getRecords()
       expect(records.length).toBe(1)
       expect(records[0].type).toBe('optimize')
 
-    }, 60000) // 增加超时到60秒
+    }, 60000) // Increase the timeout to 60 seconds
 
-    it.skipIf(!runWorkflowTests)('跳过工作流测试 - 未设置API密钥', () => {
+    it.skipIf(!runWorkflowTests)('skip the workflow test - API key not set', () => {
       expect(true).toBe(true)
     })
   })
 
-  describe('并发和错误处理测试', () => {
+  describe('Concurrency and error handling test', () => {
     const runStabilityTests = hasOpenAIKey || (hasCustomKey && !!process.env.VITE_CUSTOM_BASE_URL)
 
-    it.runIf(runStabilityTests)('应该能正确处理API错误', async () => {
+    it.runIf(runStabilityTests)('should handle API errors correctly', async () => {
       const models = await modelManager.getAllModels()
       const baseModel = models.find(m => m.enabled && m.providerMeta?.requiresApiKey && m.providerMeta?.id !== 'custom')
       if (!baseModel) return
 
-      // 添加一个有无效API密钥的模型（复用已启用模型的元数据，替换 apiKey）
+      // Add a model with an invalid API key (reuse the metadata of an enabled model, replacing the apiKey)
       await modelManager.addModel('invalid-model', {
         ...baseModel,
         id: 'invalid-model',
@@ -247,20 +247,20 @@ describe.skipIf(!RUN_REAL_API)('Real API Integration Tests', () => {
         }
       })
 
-      // 尝试优化应该失败
+      // Trying to optimize should fail
       const request = {
         optimizationMode: 'system' as const,
-        targetPrompt: '测试提示词',
+        targetPrompt: 'Test prompt',
         modelKey: 'invalid-model'
       };
       await expect(promptService.optimizePrompt(request)).rejects.toThrow()
 
-      // 验证没有创建无效的历史记录
+      // Verify that no invalid history record was created
       const records = await historyManager.getRecords()
       expect(records.length).toBe(0)
     }, 30000)
 
-    it.skipIf(!runStabilityTests)('跳过稳定性测试 - 未设置API密钥', () => {
+    it.skipIf(!runStabilityTests)('skip the stability test - API key not set', () => {
       expect(true).toBe(true)
     })
   })

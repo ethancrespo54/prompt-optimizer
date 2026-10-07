@@ -1,8 +1,8 @@
 /**
- * 变量提取服务 - 真实API集成测试
+ * Variable extraction service - real API integration test
  *
- * 测试变量提取服务与真实LLM API的集成
- * 只有在环境变量存在时才执行
+ * Tests the integration of the variable extraction service with the real LLM API
+ * Only runs when the environment variables exist
  */
 
 import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
@@ -38,18 +38,18 @@ describe.skipIf(!RUN_REAL_API)('VariableExtractionService - Real API Integration
   });
 
   beforeEach(async () => {
-    // 先创建存储和模板管理器
+    // Create the storage and template manager first
     storage = new LocalStorageProvider();
     await storage.clearAll();
 
     const languageService = createTemplateLanguageService(storage);
     templateManager = createTemplateManager(storage, languageService);
 
-    // 创建真实LLM测试上下文（它会使用自己的存储和modelManager）
+    // Create the real LLM test context (it uses its own storage and modelManager)
     context = await createRealLLMTestContext({
       paramOverrides: {
         temperature: 0.7,
-        // 不使用max_tokens，让系统使用默认值
+        // Do not use max_tokens; let the system use the default
       },
     });
 
@@ -57,42 +57,42 @@ describe.skipIf(!RUN_REAL_API)('VariableExtractionService - Real API Integration
       return;
     }
 
-    // 使用context返回的modelManager创建变量提取服务
+    // Create the variable extraction service using the modelManager returned by the context
     variableExtractionService = createVariableExtractionService(
       context.llmService,
-      context.modelManager,  // 使用context的modelManager
+      context.modelManager,  // Use the modelManager of the context
       templateManager
     );
 
   });
 
-  describe('基础变量提取测试', () => {
-    it.skipIf(!hasAvailableProvider())('应该能成功提取简单提示词中的变量', async () => {
+  describe('Basic variable extraction test', () => {
+    it.skipIf(!hasAvailableProvider())('should successfully extract variables from a simple prompt', async () => {
       if (!context) {
         return;
       }
 
       const request: VariableExtractionRequest = {
-        promptContent: '请写一篇关于春天的文章，字数要求在500字以内。',
+        promptContent: 'Please write an article about spring, within 500 words.',
         extractionModelKey: context.modelKey,
         existingVariableNames: [],
       };
 
       const result = await variableExtractionService.extract(request);
 
-      // 验证返回结构
+      // Verify the returned structure
       expect(result).toBeDefined();
       expect(result.variables).toBeInstanceOf(Array);
       expect(result.summary).toBeDefined();
       expect(typeof result.summary).toBe('string');
 
-      // 打印结果
+      // Print the result
 
       if (result.variables.length > 0) {
         result.variables.forEach((v, index) => {
         });
 
-        // 验证第一个变量的结构
+        // Verify the structure of the first variable
         const firstVar = result.variables[0];
         expect(firstVar.name).toBeDefined();
         expect(typeof firstVar.name).toBe('string');
@@ -105,26 +105,26 @@ describe.skipIf(!RUN_REAL_API)('VariableExtractionService - Real API Integration
         expect(firstVar.reason).toBeDefined();
         expect(typeof firstVar.reason).toBe('string');
 
-        // 验证变量名符合规范（中文/英文/数字/下划线，不以数字开头）
+        // Verify the variable name follows the rules (letters/digits/underscores, not starting with a digit)
         expect(firstVar.name).toMatch(/^[a-zA-Z_\u4e00-\u9fa5][a-zA-Z0-9_\u4e00-\u9fa5]*$/);
       }
     }, 60000);
 
-    it.skipIf(!hasAvailableProvider())('应该能提取包含多个变量的复杂提示词', async () => {
+    it.skipIf(!hasAvailableProvider())('should be able to extract variables from a complex prompt containing multiple variables', async () => {
       if (!context) {
         return;
       }
 
       const request: VariableExtractionRequest = {
-        promptContent: `作为一名专业的小说作家，请创作一篇科幻小说。
-要求：
-- 主题：人工智能
-- 风格：悬疑紧张
-- 字数：3000字
-- 目标读者：成年人
-- 叙事视角：第一人称
+        promptContent: `As a professional novelist, please write a science fiction story.
+Requirements:
+- Theme: artificial intelligence
+- Style: suspenseful and tense
+- Word count: 3000 words
+- Target readers: adults
+- Narrative perspective: first person
 
-请确保故事情节引人入胜，人物性格鲜明。`,
+Please make sure the plot is engaging and the characters are distinctive.`,
         extractionModelKey: context.modelKey,
         existingVariableNames: [],
       };
@@ -132,7 +132,7 @@ describe.skipIf(!RUN_REAL_API)('VariableExtractionService - Real API Integration
       const result = await variableExtractionService.extract(request);
 
 
-      // 应该提取到多个变量（主题、风格、字数、目标读者、叙事视角等）
+      // Multiple variables should be extracted (theme, style, word count, target readers, narrative perspective, etc.)
       expect(result.variables.length).toBeGreaterThan(0);
 
       if (result.variables.length > 0) {
@@ -141,7 +141,7 @@ describe.skipIf(!RUN_REAL_API)('VariableExtractionService - Real API Integration
           }
         });
 
-        // 验证所有变量都有有效的定位信息
+        // Verify all variables have valid location info
         result.variables.forEach((v) => {
           expect(v.position.originalText).toBeTruthy();
           expect(request.promptContent).toContain(v.position.originalText);
@@ -149,15 +149,15 @@ describe.skipIf(!RUN_REAL_API)('VariableExtractionService - Real API Integration
       }
     }, 60000);
 
-    it.skipIf(!hasAvailableProvider())('应该避免与已存在变量重名', async () => {
+    it.skipIf(!hasAvailableProvider())('should avoid name collisions with existing variables', async () => {
       if (!context) {
         return;
       }
 
       const request: VariableExtractionRequest = {
-        promptContent: '请写一篇关于春天的文章，字数要求在500字以内。',
+        promptContent: 'Please write an article about spring, within 500 words.',
         extractionModelKey: context.modelKey,
-        existingVariableNames: ['season', 'topic', '季节', '主题', 'word_count'],
+        existingVariableNames: ['season', 'topic', 'season_name', 'theme', 'word_count'],
       };
 
       const result = await variableExtractionService.extract(request);
@@ -166,15 +166,15 @@ describe.skipIf(!RUN_REAL_API)('VariableExtractionService - Real API Integration
       if (result.variables.length > 0) {
         result.variables.forEach((v, index) => {
 
-          // 验证没有重名
+          // Verify there are no name collisions
           expect(request.existingVariableNames).not.toContain(v.name);
         });
       }
     }, 60000);
   });
 
-  describe('错误处理测试', () => {
-    it.skipIf(!hasAvailableProvider())('应该在提示词为空时抛出验证错误', async () => {
+  describe('Error handling test', () => {
+    it.skipIf(!hasAvailableProvider())('should throw a validation error when the prompt is empty', async () => {
       if (!context) {
         return;
       }
@@ -188,13 +188,13 @@ describe.skipIf(!RUN_REAL_API)('VariableExtractionService - Real API Integration
       await expect(variableExtractionService.extract(request)).rejects.toThrow();
     });
 
-    it.skipIf(!hasAvailableProvider())('应该在模型不存在时抛出模型错误', async () => {
+    it.skipIf(!hasAvailableProvider())('should throw a model error when the model does not exist', async () => {
       if (!context) {
         return;
       }
 
       const request: VariableExtractionRequest = {
-        promptContent: '测试提示词',
+        promptContent: 'Test prompt',
         extractionModelKey: 'non-existent-model',
         existingVariableNames: [],
       };
@@ -203,16 +203,16 @@ describe.skipIf(!RUN_REAL_API)('VariableExtractionService - Real API Integration
     });
   });
 
-  describe('特殊场景测试', () => {
-    it.skipIf(!hasAvailableProvider())('应该能处理包含变量标记{{}}的提示词', async () => {
+  describe('Special scenario test', () => {
+    it.skipIf(!hasAvailableProvider())('should be able to handle a prompt containing the variable marker {{}}', async () => {
       if (!context) {
         return;
       }
 
       const request: VariableExtractionRequest = {
-        promptContent: '请根据{{用户输入}}生成一篇关于人工智能的文章。',
+        promptContent: 'Please generate an article about artificial intelligence based on {{user_input}}.',
         extractionModelKey: context.modelKey,
-        existingVariableNames: ['用户输入'],
+        existingVariableNames: ['user_input'],
       };
 
       const result = await variableExtractionService.extract(request);
@@ -223,11 +223,11 @@ describe.skipIf(!RUN_REAL_API)('VariableExtractionService - Real API Integration
         });
       }
 
-      // 变量可能包括"人工智能"等内容
+      // The variables may include content such as "artificial intelligence"
       expect(result).toBeDefined();
     }, 60000);
 
-    it.skipIf(!hasAvailableProvider())('应该能处理纯英文提示词', async () => {
+    it.skipIf(!hasAvailableProvider())('should be able to handle a pure English prompt', async () => {
       if (!context) {
         return;
       }
@@ -245,20 +245,20 @@ describe.skipIf(!RUN_REAL_API)('VariableExtractionService - Real API Integration
         result.variables.forEach((v, index) => {
         });
 
-        // 验证变量名符合规范
+        // Verify the variable name follows the rules
         result.variables.forEach((v) => {
           expect(v.name).toMatch(/^[a-zA-Z_\u4e00-\u9fa5][a-zA-Z0-9_\u4e00-\u9fa5]*$/);
         });
       }
     }, 60000);
 
-    it.skipIf(!hasAvailableProvider())('应该能处理没有明显变量的提示词', async () => {
+    it.skipIf(!hasAvailableProvider())('should be able to handle a prompt without obvious variables', async () => {
       if (!context) {
         return;
       }
 
       const request: VariableExtractionRequest = {
-        promptContent: '你好！',
+        promptContent: 'Hello!',
         extractionModelKey: context.modelKey,
         existingVariableNames: [],
       };
@@ -266,21 +266,21 @@ describe.skipIf(!RUN_REAL_API)('VariableExtractionService - Real API Integration
       const result = await variableExtractionService.extract(request);
 
 
-      // 应该返回空数组或极少变量
+      // Should return an empty array or very few variables
       expect(result.variables).toBeInstanceOf(Array);
       expect(result.summary).toBeDefined();
     }, 60000);
   });
 
-  describe('端到端工作流测试', () => {
-    it.skipIf(!hasAvailableProvider())('应该完成完整的变量提取→替换流程', async () => {
+  describe('End-to-end workflow test', () => {
+    it.skipIf(!hasAvailableProvider())('should complete the full variable extraction → replacement flow', async () => {
       if (!context) {
         return;
       }
 
-      const originalPrompt = '请写一篇关于春天的文章，字数要求在500字以内，风格要轻松愉快。';
+      const originalPrompt = 'Please write an article about spring, within 500 words, in a light and cheerful style.';
 
-      // 1. 提取变量
+      // 1. Extract the variables
       const extractRequest: VariableExtractionRequest = {
         promptContent: originalPrompt,
         extractionModelKey: context.modelKey,
@@ -291,7 +291,7 @@ describe.skipIf(!RUN_REAL_API)('VariableExtractionService - Real API Integration
 
 
       if (extractResult.variables.length > 0) {
-        // 2. 模拟替换过程（从后往前替换）
+        // 2. Simulate the replacement process (replacing from back to front)
         let replacedPrompt = originalPrompt;
         const sortedVariables = [...extractResult.variables].sort((a, b) => {
           const indexA = findOccurrenceIndex(originalPrompt, a.position.originalText, a.position.occurrence);
@@ -315,20 +315,20 @@ describe.skipIf(!RUN_REAL_API)('VariableExtractionService - Real API Integration
         extractResult.variables.forEach((v, index) => {
         });
 
-        // 验证替换后的提示词包含变量占位符
+        // Verify the replaced prompt contains the variable placeholders
         extractResult.variables.forEach((v) => {
           expect(replacedPrompt).toContain(`{{${v.name}}}`);
         });
 
-        // 验证替换后的提示词不再包含被替换的原文（除非是未被替换的部分）
-        // 注意：这个验证比较复杂，因为原文可能在多处出现
+        // Verify the replaced prompt no longer contains the replaced original text (except the parts that were not replaced)
+        // Note: this verification is complex, because the original text may appear in many places
       }
     }, 60000);
   });
 });
 
 /**
- * 辅助函数：查找文本第N次出现的索引位置
+ * Helper function: find the index of the Nth occurrence of the text
  */
 function findOccurrenceIndex(text: string, searchText: string, occurrence: number): number {
   let count = 0;

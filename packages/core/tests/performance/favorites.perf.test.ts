@@ -3,20 +3,20 @@ import { FavoriteManager } from '../../src/services/favorite/manager';
 import type { IStorageProvider } from '../../src/services/storage/types';
 
 /**
- * 性能回归测试
+ * Performance regression test
  *
- * 目的: 确保性能没有明显下降
- * 基准:
- * - 查询1000个收藏: < 100ms
- * - 添加单个收藏: < 50ms
- * - 搜索1000个收藏: < 200ms
- * - 导出1000个收藏: < 500ms
+ * Purpose: make sure performance has not degraded noticeably
+ * Benchmarks:
+ * - Query 1000 favorites: < 100ms
+ * - Add a single favorite: < 50ms
+ * - Search 1000 favorites: < 200ms
+ * - Export 1000 favorites: < 500ms
  */
-describe('性能回归测试', () => {
+describe('Performance regression test', () => {
   let manager: FavoriteManager;
   let storage: Map<string, string>;
 
-  // 创建内存存储提供者
+  // Create an in-memory storage provider
   const createMemoryStorage = (): IStorageProvider => {
     storage = new Map();
     return {
@@ -59,13 +59,13 @@ describe('性能回归测试', () => {
     await manager.initialize();
   });
 
-  it('应该能在合理时间内添加单个收藏 (< 50ms)', async () => {
+  it('should be able to add a single favorite in a reasonable time (< 50ms)', async () => {
     const startTime = performance.now();
 
     await manager.addFavorite({
-      title: '性能测试收藏',
-      content: '这是用于性能测试的收藏',
-      tags: ['性能', '测试'],
+      title: 'Performance test favorite',
+      content: 'This is a favorite used for performance testing',
+      tags: ['performance', 'test'],
       functionMode: 'basic',
       optimizationMode: 'system'
     });
@@ -73,26 +73,26 @@ describe('性能回归测试', () => {
     const endTime = performance.now();
     const duration = endTime - startTime;
 
-    // 应该在 50ms 内完成
+    // Should finish within 50ms
     expect(duration).toBeLessThan(50);
   });
 
-  it('应该能在合理时间内查询大量收藏 (< 100ms for 1000 items)', async () => {
-    // 1. 准备大量测试数据
+  it('should be able to query a large number of favorites in a reasonable time (< 100ms for 1000 items)', async () => {
+    // 1. Prepare a large amount of test data
     const favorites = Array.from({ length: 1000 }, (_, i) => ({
-      title: `性能测试收藏 ${i}`,
-      content: `这是第 ${i} 个收藏的内容`,
-      tags: [`tag${i % 10}`, '性能测试'],
+      title: `Performance test favorite ${i}`,
+      content: `This is the content of favorite number ${i}`,
+      tags: [`tag${i % 10}`, 'performance test'],
       functionMode: 'basic' as const,
       optimizationMode: 'system' as const
     }));
 
-    // 2. 批量添加（这个操作不计入性能测试）
+    // 2. Add in a batch (this operation is not counted in the performance test)
     for (const fav of favorites) {
       await manager.addFavorite(fav);
     }
 
-    // 3. 测试查询性能
+    // 3. Test the query performance
     const startTime = performance.now();
 
     const result = await manager.getFavorites();
@@ -100,20 +100,20 @@ describe('性能回归测试', () => {
     const endTime = performance.now();
     const duration = endTime - startTime;
 
-    // 4. 验证查询成功
+    // 4. Verify the query succeeded
     expect(result.length).toBeGreaterThanOrEqual(1000);
 
-    // 5. 验证性能
-    // 查询1000个收藏应该在 100ms 内完成
+    // 5. Verify the performance
+    // Querying 1000 favorites should finish within 100ms
     expect(duration).toBeLessThan(100);
   });
 
-  it('应该能在合理时间内搜索大量收藏 (< 200ms for 1000 items)', async () => {
-    // 1. 准备测试数据
+  it('should be able to search a large number of favorites in a reasonable time (< 200ms for 1000 items)', async () => {
+    // 1. Prepare the test data
     const favorites = Array.from({ length: 1000 }, (_, i) => ({
-      title: `搜索测试 ${i}`,
-      content: i % 10 === 0 ? '包含关键词的内容' : '普通内容',
-      tags: ['测试'],
+      title: `Search test ${i}`,
+      content: i % 10 === 0 ? 'Content containing the keyword' : 'Ordinary content',
+      tags: ['test'],
       functionMode: 'basic' as const,
       optimizationMode: 'system' as const
     }));
@@ -122,28 +122,28 @@ describe('性能回归测试', () => {
       await manager.addFavorite(fav);
     }
 
-    // 2. 测试搜索性能
+    // 2. Test the search performance
     const startTime = performance.now();
 
-    const searchResults = await manager.searchFavorites('关键词');
+    const searchResults = await manager.searchFavorites('keyword');
 
     const endTime = performance.now();
     const duration = endTime - startTime;
 
-    // 3. 验证搜索结果
+    // 3. Verify the search results
     expect(searchResults.length).toBeGreaterThan(0);
 
-    // 4. 验证性能
-    // 搜索应该在 200ms 内完成
+    // 4. Verify the performance
+    // Searching should finish within 200ms
     expect(duration).toBeLessThan(200);
   });
 
-  it('应该能在合理时间内导出大量收藏 (< 500ms for 1000 items)', async () => {
-    // 1. 准备测试数据
+  it('should be able to export a large number of favorites in a reasonable time (< 500ms for 1000 items)', async () => {
+    // 1. Prepare the test data
     const favorites = Array.from({ length: 1000 }, (_, i) => ({
-      title: `导出测试 ${i}`,
-      content: `导出测试内容 ${i}`,
-      tags: ['导出', `tag${i % 5}`],
+      title: `Export test ${i}`,
+      content: `Export test content ${i}`,
+      tags: ['export', `tag${i % 5}`],
       functionMode: 'basic' as const,
       optimizationMode: 'system' as const
     }));
@@ -152,7 +152,7 @@ describe('性能回归测试', () => {
       await manager.addFavorite(fav);
     }
 
-    // 2. 测试导出性能
+    // 2. Test the export performance
     const startTime = performance.now();
 
     const exportData = await manager.exportFavorites();
@@ -160,24 +160,24 @@ describe('性能回归测试', () => {
     const endTime = performance.now();
     const duration = endTime - startTime;
 
-    // 3. 验证导出数据
+    // 3. Verify the exported data
     expect(exportData).toBeTruthy();
     const parsed = JSON.parse(exportData);
     expect(parsed.favorites.length).toBeGreaterThanOrEqual(1000);
 
-    // 4. 验证性能
-    // 导出应该在 500ms 内完成
+    // 4. Verify the performance
+    // Exporting should finish within 500ms
     expect(duration).toBeLessThan(500);
   });
 
-  it('应该能在合理时间内导入大量收藏 (< 1000ms for 1000 items)', async () => {
-    // 1. 准备导入数据
+  it('should be able to import a large number of favorites in a reasonable time (< 1000ms for 1000 items)', async () => {
+    // 1. Prepare the import data
     const importData = {
       favorites: Array.from({ length: 1000 }, (_, i) => ({
         id: `import-${i}`,
-        title: `导入测试 ${i}`,
-        content: `导入内容 ${i}`,
-        tags: ['导入'],
+        title: `Import test ${i}`,
+        content: `Import content ${i}`,
+        tags: ['import'],
         functionMode: 'basic',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
@@ -186,7 +186,7 @@ describe('性能回归测试', () => {
       tags: []
     };
 
-    // 2. 测试导入性能
+    // 2. Test the import performance
     const startTime = performance.now();
 
     await manager.importFavorites(JSON.stringify(importData));
@@ -194,36 +194,36 @@ describe('性能回归测试', () => {
     const endTime = performance.now();
     const duration = endTime - startTime;
 
-    // 3. 验证导入成功
+    // 3. Verify the import succeeded
     const favorites = await manager.getFavorites();
     expect(favorites.length).toBeGreaterThanOrEqual(1000);
 
-    // 4. 验证性能
-    // 导入1000个收藏应该在 1000ms 内完成
+    // 4. Verify the performance
+    // Importing 1000 favorites should finish within 1000ms
     expect(duration).toBeLessThan(1000);
   });
 
-  it('应该能在合理时间内按分类过滤 (< 100ms)', async () => {
-    // 1. 创建分类
+  it('should be able to filter by category in a reasonable time (< 100ms)', async () => {
+    // 1. Create the category
     const categoryId = await manager.addCategory({
-      name: '性能测试分类',
-      description: '用于性能测试',
+      name: 'Performance test category',
+      description: 'Used for performance testing',
       color: '#FF5722'
     });
 
-    // 2. 添加大量收藏到该分类
+    // 2. Add a large number of favorites to that category
     for (let i = 0; i < 500; i++) {
       await manager.addFavorite({
-        title: `分类测试 ${i}`,
-        content: `内容 ${i}`,
-        tags: ['测试'],
+        title: `Category test ${i}`,
+        content: `Content ${i}`,
+        tags: ['test'],
         category: categoryId,
         functionMode: 'basic',
         optimizationMode: 'system'
       });
     }
 
-    // 3. 测试按分类过滤的性能
+    // 3. Test the performance of filtering by category
     const startTime = performance.now();
 
     const filtered = await manager.getFavorites({ categoryId });
@@ -231,80 +231,80 @@ describe('性能回归测试', () => {
     const endTime = performance.now();
     const duration = endTime - startTime;
 
-    // 4. 验证过滤结果
+    // 4. Verify the filter results
     expect(filtered.length).toBe(500);
 
-    // 5. 验证性能
+    // 5. Verify the performance
     expect(duration).toBeLessThan(100);
   });
 
-  it('应该能在合理时间内按标签过滤 (< 100ms)', async () => {
-    // 1. 添加大量收藏，部分带特定标签
+  it('should be able to filter by tag in a reasonable time (< 100ms)', async () => {
+    // 1. Add a large number of favorites, some with a specific tag
     for (let i = 0; i < 500; i++) {
       await manager.addFavorite({
-        title: `标签测试 ${i}`,
-        content: `内容 ${i}`,
-        tags: i % 2 === 0 ? ['性能标签', '测试'] : ['测试'],
+        title: `Tag test ${i}`,
+        content: `Content ${i}`,
+        tags: i % 2 === 0 ? ['performance tag', 'test'] : ['test'],
         functionMode: 'basic',
         optimizationMode: 'system'
       });
     }
 
-    // 2. 测试按标签过滤的性能
+    // 2. Test the performance of filtering by tag
     const startTime = performance.now();
 
-    const filtered = await manager.getFavorites({ tags: ['性能标签'] });
+    const filtered = await manager.getFavorites({ tags: ['performance tag'] });
 
     const endTime = performance.now();
     const duration = endTime - startTime;
 
-    // 3. 验证过滤结果
+    // 3. Verify the filter results
     expect(filtered.length).toBeGreaterThan(0);
 
-    // 4. 验证性能
+    // 4. Verify the performance
     expect(duration).toBeLessThan(100);
   });
 
-  it('应该能在合理时间内更新单个收藏 (< 50ms)', async () => {
-    // 1. 添加一个收藏
+  it('should be able to update a single favorite in a reasonable time (< 50ms)', async () => {
+    // 1. Add a favorite
     const favoriteId = await manager.addFavorite({
-      title: '待更新的收藏',
-      content: '原始内容',
-      tags: ['测试'],
+      title: 'Favorite to update',
+      content: 'Original content',
+      tags: ['test'],
       functionMode: 'basic',
       optimizationMode: 'system'
     });
 
-    // 2. 测试更新性能
+    // 2. Test the update performance
     const startTime = performance.now();
 
     await manager.updateFavorite(favoriteId, {
-      title: '更新后的标题',
-      content: '更新后的内容'
+      title: 'Updated title',
+      content: 'Updated content'
     });
 
     const endTime = performance.now();
     const duration = endTime - startTime;
 
-    // 3. 验证更新成功
+    // 3. Verify the update succeeded
     const updated = await manager.getFavorite(favoriteId);
-    expect(updated!.title).toBe('更新后的标题');
+    expect(updated!.title).toBe('Updated title');
 
-    // 4. 验证性能
+    // 4. Verify the performance
     expect(duration).toBeLessThan(50);
   });
 
-  it('应该能在合理时间内删除单个收藏 (< 50ms)', async () => {
-    // 1. 添加一个收藏
+  it('should be able to delete a single favorite in a reasonable time (< 50ms)', async () => {
+    // 1. Add a favorite
     const favoriteId = await manager.addFavorite({
-      title: '待删除的收藏',
-      content: '内容',
-      tags: ['测试'],
+      title: 'Favorite to delete',
+      content: 'Content',
+      tags: ['test'],
       functionMode: 'basic',
       optimizationMode: 'system'
     });
 
-    // 2. 测试删除性能
+    // 2. Test the delete performance
     const startTime = performance.now();
 
     await manager.deleteFavorite(favoriteId);
@@ -312,27 +312,27 @@ describe('性能回归测试', () => {
     const endTime = performance.now();
     const duration = endTime - startTime;
 
-    // 3. 验证删除成功（getFavorite在找不到时会抛出错误）
+    // 3. Verify the deletion succeeded (getFavorite throws an error when it cannot find the item)
     const allFavorites = await manager.getFavorites();
     expect(allFavorites.find(f => f.id === favoriteId)).toBeUndefined();
 
-    // 4. 验证性能
+    // 4. Verify the performance
     expect(duration).toBeLessThan(50);
   });
 
-  it('应该能在合理时间内获取标签统计 (< 100ms for 1000 items)', async () => {
-    // 1. 添加大量收藏，包含各种标签
+  it('should be able to get tag statistics in a reasonable time (< 100ms for 1000 items)', async () => {
+    // 1. Add a large number of favorites, containing various tags
     for (let i = 0; i < 1000; i++) {
       await manager.addFavorite({
-        title: `标签统计测试 ${i}`,
-        content: `内容 ${i}`,
-        tags: [`tag${i % 20}`, '通用标签'],
+        title: `Tag statistics test ${i}`,
+        content: `Content ${i}`,
+        tags: [`tag${i % 20}`, 'common tag'],
         functionMode: 'basic',
         optimizationMode: 'system'
       });
     }
 
-    // 2. 测试标签统计性能
+    // 2. Test the tag statistics performance
     const startTime = performance.now();
 
     const tagStats = await manager.getAllTags();
@@ -340,19 +340,19 @@ describe('性能回归测试', () => {
     const endTime = performance.now();
     const duration = endTime - startTime;
 
-    // 3. 验证统计结果
+    // 3. Verify the statistics results
     expect(tagStats.length).toBeGreaterThan(0);
 
-    // 4. 验证性能
+    // 4. Verify the performance
     expect(duration).toBeLessThan(100);
   });
 });
 
 /**
- * 内存使用测试
- * 确保没有明显的内存泄漏
+ * Memory usage test
+ * Make sure there are no obvious memory leaks
  */
-describe('内存使用测试', () => {
+describe('Memory usage test', () => {
   let manager: FavoriteManager;
   let storage: Map<string, string>;
 
@@ -398,16 +398,16 @@ describe('内存使用测试', () => {
     await manager.initialize();
   });
 
-  it('重复添加和删除不应导致内存泄漏', async () => {
-    // 1. 记录初始状态
+  it('repeated adding and deleting should not cause memory leaks', async () => {
+    // 1. Record the initial state
     const initialSize = storage.size;
 
-    // 2. 重复添加和删除
+    // 2. Add and delete repeatedly
     for (let i = 0; i < 100; i++) {
       const id = await manager.addFavorite({
-        title: `临时收藏 ${i}`,
-        content: '临时内容',
-        tags: ['临时'],
+        title: `Temporary favorite ${i}`,
+        content: 'Temporary content',
+        tags: ['temporary'],
         functionMode: 'basic',
         optimizationMode: 'system'
       });
@@ -415,31 +415,31 @@ describe('内存使用测试', () => {
       await manager.deleteFavorite(id);
     }
 
-    // 3. 验证存储大小没有显著增长
+    // 3. Verify the storage size has not grown significantly
     const finalSize = storage.size;
 
-    // 存储大小应该基本相同或略有增加（因为可能有缓存）
+    // The storage size should be basically the same or slightly larger (there may be caching)
     expect(finalSize - initialSize).toBeLessThan(5);
   });
 
-  it('大量数据操作后存储应该合理', async () => {
-    // 1. 添加1000个收藏
+  it('storage should be reasonable after a large number of data operations', async () => {
+    // 1. Add 1000 favorites
     for (let i = 0; i < 1000; i++) {
       await manager.addFavorite({
-        title: `收藏 ${i}`,
-        content: `内容 ${i}`,
-        tags: ['测试'],
+        title: `Favorite ${i}`,
+        content: `Content ${i}`,
+        tags: ['test'],
         functionMode: 'basic',
         optimizationMode: 'system'
       });
     }
 
-    // 2. 导出数据检查大小
+    // 2. Export the data and check the size
     const exported = await manager.exportFavorites();
     const exportedSize = exported.length;
 
-    // 3. 存储的数据不应过分膨胀
-    // 1000个简单收藏的JSON字符串应该在合理范围内（比如 < 1MB）
+    // 3. The stored data should not bloat excessively
+    // The JSON string of 1000 simple favorites should be within a reasonable range (such as < 1MB)
     expect(exportedSize).toBeLessThan(1024 * 1024); // < 1MB
   });
 });

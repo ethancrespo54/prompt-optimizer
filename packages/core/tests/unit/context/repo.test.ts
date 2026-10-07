@@ -25,15 +25,15 @@ describe('ContextRepo', () => {
     repo = new ContextRepoImpl(storage);
   });
 
-  describe('createContextRepo工厂函数', () => {
-    it('应该创建ContextRepo实例', () => {
+  describe('createContextRepo factory function', () => {
+    it('should create a ContextRepo instance', () => {
       const factory = createContextRepo(storage);
       expect(factory).toBeInstanceOf(ContextRepoImpl);
     });
   });
 
-  describe('初始化', () => {
-    it('应该在第一次调用时自动创建默认上下文', async () => {
+  describe('Initialization', () => {
+    it('should automatically create the default context on the first call', async () => {
       const contexts = await repo.list();
       
       expect(contexts).toHaveLength(1);
@@ -41,13 +41,13 @@ describe('ContextRepo', () => {
       expect(contexts[0].title).toBe(DEFAULT_CONTEXT_CONFIG.title);
     });
 
-    it('应该设置默认上下文为当前上下文', async () => {
+    it('should set the default context as the current context', async () => {
       const currentId = await repo.getCurrentId();
       expect(currentId).toBe(DEFAULT_CONTEXT_CONFIG.id);
     });
 
-    it('应该正确初始化存储文档结构', async () => {
-      await repo.list(); // 触发初始化
+    it('should initialize the storage document structure correctly', async () => {
+      await repo.list(); // Trigger initialization
       
       const data = await storage.getItem(CONTEXT_STORE_KEY);
       expect(data).toBeTruthy();
@@ -59,15 +59,15 @@ describe('ContextRepo', () => {
     });
   });
 
-  describe('基础查询操作', () => {
+  describe('Basic query operations', () => {
     let defaultContext: ContextPackage;
 
     beforeEach(async () => {
-      await repo.list(); // 确保初始化
+      await repo.list(); // Ensure initialization
       defaultContext = await repo.get(DEFAULT_CONTEXT_CONFIG.id);
     });
 
-    it('list() 应该返回所有上下文列表', async () => {
+    it('list() should return the list of all contexts', async () => {
       const contexts = await repo.list();
       
       expect(contexts).toHaveLength(1);
@@ -76,11 +76,11 @@ describe('ContextRepo', () => {
         title: DEFAULT_CONTEXT_CONFIG.title
       }));
       expect(contexts[0].updatedAt).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
-      // ContextListItem 不包含 createdAt 字段，只有 id, title, updatedAt
+      // ContextListItem does not include a createdAt field, only id, title, updatedAt
       expect(contexts[0]).not.toHaveProperty('createdAt');
     });
 
-    it('get() 应该返回指定上下文的完整数据', async () => {
+    it('get() should return the full data of the specified context', async () => {
       const context = await repo.get(DEFAULT_CONTEXT_CONFIG.id);
       
       expect(context).toEqual(expect.objectContaining({
@@ -95,7 +95,7 @@ describe('ContextRepo', () => {
       }));
     });
 
-    it('get() 对不存在的ID应该抛出NOT_FOUND错误', async () => {
+    it('get() should throw a NOT_FOUND error for a non-existent ID', async () => {
       await expect(repo.get('non-existent-id'))
         .rejects.toThrow(ContextError);
       
@@ -106,23 +106,23 @@ describe('ContextRepo', () => {
       }
     });
 
-    it('getCurrentId() 应该返回当前选中的上下文ID', async () => {
+    it('getCurrentId() should return the ID of the currently selected context', async () => {
       const currentId = await repo.getCurrentId();
       expect(currentId).toBe(DEFAULT_CONTEXT_CONFIG.id);
     });
 
-    it('setCurrentId() 应该切换当前上下文', async () => {
-      // 先创建一个新上下文
-      const newId = await repo.create({ title: '测试上下文' });
+    it('setCurrentId() should switch the current context', async () => {
+      // Create a new context first
+      const newId = await repo.create({ title: 'Test context' });
       
-      // 切换到新上下文
+      // Switch to the new context
       await repo.setCurrentId(newId);
       
       const currentId = await repo.getCurrentId();
       expect(currentId).toBe(newId);
     });
 
-    it('setCurrentId() 对不存在的ID应该抛出NOT_FOUND错误', async () => {
+    it('setCurrentId() should throw a NOT_FOUND error for a non-existent ID', async () => {
       await expect(repo.setCurrentId('non-existent-id'))
         .rejects.toThrow(ContextError);
       
@@ -134,26 +134,26 @@ describe('ContextRepo', () => {
     });
   });
 
-  describe('上下文创建', () => {
+  describe('Context creation', () => {
     beforeEach(async () => {
-      await repo.list(); // 确保初始化
+      await repo.list(); // Ensure initialization
     });
 
-    it('create() 应该创建新的上下文', async () => {
-      const newId = await repo.create({ title: '新上下文' });
+    it('create() should create a new context', async () => {
+      const newId = await repo.create({ title: 'New context' });
       
       expect(newId).toMatch(/^ctx-\d+-[a-z0-9]+$/);
       
       const newContext = await repo.get(newId);
-      expect(newContext.title).toBe('新上下文');
+      expect(newContext.title).toBe('New context');
       expect(newContext.messages).toEqual([]);
       expect(newContext.variables).toEqual({});
       expect(newContext.tools).toEqual([]);
     });
 
-    it('create() 应该设置正确的时间戳', async () => {
+    it('create() should set the correct timestamps', async () => {
       const beforeCreate = new Date().toISOString();
-      const newId = await repo.create({ title: '时间测试' });
+      const newId = await repo.create({ title: 'Timestamp test' });
       const afterCreate = new Date().toISOString();
       
       const context = await repo.get(newId);
@@ -162,8 +162,8 @@ describe('ContextRepo', () => {
       expect(context.updatedAt).toBe(context.createdAt);
     });
 
-    it('duplicate() 应该复制现有上下文', async () => {
-      // 修改默认上下文作为源
+    it('duplicate() should copy an existing context', async () => {
+      // Modify the default context to use as the source
       await repo.update(DEFAULT_CONTEXT_CONFIG.id, {
         messages: [{ role: 'user', content: 'test message' }],
         variables: { customVar: 'test value' }
@@ -180,7 +180,7 @@ describe('ContextRepo', () => {
       expect(duplicate.variables).toEqual(original.variables);
     });
 
-    it('duplicate() 对不存在的ID应该抛出NOT_FOUND错误', async () => {
+    it('duplicate() should throw a NOT_FOUND error for a non-existent ID', async () => {
       await expect(repo.duplicate('non-existent-id'))
         .rejects.toThrow(ContextError);
       
@@ -192,88 +192,88 @@ describe('ContextRepo', () => {
     });
   });
 
-  describe('上下文修改', () => {
+  describe('Context modification', () => {
     beforeEach(async () => {
-      await repo.list(); // 确保初始化
+      await repo.list(); // Ensure initialization
     });
 
-    it('rename() 应该更新上下文标题', async () => {
-      await repo.rename(DEFAULT_CONTEXT_CONFIG.id, '新标题');
+    it('rename() should update the context title', async () => {
+      await repo.rename(DEFAULT_CONTEXT_CONFIG.id, 'New title');
       
       const context = await repo.get(DEFAULT_CONTEXT_CONFIG.id);
-      expect(context.title).toBe('新标题');
+      expect(context.title).toBe('New title');
     });
 
-    it('rename() 应该更新updatedAt时间戳', async () => {
+    it('rename() should update the updatedAt timestamp', async () => {
       const before = await repo.get(DEFAULT_CONTEXT_CONFIG.id);
       
-      // 等待一毫秒确保时间戳差异
+      // Wait one millisecond to ensure a timestamp difference
       await new Promise(resolve => setTimeout(resolve, 1));
       
-      await repo.rename(DEFAULT_CONTEXT_CONFIG.id, '时间戳测试');
+      await repo.rename(DEFAULT_CONTEXT_CONFIG.id, 'Timestamp test');
       
       const after = await repo.get(DEFAULT_CONTEXT_CONFIG.id);
       expect(after.updatedAt > before.updatedAt).toBe(true);
     });
 
-    it('save() 应该保存完整的上下文数据', async () => {
+    it('save() should save the full context data', async () => {
       const testContext: ContextPackage = {
         id: DEFAULT_CONTEXT_CONFIG.id,
-        title: '完全替换',
+        title: 'Full replacement',
         version: '2.0.0',
         createdAt: '2023-01-01T00:00:00.000Z',
         updatedAt: new Date().toISOString(),
         messages: [
-          { role: 'user', content: '新消息' },
-          { role: 'assistant', content: '回复' }
+          { role: 'user', content: 'New message' },
+          { role: 'assistant', content: 'Reply' }
         ],
         variables: { key1: 'value1', key2: 'value2' },
         tools: [],
-        description: '测试描述'
+        description: 'Test description'
       };
       
       await repo.save(testContext);
       
       const saved = await repo.get(DEFAULT_CONTEXT_CONFIG.id);
       expect(saved).toEqual(expect.objectContaining({
-        title: '完全替换',
+        title: 'Full replacement',
         messages: testContext.messages,
         variables: { key1: 'value1', key2: 'value2' }
       }));
     });
 
-    it('update() 应该部分更新上下文数据', async () => {
+    it('update() should partially update the context data', async () => {
       const original = await repo.get(DEFAULT_CONTEXT_CONFIG.id);
       
       await repo.update(DEFAULT_CONTEXT_CONFIG.id, {
-        messages: [{ role: 'user', content: '更新的消息' }],
+        messages: [{ role: 'user', content: 'Updated message' }],
         variables: { newVar: 'newValue' }
       });
       
       const updated = await repo.get(DEFAULT_CONTEXT_CONFIG.id);
-      expect(updated.title).toBe(original.title); // 保持不变
-      expect(updated.messages).toEqual([{ role: 'user', content: '更新的消息' }]);
+      expect(updated.title).toBe(original.title); // Unchanged
+      expect(updated.messages).toEqual([{ role: 'user', content: 'Updated message' }]);
       expect(updated.variables).toEqual({ newVar: 'newValue' });
     });
   });
 
-  describe('预定义变量剔除保护', () => {
+  describe('Predefined variable stripping protection', () => {
     beforeEach(async () => {
-      await repo.list(); // 确保初始化
+      await repo.list(); // Ensure initialization
     });
 
-    it('save() 应该剔除预定义变量覆盖项', async () => {
+    it('save() should strip predefined variable overrides', async () => {
       const contextWithPredefined: ContextPackage = {
         id: DEFAULT_CONTEXT_CONFIG.id,
-        title: '预定义测试',
+        title: 'Predefined test',
         version: '1.0.0',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         messages: [],
         variables: {
           customVar: 'allowed',
-          originalPrompt: 'should be removed', // 预定义变量
-          currentPrompt: 'should be removed',  // 预定义变量
+          originalPrompt: 'should be removed', // Predefined variable
+          currentPrompt: 'should be removed',  // Predefined variable
           anotherCustom: 'also allowed'
         },
         tools: []
@@ -288,12 +288,12 @@ describe('ContextRepo', () => {
       });
     });
 
-    it('update() 应该剔除预定义变量覆盖项', async () => {
+    it('update() should strip predefined variable overrides', async () => {
       await repo.update(DEFAULT_CONTEXT_CONFIG.id, {
         variables: {
           validVar: 'valid',
-          userQuestion: 'invalid', // 预定义变量
-          conversationContext: 'invalid' // 预定义变量
+          userQuestion: 'invalid', // Predefined variable
+          conversationContext: 'invalid' // Predefined variable
         }
       });
       
@@ -303,15 +303,15 @@ describe('ContextRepo', () => {
       });
     });
 
-    it('所有预定义变量都应该被正确剔除', async () => {
+    it('all predefined variables should be stripped correctly', async () => {
       const variablesWithAllPredefined: Record<string, string> = {};
       
-      // 添加所有预定义变量
+      // Add all predefined variables
       PREDEFINED_VARIABLES.forEach(varName => {
         variablesWithAllPredefined[varName] = `invalid-${varName}`;
       });
       
-      // 添加一些合法变量
+      // Add some valid variables
       variablesWithAllPredefined.customVar1 = 'valid1';
       variablesWithAllPredefined.customVar2 = 'valid2';
       
@@ -327,14 +327,14 @@ describe('ContextRepo', () => {
     });
   });
 
-  describe('上下文删除', () => {
+  describe('Context deletion', () => {
     beforeEach(async () => {
-      await repo.list(); // 确保初始化
+      await repo.list(); // Ensure initialization
     });
 
-    it('remove() 应该删除指定上下文', async () => {
-      // 创建一个新上下文来删除
-      const newId = await repo.create({ title: '待删除' });
+    it('remove() should delete the specified context', async () => {
+      // Create a new context to delete
+      const newId = await repo.create({ title: 'To delete' });
       
       await repo.remove(newId);
       
@@ -345,24 +345,24 @@ describe('ContextRepo', () => {
         .rejects.toThrow(ContextError);
     });
 
-    it('remove() 删除当前上下文后应该自动切换到其他上下文', async () => {
-      // 创建一个新上下文
-      const newId = await repo.create({ title: '新上下文' });
+    it('remove() should automatically switch to another context after deleting the current one', async () => {
+      // Create a new context
+      const newId = await repo.create({ title: 'New context' });
       
-      // 切换到新上下文
+      // Switch to the new context
       await repo.setCurrentId(newId);
       expect(await repo.getCurrentId()).toBe(newId);
       
-      // 删除新上下文
+      // Delete the new context
       await repo.remove(newId);
       
-      // 应该自动切换回默认上下文
+      // Should automatically switch back to the default context
       const currentId = await repo.getCurrentId();
       expect(currentId).toBe(DEFAULT_CONTEXT_CONFIG.id);
     });
 
-    it('remove() 应该拒绝删除最后一个上下文', async () => {
-      // 只有默认上下文存在时尝试删除
+    it('remove() should refuse to delete the last context', async () => {
+      // Try to delete when only the default context exists
       await expect(repo.remove(DEFAULT_CONTEXT_CONFIG.id))
         .rejects.toThrow(ContextError);
       
@@ -373,7 +373,7 @@ describe('ContextRepo', () => {
       }
     });
 
-    it('remove() 对不存在的ID应该抛出NOT_FOUND错误', async () => {
+    it('remove() should throw a NOT_FOUND error for a non-existent ID', async () => {
       await expect(repo.remove('non-existent-id'))
         .rejects.toThrow(ContextError);
       
@@ -385,31 +385,31 @@ describe('ContextRepo', () => {
     });
   });
 
-  describe('导出功能', () => {
+  describe('Export functionality', () => {
     let contextId1: string;
     let contextId2: string;
 
     beforeEach(async () => {
-      await repo.list(); // 确保初始化
+      await repo.list(); // Ensure initialization
       
-      // 创建测试数据
-      contextId1 = await repo.create({ title: '上下文1' });
-      contextId2 = await repo.create({ title: '上下文2' });
+      // Create test data
+      contextId1 = await repo.create({ title: 'Context 1' });
+      contextId2 = await repo.create({ title: 'Context 2' });
       
       await repo.update(contextId1, {
-        messages: [{ role: 'user', content: '消息1' }],
+        messages: [{ role: 'user', content: 'Message 1' }],
         variables: { var1: 'value1' }
       });
       
       await repo.update(contextId2, {
-        messages: [{ role: 'assistant', content: '消息2' }],
+        messages: [{ role: 'assistant', content: 'Message 2' }],
         variables: { var2: 'value2' }
       });
       
       await repo.setCurrentId(contextId2);
     });
 
-    it('exportAll() 应该导出完整的上下文束', async () => {
+    it('exportAll() should export the full context bundle', async () => {
       const bundle = await repo.exportAll();
       
       expect(bundle).toEqual(expect.objectContaining({
@@ -423,11 +423,11 @@ describe('ContextRepo', () => {
       
       const context1 = bundle.contexts.find(c => c.id === contextId1);
       expect(context1).toBeDefined();
-      expect(context1!.title).toBe('上下文1');
+      expect(context1!.title).toBe('Context 1');
       expect(context1!.variables).toEqual({ var1: 'value1' });
     });
 
-    it('exportData() 应该调用exportAll()', async () => {
+    it('exportData() should call exportAll()', async () => {
       const spy = vi.spyOn(repo, 'exportAll');
       
       await repo.exportData();
@@ -436,13 +436,13 @@ describe('ContextRepo', () => {
     });
   });
 
-  describe('导入功能', () => {
+  describe('Import functionality', () => {
     beforeEach(async () => {
-      await repo.list(); // 确保初始化
+      await repo.list(); // Ensure initialization
     });
 
-    describe('replace模式', () => {
-      it('应该完全替换现有上下文', async () => {
+    describe('replace mode', () => {
+      it('should fully replace the existing contexts', async () => {
         const bundle: ContextBundle = {
           type: 'context-bundle',
           version: '1.0.0',
@@ -450,11 +450,11 @@ describe('ContextRepo', () => {
           contexts: [
             {
               id: 'imported-1',
-              title: '导入的上下文1',
+              title: 'Imported context 1',
               version: '1.0.0',
               createdAt: '2023-01-01T00:00:00.000Z',
               updatedAt: '2023-01-01T00:00:00.000Z',
-              messages: [{ role: 'user', content: '导入消息' }],
+              messages: [{ role: 'user', content: 'Imported message' }],
               variables: { importedVar: 'importedValue' },
               tools: []
             }
@@ -475,7 +475,7 @@ describe('ContextRepo', () => {
         expect(currentId).toBe('imported-1');
       });
 
-      it('应该剔除预定义变量并统计', async () => {
+      it('should strip predefined variables and count them', async () => {
         const bundle: ContextBundle = {
           type: 'context-bundle',
           version: '1.0.0',
@@ -483,7 +483,7 @@ describe('ContextRepo', () => {
           contexts: [
             {
               id: 'imported-with-predefined',
-              title: '包含预定义变量',
+              title: 'Contains predefined variables',
               version: '1.0.0',
               createdAt: '2023-01-01T00:00:00.000Z',
               updatedAt: '2023-01-01T00:00:00.000Z',
@@ -512,8 +512,8 @@ describe('ContextRepo', () => {
       });
     });
 
-    describe('append模式', () => {
-      it('应该添加新上下文而保留现有的', async () => {
+    describe('append mode', () => {
+      it('should add new contexts while keeping the existing ones', async () => {
         const originalContexts = await repo.list();
         
         const bundle: ContextBundle = {
@@ -523,7 +523,7 @@ describe('ContextRepo', () => {
           contexts: [
             {
               id: 'appended-1',
-              title: '追加的上下文',
+              title: 'Appended context',
               version: '1.0.0',
               createdAt: '2023-01-01T00:00:00.000Z',
               updatedAt: '2023-01-01T00:00:00.000Z',
@@ -541,23 +541,23 @@ describe('ContextRepo', () => {
         const contexts = await repo.list();
         expect(contexts).toHaveLength(originalContexts.length + 1);
         
-        // 原有上下文应该还存在
+        // The original context should still exist
         const defaultStillExists = contexts.find(c => c.id === DEFAULT_CONTEXT_CONFIG.id);
         expect(defaultStillExists).toBeDefined();
         
-        // 新上下文应该存在
+        // The new context should exist
         const appendedExists = contexts.find(c => c.id === 'appended-1');
         expect(appendedExists).toBeDefined();
       });
 
-      it('应该处理ID冲突并生成映射', async () => {
+      it('should handle ID conflicts and generate a mapping', async () => {
         const bundle: ContextBundle = {
           type: 'context-bundle',
           version: '1.0.0',
-          currentId: DEFAULT_CONTEXT_CONFIG.id, // 与现有ID冲突
+          currentId: DEFAULT_CONTEXT_CONFIG.id, // Conflicts with an existing ID
           contexts: [
             {
-              id: DEFAULT_CONTEXT_CONFIG.id, // 与现有ID冲突
+              id: DEFAULT_CONTEXT_CONFIG.id, // Conflicts with an existing ID
               title: '冲突的上下文',
               version: '1.0.0',
               createdAt: '2023-01-01T00:00:00.000Z',

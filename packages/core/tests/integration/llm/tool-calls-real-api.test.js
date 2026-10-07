@@ -3,7 +3,7 @@ import { expect, describe, it, beforeAll } from 'vitest';
 import dotenv from 'dotenv';
 import path from 'path';
 
-// 加载环境变量
+// Load environment variables
 beforeAll(() => {
   dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 });
@@ -41,7 +41,7 @@ describe.skipIf(!RUN_REAL_API)('Tool Calls Real API Integration Tests', () => {
     return candidate?.id
   }
 
-  // 测试用工具定义
+  // Tool definitions for testing
   const weatherTool = {
     type: 'function',
     function: {
@@ -123,11 +123,11 @@ describe.skipIf(!RUN_REAL_API)('Tool Calls Real API Integration Tests', () => {
         );
       });
 
-      // 验证响应
+      // Verify the response
       expect(result).toBeDefined();
       expect(typeof result.content).toBe('string');
 
-      // 验证工具调用（如果有的话）
+      // Verify the tool calls (if any)
       if (result.toolCalls.length > 0) {
         result.toolCalls.forEach(toolCall => {
           expect(toolCall).toHaveProperty('id');
@@ -136,7 +136,7 @@ describe.skipIf(!RUN_REAL_API)('Tool Calls Real API Integration Tests', () => {
           expect(toolCall.function).toHaveProperty('arguments');
           expect(['get_weather', 'calculate']).toContain(toolCall.function.name);
           
-          // 验证参数是有效的JSON
+          // Verify the arguments are valid JSON
           expect(() => JSON.parse(toolCall.function.arguments)).not.toThrow();
         });
       }
@@ -179,11 +179,11 @@ describe.skipIf(!RUN_REAL_API)('Tool Calls Real API Integration Tests', () => {
         );
       });
 
-      // 验证响应
+      // Verify the response
       expect(result).toBeDefined();
       expect(typeof result.content).toBe('string');
 
-      // 验证工具调用（如果有的话）
+      // Verify the tool calls (if any)
       if (result.toolCalls.length > 0) {
         result.toolCalls.forEach(toolCall => {
           expect(toolCall).toHaveProperty('id');
@@ -192,7 +192,7 @@ describe.skipIf(!RUN_REAL_API)('Tool Calls Real API Integration Tests', () => {
           expect(toolCall.function).toHaveProperty('arguments');
           expect(['get_weather', 'calculate']).toContain(toolCall.function.name);
           
-          // 验证参数是有效的JSON
+          // Verify the arguments are valid JSON
           expect(() => JSON.parse(toolCall.function.arguments)).not.toThrow();
         });
       }
@@ -224,11 +224,11 @@ describe.skipIf(!RUN_REAL_API)('Tool Calls Real API Integration Tests', () => {
           modelId,
           tools,
           {
-            onToken: () => {}, // 忽略token
+            onToken: () => {}, // Ignore tokens
             onToolCall: (toolCall) => {
               toolCallsReceived.push(toolCall);
               
-              // 验证工具调用格式
+              // Verify the tool call format
               expect(toolCall.id).toMatch(/^call_\d+_[a-z0-9]+$/);
               expect(toolCall.type).toBe('function');
               expect(toolCall.function.name).toBe('get_weather');
@@ -315,7 +315,7 @@ describe.skipIf(!RUN_REAL_API)('Tool Calls Real API Integration Tests', () => {
 
       expect(result).toBeDefined();
 
-      // 验证工具调用的多样性
+      // Verify the diversity of tool calls
       if (result.toolCalls.length > 0) {
         const toolNames = result.toolCalls.map(tc => tc.function.name);
         const uniqueTools = [...new Set(toolNames)];

@@ -3,12 +3,12 @@ import { TypeMapper, type FunctionModeMapping } from '../../../src/services/favo
 import type { PromptRecordType } from '../../../src/services/history/types';
 
 /**
- * TypeMapper 单元测试
- * 测试历史记录类型到功能模式的映射逻辑
+ * TypeMapper unit test
+ * Tests the mapping logic from history record types to function modes
  */
 describe('TypeMapper', () => {
-  describe('mapFromRecordType - 基础模式映射', () => {
-    it('应该将 optimize 映射为 basic/system', () => {
+  describe('mapFromRecordType - basic mode mapping', () => {
+    it('should map optimize to basic/system', () => {
       const result = TypeMapper.mapFromRecordType('optimize');
       expect(result).toEqual({
         functionMode: 'basic',
@@ -16,7 +16,7 @@ describe('TypeMapper', () => {
       });
     });
 
-    it('应该将 iterate 映射为 basic/system', () => {
+    it('should map iterate to basic/system', () => {
       const result = TypeMapper.mapFromRecordType('iterate');
       expect(result).toEqual({
         functionMode: 'basic',
@@ -24,7 +24,7 @@ describe('TypeMapper', () => {
       });
     });
 
-    it('应该将 userOptimize 映射为 basic/user', () => {
+    it('should map userOptimize to basic/user', () => {
       const result = TypeMapper.mapFromRecordType('userOptimize');
       expect(result).toEqual({
         functionMode: 'basic',
@@ -32,7 +32,7 @@ describe('TypeMapper', () => {
       });
     });
 
-    it('应该将 test 映射为 basic/system', () => {
+    it('should map test to basic/system', () => {
       const result = TypeMapper.mapFromRecordType('test');
       expect(result).toEqual({
         functionMode: 'basic',
@@ -41,8 +41,8 @@ describe('TypeMapper', () => {
     });
   });
 
-  describe('mapFromRecordType - 上下文模式映射', () => {
-    it('应该将 conversationMessageOptimize 映射为 context/system', () => {
+  describe('mapFromRecordType - context mode mapping', () => {
+    it('should map conversationMessageOptimize to context/system', () => {
       const result = TypeMapper.mapFromRecordType('conversationMessageOptimize');
       expect(result).toEqual({
         functionMode: 'context',
@@ -50,7 +50,7 @@ describe('TypeMapper', () => {
       });
     });
 
-    it('应该将 contextIterate 映射为 context/system', () => {
+    it('should map contextIterate to context/system', () => {
       const result = TypeMapper.mapFromRecordType('contextIterate');
       expect(result).toEqual({
         functionMode: 'context',
@@ -58,7 +58,7 @@ describe('TypeMapper', () => {
       });
     });
 
-    it('应该将 contextUserOptimize 映射为 context/user', () => {
+    it('should map contextUserOptimize to context/user', () => {
       const result = TypeMapper.mapFromRecordType('contextUserOptimize');
       expect(result).toEqual({
         functionMode: 'context',
@@ -67,8 +67,8 @@ describe('TypeMapper', () => {
     });
   });
 
-  describe('mapFromRecordType - 图像模式映射', () => {
-    it('应该将 imageOptimize 映射为 image/text2image', () => {
+  describe('mapFromRecordType - image mode mapping', () => {
+    it('should map imageOptimize to image/text2image', () => {
       const result = TypeMapper.mapFromRecordType('imageOptimize');
       expect(result).toEqual({
         functionMode: 'image',
@@ -76,7 +76,7 @@ describe('TypeMapper', () => {
       });
     });
 
-    it('应该将 contextImageOptimize 映射为 image/text2image', () => {
+    it('should map contextImageOptimize to image/text2image', () => {
       const result = TypeMapper.mapFromRecordType('contextImageOptimize');
       expect(result).toEqual({
         functionMode: 'image',
@@ -84,7 +84,7 @@ describe('TypeMapper', () => {
       });
     });
 
-    it('应该将 imageIterate 映射为 image/text2image', () => {
+    it('should map imageIterate to image/text2image', () => {
       const result = TypeMapper.mapFromRecordType('imageIterate');
       expect(result).toEqual({
         functionMode: 'image',
@@ -92,7 +92,7 @@ describe('TypeMapper', () => {
       });
     });
 
-    it('应该将 text2imageOptimize 映射为 image/text2image', () => {
+    it('should map text2imageOptimize to image/text2image', () => {
       const result = TypeMapper.mapFromRecordType('text2imageOptimize');
       expect(result).toEqual({
         functionMode: 'image',
@@ -100,7 +100,7 @@ describe('TypeMapper', () => {
       });
     });
 
-    it('应该将 image2imageOptimize 映射为 image/image2image', () => {
+    it('should map image2imageOptimize to image/image2image', () => {
       const result = TypeMapper.mapFromRecordType('image2imageOptimize');
       expect(result).toEqual({
         functionMode: 'image',
@@ -109,9 +109,9 @@ describe('TypeMapper', () => {
     });
   });
 
-  describe('mapFromRecordType - 未知类型处理', () => {
-    it('应该将未知类型映射为 basic/system 并输出警告', () => {
-      // 使用 console.warn 的 spy
+  describe('mapFromRecordType - unknown type handling', () => {
+    it('should map an unknown type to basic/system and log a warning', () => {
+      // Use a spy on console.warn
       const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
       const result = TypeMapper.mapFromRecordType('unknown' as PromptRecordType);
@@ -128,8 +128,8 @@ describe('TypeMapper', () => {
     });
   });
 
-  describe('validateMapping - 合法映射验证', () => {
-    it('应该接受合法的 basic/system 映射', () => {
+  describe('validateMapping - valid mapping validation', () => {
+    it('should accept a valid basic/system mapping', () => {
       const mapping: FunctionModeMapping = {
         functionMode: 'basic',
         optimizationMode: 'system'
@@ -137,7 +137,7 @@ describe('TypeMapper', () => {
       expect(TypeMapper.validateMapping(mapping)).toBe(true);
     });
 
-    it('应该接受合法的 basic/user 映射', () => {
+    it('should accept a valid basic/user mapping', () => {
       const mapping: FunctionModeMapping = {
         functionMode: 'basic',
         optimizationMode: 'user'
@@ -145,7 +145,7 @@ describe('TypeMapper', () => {
       expect(TypeMapper.validateMapping(mapping)).toBe(true);
     });
 
-    it('应该接受合法的 context/system 映射', () => {
+    it('should accept a valid context/system mapping', () => {
       const mapping: FunctionModeMapping = {
         functionMode: 'context',
         optimizationMode: 'system'
@@ -153,7 +153,7 @@ describe('TypeMapper', () => {
       expect(TypeMapper.validateMapping(mapping)).toBe(true);
     });
 
-    it('应该接受合法的 context/user 映射', () => {
+    it('should accept a valid context/user mapping', () => {
       const mapping: FunctionModeMapping = {
         functionMode: 'context',
         optimizationMode: 'user'
@@ -161,7 +161,7 @@ describe('TypeMapper', () => {
       expect(TypeMapper.validateMapping(mapping)).toBe(true);
     });
 
-    it('应该接受合法的 image/text2image 映射', () => {
+    it('should accept a valid image/text2image mapping', () => {
       const mapping: FunctionModeMapping = {
         functionMode: 'image',
         imageSubMode: 'text2image'
@@ -169,7 +169,7 @@ describe('TypeMapper', () => {
       expect(TypeMapper.validateMapping(mapping)).toBe(true);
     });
 
-    it('应该接受合法的 image/image2image 映射', () => {
+    it('should accept a valid image/image2image mapping', () => {
       const mapping: FunctionModeMapping = {
         functionMode: 'image',
         imageSubMode: 'image2image'
@@ -178,15 +178,15 @@ describe('TypeMapper', () => {
     });
   });
 
-  describe('validateMapping - 非法映射验证', () => {
-    it('应该拒绝缺少 functionMode 的映射', () => {
+  describe('validateMapping - invalid mapping validation', () => {
+    it('should reject a mapping missing functionMode', () => {
       const mapping: Partial<FunctionModeMapping> = {
         optimizationMode: 'system'
       };
       expect(TypeMapper.validateMapping(mapping)).toBe(false);
     });
 
-    it('应该拒绝非法的 functionMode 值', () => {
+    it('should reject an invalid functionMode value', () => {
       const mapping = {
         functionMode: 'invalid' as any,
         optimizationMode: 'system'
@@ -194,21 +194,21 @@ describe('TypeMapper', () => {
       expect(TypeMapper.validateMapping(mapping)).toBe(false);
     });
 
-    it('应该拒绝 basic 模式缺少 optimizationMode', () => {
+    it('should reject basic mode missing optimizationMode', () => {
       const mapping: Partial<FunctionModeMapping> = {
         functionMode: 'basic'
       };
       expect(TypeMapper.validateMapping(mapping)).toBe(false);
     });
 
-    it('应该拒绝 context 模式缺少 optimizationMode', () => {
+    it('should reject context mode missing optimizationMode', () => {
       const mapping: Partial<FunctionModeMapping> = {
         functionMode: 'context'
       };
       expect(TypeMapper.validateMapping(mapping)).toBe(false);
     });
 
-    it('应该拒绝 basic 模式的非法 optimizationMode 值', () => {
+    it('should reject an invalid optimizationMode value in basic mode', () => {
       const mapping = {
         functionMode: 'basic' as const,
         optimizationMode: 'invalid' as any
@@ -216,7 +216,7 @@ describe('TypeMapper', () => {
       expect(TypeMapper.validateMapping(mapping)).toBe(false);
     });
 
-    it('应该拒绝 basic 模式包含 imageSubMode', () => {
+    it('should reject basic mode containing imageSubMode', () => {
       const mapping = {
         functionMode: 'basic' as const,
         optimizationMode: 'system' as const,
@@ -225,7 +225,7 @@ describe('TypeMapper', () => {
       expect(TypeMapper.validateMapping(mapping)).toBe(false);
     });
 
-    it('应该拒绝 context 模式包含 imageSubMode', () => {
+    it('should reject context mode containing imageSubMode', () => {
       const mapping = {
         functionMode: 'context' as const,
         optimizationMode: 'system' as const,
@@ -234,14 +234,14 @@ describe('TypeMapper', () => {
       expect(TypeMapper.validateMapping(mapping)).toBe(false);
     });
 
-    it('应该拒绝 image 模式缺少 imageSubMode', () => {
+    it('should reject image mode missing imageSubMode', () => {
       const mapping: Partial<FunctionModeMapping> = {
         functionMode: 'image'
       };
       expect(TypeMapper.validateMapping(mapping)).toBe(false);
     });
 
-    it('应该拒绝 image 模式的非法 imageSubMode 值', () => {
+    it('should reject an invalid imageSubMode value in image mode', () => {
       const mapping = {
         functionMode: 'image' as const,
         imageSubMode: 'invalid' as any
@@ -249,7 +249,7 @@ describe('TypeMapper', () => {
       expect(TypeMapper.validateMapping(mapping)).toBe(false);
     });
 
-    it('应该拒绝 image 模式包含 optimizationMode', () => {
+    it('should reject image mode containing optimizationMode', () => {
       const mapping = {
         functionMode: 'image' as const,
         imageSubMode: 'text2image' as const,
@@ -259,8 +259,8 @@ describe('TypeMapper', () => {
     });
   });
 
-  describe('inferRecordTypes - 反向推断', () => {
-    it('应该从 basic/system 推断出 optimize 和 iterate', () => {
+  describe('inferRecordTypes - reverse inference', () => {
+    it('should infer optimize and iterate from basic/system', () => {
       const mapping: FunctionModeMapping = {
         functionMode: 'basic',
         optimizationMode: 'system'
@@ -269,7 +269,7 @@ describe('TypeMapper', () => {
       expect(result).toEqual(['optimize', 'iterate']);
     });
 
-    it('应该从 basic/user 推断出 userOptimize', () => {
+    it('should infer userOptimize from basic/user', () => {
       const mapping: FunctionModeMapping = {
         functionMode: 'basic',
         optimizationMode: 'user'
@@ -278,7 +278,7 @@ describe('TypeMapper', () => {
       expect(result).toEqual(['userOptimize']);
     });
 
-    it('应该从 context/system 推断出 conversationMessageOptimize 和 contextIterate', () => {
+    it('should infer conversationMessageOptimize and contextIterate from context/system', () => {
       const mapping: FunctionModeMapping = {
         functionMode: 'context',
         optimizationMode: 'system'
@@ -287,7 +287,7 @@ describe('TypeMapper', () => {
       expect(result).toEqual(['conversationMessageOptimize', 'contextIterate']);
     });
 
-    it('应该从 context/user 推断出 contextUserOptimize', () => {
+    it('should infer contextUserOptimize from context/user', () => {
       const mapping: FunctionModeMapping = {
         functionMode: 'context',
         optimizationMode: 'user'
@@ -296,7 +296,7 @@ describe('TypeMapper', () => {
       expect(result).toEqual(['contextUserOptimize']);
     });
 
-    it('应该从 image/text2image 推断出所有文生图类型', () => {
+    it('should infer all text-to-image types from image/text2image', () => {
       const mapping: FunctionModeMapping = {
         functionMode: 'image',
         imageSubMode: 'text2image'
@@ -310,7 +310,7 @@ describe('TypeMapper', () => {
       ]);
     });
 
-    it('应该从 image/image2image 推断出 image2imageOptimize', () => {
+    it('should infer image2imageOptimize from image/image2image', () => {
       const mapping: FunctionModeMapping = {
         functionMode: 'image',
         imageSubMode: 'image2image'
@@ -319,7 +319,7 @@ describe('TypeMapper', () => {
       expect(result).toEqual(['image2imageOptimize']);
     });
 
-    it('应该对非法映射返回空数组', () => {
+    it('should return an empty array for an invalid mapping', () => {
       const mapping = {
         functionMode: 'basic' as const,
         optimizationMode: undefined as any
@@ -329,8 +329,8 @@ describe('TypeMapper', () => {
     });
   });
 
-  describe('映射和验证的完整性测试', () => {
-    it('所有 PromptRecordType 映射后的结果都应该是合法的', () => {
+  describe('Mapping and validation completeness test', () => {
+    it('the results of mapping every PromptRecordType should be valid', () => {
       const allTypes: PromptRecordType[] = [
         'optimize',
         'userOptimize',
@@ -352,7 +352,7 @@ describe('TypeMapper', () => {
       });
     });
 
-    it('映射和反向推断应该是一致的', () => {
+    it('mapping and reverse inference should be consistent', () => {
       const testCases: Array<{
         recordType: PromptRecordType;
         mapping: FunctionModeMapping;
@@ -384,11 +384,11 @@ describe('TypeMapper', () => {
       ];
 
       testCases.forEach(({ recordType, mapping }) => {
-        // 正向映射
+        // Forward mapping
         const mappedResult = TypeMapper.mapFromRecordType(recordType);
         expect(mappedResult).toEqual(mapping);
 
-        // 反向推断
+        // Reverse inference
         const inferredTypes = TypeMapper.inferRecordTypes(mapping);
         expect(inferredTypes).toContain(recordType);
       });

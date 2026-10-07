@@ -4,18 +4,18 @@ import type { TextModelConfig, Message, ToolDefinition, ToolCall } from '../../.
 import dotenv from 'dotenv'
 import path from 'path'
 
-// 加载环境变量
+// Load environment variables
 beforeAll(() => {
   dotenv.config({ path: path.resolve(process.cwd(), '.env.local') })
-  console.log('环境变量检查:')
+  console.log('Environment variable check:')
   console.log('- RUN_REAL_API:', process.env.RUN_REAL_API)
-  console.log('- VITE_GEMINI_API_KEY:', process.env.VITE_GEMINI_API_KEY ? '已设置' : '未设置')
+  console.log('- VITE_GEMINI_API_KEY:', process.env.VITE_GEMINI_API_KEY ? 'set' : 'not set')
 })
 
 const RUN_REAL_API = process.env.RUN_REAL_API === '1'
 const apiKey = process.env.VITE_GEMINI_API_KEY
 
-console.log('测试配置:')
+console.log('Test config:')
 console.log('- RUN_REAL_API:', RUN_REAL_API)
 console.log('- apiKey exists:', !!apiKey)
 
@@ -23,8 +23,8 @@ describe.skipIf(!RUN_REAL_API || !apiKey)('Gemini New SDK Integration Tests', ()
   let adapter: GeminiAdapter
 
   /**
-   * 辅助函数：创建测试配置
-   * 从 adapter 自动获取模型，避免硬编码
+   * Helper function: create the test config
+   * Get the models from the adapter automatically, avoiding hard-coding
    */
   const createConfig = (paramOverrides: Record<string, any> = {}): TextModelConfig => {
     const models = adapter.getModels()
@@ -37,10 +37,10 @@ describe.skipIf(!RUN_REAL_API || !apiKey)('Gemini New SDK Integration Tests', ()
       name: 'Gemini Test',
       enabled: true,
       providerMeta: adapter.getProvider(),
-      modelMeta: models[0], // 使用第一个可用模型
+      modelMeta: models[0], // Use the first available model
       connectionConfig: {
         apiKey: apiKey!
-        // 不覆盖 baseURL，使用 adapter 的默认值
+        // Do not override baseURL, use the adapter's default value
       },
       paramOverrides
     }
@@ -58,16 +58,16 @@ describe.skipIf(!RUN_REAL_API || !apiKey)('Gemini New SDK Integration Tests', ()
       expect(Array.isArray(models)).toBe(true)
       expect(models.length).toBeGreaterThan(0)
 
-      console.log(`✓ 获取到 ${models.length} 个模型`)
-      console.log('前5个模型:', models.slice(0, 5).map(m => m.id))
+      console.log(`✓ Got ${models.length} models`)
+      console.log('First 5 models:', models.slice(0, 5).map(m => m.id))
     }, 30000)
   })
 
   describe('Basic Text Generation', () => {
-    it('应该能够发送简单的单轮对话', async () => {
+    it('should be able to send a simple single-turn conversation', async () => {
       const config = createConfig()
       const messages: Message[] = [
-        { role: 'user', content: '请用一句话介绍你自己' }
+        { role: 'user', content: 'Please introduce yourself in one sentence' }
       ]
 
       const response = await adapter.sendMessage(messages, config)
@@ -77,15 +77,15 @@ describe.skipIf(!RUN_REAL_API || !apiKey)('Gemini New SDK Integration Tests', ()
       expect(typeof response.content).toBe('string')
       expect(response.content.length).toBeGreaterThan(0)
 
-      console.log('✓ 响应内容:', response.content.substring(0, 100) + '...')
+      console.log('✓ Response content:', response.content.substring(0, 100) + '...')
     }, 30000)
 
-    it('应该能够处理多轮对话', async () => {
+    it('should be able to handle multi-turn conversation', async () => {
       const config = createConfig()
       const messages: Message[] = [
-        { role: 'user', content: '我有2只狗' },
-        { role: 'assistant', content: '太好了！狗是很忠诚的宠物。' },
-        { role: 'user', content: '我家里有多少只爪子？' }
+        { role: 'user', content: 'I have 2 dogs' },
+        { role: 'assistant', content: 'Great! Dogs are very loyal pets.' },
+        { role: 'user', content: 'How many paws are there in my home?' }
       ]
 
       const response = await adapter.sendMessage(messages, config)
@@ -95,16 +95,16 @@ describe.skipIf(!RUN_REAL_API || !apiKey)('Gemini New SDK Integration Tests', ()
       expect(typeof response.content).toBe('string')
       expect(response.content.length).toBeGreaterThan(0)
 
-      console.log('✓ 多轮对话响应:', response.content)
+      console.log('✓ Multi-turn conversation response:', response.content)
     }, 30000)
   })
 
   describe('System Instructions', () => {
-    it('应该能够处理系统指令', async () => {
+    it('should be able to handle system instructions', async () => {
       const config = createConfig()
       const messages: Message[] = [
-        { role: 'system', content: '你是一个数学老师，回答要简洁专业' },
-        { role: 'user', content: '1+1等于几？' }
+        { role: 'system', content: 'You are a math teacher; answer concisely and professionally' },
+        { role: 'user', content: 'What is 1+1?' }
       ]
 
       const response = await adapter.sendMessage(messages, config)
@@ -113,15 +113,15 @@ describe.skipIf(!RUN_REAL_API || !apiKey)('Gemini New SDK Integration Tests', ()
       expect(response.content).toBeDefined()
       expect(response.content).toContain('2')
 
-      console.log('✓ 系统指令响应:', response.content)
+      console.log('✓ System instruction response:', response.content)
     }, 30000)
   })
 
   describe('Streaming', () => {
-    it('应该能够处理流式响应', async () => {
+    it('should be able to handle streaming responses', async () => {
       const config = createConfig()
       const messages: Message[] = [
-        { role: 'user', content: '请用3句话介绍人工智能' }
+        { role: 'user', content: 'Please introduce artificial intelligence in 3 sentences' }
       ]
 
       const tokens: string[] = []
@@ -147,38 +147,38 @@ describe.skipIf(!RUN_REAL_API || !apiKey)('Gemini New SDK Integration Tests', ()
       expect(completed).toBe(true)
       expect(fullResponse.length).toBeGreaterThan(0)
 
-      console.log('✓ 收到', tokens.length, '个token')
-      console.log('✓ 完整响应:', fullResponse.substring(0, 100) + '...')
+      console.log('✓ Received', tokens.length, 'tokens')
+      console.log('✓ Full response:', fullResponse.substring(0, 100) + '...')
     }, 30000)
   })
 
   describe('Parameters', () => {
-    it('应该能够使用自定义参数', async () => {
+    it('should be able to use custom parameters', async () => {
       const config = createConfig({
         temperature: 0.1,
         maxOutputTokens: 50
       })
 
       const messages: Message[] = [
-        { role: 'user', content: '说一个数字' }
+        { role: 'user', content: 'Say a number' }
       ]
 
       const response = await adapter.sendMessage(messages, config)
 
       expect(response).toBeDefined()
       expect(response.content).toBeDefined()
-      // 由于 maxOutputTokens 限制，响应应该较短
+      // Because of the maxOutputTokens limit, the response should be short
       expect(response.content.length).toBeLessThan(200)
 
-      console.log('✓ 参数化响应:', response.content)
+      console.log('✓ Parameterized response:', response.content)
     }, 30000)
   })
 
   describe('Tool Calling (Function Calling)', () => {
-    it('应该能够处理工具调用', async () => {
+    it('should be able to handle tool calls', async () => {
       const config = createConfig()
       const messages: Message[] = [
-        { role: 'user', content: '北京今天的天气怎么样？' }
+        { role: 'user', content: 'What is the weather like in Beijing today?' }
       ]
 
       const tools: ToolDefinition[] = [
@@ -186,13 +186,13 @@ describe.skipIf(!RUN_REAL_API || !apiKey)('Gemini New SDK Integration Tests', ()
           type: 'function',
           function: {
             name: 'getWeather',
-            description: '获取指定城市的天气信息',
+            description: 'Get the weather info of the given city',
             parameters: {
               type: 'object',
               properties: {
                 city: {
                   type: 'string',
-                  description: '城市名称，如"北京"、"上海"'
+                  description: 'City name, such as "Beijing" or "Shanghai"'
                 }
               },
               required: ['city']
@@ -211,12 +211,12 @@ describe.skipIf(!RUN_REAL_API || !apiKey)('Gemini New SDK Integration Tests', ()
         },
         onToolCall: (toolCall) => {
           toolCalls.push(toolCall)
-          console.log('✓ 收到工具调用:', toolCall.function.name)
-          console.log('  参数:', toolCall.function.arguments)
+          console.log('✓ Received a tool call:', toolCall.function.name)
+          console.log('  Arguments:', toolCall.function.arguments)
         },
         onComplete: (response) => {
           completed = true
-          console.log('✓ 完成工具调用响应')
+          console.log('✓ Completed the tool call response')
         },
         onError: (error) => {
           throw error
@@ -225,22 +225,22 @@ describe.skipIf(!RUN_REAL_API || !apiKey)('Gemini New SDK Integration Tests', ()
 
       expect(completed).toBe(true)
 
-      // 验证是否收到了工具调用
+      // Verify that a tool call was received
       if (toolCalls.length > 0) {
         expect(toolCalls[0].type).toBe('function')
         expect(toolCalls[0].function.name).toBe('getWeather')
 
         const args = JSON.parse(toolCalls[0].function.arguments)
         expect(args.city).toBeDefined()
-        console.log('✓ 工具调用验证成功:', args)
+        console.log('✓ Tool call verified successfully:', args)
       } else {
-        console.log('⚠️ 模型没有返回工具调用（可能直接回答了问题）')
+        console.log('⚠️ The model did not return a tool call (it may have answered the question directly)')
       }
     }, 30000)
   })
 
   describe('Thinking/Reasoning', () => {
-    it('应该能够捕获思考过程', async () => {
+    it('should be able to capture the thinking process', async () => {
       const config = createConfig({
         thinkingBudget: 2048,
         includeThoughts: true,
@@ -250,7 +250,7 @@ describe.skipIf(!RUN_REAL_API || !apiKey)('Gemini New SDK Integration Tests', ()
       const messages: Message[] = [
         {
           role: 'user',
-          content: '请分析一下这个数学问题：如果一个数字序列是 2, 4, 8, 16，下一个数字是什么？请详细解释你的推理过程。'
+          content: 'Please analyze this math problem: if a number sequence is 2, 4, 8, 16, what is the next number? Please explain your reasoning in detail.'
         }
       ]
 
@@ -260,20 +260,20 @@ describe.skipIf(!RUN_REAL_API || !apiKey)('Gemini New SDK Integration Tests', ()
       expect(response.content).toBeDefined()
       expect(response.content.length).toBeGreaterThan(0)
 
-      // 检查是否包含推理内容
+      // Check whether it contains reasoning content
       if (response.reasoning) {
-        console.log('✓ 捕获到思考过程:')
+        console.log('✓ Captured the thinking process:')
         console.log(response.reasoning.substring(0, 200) + '...')
         expect(typeof response.reasoning).toBe('string')
         expect(response.reasoning.length).toBeGreaterThan(0)
       } else {
-        console.log('⚠️ 没有捕获到思考内容（可能模型不支持或未启用）')
+        console.log('⚠️ No thinking content captured (the model may not support it or it is not enabled)')
       }
 
-      console.log('✓ 最终回答:', response.content.substring(0, 150) + '...')
+      console.log('✓ Final answer:', response.content.substring(0, 150) + '...')
     }, 30000)
 
-    it('应该能够处理流式思考过程', async () => {
+    it('should be able to handle the streaming thinking process', async () => {
       const config = createConfig({
         thinkingBudget: 2048,
         includeThoughts: true
@@ -282,7 +282,7 @@ describe.skipIf(!RUN_REAL_API || !apiKey)('Gemini New SDK Integration Tests', ()
       const messages: Message[] = [
         {
           role: 'user',
-          content: '分析这个逻辑问题：所有的猫都有尾巴，小花是一只猫，那么小花有尾巴吗？请说明推理步骤。'
+          content: 'Analyze this logic problem: all cats have tails, Tom is a cat, so does Tom have a tail? Please explain the reasoning steps.'
         }
       ]
 
@@ -298,7 +298,7 @@ describe.skipIf(!RUN_REAL_API || !apiKey)('Gemini New SDK Integration Tests', ()
         },
         onReasoningToken: (token) => {
           reasoningTokens.push(token)
-          console.log('✓ 思考token:', token.substring(0, 50))
+          console.log('✓ Thinking token:', token.substring(0, 50))
         },
         onComplete: (response) => {
           completed = true
@@ -316,14 +316,14 @@ describe.skipIf(!RUN_REAL_API || !apiKey)('Gemini New SDK Integration Tests', ()
       expect(tokens.length).toBeGreaterThan(0)
 
       if (reasoningTokens.length > 0) {
-        console.log('✓ 收到', reasoningTokens.length, '个思考token')
-        console.log('✓ 完整思考过程:', fullReasoning.substring(0, 200) + '...')
+        console.log('✓ Received', reasoningTokens.length, 'thinking tokens')
+        console.log('✓ Full thinking process:', fullReasoning.substring(0, 200) + '...')
         expect(fullReasoning.length).toBeGreaterThan(0)
       } else {
-        console.log('⚠️ 没有收到思考token（可能模型不支持或未启用）')
+        console.log('⚠️ No thinking tokens received (the model may not support it or it is not enabled)')
       }
 
-      console.log('✓ 完整回答:', fullResponse.substring(0, 150) + '...')
+      console.log('✓ Full answer:', fullResponse.substring(0, 150) + '...')
     }, 30000)
   })
 })

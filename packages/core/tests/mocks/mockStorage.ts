@@ -2,7 +2,7 @@ import { IStorageProvider } from '../../src/services/storage/types';
 import { vi } from 'vitest';
 
 /**
- * 创建模拟存储提供程序，用于测试
+ * Create a mock storage provider for tests
  */
 export function createMockStorage(): IStorageProvider & {
   getItem: ReturnType<typeof vi.fn>;

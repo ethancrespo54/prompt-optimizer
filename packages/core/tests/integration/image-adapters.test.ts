@@ -8,8 +8,8 @@ import { LocalStorageProvider } from '../../src/services/storage/localStoragePro
 import type { ImageRequest, ImageModelConfig } from '../../src/services/image/types'
 
 /**
- * 图像适配器真实API集成测试
- * 只有在相应的环境变量存在时才执行
+ * Image adapter real API integration test
+ * Only runs when the corresponding environment variables exist
  */
 const RUN_REAL_API = process.env.RUN_REAL_API === '1'
 
@@ -37,11 +37,11 @@ describe.skipIf(!RUN_REAL_API)('Image Adapters Real API Integration Tests', () =
     await storage.clearAll()
   })
 
-  describe('Gemini 图像适配器测试', () => {
+  describe('Gemini image adapter test', () => {
     const runGeminiTests = hasGeminiKey
 
-    it.runIf(runGeminiTests)('应该能使用Gemini 2.5 Flash Image生成图像', async () => {
-      // 添加Gemini图像模型
+    it.runIf(runGeminiTests)('should be able to generate an image with Gemini 2.5 Flash Image', async () => {
+      // Add the Gemini image model
       const geminiConfig: ImageModelConfig = {
         id: 'test-gemini-fast',
         name: 'Gemini 2.5 Flash Image',
@@ -53,7 +53,7 @@ describe.skipIf(!RUN_REAL_API)('Image Adapters Real API Integration Tests', () =
       } as any
       await imageModelManager.addConfig(geminiConfig)
 
-      // 生成图像
+      // Generate the image
       const request: ImageRequest = {
         prompt: 'A beautiful sunset over the ocean with calm waves',
         count: 1,
@@ -72,22 +72,22 @@ describe.skipIf(!RUN_REAL_API)('Image Adapters Real API Integration Tests', () =
       expect(result.metadata?.modelId).toBe('gemini-2.5-flash-image-preview')
     }, 120000)
 
-    // 仅支持 gemini-2.5-flash-image-preview，不再测试 Imagen 3.x
+    // Only gemini-2.5-flash-image-preview is supported; Imagen 3.x is no longer tested
 
-    it.skipIf(!runGeminiTests)('跳过Gemini测试 - 未设置API密钥', () => {
+    it.skipIf(!runGeminiTests)('skip the Gemini test - API key not set', () => {
       expect(true).toBe(true)
     })
   })
 
-  describe('OpenRouter 图像适配器测试', () => {
+  describe('OpenRouter image adapter test', () => {
     const runOpenRouterTests = hasOpenRouterKey
     const openrouterModelId = new OpenRouterImageAdapter().getModels()[0].id
 
-    // 测试用的小图像 base64（1x1 透明 PNG）
+    // A small test image in base64 (1x1 transparent PNG)
     const testImageBase64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
 
-    it.runIf(runOpenRouterTests)('应该能使用OpenRouter生成图像', async () => {
-      // 添加OpenRouter模型
+    it.runIf(runOpenRouterTests)('should be able to generate an image with OpenRouter', async () => {
+      // Add the OpenRouter model
       const openrouterConfig: ImageModelConfig = {
         id: 'test-openrouter',
         name: 'OpenRouter Image Model',
@@ -99,7 +99,7 @@ describe.skipIf(!RUN_REAL_API)('Image Adapters Real API Integration Tests', () =
       } as any
       await imageModelManager.addConfig(openrouterConfig)
 
-      // 生成图像
+      // Generate the image
       const request: ImageRequest = {
         prompt: 'a simple red flower',
         count: 1,
@@ -118,8 +118,8 @@ describe.skipIf(!RUN_REAL_API)('Image Adapters Real API Integration Tests', () =
       expect(result.metadata?.modelId).toBe(openrouterModelId)
     }, 120000)
 
-    it.runIf(runOpenRouterTests)('应该能使用OpenRouter进行图生图', async () => {
-      // 复用同一配置进行图生图
+    it.runIf(runOpenRouterTests)('should be able to do image-to-image with OpenRouter', async () => {
+      // Reuse the same config for image-to-image
       await imageModelManager.addConfig({
         id: 'test-openrouter-i2i',
         name: 'OpenRouter I2I',
@@ -130,7 +130,7 @@ describe.skipIf(!RUN_REAL_API)('Image Adapters Real API Integration Tests', () =
         paramOverrides: {}
       } as any)
 
-      // 图生图请求
+      // Image-to-image request
       const request: ImageRequest = {
         prompt: 'Transform this image into a vibrant watercolor painting',
         count: 1,
@@ -149,20 +149,20 @@ describe.skipIf(!RUN_REAL_API)('Image Adapters Real API Integration Tests', () =
       expect(result.images[0].b64.length).toBeGreaterThan(100)
       expect(result.metadata?.modelId).toBe(openrouterModelId)
 
-    }, 90000) // 图生图可能需要更长时间
+    }, 90000) // Image-to-image may take longer
 
-    it.skipIf(!runOpenRouterTests)('跳过OpenRouter测试 - 未设置API密钥', () => {
+    it.skipIf(!runOpenRouterTests)('skip the OpenRouter test - API key not set', () => {
       expect(true).toBe(true)
     })
   })
 
-  // 已不支持 DALL-E 系列模型，移除相关测试
+  // DALL-E series models are no longer supported; the related tests were removed
 
-  describe('Seedream (火山方舟) 适配器测试', () => {
+  describe('Seedream (Volcano Ark) adapter test', () => {
     const runSeedreamTests = hasSeedreamKey
 
-    it.runIf(runSeedreamTests)('应该能使用Doubao Seedream 4.0生成图像', async () => {
-      // 添加Seedream模型 - 使用与 curl 示例匹配的参数
+    it.runIf(runSeedreamTests)('should be able to generate an image with Doubao Seedream 4.0', async () => {
+      // Add the Seedream model - using parameters matching the curl example
       const seedreamModelId = new SeedreamImageAdapter().getModels()[0].id
       const seedreamApiKey = process.env.VITE_SEEDREAM_API_KEY ||
                             process.env.VITE_ARK_API_KEY ||
@@ -177,9 +177,9 @@ describe.skipIf(!RUN_REAL_API)('Image Adapters Real API Integration Tests', () =
         paramOverrides: { size: '2K', watermark: false, outputMimeType: 'image/png' }
       } as any)
 
-      // 生成图像 - 使用你提供的复杂科幻提示词
+      // Generate the image - using the complex sci-fi prompt you provided
       const request: ImageRequest = {
-        prompt: '星际穿越，黑洞，黑洞里冲出一辆快支离破碎的复古列车，抢视觉冲击力，电影大片，末日既视感，动感，对比色，oc渲染，光线追踪，动态模糊，景深，超现实主义，深蓝，画面通过细腻的丰富的色彩层次塑造主体与场景，质感真实，暗黑风背景的光影效果营造出氛围，整体兼具艺术幻想感，夸张的广角透视效果，耀光，反射，极致的光影，强引力，吞噬',
+        prompt: 'Interstellar, a black hole, a nearly shattered retro train bursting out of the black hole, strong visual impact, cinematic blockbuster, apocalyptic feel, dynamic, contrasting colors, OC rendering, ray tracing, motion blur, depth of field, surrealism, deep blue, the picture shapes the subject and scene through delicate and rich color layers, realistic texture, the lighting of the dark background builds atmosphere, overall artistic fantasy feel, exaggerated wide-angle perspective, flare, reflection, extreme lighting, strong gravity, devouring',
         count: 1,
         configId: 'test-seedream',
         paramOverrides: { size: '2K', watermark: false, outputMimeType: 'image/png' }
@@ -191,20 +191,20 @@ describe.skipIf(!RUN_REAL_API)('Image Adapters Real API Integration Tests', () =
       expect(result.images).toBeDefined()
       expect(result.images.length).toBe(1)
       expect(result.images[0].url || result.images[0].b64).toBeTruthy()
-      expect(result.images[0].mimeType).toBe('image/png') // 验证MIME类型
+      expect(result.images[0].mimeType).toBe('image/png') // Verify the MIME type
       expect(result.metadata?.modelId).toBe(seedreamModelId)
-    }, 120000) // 增加超时到120秒
+    }, 120000) // Increase the timeout to 120 seconds
 
-    it.skipIf(!runSeedreamTests)('跳过Seedream测试 - 未设置API密钥', () => {
+    it.skipIf(!runSeedreamTests)('skip the Seedream test - API key not set', () => {
       expect(true).toBe(true)
     })
   })
 
-  describe('图像服务错误处理测试', () => {
+  describe('Image service error handling test', () => {
     const runErrorTests = hasGeminiKey || hasOpenAIKey || hasOpenRouterKey || hasSeedreamKey
 
-    it.runIf(runErrorTests)('应该能正确处理无效的API密钥', async () => {
-      // 添加一个有无效API密钥的模型
+    it.runIf(runErrorTests)('should handle an invalid API key correctly', async () => {
+      // Add a model with an invalid API key
       await imageModelManager.addConfig({
         id: 'invalid-model',
         name: 'Invalid Model',
@@ -215,7 +215,7 @@ describe.skipIf(!RUN_REAL_API)('Image Adapters Real API Integration Tests', () =
         paramOverrides: {}
       } as any)
 
-      // 尝试生成图像应该失败
+      // Generating an image should fail
       const request: ImageRequest = {
         prompt: 'Test image generation',
         count: 1,
@@ -225,16 +225,16 @@ describe.skipIf(!RUN_REAL_API)('Image Adapters Real API Integration Tests', () =
       await expect(imageService.generate(request)).rejects.toThrow()
     }, 30000)
 
-    it.skipIf(!runErrorTests)('跳过错误处理测试 - 未设置API密钥', () => {
+    it.skipIf(!runErrorTests)('skip the error handling test - API key not set', () => {
       expect(true).toBe(true)
     })
   })
 
-  describe('多图像生成测试', () => {
-    const runMultiImageTests = false // 已不支持多图
+  describe('Multi-image generation test', () => {
+    const runMultiImageTests = false // Multiple images are no longer supported
 
-    it.runIf(runMultiImageTests)('应该能生成多张图像', async () => {
-      // 添加DALL-E 2模型（更稳定）
+    it.runIf(runMultiImageTests)('should be able to generate multiple images', async () => {
+      // Add the DALL-E 2 model (more stable)
       const dalle2Model: ImageModelConfig = {
         name: 'DALL-E 2 Multi',
         baseURL: 'https://api.openai.com/v1',
@@ -253,12 +253,12 @@ describe.skipIf(!RUN_REAL_API)('Image Adapters Real API Integration Tests', () =
         paramOverrides: {}
       } as any)
 
-      // 生成2张图像
+      // Generate 2 images
       const request: ImageRequest = {
         prompt: 'A simple geometric pattern',
         count: 2,
         imgParams: {
-          size: '256x256' // 使用较小尺寸以节省时间和费用
+          size: '256x256' // Use a smaller size to save time and cost
         }
       }
 
@@ -271,9 +271,9 @@ describe.skipIf(!RUN_REAL_API)('Image Adapters Real API Integration Tests', () =
         expect(image.b64).toBeDefined()
         expect(image.b64.length).toBeGreaterThan(100)
       })
-    }, 120000) // 多图像生成需要更长时间
+    }, 120000) // Multi-image generation needs longer
 
-    it.skipIf(!runMultiImageTests)('跳过多图像测试 - 未设置OpenAI API密钥', () => {
+    it.skipIf(!runMultiImageTests)('skip the multi-image test - OpenAI API key not set', () => {
       expect(true).toBe(true)
     })
   })

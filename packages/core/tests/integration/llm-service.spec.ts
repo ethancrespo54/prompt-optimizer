@@ -9,19 +9,19 @@ import {
 } from '../helpers/real-llm'
 
 /**
- * LLM 服务集成测试
+ * LLM service integration test
  *
- * 测试策略：
- * - 使用 real-llm 工具类自动获取可用的 LLM 提供商
- * - 使用 VCR 录制真实 API 响应
- * - 支持多提供商（根据本地环境变量自动选择）
- * - 验证流式响应处理
- * - 验证错误处理
+ * Test strategy:
+ * - Use the real-llm utility to automatically get the available LLM providers
+ * - Use VCR to record real API responses
+ * - Support multiple providers (chosen automatically from local environment variables)
+ * - Verify streaming response handling
+ * - Verify error handling
  *
- * 运行方式：
- * - 默认：使用 VCR 回放已录制的 fixtures
- * - 录制：RUN_REAL_API=1 pnpm test:record（需要配置 API Key）
- * - 真实：RUN_REAL_API=1 pnpm test:real（需要配置 API Key）
+ * How to run:
+ * - Default: replay the recorded fixtures using VCR
+ * - Record: RUN_REAL_API=1 pnpm test:record (requires configuring an API key)
+ * - Real: RUN_REAL_API=1 pnpm test:real (requires configuring an API key)
  */
 
 const RUN_REAL_API = process.env.RUN_REAL_API === '1' || process.env.ENABLE_REAL_LLM === 'true'

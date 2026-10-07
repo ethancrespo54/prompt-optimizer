@@ -3,36 +3,36 @@ import { expect, describe, it, beforeEach, beforeAll } from 'vitest';
 import dotenv from 'dotenv';
 import path from 'path';
 
-// 加载环境变量
+// Load environment variables
 beforeAll(() => {
   dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 });
 
 const RUN_REAL_API = process.env.RUN_REAL_API === '1'
 
-describe.skipIf(!RUN_REAL_API)('DeepSeek API 测试', () => {
-  // 跳过没有设置 API 密钥的测试
+describe.skipIf(!RUN_REAL_API)('DeepSeek API test', () => {
+  // Skip tests when no API key is set
   const apiKey = process.env.VITE_DEEPSEEK_API_KEY;
   if (!apiKey) {
-    console.log('跳过 DeepSeek 测试：未设置 VITE_DEEPSEEK_API_KEY 环境变量');
-    it.skip('应该能正确调用 DeepSeek API', () => {});
-    it.skip('应该能正确处理多轮对话', () => {});
+    console.log('Skipping the DeepSeek test: the VITE_DEEPSEEK_API_KEY environment variable is not set');
+    it.skip('should be able to call the DeepSeek API correctly', () => {});
+    it.skip('should be able to handle multi-turn conversation correctly', () => {});
     return;
   }
 
-  it('应该能正确调用 DeepSeek API', async () => {
+  it('should be able to call the DeepSeek API correctly', async () => {
     const storage = new LocalStorageProvider();
     const modelManager = new ModelManager(storage);
     const llmService = createLLMService(modelManager);
 
-    // 更新 DeepSeek 配置
+    // Update the DeepSeek config
     modelManager.updateModel('deepseek', {
       apiKey,
       enabled: true
     });
 
     const messages = [
-      { role: 'user', content: '你好，请用一句话介绍你自己' }
+      { role: 'user', content: 'Hello, please introduce yourself in one sentence' }
     ];
 
     const response = await llmService.sendMessage(messages, 'deepseek');
@@ -41,21 +41,21 @@ describe.skipIf(!RUN_REAL_API)('DeepSeek API 测试', () => {
     expect(response.length).toBeGreaterThan(0);
   }, 25000);
 
-  it('应该能正确处理多轮对话', async () => {
+  it('should be able to handle multi-turn conversation correctly', async () => {
     const storage = new LocalStorageProvider();
     const modelManager = new ModelManager(storage);
     const llmService = createLLMService(modelManager);
 
-    // 更新 DeepSeek 配置
+    // Update the DeepSeek config
     modelManager.updateModel('deepseek', {
       apiKey,
       enabled: true
     });
 
     const messages = [
-      { role: 'user', content: '你好，我们来玩个游戏' },
-      { role: 'assistant', content: '好啊，你想玩什么游戏？' },
-      { role: 'user', content: '我们来玩猜数字游戏，1到100之间' }
+      { role: 'user', content: 'Hello, let us play a game' },
+      { role: 'assistant', content: 'Sure, what game do you want to play?' },
+      { role: 'user', content: 'Let us play a number guessing game, between 1 and 100' }
     ];
 
     const response = await llmService.sendMessage(messages, 'deepseek');

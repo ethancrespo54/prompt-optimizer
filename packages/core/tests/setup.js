@@ -4,7 +4,7 @@ import path from 'path'
 import { setupServer } from 'msw/node'
 import { llmHandlers } from './utils/llm-mock-service.js'
 
-// 加载环境变量（从项目根目录加载）
+// Load environment variables (from the project root directory)
 dotenv.config({ path: path.resolve(process.cwd(), '../../.env.local') })
 
 const shouldMockLLM =
@@ -28,7 +28,7 @@ afterAll(() => {
   mswServer?.close()
 })
 
-// 模拟 localStorage
+// Mock localStorage
 const localStorageMock = {
   store: new Map(),
   getItem: vi.fn((key) => {
@@ -45,10 +45,10 @@ const localStorageMock = {
   })
 };
 
-// 全局注入 localStorage
+// Inject localStorage globally
 global.localStorage = localStorageMock;
 
-// 在每个测试之前重置 mock 状态
+// Reset the mock state before each test
 beforeEach(() => {
   localStorageMock.store.clear();
   vi.clearAllMocks();

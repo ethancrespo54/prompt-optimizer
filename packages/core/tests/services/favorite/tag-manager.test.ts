@@ -4,15 +4,15 @@ import type { IStorageProvider } from '../../../src/services/storage/types';
 import { FavoriteValidationError } from '../../../src/services/favorite/errors';
 
 /**
- * 标签管理功能单元测试
+ * Tag management feature unit test
  */
-describe('FavoriteManager - 标签管理', () => {
+describe('FavoriteManager - tag management', () => {
   let manager: FavoriteManager;
   let mockStorage: Map<string, string>;
   let storageProvider: IStorageProvider;
 
   beforeEach(() => {
-    // 创建模拟存储
+    // Create a mock storage
     mockStorage = new Map<string, string>();
 
     storageProvider = {
@@ -46,115 +46,115 @@ describe('FavoriteManager - 标签管理', () => {
     manager = new FavoriteManager(storageProvider);
   });
 
-  describe('添加标签', () => {
-    it('应该能成功添加新标签', async () => {
-      await manager.addTag('测试标签');
+  describe('Add tag', () => {
+    it('should be able to add a new tag successfully', async () => {
+      await manager.addTag('test tag');
 
       const tags = await manager.getAllTags();
       expect(tags).toHaveLength(1);
-      expect(tags[0].tag).toBe('测试标签');
-      expect(tags[0].count).toBe(0); // 新标签未使用，count 为 0
+      expect(tags[0].tag).toBe('test tag');
+      expect(tags[0].count).toBe(0); // A new tag is unused, so count is 0
     });
 
-    it('应该拒绝空标签名', async () => {
+    it('should reject an empty tag name', async () => {
       await expect(manager.addTag('')).rejects.toThrow(FavoriteValidationError);
       await expect(manager.addTag('   ')).rejects.toThrow(FavoriteValidationError);
     });
 
-    it('重复添加标签应该幂等', async () => {
-      await manager.addTag('标签1');
-      await expect(manager.addTag('标签1')).resolves.toBeUndefined();
+    it('adding a tag repeatedly should be idempotent', async () => {
+      await manager.addTag('tag 1');
+      await expect(manager.addTag('tag 1')).resolves.toBeUndefined();
 
       const tags = await manager.getAllTags();
-      expect(tags.filter(tag => tag.tag === '标签1')).toHaveLength(1);
+      expect(tags.filter(tag => tag.tag === 'tag 1')).toHaveLength(1);
     });
 
-    it('应该自动去除首尾空格', async () => {
-      await manager.addTag('  标签2  ');
+    it('should automatically trim leading and trailing spaces', async () => {
+      await manager.addTag('  tag 2  ');
       const tags = await manager.getAllTags();
-      expect(tags[0].tag).toBe('标签2');
+      expect(tags[0].tag).toBe('tag 2');
     });
 
-    it('应该能添加多个标签', async () => {
-      await manager.addTag('标签1');
-      await manager.addTag('标签2');
-      await manager.addTag('标签3');
+    it('should be able to add multiple tags', async () => {
+      await manager.addTag('tag 1');
+      await manager.addTag('tag 2');
+      await manager.addTag('tag 3');
 
       const tags = await manager.getAllTags();
       expect(tags).toHaveLength(3);
     });
   });
 
-  describe('获取所有标签', () => {
-    it('应该返回独立标签和使用中的标签', async () => {
-      // 添加独立标签
-      await manager.addTag('独立标签1');
-      await manager.addTag('独立标签2');
+  describe('Get all tags', () => {
+    it('should return standalone tags and tags in use', async () => {
+      // Add standalone tags
+      await manager.addTag('standalone tag 1');
+      await manager.addTag('standalone tag 2');
 
-      // 添加收藏（使用某些标签）
+      // Add a favorite (using some tags)
       await manager.addFavorite({
-        title: '测试收藏',
-        content: '测试内容',
-        tags: ['使用中标签', '独立标签1'],
+        title: 'Test favorite',
+        content: 'Test content',
+        tags: ['in-use tag', 'standalone tag 1'],
         functionMode: 'basic',
         optimizationMode: 'system'
       });
 
       const tags = await manager.getAllTags();
 
-      // 应该包含 3 个标签：独立标签1（count=1）、独立标签2（count=0）、使用中标签（count=1）
+      // Should contain 3 tags: standalone tag 1 (count=1), standalone tag 2 (count=0), in-use tag (count=1)
       expect(tags).toHaveLength(3);
 
-      const tag1 = tags.find(t => t.tag === '独立标签1');
+      const tag1 = tags.find(t => t.tag === 'standalone tag 1');
       expect(tag1?.count).toBe(1);
 
-      const tag2 = tags.find(t => t.tag === '独立标签2');
+      const tag2 = tags.find(t => t.tag === 'standalone tag 2');
       expect(tag2?.count).toBe(0);
 
-      const tag3 = tags.find(t => t.tag === '使用中标签');
+      const tag3 = tags.find(t => t.tag === 'in-use tag');
       expect(tag3?.count).toBe(1);
     });
 
-    it('应该按使用次数降序排序', async () => {
+    it('should sort by usage count descending', async () => {
       await manager.addFavorite({
-        title: '收藏1',
-        content: '内容1',
-        tags: ['标签A', '标签B'],
+        title: 'Favorite 1',
+        content: 'Content 1',
+        tags: ['Tag A', 'Tag B'],
         functionMode: 'basic',
         optimizationMode: 'system'
       });
 
       await manager.addFavorite({
-        title: '收藏2',
-        content: '内容2',
-        tags: ['标签B', '标签C'],
+        title: 'Favorite 2',
+        content: 'Content 2',
+        tags: ['Tag B', 'Tag C'],
         functionMode: 'basic',
         optimizationMode: 'system'
       });
 
       await manager.addFavorite({
-        title: '收藏3',
-        content: '内容3',
-        tags: ['标签B'],
+        title: 'Favorite 3',
+        content: 'Content 3',
+        tags: ['Tag B'],
         functionMode: 'basic',
         optimizationMode: 'system'
       });
 
       const tags = await manager.getAllTags();
 
-      // 标签B 使用3次，应该排第一
-      expect(tags[0].tag).toBe('标签B');
+      // Tag B is used 3 times, so it should be first
+      expect(tags[0].tag).toBe('Tag B');
       expect(tags[0].count).toBe(3);
 
-      // 标签A 和 标签C 各使用1次
+      // Tag A and Tag C are each used once
       expect(tags[1].count).toBe(1);
       expect(tags[2].count).toBe(1);
     });
 
-    it('相同使用次数时应该按标签名升序排序', async () => {
+    it('should sort by tag name ascending when usage counts are equal', async () => {
       await manager.addFavorite({
-        title: '收藏',
-        content: '内容',
+        title: 'Favorite',
+        content: 'Content',
         tags: ['Zebra', 'Apple', 'Banana'],
         functionMode: 'basic',
         optimizationMode: 'system'
@@ -162,223 +162,223 @@ describe('FavoriteManager - 标签管理', () => {
 
       const tags = await manager.getAllTags();
 
-      // 都是使用1次，应该按字母顺序排序
+      // All used once, so they should be sorted alphabetically
       expect(tags[0].tag).toBe('Apple');
       expect(tags[1].tag).toBe('Banana');
       expect(tags[2].tag).toBe('Zebra');
     });
   });
 
-  describe('重命名标签', () => {
-    it('应该能成功重命名标签并更新所有收藏', async () => {
-      // 添加使用该标签的收藏
+  describe('Rename tag', () => {
+    it('should rename the tag and update all favorites', async () => {
+      // Add favorites that use the tag
       await manager.addFavorite({
-        title: '收藏1',
-        content: '内容1',
-        tags: ['旧标签'],
+        title: 'Favorite 1',
+        content: 'Content 1',
+        tags: ['old tag'],
         functionMode: 'basic',
         optimizationMode: 'system'
       });
 
       await manager.addFavorite({
-        title: '收藏2',
-        content: '内容2',
-        tags: ['旧标签', '其他标签'],
+        title: 'Favorite 2',
+        content: 'Content 2',
+        tags: ['old tag', 'other tag'],
         functionMode: 'basic',
         optimizationMode: 'system'
       });
 
-      const affectedCount = await manager.renameTag('旧标签', '新标签');
+      const affectedCount = await manager.renameTag('old tag', 'new tag');
 
-      expect(affectedCount).toBe(2); // 影响了2个收藏
+      expect(affectedCount).toBe(2); // 2 favorites affected
 
-      // 验证收藏已更新
+      // Verify the favorites were updated
       const favorites = await manager.getFavorites();
-      expect(favorites[0].tags).toContain('新标签');
-      expect(favorites[0].tags).not.toContain('旧标签');
-      expect(favorites[1].tags).toContain('新标签');
-      expect(favorites[1].tags).not.toContain('旧标签');
+      expect(favorites[0].tags).toContain('new tag');
+      expect(favorites[0].tags).not.toContain('old tag');
+      expect(favorites[1].tags).toContain('new tag');
+      expect(favorites[1].tags).not.toContain('old tag');
 
-      // 验证标签统计
+      // Verify the tag statistics
       const tags = await manager.getAllTags();
-      const newTag = tags.find(t => t.tag === '新标签');
+      const newTag = tags.find(t => t.tag === 'new tag');
       expect(newTag?.count).toBe(2);
 
-      const oldTag = tags.find(t => t.tag === '旧标签');
+      const oldTag = tags.find(t => t.tag === 'old tag');
       expect(oldTag).toBeUndefined();
     });
 
-    it('重命名为相同名称时应该返回0', async () => {
-      const affectedCount = await manager.renameTag('标签A', '标签A');
+    it('should return 0 when renaming to the same name', async () => {
+      const affectedCount = await manager.renameTag('Tag A', 'Tag A');
       expect(affectedCount).toBe(0);
     });
 
-    it('应该拒绝空标签名', async () => {
-      await expect(manager.renameTag('', '新标签')).rejects.toThrow(FavoriteValidationError);
-      await expect(manager.renameTag('旧标签', '')).rejects.toThrow(FavoriteValidationError);
+    it('should reject an empty tag name', async () => {
+      await expect(manager.renameTag('', 'new tag')).rejects.toThrow(FavoriteValidationError);
+      await expect(manager.renameTag('old tag', '')).rejects.toThrow(FavoriteValidationError);
     });
 
-    it('重命名不存在的标签时应该返回0', async () => {
-      const affectedCount = await manager.renameTag('不存在的标签', '新标签');
+    it('should return 0 when renaming a non-existent tag', async () => {
+      const affectedCount = await manager.renameTag('nonexistent tag', 'new tag');
       expect(affectedCount).toBe(0);
     });
 
-    it('重命名时如果新标签已存在应该合并', async () => {
+    it('should merge if the new tag already exists when renaming', async () => {
       await manager.addFavorite({
-        title: '收藏',
-        content: '内容',
-        tags: ['标签A', '标签B'],
+        title: 'Favorite',
+        content: 'Content',
+        tags: ['Tag A', 'Tag B'],
         functionMode: 'basic',
         optimizationMode: 'system'
       });
 
-      await manager.renameTag('标签A', '标签B');
+      await manager.renameTag('Tag A', 'Tag B');
 
       const favorites = await manager.getFavorites();
-      // 应该只包含一个标签B，不重复
-      expect(favorites[0].tags).toEqual(['标签B']);
+      // Should contain only one Tag B, without duplicates
+      expect(favorites[0].tags).toEqual(['Tag B']);
     });
   });
 
-  describe('合并标签', () => {
-    it('应该能成功合并多个标签', async () => {
+  describe('Merge tags', () => {
+    it('should merge multiple tags successfully', async () => {
       await manager.addFavorite({
-        title: '收藏1',
-        content: '内容1',
-        tags: ['标签A'],
+        title: 'Favorite 1',
+        content: 'Content 1',
+        tags: ['Tag A'],
         functionMode: 'basic',
         optimizationMode: 'system'
       });
 
       await manager.addFavorite({
-        title: '收藏2',
-        content: '内容2',
-        tags: ['标签B'],
+        title: 'Favorite 2',
+        content: 'Content 2',
+        tags: ['Tag B'],
         functionMode: 'basic',
         optimizationMode: 'system'
       });
 
       await manager.addFavorite({
-        title: '收藏3',
-        content: '内容3',
-        tags: ['标签C'],
+        title: 'Favorite 3',
+        content: 'Content 3',
+        tags: ['Tag C'],
         functionMode: 'basic',
         optimizationMode: 'system'
       });
 
-      const affectedCount = await manager.mergeTags(['标签A', '标签B'], '标签C');
+      const affectedCount = await manager.mergeTags(['Tag A', 'Tag B'], 'Tag C');
 
-      expect(affectedCount).toBe(2); // 影响了2个收藏（收藏1和收藏2）
+      expect(affectedCount).toBe(2); // 2 favorites affected (Favorite 1 and Favorite 2)
 
       const favorites = await manager.getFavorites();
-      expect(favorites[0].tags).toContain('标签C');
-      expect(favorites[0].tags).not.toContain('标签A');
-      expect(favorites[1].tags).toContain('标签C');
-      expect(favorites[1].tags).not.toContain('标签B');
+      expect(favorites[0].tags).toContain('Tag C');
+      expect(favorites[0].tags).not.toContain('Tag A');
+      expect(favorites[1].tags).toContain('Tag C');
+      expect(favorites[1].tags).not.toContain('Tag B');
 
-      // 收藏3的标签C不应重复
-      expect(favorites[2].tags).toEqual(['标签C']);
+      // Tag C of Favorite 3 should not be duplicated
+      expect(favorites[2].tags).toEqual(['Tag C']);
     });
 
-    it('应该拒绝空的源标签列表', async () => {
-      await expect(manager.mergeTags([], '目标标签')).rejects.toThrow(FavoriteValidationError);
+    it('should reject an empty source tag list', async () => {
+      await expect(manager.mergeTags([], 'target tag')).rejects.toThrow(FavoriteValidationError);
     });
 
-    it('应该拒绝空的目标标签', async () => {
-      await expect(manager.mergeTags(['标签A'], '')).rejects.toThrow(FavoriteValidationError);
+    it('should reject an empty target tag', async () => {
+      await expect(manager.mergeTags(['Tag A'], '')).rejects.toThrow(FavoriteValidationError);
     });
 
-    it('合并不存在的标签时应该返回0', async () => {
-      const affectedCount = await manager.mergeTags(['不存在1', '不存在2'], '目标');
+    it('should return 0 when merging non-existent tags', async () => {
+      const affectedCount = await manager.mergeTags(['nonexistent 1', 'nonexistent 2'], 'target');
       expect(affectedCount).toBe(0);
     });
   });
 
-  describe('删除标签', () => {
-    it('应该能删除标签并从所有收藏中移除', async () => {
-      // 添加独立标签（未被使用）
-      await manager.addTag('独立标签');
+  describe('Delete tag', () => {
+    it('should delete the tag and remove it from all favorites', async () => {
+      // Add a standalone tag (unused)
+      await manager.addTag('standalone tag');
 
-      // 添加使用该标签的收藏
+      // Add favorites that use the tag
       await manager.addFavorite({
-        title: '收藏1',
-        content: '内容1',
-        tags: ['要删除的标签', '保留的标签'],
+        title: 'Favorite 1',
+        content: 'Content 1',
+        tags: ['tag to delete', 'tag to keep'],
         functionMode: 'basic',
         optimizationMode: 'system'
       });
 
       await manager.addFavorite({
-        title: '收藏2',
-        content: '内容2',
-        tags: ['要删除的标签'],
+        title: 'Favorite 2',
+        content: 'Content 2',
+        tags: ['tag to delete'],
         functionMode: 'basic',
         optimizationMode: 'system'
       });
 
-      const affectedCount = await manager.deleteTag('要删除的标签');
+      const affectedCount = await manager.deleteTag('tag to delete');
 
-      expect(affectedCount).toBe(2); // 影响了2个收藏
+      expect(affectedCount).toBe(2); // 2 favorites affected
 
-      // 验证收藏已更新
+      // Verify the favorites were updated
       const favorites = await manager.getFavorites();
 
-      // 验证两个收藏都不包含"要删除的标签"
+      // Verify neither favorite contains "tag to delete"
       favorites.forEach(fav => {
-        expect(fav.tags).not.toContain('要删除的标签');
+        expect(fav.tags).not.toContain('tag to delete');
       });
 
-      // 第一个收藏应该保留"保留的标签"
-      const firstFavorite = favorites.find(f => f.title === '收藏1');
+      // The first favorite should keep "tag to keep"
+      const firstFavorite = favorites.find(f => f.title === 'Favorite 1');
       expect(firstFavorite).toBeDefined();
-      expect(firstFavorite!.tags).toEqual(['保留的标签']);
+      expect(firstFavorite!.tags).toEqual(['tag to keep']);
 
-      // 第二个收藏应该没有标签
-      const secondFavorite = favorites.find(f => f.title === '收藏2');
+      // The second favorite should have no tags
+      const secondFavorite = favorites.find(f => f.title === 'Favorite 2');
       expect(secondFavorite).toBeDefined();
       expect(secondFavorite!.tags).toEqual([]);
 
-      // 验证标签统计：要删除的标签不应该存在
+      // Verify the tag statistics: the deleted tag should not exist
       const tags = await manager.getAllTags();
-      const deletedTag = tags.find(t => t.tag === '要删除的标签');
+      const deletedTag = tags.find(t => t.tag === 'tag to delete');
       expect(deletedTag).toBeUndefined();
 
-      // 独立标签应该仍然存在(count=0，因为未被使用)
-      const independentTag = tags.find(t => t.tag === '独立标签');
+      // The standalone tag should still exist (count=0, since it is unused)
+      const independentTag = tags.find(t => t.tag === 'standalone tag');
       expect(independentTag).toBeDefined();
       expect(independentTag!.count).toBe(0);
 
-      // 测试删除独立标签
-      const independentTagDelCount = await manager.deleteTag('独立标签');
-      expect(independentTagDelCount).toBe(0); // 未被任何收藏使用
+      // Test deleting a standalone tag
+      const independentTagDelCount = await manager.deleteTag('standalone tag');
+      expect(independentTagDelCount).toBe(0); // Not used by any favorite
 
       const tagsAfterDel = await manager.getAllTags();
-      const deletedIndependentTag = tagsAfterDel.find(t => t.tag === '独立标签');
+      const deletedIndependentTag = tagsAfterDel.find(t => t.tag === 'standalone tag');
       expect(deletedIndependentTag).toBeUndefined();
     });
 
-    it('应该拒绝空标签名', async () => {
+    it('should reject an empty tag name', async () => {
       await expect(manager.deleteTag('')).rejects.toThrow(FavoriteValidationError);
     });
 
-    it('删除不存在的标签时应该返回0', async () => {
-      const affectedCount = await manager.deleteTag('不存在的标签');
+    it('should return 0 when deleting a non-existent tag', async () => {
+      const affectedCount = await manager.deleteTag('nonexistent tag');
       expect(affectedCount).toBe(0);
     });
   });
 
-  describe('标签导入导出', () => {
-    it('导出时应该包含独立标签', async () => {
-      await manager.addTag('独立标签1');
-      await manager.addTag('独立标签2');
+  describe('Tag import/export', () => {
+    it('should include standalone tags on export', async () => {
+      await manager.addTag('standalone tag 1');
+      await manager.addTag('standalone tag 2');
 
-      // 添加使用中标签到独立标签库
-      await manager.addTag('使用中标签');
+      // Add an in-use tag to the standalone tag library
+      await manager.addTag('in-use tag');
 
       await manager.addFavorite({
-        title: '测试',
-        content: '内容',
-        tags: ['使用中标签'],
+        title: 'Test',
+        content: 'Content',
+        tags: ['in-use tag'],
         functionMode: 'basic',
         optimizationMode: 'system'
       });
@@ -387,68 +387,68 @@ describe('FavoriteManager - 标签管理', () => {
       const parsed = JSON.parse(exportData);
 
       expect(parsed.tags).toBeDefined();
-      expect(parsed.tags).toContain('独立标签1');
-      expect(parsed.tags).toContain('独立标签2');
-      expect(parsed.tags).toContain('使用中标签');
+      expect(parsed.tags).toContain('standalone tag 1');
+      expect(parsed.tags).toContain('standalone tag 2');
+      expect(parsed.tags).toContain('in-use tag');
     });
 
-    it('导入时应该自动创建独立标签', async () => {
+    it('should automatically create standalone tags on import', async () => {
       const importData = JSON.stringify({
         version: '1.0',
         exportDate: new Date().toISOString(),
         favorites: [
           {
-            title: '测试',
-            content: '内容',
-            tags: ['标签1', '标签2'],
+            title: 'Test',
+            content: 'Content',
+            tags: ['tag 1', 'tag 2'],
             functionMode: 'basic',
             optimizationMode: 'system'
           }
         ],
         categories: [],
-        tags: ['标签1', '标签2', '预创建标签']
+        tags: ['tag 1', 'tag 2', 'pre-created tag']
       });
 
       await manager.importFavorites(importData);
 
       const tags = await manager.getAllTags();
 
-      // 应该包含所有标签
-      expect(tags.find(t => t.tag === '标签1')).toBeDefined();
-      expect(tags.find(t => t.tag === '标签2')).toBeDefined();
-      expect(tags.find(t => t.tag === '预创建标签')).toBeDefined();
+      // Should contain all tags
+      expect(tags.find(t => t.tag === 'tag 1')).toBeDefined();
+      expect(tags.find(t => t.tag === 'tag 2')).toBeDefined();
+      expect(tags.find(t => t.tag === 'pre-created tag')).toBeDefined();
 
-      // 预创建标签使用次数为0
-      const preCreatedTag = tags.find(t => t.tag === '预创建标签');
+      // The pre-created tag has a usage count of 0
+      const preCreatedTag = tags.find(t => t.tag === 'pre-created tag');
       expect(preCreatedTag?.count).toBe(0);
     });
   });
 
-  describe('保存收藏时自动注册标签', () => {
-    it('保存收藏时应该自动将标签添加到独立标签库', async () => {
-      // 这个测试需要在 UI 层面实现，这里只是验证概念
-      // 在 SaveFavoriteDialog 中，保存前应该调用 addTag
+  describe('Automatically registering tags when saving a favorite', () => {
+    it('should automatically add tags to the standalone tag library when saving a favorite', async () => {
+      // This test should be implemented at the UI level; here it only verifies the concept
+      // In SaveFavoriteDialog, addTag should be called before saving
 
       await manager.addFavorite({
-        title: '测试',
-        content: '内容',
-        tags: ['新标签1', '新标签2'],
+        title: 'Test',
+        content: 'Content',
+        tags: ['new tag 1', 'new tag 2'],
         functionMode: 'basic',
         optimizationMode: 'system'
       });
 
-      // 手动模拟 SaveFavoriteDialog 的行为
-      for (const tag of ['新标签1', '新标签2']) {
+      // Manually simulate the behavior of SaveFavoriteDialog
+      for (const tag of ['new tag 1', 'new tag 2']) {
         try {
           await manager.addTag(tag);
         } catch (error) {
-          // 标签已存在，忽略错误
+          // The tag already exists, ignore the error
         }
       }
 
       const tags = await manager.getAllTags();
-      expect(tags.find(t => t.tag === '新标签1')).toBeDefined();
-      expect(tags.find(t => t.tag === '新标签2')).toBeDefined();
+      expect(tags.find(t => t.tag === 'new tag 1')).toBeDefined();
+      expect(tags.find(t => t.tag === 'new tag 2')).toBeDefined();
     });
   });
 });

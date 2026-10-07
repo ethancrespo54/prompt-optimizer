@@ -35,11 +35,11 @@ vi.mock('../../src/services/model/manager', async (importOriginal) => {
 });
 
 /**
- * 存储实现通用测试套件
- * 这个测试套件会对所有存储实现运行相同的测试，确保它们的行为一致
+ * Generic test suite for storage implementations
+ * This test suite runs the same tests against all storage implementations, ensuring they behave consistently
  */
-describe('存储实现通用测试', () => {
-  // 定义要测试的存储实现
+describe('Generic storage implementation test', () => {
+  // Define the storage implementations to test
   const storageImplementations: Array<{
     name: string;
     createProvider: () => IStorageProvider;
@@ -49,43 +49,43 @@ describe('存储实现通用测试', () => {
       name: 'LocalStorageProvider',
       createProvider: () => new LocalStorageProvider(),
       cleanup: async () => {
-        // 清理 localStorage
+        // Clean up localStorage
         if (typeof window !== 'undefined' && window.localStorage) {
           window.localStorage.clear();
         }
       }
     }
-    // 暂时禁用 Dexie 测试，因为测试环境没有 IndexedDB
+    // Dexie tests are disabled for now because the test environment has no IndexedDB
     // {
     //   name: 'DexieStorageProvider', 
     //   createProvider: () => new DexieStorageProvider(),
     //   cleanup: async () => {
-    //     // 清理 Dexie 数据库
+    //     // Clean up the Dexie database
     //     try {
     //       const provider = new DexieStorageProvider();
     //       await provider.clearAll();
     //       await provider.close();
     //     } catch (error) {
-    //       // 忽略清理错误
+    //       // Ignore cleanup errors
     //     }
     //   }
     // }
   ];
 
-  // 为每个存储实现运行测试
+  // Run the tests for each storage implementation
   storageImplementations.forEach(({ name, createProvider, cleanup }) => {
-    describe(`${name} 实现测试`, () => {
+    describe(`${name} implementation test`, () => {
       let storageProvider: IStorageProvider;
 
       beforeEach(async () => {
         storageProvider = createProvider();
         
-        // 清理存储
+        // Clean up the storage
         if (cleanup) {
           await cleanup();
         }
         
-        // 重置 UUID mock
+        // Reset the UUID mock
         (uuidv4 as any).mockClear();
         let counter = 0;
         (uuidv4 as any).mockImplementation(() => `mock-uuid-${++counter}`);
@@ -97,8 +97,8 @@ describe('存储实现通用测试', () => {
         }
       });
 
-      describe('基础存储操作', () => {
-        it('应该能够设置和获取数据', async () => {
+      describe('Basic storage operations', () => {
+        it('should be able to set and get data', async () => {
           const key = 'test-key';
           const value = 'test-value';
 
@@ -108,12 +108,12 @@ describe('存储实现通用测试', () => {
           expect(retrieved).toBe(value);
         });
 
-        it('应该在键不存在时返回null', async () => {
+        it('should return null when the key does not exist', async () => {
           const result = await storageProvider.getItem('non-existent-key');
           expect(result).toBeNull();
         });
 
-        it('应该能够删除数据', async () => {
+        it('should be able to delete data', async () => {
           const key = 'test-key';
           const value = 'test-value';
 
@@ -124,7 +124,7 @@ describe('存储实现通用测试', () => {
           expect(result).toBeNull();
         });
 
-        it('应该能够清空所有数据', async () => {
+        it('should be able to clear all data', async () => {
           await storageProvider.setItem('key1', 'value1');
           await storageProvider.setItem('key2', 'value2');
           
@@ -138,44 +138,44 @@ describe('存储实现通用测试', () => {
         });
       });
 
-      describe('原子操作测试', () => {
-        it('应该支持原子更新操作', async () => {
+      describe('Atomic operation test', () => {
+        it('should support atomic update operations', async () => {
           if (!storageProvider.updateData) {
-            console.log(`${name} 不支持原子更新，跳过测试`);
+            console.log(`${name} does not support atomic updates, skipping the test`);
             return;
           }
 
           const key = 'atomic-test';
           const initialData = { count: 0 };
 
-          // 设置初始数据
+          // Set the initial data
           await storageProvider.setItem(key, JSON.stringify(initialData));
 
-          // 执行原子更新
+          // Perform the atomic update
           await storageProvider.updateData(key, (current: any) => {
             const data = current || { count: 0 };
             return { count: data.count + 1 };
           });
 
-          // 验证结果
+          // Verify the result
           const result = await storageProvider.getItem(key);
           const parsedResult = JSON.parse(result!);
           expect(parsedResult.count).toBe(1);
         });
 
-        it('应该支持并发原子更新', async () => {
+        it('should support concurrent atomic updates', async () => {
           if (!storageProvider.updateData) {
-            console.log(`${name} 不支持原子更新，跳过测试`);
+            console.log(`${name} does not support atomic updates, skipping the test`);
             return;
           }
 
           const key = 'concurrent-test';
           const initialData = { count: 0 };
 
-          // 设置初始数据
+          // Set the initial data
           await storageProvider.setItem(key, JSON.stringify(initialData));
 
-          // 并发执行多个原子更新
+          // Run multiple atomic updates concurrently
           const updatePromises = Array.from({ length: 5 }, () =>
             storageProvider.updateData!(key, (current: any) => {
               const data = current || { count: 0 };
@@ -185,17 +185,17 @@ describe('存储实现通用测试', () => {
 
           await Promise.all(updatePromises);
 
-          // 验证最终结果
+          // Verify the final result
           const result = await storageProvider.getItem(key);
           const parsedResult = JSON.parse(result!);
           expect(parsedResult.count).toBe(5);
         });
       });
 
-      describe('批量操作测试', () => {
-        it('应该支持批量更新操作', async () => {
+      describe('Batch operation test', () => {
+        it('should support batch update operations', async () => {
           if (!storageProvider.batchUpdate) {
-            console.log(`${name} 不支持批量更新，跳过测试`);
+            console.log(`${name} does not support batch updates, skipping the test`);
             return;
           }
 
@@ -207,7 +207,7 @@ describe('存储实现通用测试', () => {
 
           await storageProvider.batchUpdate(operations);
 
-          // 验证所有数据都已设置
+          // Verify all data was set
           const result1 = await storageProvider.getItem('batch1');
           const result2 = await storageProvider.getItem('batch2');
           const result3 = await storageProvider.getItem('batch3');
@@ -217,17 +217,17 @@ describe('存储实现通用测试', () => {
           expect(result3).toBe('value3');
         });
 
-        it('应该支持批量删除操作', async () => {
+        it('should support batch delete operations', async () => {
           if (!storageProvider.batchUpdate) {
-            console.log(`${name} 不支持批量更新，跳过测试`);
+            console.log(`${name} does not support batch updates, skipping the test`);
             return;
           }
 
-          // 先设置一些数据
+          // Set some data first
           await storageProvider.setItem('delete1', 'value1');
           await storageProvider.setItem('delete2', 'value2');
 
-          // 批量删除
+          // Batch delete
           const operations = [
             { key: 'delete1', operation: 'remove' as const },
             { key: 'delete2', operation: 'remove' as const }
@@ -235,7 +235,7 @@ describe('存储实现通用测试', () => {
 
           await storageProvider.batchUpdate(operations);
 
-          // 验证数据已删除
+          // Verify the data was deleted
           const result1 = await storageProvider.getItem('delete1');
           const result2 = await storageProvider.getItem('delete2');
 
@@ -244,7 +244,7 @@ describe('存储实现通用测试', () => {
         });
       });
 
-      describe('HistoryManager 集成测试', () => {
+      describe('HistoryManager integration test', () => {
         let historyManager: HistoryManager;
         let modelManager: ModelManager;
 
@@ -253,7 +253,7 @@ describe('存储实现通用测试', () => {
           historyManager = new HistoryManager(storageProvider, modelManager);
         });
 
-        it('应该能够添加和获取历史记录', async () => {
+        it('should be able to add and get history records', async () => {
           const record: PromptRecord = {
             id: 'test-record-1',
             chainId: 'test-chain-1',
@@ -274,7 +274,7 @@ describe('存储实现通用测试', () => {
           expect(records[0].id).toBe('test-record-1');
         });
 
-        it('应该能够创建新的记录链', async () => {
+        it('should be able to create a new record chain', async () => {
           const chainParams = {
             id: 'chain-record-1',
             originalPrompt: 'Chain original prompt',
@@ -294,7 +294,7 @@ describe('存储实现通用测试', () => {
           expect(chain.versions).toHaveLength(1);
         });
 
-        it('应该支持并发添加记录', async () => {
+        it('should support adding records concurrently', async () => {
           const records: PromptRecord[] = Array.from({ length: 5 }, (_, i) => ({
             id: `concurrent-record-${i}`,
             chainId: `concurrent-chain-${i}`,
@@ -308,21 +308,21 @@ describe('存储实现通用测试', () => {
             metadata: {}
           }));
 
-          // 并发添加记录
+          // Add records concurrently
           await Promise.all(records.map(record => historyManager.addRecord(record)));
 
-          // 验证所有记录都已添加
+          // Verify all records were added
           const allRecords = await historyManager.getRecords();
           expect(allRecords).toHaveLength(5);
 
-          // 验证记录按时间戳排序（最新的在前）
+          // Verify the records are sorted by timestamp (newest first)
           for (let i = 0; i < allRecords.length - 1; i++) {
             expect(allRecords[i].timestamp).toBeGreaterThanOrEqual(allRecords[i + 1].timestamp);
           }
         });
       });
 
-      describe('TemplateManager 集成测试', () => {
+      describe('TemplateManager integration test', () => {
         let templateManager: TemplateManager;
 
         beforeEach(async () => {
@@ -332,7 +332,7 @@ describe('存储实现通用测试', () => {
     
         });
 
-        it('应该能够保存和获取模板', async () => {
+        it('should be able to save and get a template', async () => {
           const template = {
             id: 'test-template',
             name: 'Test Template',
@@ -353,7 +353,7 @@ describe('存储实现通用测试', () => {
           expect(retrieved.name).toBe('Test Template');
         });
 
-        it('应该能够列出所有模板', async () => {
+        it('should be able to list all templates', async () => {
           const template1 = {
             id: 'template-1',
             name: 'Template 1',
@@ -390,14 +390,14 @@ describe('存储实现通用测试', () => {
         });
       });
 
-      describe('ModelManager 集成测试', () => {
+      describe('ModelManager integration test', () => {
         let modelManager: ModelManager;
 
         beforeEach(async () => {
           modelManager = createModelManager(storageProvider);
         });
 
-        it('应该能够添加和获取模型配置', async () => {
+        it('should be able to add and get a model config', async () => {
           const registry = new TextAdapterRegistry();
           const adapter = registry.getAdapter('openai');
           const config: TextModelConfig = {
@@ -420,7 +420,7 @@ describe('存储实现通用测试', () => {
           expect(retrieved?.connectionConfig.baseURL).toBe('https://api.test.com');
         });
 
-        it('应该能够启用和禁用模型', async () => {
+        it('should be able to enable and disable a model', async () => {
           const registry = new TextAdapterRegistry();
           const adapter = registry.getAdapter('openai');
           const config: TextModelConfig = {
@@ -450,25 +450,25 @@ describe('存储实现通用测试', () => {
     });
   });
 
-  describe('存储工厂测试', () => {
-    it('应该能够创建 localStorage 提供器', () => {
+  describe('Storage factory test', () => {
+    it('should be able to create a localStorage provider', () => {
       const provider = StorageFactory.create('localStorage');
       expect(provider).toBeInstanceOf(LocalStorageProvider);
     });
 
-    it('应该能够创建 Dexie 提供器', () => {
+    it('should be able to create a Dexie provider', () => {
       const provider = StorageFactory.create('dexie');
       expect(provider).toBeInstanceOf(DexieStorageProvider);
     });
 
-    it('应该在不支持的类型时抛出错误', () => {
+    it('should throw an error for an unsupported type', () => {
       expect(() => {
-        // @ts-ignore - 故意传入无效类型
+        // @ts-ignore - deliberately passing an invalid type
         StorageFactory.create('invalid');
       }).toThrow('Unsupported storage type: invalid');
     });
 
-    it('应该能够创建指定类型的提供器', () => {
+    it('should be able to create a provider of the specified type', () => {
       const dexieProvider = StorageFactory.create('dexie');
       expect(dexieProvider).toBeDefined();
       expect(dexieProvider instanceof DexieStorageProvider).toBe(true);
@@ -478,48 +478,48 @@ describe('存储实现通用测试', () => {
       expect(localProvider instanceof LocalStorageProvider).toBe(true);
     });
 
-    it('应该确保相同类型的提供器是单例', () => {
-      // 重置工厂状态
+    it('should ensure providers of the same type are singletons', () => {
+      // Reset the factory state
       StorageFactory.reset();
 
-      // 创建多个相同类型的提供器实例
+      // Create multiple provider instances of the same type
       const provider1 = StorageFactory.create('memory');
       const provider2 = StorageFactory.create('memory');
       const provider3 = StorageFactory.create('memory');
 
-      // 验证它们是同一个实例
+      // Verify they are the same instance
       expect(provider1).toBe(provider2);
       expect(provider2).toBe(provider3);
       expect(provider1).toBe(provider3);
     });
 
-    it('应该确保相同类型的提供器是单例', () => {
-      // 重置工厂状态
+    it('should ensure providers of the same type are singletons', () => {
+      // Reset the factory state
       StorageFactory.reset();
       
-      // 创建多个相同类型的提供器
+      // Create multiple providers of the same type
       const localStorage1 = StorageFactory.create('localStorage');
       const localStorage2 = StorageFactory.create('localStorage');
       const dexie1 = StorageFactory.create('dexie');
       const dexie2 = StorageFactory.create('dexie');
       
-      // 验证相同类型是单例
+      // Verify providers of the same type are singletons
       expect(localStorage1).toBe(localStorage2);
       expect(dexie1).toBe(dexie2);
       
-      // 验证不同类型是不同实例
+      // Verify providers of different types are different instances
       expect(localStorage1).not.toBe(dexie1);
     });
 
-    it('应该能够重置工厂状态', () => {
-      // 创建一些实例
+    it('should be able to reset the factory state', () => {
+      // Create some instances
       const memory1 = StorageFactory.create('memory');
       const localStorage1 = StorageFactory.create('localStorage');
 
-      // 重置状态
+      // Reset the state
       StorageFactory.reset();
 
-      // 创建新实例应该是不同的对象
+      // Creating a new instance should give a different object
       const memory2 = StorageFactory.create('memory');
       const localStorage2 = StorageFactory.create('localStorage');
 
@@ -528,6 +528,6 @@ describe('存储实现通用测试', () => {
     });
   });
 
-  // 注意：数据迁移测试需要浏览器环境，在 Node.js 测试环境中无法运行
-  // 这些测试应该在 E2E 测试中进行
+  // Note: the data migration test needs a browser environment and cannot run in the Node.js test environment
+  // These tests should be run in the E2E tests
 }); 

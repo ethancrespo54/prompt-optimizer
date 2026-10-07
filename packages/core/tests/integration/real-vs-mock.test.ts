@@ -4,8 +4,8 @@ import { LocalStorageProvider } from '../../src/services/storage/localStoragePro
 import { createMockStorage } from '../mocks/mockStorage'
 
 /**
- * Mock测试 vs 真实调用测试对比
- * 验证Mock测试是否能有效发现真实问题
+ * Mock test vs real call test comparison
+ * Verifies whether Mock tests can effectively find real problems
  */
 describe('Mock vs Real Implementation Tests', () => {
   let realModelManager: ModelManager
@@ -14,42 +14,42 @@ describe('Mock vs Real Implementation Tests', () => {
   let mockHistoryManager: HistoryManager
 
   beforeEach(() => {
-    // 真实实现 - 使用真实的LocalStorageProvider
+    // Real implementation - uses the real LocalStorageProvider
     const realStorage = new LocalStorageProvider()
     realModelManager = new ModelManager(realStorage)
     realHistoryManager = new HistoryManager(realStorage)
 
-    // Mock实现 - 使用Mock Storage
+    // Mock implementation - uses Mock Storage
     const mockStorage = createMockStorage()
     mockModelManager = new ModelManager(mockStorage)
     mockHistoryManager = new HistoryManager(mockStorage)
   })
 
-  describe('发现Mock测试无法捕获的问题', () => {
-    it('真实存储的性能问题 - Mock无法发现', async () => {
-      // Mock测试：立即返回，看不出性能问题
+  describe('Finding problems that Mock tests cannot catch', () => {
+    it('real storage performance problems - Mock cannot find them', async () => {
+      // Mock test: returns immediately, so performance problems are not visible
       const mockStart = Date.now()
       await mockModelManager.getAllModels()
       const mockTime = Date.now() - mockStart
 
-      // 真实测试：可能暴露性能问题
+      // Real test: may expose performance problems
       const realStart = Date.now()
       await realModelManager.getAllModels()
       const realTime = Date.now() - realStart
 
-      console.log(`Mock调用时间: ${mockTime}ms, 真实调用时间: ${realTime}ms`)
+      console.log(`Mock call time: ${mockTime}ms, real call time: ${realTime}ms`)
       
-      // Mock通常更快，但无法发现真实的性能问题
-      expect(mockTime).toBeLessThan(10) // Mock通常很快
-      // 真实调用可能更慢，取决于localStorage的实现
+      // Mock is usually faster, but cannot find real performance problems
+      expect(mockTime).toBeLessThan(10) // Mock is usually very fast
+      // Real calls may be slower, depending on the localStorage implementation
     })
 
-    it('存储容量限制 - Mock无法模拟', async () => {
-      // Mock存储通常没有容量限制
-      const largeData = 'x'.repeat(100000) // 100KB的数据
+    it('storage capacity limits - Mock cannot simulate them', async () => {
+      // Mock storage usually has no capacity limit
+      const largeData = 'x'.repeat(100000) // 100KB of data
       
       try {
-        // Mock存储可能不会有容量限制
+        // Mock storage may have no capacity limit
         await mockHistoryManager.addRecord({
           id: 'large-record',
           originalPrompt: largeData,
@@ -61,13 +61,13 @@ describe('Mock vs Real Implementation Tests', () => {
           modelKey: 'test-model',
           templateId: 'test-template'
         })
-        console.log('Mock存储：大数据写入成功')
+        console.log('Mock storage: large data write succeeded')
       } catch (error: any) {
-        console.log('Mock存储错误:', error.message)
+        console.log('Mock storage error:', error.message)
       }
 
       try {
-        // 真实localStorage可能有容量限制（通常5-10MB）
+        // Real localStorage may have a capacity limit (usually 5-10MB)
         await realHistoryManager.addRecord({
           id: 'large-record-real',
           originalPrompt: largeData,
@@ -79,15 +79,15 @@ describe('Mock vs Real Implementation Tests', () => {
           modelKey: 'test-model',
           templateId: 'test-template'
         })
-        console.log('真实存储：大数据写入成功')
+        console.log('Real storage: large data write succeeded')
       } catch (error: any) {
-        console.log('真实存储可能的错误:', error.message)
-        // 注意：在测试环境中可能不会遇到容量限制
+        console.log('Possible error of real storage:', error.message)
+        // Note: the capacity limit may not be hit in the test environment
       }
     })
 
-    it('并发访问问题 - Mock无法暴露', async () => {
-      // 模拟并发写入
+    it('concurrent access problems - Mock cannot expose them', async () => {
+      // Simulate concurrent writes
       const promises: Promise<void>[] = []
       
       for (let i = 0; i < 5; i++) {
@@ -106,61 +106,61 @@ describe('Mock vs Real Implementation Tests', () => {
         )
       }
 
-      // 真实存储可能在并发时出现问题
+      // Real storage may have problems under concurrency
       await Promise.all(promises)
       
       const records = await realHistoryManager.getRecords()
-      console.log(`并发写入后记录数量: ${records.length}`)
+      console.log(`Number of records after concurrent writes: ${records.length}`)
       
-      // 检查是否至少有一些记录成功写入（而不是要求全部成功）
-      // 在并发环境下，可能出现数据丢失，这是我们想要检测的问题
+      // Check that at least some records were written successfully (rather than requiring all of them)
+      // In a concurrent environment, data loss may occur, which is the problem we want to detect
       expect(records.length).toBeGreaterThan(0)
       
-      // 如果记录数量少于期望值，说明存在并发安全问题
+      // If the record count is below the expected value, there is a concurrency safety problem
       if (records.length < 5) {
-        console.warn(`警告：并发写入存在数据丢失问题，期望5条记录，实际${records.length}条`)
+        console.warn(`Warning: concurrent writes lose data, expected 5 records, actually ${records.length}`)
       }
     })
   })
 
-  describe('Mock测试的有效性分析', () => {
-    it('Mock能有效测试业务逻辑', async () => {
-      // Mock测试在测试业务逻辑方面是有效的
+  describe('Effectiveness analysis of Mock tests', () => {
+    it('Mock can effectively test business logic', async () => {
+      // Mock tests are effective at testing business logic
       const models = await mockModelManager.getAllModels()
       expect(Array.isArray(models)).toBe(true)
       
-      // 可以有效测试异常处理
+      // Exception handling can be tested effectively
       await expect(mockHistoryManager.getRecord('non-existent'))
         .rejects.toThrow('Record with ID non-existent not found')
     })
 
-    it('Mock无法测试集成问题', async () => {
-      // 这种集成问题Mock测试无法发现
-      // 例如：数据格式不兼容、版本升级问题等
+    it('Mock cannot test integration problems', async () => {
+      // Mock tests cannot find this kind of integration problem
+      // For example: incompatible data formats, version upgrade problems, etc.
       
-      console.log('模拟数据格式兼容性问题...')
-      // 在真实场景中，某些数据可能导致运行时错误
-      // 但Mock测试可能无法发现这些问题
+      console.log('Simulating a data format compatibility problem...')
+      // In real scenarios, some data may cause runtime errors
+      // But Mock tests may not find these problems
       
-      expect(true).toBe(true) // 占位测试
+      expect(true).toBe(true) // Placeholder test
     })
   })
 
-  describe('建议的测试策略', () => {
-    it('分层测试：单元测试用Mock，集成测试用真实实现', async () => {
-      // 单元测试：快速验证逻辑正确性
+  describe('Recommended test strategy', () => {
+    it('layered testing: use Mock for unit tests and the real implementation for integration tests', async () => {
+      // Unit test: quickly verify logic correctness
       const mockResult = await mockModelManager.getAllModels()
       expect(Array.isArray(mockResult)).toBe(true)
       
-      // 集成测试：验证真实环境的正确性
+      // Integration test: verify correctness in the real environment
       const realResult = await realModelManager.getAllModels()
       expect(Array.isArray(realResult)).toBe(true)
       
-      // 两者都应该返回相同的数据结构
+      // Both should return the same data structure
       expect(mockResult.length).toBe(realResult.length)
     })
 
-    // 删除"契约测试" - 这是过度测试Mock vs Real的内部实现一致性
-    // 新架构已转为TextModelConfig,旧的ModelConfig格式不再支持直接添加
+    // Removed the "contract test" - it over-tests the internal consistency of Mock vs Real
+    // The new architecture has moved to TextModelConfig, and the old ModelConfig format can no longer be added directly
   })
 }) 

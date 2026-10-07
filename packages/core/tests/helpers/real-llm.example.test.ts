@@ -1,7 +1,7 @@
 /**
- * 真实LLM辅助工具 - 使用示例
+ * Real LLM helper - usage examples
  *
- * 演示如何使用real-llm辅助工具进行真实API测试
+ * Demonstrates how to use the real-llm helper for real API testing
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
@@ -18,73 +18,73 @@ const RUN_REAL_API = process.env.RUN_REAL_API === '1';
 
 describe.skipIf(!RUN_REAL_API)('Real LLM Helper - Usage Examples', () => {
   beforeAll(() => {
-    console.log('\n=== 真实LLM辅助工具 - 使用示例 ===\n');
+    console.log('\n=== Real LLM helper - usage examples ===\n');
     printAvailableProviders();
   });
 
-  describe('检测可用提供商', () => {
-    it('应该能检测到可用的提供商', () => {
+  describe('Detect available providers', () => {
+    it('should be able to detect available providers', () => {
       const available = getAvailableProviders();
-      console.log(`\n检测到 ${available.length} 个可用提供商\n`);
+      console.log(`\nDetected ${available.length} available providers\n`);
 
       if (available.length > 0) {
         available.forEach((provider, index) => {
           console.log(`${index + 1}. ${provider.providerName}`);
           console.log(`   - Provider ID: ${provider.providerId}`);
-          console.log(`   - 模型: ${provider.modelConfig.modelMeta.name} (${provider.modelConfig.modelMeta.id})`);
+          console.log(`   - Model: ${provider.modelConfig.modelMeta.name} (${provider.modelConfig.modelMeta.id})`);
           console.log(`   - Base URL: ${provider.modelConfig.connectionConfig.baseURL || 'default'}`);
         });
       }
 
-      // 如果有环境变量，应该能检测到至少一个提供商
+      // If environment variables exist, at least one provider should be detected
       if (hasAvailableProvider()) {
         expect(available.length).toBeGreaterThan(0);
       }
     });
 
-    it('应该能获取第一个可用提供商', () => {
+    it('should be able to get the first available provider', () => {
       const provider = getFirstAvailableProvider();
 
       if (provider) {
-        console.log(`\n第一个可用提供商: ${provider.providerName}`);
+        console.log(`\nFirst available provider: ${provider.providerName}`);
         console.log(`Provider ID: ${provider.providerId}`);
-        console.log(`模型: ${provider.modelConfig.modelMeta.name} (${provider.modelConfig.modelMeta.id})`);
+        console.log(`Model: ${provider.modelConfig.modelMeta.name} (${provider.modelConfig.modelMeta.id})`);
 
         expect(provider.providerId).toBeDefined();
         expect(provider.modelConfig.connectionConfig.apiKey).toBeDefined();
         expect(provider.modelConfig.modelMeta).toBeDefined();
       } else {
-        console.log('\n⚠️  没有可用的提供商');
+        console.log('\n⚠️  No available provider');
       }
     });
   });
 
-  describe('简单LLM调用示例', () => {
-    it.skipIf(!hasAvailableProvider())('应该能发送简单消息并获取响应', async () => {
-      // 创建测试上下文
+  describe('Simple LLM call example', () => {
+    it.skipIf(!hasAvailableProvider())('should be able to send a simple message and get a response', async () => {
+      // Create the test context
       const context = await createRealLLMTestContext();
       if (!context) {
         return;
       }
 
-      // 发送消息
+      // Send the message
       const messages: Message[] = [
-        { role: 'user', content: '请用一句话介绍你自己' }
+        { role: 'user', content: 'Please introduce yourself in one sentence' }
       ];
 
       const response = await context.llmService.sendMessage(messages, context.modelKey);
 
-      // 验证响应
+      // Verify the response
       expect(response).toBeDefined();
       expect(typeof response).toBe('string');
       expect(response.length).toBeGreaterThan(0);
     }, 30000);
 
-    it.skipIf(!hasAvailableProvider())('应该能使用自定义参数', async () => {
-      // 创建测试上下文，使用自定义参数
+    it.skipIf(!hasAvailableProvider())('should be able to use custom parameters', async () => {
+      // Create the test context, using custom parameters
       const context = await createRealLLMTestContext({
         paramOverrides: {
-          temperature: 0.1, // 低温度，更确定性的输出
+          temperature: 0.1, // Low temperature, more deterministic output
         },
       });
 
@@ -93,28 +93,28 @@ describe.skipIf(!RUN_REAL_API)('Real LLM Helper - Usage Examples', () => {
       }
 
       const messages: Message[] = [
-        { role: 'user', content: '1+1等于几？' }
+        { role: 'user', content: 'What is 1+1?' }
       ];
 
       const response = await context.llmService.sendMessage(messages, context.modelKey);
 
-      // 验证响应
+      // Verify the response
       expect(response).toBeDefined();
       expect(typeof response).toBe('string');
       expect(response.length).toBeGreaterThan(0);
     }, 30000);
   });
 
-  describe('多轮对话示例', () => {
-    it.skipIf(!hasAvailableProvider())('应该能进行多轮对话', async () => {
+  describe('Multi-turn conversation example', () => {
+    it.skipIf(!hasAvailableProvider())('should be able to hold a multi-turn conversation', async () => {
       const context = await createRealLLMTestContext();
       if (!context) {
         return;
       }
 
-      // 第一轮
+      // First turn
       const messages1: Message[] = [
-        { role: 'user', content: '我的名字叫Alice' }
+        { role: 'user', content: 'My name is Alice' }
       ];
 
       const response1 = await context.llmService.sendMessage(messages1, context.modelKey);
@@ -123,24 +123,24 @@ describe.skipIf(!RUN_REAL_API)('Real LLM Helper - Usage Examples', () => {
       expect(typeof response1).toBe('string');
       expect(response1.length).toBeGreaterThan(0);
 
-      // 第二轮（包含上下文）
+      // Second turn (including context)
       const messages2: Message[] = [
-        { role: 'user', content: '我的名字叫Alice' },
+        { role: 'user', content: 'My name is Alice' },
         { role: 'assistant', content: response1 },
-        { role: 'user', content: '我的名字是什么？' }
+        { role: 'user', content: 'What is my name?' }
       ];
 
       const response2 = await context.llmService.sendMessage(messages2, context.modelKey);
 
-      // 验证AI记住了名字（大部分情况下应该包含"Alice"）
+      // Verify the AI remembered the name (in most cases it should contain "Alice")
       expect(response2).toBeDefined();
-      // 注意：由于LLM的不确定性，这个断言可能偶尔失败
+      // Note: because of the nondeterminism of LLMs, this assertion may occasionally fail
       // expect(response2.content.toLowerCase()).toContain('alice');
     }, 60000);
   });
 
-  describe('错误处理示例', () => {
-    it.skipIf(!hasAvailableProvider())('应该能正确处理空消息', async () => {
+  describe('Error handling example', () => {
+    it.skipIf(!hasAvailableProvider())('should handle an empty message correctly', async () => {
       const context = await createRealLLMTestContext();
       if (!context) {
         return;
@@ -148,13 +148,13 @@ describe.skipIf(!RUN_REAL_API)('Real LLM Helper - Usage Examples', () => {
 
       const emptyMessages: Message[] = [];
 
-      // 空消息列表应该抛出错误
+      // An empty message list should throw an error
       await expect(
         context.llmService.sendMessage(emptyMessages, context.modelKey)
       ).rejects.toThrow();
     }, 30000);
 
-    it('应该在无可用提供商时返回undefined', async () => {
+    it('should return undefined when there is no available provider', async () => {
       if (!hasAvailableProvider()) {
         const context = await createRealLLMTestContext();
         expect(context).toBeUndefined();
@@ -163,11 +163,11 @@ describe.skipIf(!RUN_REAL_API)('Real LLM Helper - Usage Examples', () => {
     });
   });
 
-  describe('性能和稳定性示例', () => {
-    it.skipIf(!hasAvailableProvider())('应该能在合理时间内完成调用', async () => {
+  describe('Performance and stability example', () => {
+    it.skipIf(!hasAvailableProvider())('should complete the call within a reasonable time', async () => {
       const context = await createRealLLMTestContext({
         paramOverrides: {
-          temperature: 0.5, // 使用适中的温度
+          temperature: 0.5, // Use a moderate temperature
         },
       });
 
@@ -178,14 +178,14 @@ describe.skipIf(!RUN_REAL_API)('Real LLM Helper - Usage Examples', () => {
       const startTime = Date.now();
 
       const messages: Message[] = [
-        { role: 'user', content: '说"你好"' }
+        { role: 'user', content: 'Say "hello"' }
       ];
 
       const response = await context.llmService.sendMessage(messages, context.modelKey);
       const endTime = Date.now();
       const duration = endTime - startTime;
 
-      // 验证响应时间在合理范围内（30秒内）
+      // Verify the response time is within a reasonable range (within 30 seconds)
       expect(duration).toBeLessThan(30000);
       expect(response).toBeDefined();
       expect(typeof response).toBe('string');
