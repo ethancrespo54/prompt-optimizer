@@ -3,14 +3,14 @@ import { safeSerializeForIPC } from '../../utils/ipc-serialization';
 import { InitializationError } from './errors';
 
 /**
- * Electron环境下的LLM服务代理
- * 通过IPC调用主进程中的真实LLMService实例
+ * LLM service proxy for the Electron environment
+ * Calls the real LLMService instance in the main process over IPC
  */
 export class ElectronLLMProxy implements ILLMService {
   private electronAPI: NonNullable<Window['electronAPI']>;
 
   constructor() {
-    // 验证Electron环境
+    // Validate the Electron environment
     if (typeof window === 'undefined' || !window.electronAPI) {
       throw new InitializationError('ElectronLLMProxy can only be used in Electron renderer process');
     }
@@ -22,13 +22,13 @@ export class ElectronLLMProxy implements ILLMService {
   }
 
   async sendMessage(messages: Message[], provider: string): Promise<string> {
-    // 自动序列化，防止Vue响应式对象IPC传递错误
+    // Serialize automatically to prevent errors when Vue reactive objects are passed over IPC
     const safeMessages = safeSerializeForIPC(messages);
     return this.electronAPI.llm.sendMessage(safeMessages, provider);
   }
 
   async sendMessageStructured(messages: Message[], provider: string): Promise<LLMResponse> {
-    // 自动序列化，防止Vue响应式对象IPC传递错误
+    // Serialize automatically to prevent errors when Vue reactive objects are passed over IPC
     const safeMessages = safeSerializeForIPC(messages);
     return this.electronAPI.llm.sendMessageStructured(safeMessages, provider);
   }
@@ -38,14 +38,14 @@ export class ElectronLLMProxy implements ILLMService {
     provider: string,
     callbacks: StreamHandlers
   ): Promise<void> {
-    // 自动序列化，防止Vue响应式对象IPC传递错误
+    // Serialize automatically to prevent errors when Vue reactive objects are passed over IPC
     const safeMessages = safeSerializeForIPC(messages);
 
-    // 适配回调接口：StreamHandlers 使用 onToken，而 preload 期望的是 onContent
+    // Adapt the callback interface: StreamHandlers uses onToken, whereas preload expects onContent
     const adaptedCallbacks = {
-      onContent: callbacks.onToken,  // 映射 onToken -> onContent
-      onThinking: callbacks.onReasoningToken || (() => {}),  // 映射推理流
-      onFinish: () => callbacks.onComplete(),  // 映射完成回调
+      onContent: callbacks.onToken,  // Map onToken -> onContent
+      onThinking: callbacks.onReasoningToken || (() => {}),  // Map the reasoning stream
+      onFinish: () => callbacks.onComplete(),  // Map the completion callback
       onError: callbacks.onError
     };
 
@@ -58,16 +58,16 @@ export class ElectronLLMProxy implements ILLMService {
     tools: ToolDefinition[],
     callbacks: StreamHandlers
   ): Promise<void> {
-    // 自动序列化，防止Vue响应式对象IPC传递错误
+    // Serialize automatically to prevent errors when Vue reactive objects are passed over IPC
     const safeMessages = safeSerializeForIPC(messages);
     const safeTools = safeSerializeForIPC(tools);
 
-    // 适配回调接口：StreamHandlers 使用 onToken/onToolCall，而 preload 期望相应的回调
+    // Adapt the callback interface: StreamHandlers uses onToken/onToolCall, whereas preload expects the corresponding callbacks
     const adaptedCallbacks = {
-      onContent: callbacks.onToken,  // 映射 onToken -> onContent
-      onThinking: callbacks.onReasoningToken || (() => {}),  // 映射推理流
-      onToolCall: callbacks.onToolCall || (() => {}),  // 🆕 映射工具调用回调
-      onFinish: () => callbacks.onComplete(),  // 映射完成回调
+      onContent: callbacks.onToken,  // Map onToken -> onContent
+      onThinking: callbacks.onReasoningToken || (() => {}),  // Map the reasoning stream
+      onToolCall: callbacks.onToolCall || (() => {}),  // 🆕 Map the tool call callback
+      onFinish: () => callbacks.onComplete(),  // Map the completion callback
       onError: callbacks.onError
     };
 
@@ -86,7 +86,7 @@ export class ElectronLLMProxy implements ILLMService {
     provider: string,
     customConfig?: Partial<any>
   ): Promise<ModelOption[]> {
-    // 自动序列化，防止Vue响应式对象IPC传递错误
+    // Serialize automatically to prevent errors when Vue reactive objects are passed over IPC
     const safeCustomConfig = customConfig ? safeSerializeForIPC(customConfig) : customConfig;
     return this.electronAPI.llm.fetchModelList(provider, safeCustomConfig);
   }

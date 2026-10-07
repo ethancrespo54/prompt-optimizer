@@ -8,8 +8,8 @@ export interface IPreferenceService extends IImportExportable {
   clear(): Promise<void>;
 
   /**
-   * 获取所有偏好设置
-   * @returns 包含所有偏好设置的键值对对象
+   * Get all preferences
+   * @returns Key-value object containing all preferences
    */
   getAll(): Promise<Record<string, string>>;
 }

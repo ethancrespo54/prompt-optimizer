@@ -12,7 +12,7 @@ import type {
   ToolCall
 } from '../types'
 
-// 定义新版 SDK 需要的类型（SDK 可能通过主导出提供）
+// Define the types required by the new SDK (the SDK may provide them via its main export)
 type Content = any
 type GenerateContentConfig = any
 type FunctionDeclaration = any
@@ -28,7 +28,7 @@ interface ModelOverride {
 }
 
 /**
- * Gemini 静态模型定义
+ * Gemini static model definitions
  */
 const GEMINI_STATIC_MODELS: ModelOverride[] = [
   {
@@ -64,24 +64,24 @@ const GEMINI_STATIC_MODELS: ModelOverride[] = [
 ]
 
 /**
- * Google Gemini适配器实现
- * 使用新版 @google/genai SDK (统一的 Google Gen AI SDK)
+ * Google Gemini adapter implementation
+ * Uses the new @google/genai SDK (the unified Google Gen AI SDK)
  *
- * 职责：
- * - 封装 @google/genai SDK 调用逻辑
- * - 处理系统消息（systemInstruction）
- * - 格式化历史消息（Content格式）
- * - 支持动态模型列表获取（models.list API）
- * - 支持工具调用（Function Calling）
- * - 支持思考功能（Thinking with thinkingConfig）
- * - 处理baseURL规范化（setDefaultBaseUrls）
- * - 保留SDK原始错误堆栈
+ * Responsibilities:
+ * - Encapsulate @google/genai SDK call logic
+ * - Handle system messages (systemInstruction)
+ * - Format history messages (Content format)
+ * - Support dynamic model list fetching (models.list API)
+ * - Support tool calls (Function Calling)
+ * - Support the thinking feature (Thinking with thinkingConfig)
+ * - Handle baseURL normalization (setDefaultBaseUrls)
+ * - Preserve the original SDK error stack
  */
 export class GeminiAdapter extends AbstractTextProviderAdapter {
-  // ===== Provider元数据 =====
+  // ===== Provider metadata =====
 
   /**
-   * 获取Provider元数据
+   * Get Provider metadata
    */
   public getProvider(): TextProvider {
     return {
@@ -90,7 +90,7 @@ export class GeminiAdapter extends AbstractTextProviderAdapter {
       description: 'Google Generative AI models',
       requiresApiKey: true,
       defaultBaseURL: 'https://generativelanguage.googleapis.com',
-      supportsDynamicModels: true, // 新版 SDK 支持动态模型获取
+      supportsDynamicModels: true, // The new SDK supports dynamic model fetching
       apiKeyUrl: 'https://aistudio.google.com/apikey',
       connectionSchema: {
         required: ['apiKey'],
@@ -104,7 +104,7 @@ export class GeminiAdapter extends AbstractTextProviderAdapter {
   }
 
   /**
-   * 获取静态模型列表（Gemini 系列）
+   * Get the static model list (Gemini series)
    */
   public getModels(): TextModel[] {
     return GEMINI_STATIC_MODELS.map((definition) => {
@@ -129,7 +129,7 @@ export class GeminiAdapter extends AbstractTextProviderAdapter {
   }
 
   /**
-   * 动态获取模型列表（使用新版 SDK 的 models.list API）
+   * Dynamically fetch the model list (using the models.list API of the new SDK)
    */
   public async getModelsAsync(config: TextModelConfig): Promise<TextModel[]> {
     try {
@@ -149,7 +149,7 @@ export class GeminiAdapter extends AbstractTextProviderAdapter {
 
       const modelsPager = await genAI.models.list({
         config: {
-          pageSize: 100 // 获取更多模型
+          pageSize: 100 // Fetch more models
         }
       })
 
@@ -157,10 +157,10 @@ export class GeminiAdapter extends AbstractTextProviderAdapter {
       const providerId = 'gemini'
 
       for await (const model of modelsPager) {
-        // 只包含支持 generateContent 的模型
-        // 注意：新版 SDK 的 Model 类型可能不包含 supportedGenerationMethods，我们暂时包含所有模型
+        // Only include models that support generateContent
+        // Note: the Model type of the new SDK may not include supportedGenerationMethods, so all models are included for now
         dynamicModels.push({
-          id: model.name?.replace('models/', '') || model.name || '', // 移除 'models/' 前缀
+          id: model.name?.replace('models/', '') || model.name || '', // Remove the 'models/' prefix
           name: model.displayName || model.name || '',
           description: model.description || '',
           providerId,
@@ -174,7 +174,7 @@ export class GeminiAdapter extends AbstractTextProviderAdapter {
         })
       }
 
-      // 如果动态获取失败，返回静态列表
+      // If dynamic fetching fails, return the static list
       return dynamicModels.length > 0 ? dynamicModels : this.getModels()
     } catch (error) {
       console.error('[GeminiAdapter] Failed to fetch models dynamically, falling back to static list:', error)
@@ -182,10 +182,10 @@ export class GeminiAdapter extends AbstractTextProviderAdapter {
     }
   }
 
-  // ===== 参数定义（用于buildDefaultModel） =====
+  // ===== Parameter definitions (used by buildDefaultModel) =====
 
   /**
-   * 获取参数定义
+   * Get parameter definitions
    */
   protected getParameterDefinitions(_modelId: string): readonly ParameterDefinition[] {
     return [
@@ -292,20 +292,20 @@ export class GeminiAdapter extends AbstractTextProviderAdapter {
   }
 
   /**
-   * 获取默认参数值
-   * 返回空对象,让服务器使用官方默认值,避免客户端错误默认值影响效果
+   * Get default parameter values
+   * Returns an empty object so the server uses its official defaults, avoiding wrong client-side defaults affecting results
    */
   protected getDefaultParameterValues(_modelId: string): Record<string, unknown> {
     return {}
   }
 
-  // ===== SDK实例创建和配置构建 =====
+  // ===== SDK instance creation and config building =====
 
   /**
-   * 创建 GoogleGenAI 实例
+   * Create a GoogleGenAI instance
    *
-   * @param config 模型配置
-   * @returns GoogleGenAI实例
+   * @param config Model config
+   * @returns GoogleGenAI instance
    */
   private createClient(config: TextModelConfig): GoogleGenAI {
     const apiKey = config.connectionConfig.apiKey || ''
@@ -325,11 +325,11 @@ export class GeminiAdapter extends AbstractTextProviderAdapter {
   }
 
   /**
-   * 构建 GenerateContentConfig 配置
-   * 从旧版的 buildGeminiGenerationConfig 迁移并适配新版 API
+   * Build the GenerateContentConfig
+   * Migrated from the old buildGeminiGenerationConfig and adapted to the new API
    *
-   * @param params 参数对象
-   * @param systemInstruction 系统指令（可选）
+   * @param params Parameters object
+   * @param systemInstruction System instruction (optional)
    * @returns GenerateContentConfig
    */
   private buildGenerationConfig(
@@ -343,19 +343,19 @@ export class GeminiAdapter extends AbstractTextProviderAdapter {
       topK,
       candidateCount,
       stopSequences,
-      thinkingBudget,      // 思考预算（token数）
-      includeThoughts,      // 是否包含思考过程
+      thinkingBudget,      // Thinking budget (number of tokens)
+      includeThoughts,      // Whether to include the thinking process
       ...otherParams
     } = params
 
     const config: GenerateContentConfig = {}
 
-    // 添加系统指令
+    // Add the system instruction
     if (systemInstruction) {
       config.systemInstruction = systemInstruction
     }
 
-    // 添加已知参数
+    // Add known parameters
     if (temperature !== undefined) {
       config.temperature = temperature
     }
@@ -375,7 +375,7 @@ export class GeminiAdapter extends AbstractTextProviderAdapter {
       config.stopSequences = stopSequences
     }
 
-    // 添加思考配置（Gemini 2.5+ 支持）
+    // Add the thinking config (supported by Gemini 2.5+)
     if (thinkingBudget !== undefined || includeThoughts !== undefined) {
       ;(config as any).thinkingConfig = {}
 
@@ -388,7 +388,7 @@ export class GeminiAdapter extends AbstractTextProviderAdapter {
       }
     }
 
-    // 添加其他参数（排除明显不属于 generationConfig 的参数）
+    // Add other parameters (excluding those that clearly do not belong in generationConfig)
     for (const [key, value] of Object.entries(otherParams)) {
       if (!['timeout', 'model', 'messages', 'stream'].includes(key)) {
         ;(config as any)[key] = value
@@ -399,11 +399,11 @@ export class GeminiAdapter extends AbstractTextProviderAdapter {
   }
 
   /**
-   * 转换工具定义为 Gemini 格式
-   * 将标准的 ToolDefinition 转换为 Gemini SDK 所需的 Tool 格式
+   * Convert tool definitions to the Gemini format
+   * Converts the standard ToolDefinition to the Tool format required by the Gemini SDK
    *
-   * @param tools 工具定义数组
-   * @returns Gemini 格式的工具数组
+   * @param tools Array of tool definitions
+   * @returns Array of tools in Gemini format
    */
   private convertToolsToGemini(tools: ToolDefinition[]): Tool[] {
     if (!tools || tools.length === 0) {
@@ -420,10 +420,10 @@ export class GeminiAdapter extends AbstractTextProviderAdapter {
   }
 
   /**
-   * 转换 Gemini 的 FunctionCall 为标准的 ToolCall 格式
+   * Convert Gemini's FunctionCall to the standard ToolCall format
    *
-   * @param functionCalls Gemini 返回的函数调用数组
-   * @returns 标准格式的工具调用数组
+   * @param functionCalls Array of function calls returned by Gemini
+   * @returns Array of tool calls in the standard format
    */
   private convertGeminiFunctionCallsToToolCalls(functionCalls: FunctionCall[]): ToolCall[] {
     if (!functionCalls || functionCalls.length === 0) {
@@ -441,11 +441,11 @@ export class GeminiAdapter extends AbstractTextProviderAdapter {
   }
 
   /**
-   * 格式化消息为新版 SDK 的 Content 格式
-   * 新版 SDK 使用标准的 Content[] 格式，不再需要区分 history 和 last message
+   * Format messages into the new SDK's Content format
+   * The new SDK uses the standard Content[] format and no longer needs to distinguish history from the last message
    *
-   * @param messages 消息数组
-   * @returns Content[] 格式的消息
+   * @param messages Message array
+   * @returns Messages in Content[] format
    */
   private formatMessages(messages: Message[]): Content[] {
     const formattedContents: Content[] = []
@@ -458,37 +458,37 @@ export class GeminiAdapter extends AbstractTextProviderAdapter {
         })
       } else if (msg.role === 'assistant') {
         formattedContents.push({
-          role: 'model', // Gemini 使用 'model' 而非 'assistant'
+          role: 'model', // Gemini uses 'model' rather than 'assistant'
           parts: [{ text: msg.content }]
         })
       }
-      // 跳过 system 消息，它们会在 systemInstruction 中处理
+      // Skip system messages; they are handled in systemInstruction
     }
 
     return formattedContents
   }
 
-  // ===== 核心方法实现 =====
+  // ===== Core method implementations =====
 
   /**
-   * 发送消息（结构化格式）
-   * 使用新版 SDK 的 models.generateContent API
+   * Send a message (structured format)
+   * Uses the models.generateContent API of the new SDK
    *
-   * @param messages 消息数组
-   * @param config 模型配置
-   * @returns LLM响应
-   * @throws SDK原始错误（保留完整堆栈）
+   * @param messages Message array
+   * @param config Model config
+   * @returns LLM response
+   * @throws The original SDK error (full stack preserved)
    */
   protected async doSendMessage(messages: Message[], config: TextModelConfig): Promise<LLMResponse> {
-    // 提取系统消息
+    // Extract system messages
     const systemMessages = messages.filter((msg) => msg.role === 'system')
     const systemInstruction =
       systemMessages.length > 0 ? systemMessages.map((msg) => msg.content).join('\n') : ''
 
-    // 过滤出用户和助手消息
+    // Filter out user and assistant messages
     const conversationMessages = messages.filter((msg) => msg.role !== 'system')
 
-    // 如果没有对话消息，返回空响应
+    // If there are no conversation messages, return an empty response
     if (conversationMessages.length === 0) {
       return {
         content: '',
@@ -501,39 +501,39 @@ export class GeminiAdapter extends AbstractTextProviderAdapter {
     try {
       const client = this.createClient(config)
 
-      // 构建配置（包含系统指令）
+      // Build the config (including the system instruction)
       const generationConfig = this.buildGenerationConfig(
         config.paramOverrides || {},
         systemInstruction
       )
 
-      // 格式化消息
+      // Format the messages
       const contents = this.formatMessages(conversationMessages)
 
-      // 调用新版 API
+      // Call the new API
       const response = await client.models.generateContent({
         model: config.modelMeta.id,
         contents,
         config: generationConfig
       })
 
-      // 提取文本内容和思考内容
+      // Extract the text content and thinking content
       let textContent = ''
       let reasoning: string | undefined
 
-      // 优先使用新版 SDK 推荐的 response.text 属性
+      // Prefer the response.text property recommended by the new SDK
       if ((response as any).text) {
         textContent = (response as any).text
       } else if (response.candidates?.[0]?.content?.parts) {
-        // 回退到 parts 提取（用于旧版响应格式或特殊情况）
+        // Fall back to extracting from parts (for the old response format or special cases)
         const contentParts: string[] = []
         const reasoningParts: string[] = []
 
         for (const part of response.candidates[0].content.parts) {
-          // 提取文本内容
+          // Extract the text content
           if ((part as any).text) {
             const text = (part as any).text
-            // 如果这部分是思考过程，加到 reasoning，否则加到 content
+            // If this part is thinking, add it to reasoning; otherwise add it to content
             if ((part as any).thought) {
               reasoningParts.push(text)
             } else {
@@ -547,7 +547,7 @@ export class GeminiAdapter extends AbstractTextProviderAdapter {
           reasoning = reasoningParts.join('')
         }
       } else if (response.candidates?.[0]?.content) {
-        // 最后尝试直接访问 content 字段
+        // Finally try accessing the content field directly
         const content = response.candidates[0].content
         if (typeof content === 'string') {
           textContent = content
@@ -566,33 +566,33 @@ export class GeminiAdapter extends AbstractTextProviderAdapter {
       }
     } catch (error) {
       console.error('[GeminiAdapter] API call failed:', error)
-      throw error // 保留原始错误堆栈
+      throw error // Preserve the original error stack
     }
   }
 
   /**
-   * 发送流式消息
-   * 使用新版 SDK 的 models.generateContentStream API
+   * Send a streaming message
+   * Uses the models.generateContentStream API of the new SDK
    *
-   * @param messages 消息数组
-   * @param config 模型配置
-   * @param callbacks 流式响应回调
-   * @throws SDK原始错误（保留完整堆栈）
+   * @param messages Message array
+   * @param config Model config
+   * @param callbacks Streaming response callbacks
+   * @throws The original SDK error (full stack preserved)
    */
   protected async doSendMessageStream(
     messages: Message[],
     config: TextModelConfig,
     callbacks: StreamHandlers
   ): Promise<void> {
-    // 提取系统消息
+    // Extract system messages
     const systemMessages = messages.filter((msg) => msg.role === 'system')
     const systemInstruction =
       systemMessages.length > 0 ? systemMessages.map((msg) => msg.content).join('\n') : ''
 
-    // 过滤出用户和助手消息
+    // Filter out user and assistant messages
     const conversationMessages = messages.filter((msg) => msg.role !== 'system')
 
-    // 如果没有对话消息，发送空响应
+    // If there are no conversation messages, send an empty response
     if (conversationMessages.length === 0) {
       const response: LLMResponse = {
         content: '',
@@ -608,16 +608,16 @@ export class GeminiAdapter extends AbstractTextProviderAdapter {
     try {
       const client = this.createClient(config)
 
-      // 构建配置（包含系统指令）
+      // Build the config (including the system instruction)
       const generationConfig = this.buildGenerationConfig(
         config.paramOverrides || {},
         systemInstruction
       )
 
-      // 格式化消息
+      // Format the messages
       const contents = this.formatMessages(conversationMessages)
 
-      // 调用新版流式 API
+      // Call the new streaming API
       const responseStream = await client.models.generateContentStream({
         model: config.modelMeta.id,
         contents,
@@ -627,11 +627,11 @@ export class GeminiAdapter extends AbstractTextProviderAdapter {
       let accumulatedContent = ''
       let accumulatedReasoning = ''
 
-      // 遍历流式响应
+      // Iterate over the streaming response
       for await (const chunk of responseStream) {
         let emittedContentToken = false
 
-        // 从 parts 中提取文本内容
+        // Extract the text content from parts
         if (chunk.candidates?.[0]?.content?.parts) {
           for (const part of chunk.candidates[0].content.parts) {
             const partText = (part as any).text
@@ -640,13 +640,13 @@ export class GeminiAdapter extends AbstractTextProviderAdapter {
             }
 
             if ((part as any).thought) {
-              // 这是思考内容
+              // This is thinking content
               accumulatedReasoning += partText
               if (callbacks.onReasoningToken) {
                 callbacks.onReasoningToken(partText)
               }
             } else {
-              // 这是普通内容
+              // This is regular content
               emittedContentToken = true
               accumulatedContent += partText
               callbacks.onToken(partText)
@@ -654,7 +654,7 @@ export class GeminiAdapter extends AbstractTextProviderAdapter {
           }
         }
 
-        // 如果 SDK 只提供 chunk.text，则回退到该字段
+        // If the SDK only provides chunk.text, fall back to that field
         const chunkText = (chunk as any).text
         if (chunkText && !emittedContentToken) {
           accumulatedContent += chunkText
@@ -662,7 +662,7 @@ export class GeminiAdapter extends AbstractTextProviderAdapter {
         }
       }
 
-      // 构建完整响应
+      // Build the complete response
       const response: LLMResponse = {
         content: accumulatedContent,
         reasoning: accumulatedReasoning || undefined,
@@ -675,19 +675,19 @@ export class GeminiAdapter extends AbstractTextProviderAdapter {
     } catch (error) {
       console.error('[GeminiAdapter] Stream error:', error)
       callbacks.onError(error instanceof Error ? error : new Error(String(error)))
-      throw error // 保留原始错误堆栈
+      throw error // Preserve the original error stack
     }
   }
 
   /**
-   * 发送带工具调用的流式消息
-   * 使用新版 SDK 的工具调用功能
+   * Send a streaming message with tool calls
+   * Uses the tool calling feature of the new SDK
    *
-   * @param messages 消息数组
-   * @param config 模型配置
-   * @param tools 工具定义数组
-   * @param callbacks 流式响应回调
-   * @throws SDK原始错误（保留完整堆栈）
+   * @param messages Message array
+   * @param config Model config
+   * @param tools Array of tool definitions
+   * @param callbacks Streaming response callbacks
+   * @throws The original SDK error (full stack preserved)
    */
   protected async doSendMessageStreamWithTools(
     messages: Message[],
@@ -695,12 +695,12 @@ export class GeminiAdapter extends AbstractTextProviderAdapter {
     tools: ToolDefinition[],
     callbacks: StreamHandlers
   ): Promise<void> {
-    // 提取系统消息
+    // Extract system messages
     const systemMessages = messages.filter((msg) => msg.role === 'system')
     const systemInstruction =
       systemMessages.length > 0 ? systemMessages.map((msg) => msg.content).join('\n') : ''
 
-    // 过滤出用户和助手消息
+    // Filter out user and assistant messages
     const conversationMessages = messages.filter((msg) => msg.role !== 'system')
 
     if (conversationMessages.length === 0) {
@@ -715,22 +715,22 @@ export class GeminiAdapter extends AbstractTextProviderAdapter {
     try {
       const client = this.createClient(config)
 
-      // 构建配置（包含系统指令和工具）
+      // Build the config (including the system instruction and tools)
       const generationConfig = this.buildGenerationConfig(
         config.paramOverrides || {},
         systemInstruction
       )
 
-      // 添加工具配置
+      // Add the tool config
       const geminiTools = this.convertToolsToGemini(tools)
       if (geminiTools.length > 0) {
         ;(generationConfig as any).tools = geminiTools
       }
 
-      // 格式化消息
+      // Format the messages
       const contents = this.formatMessages(conversationMessages)
 
-      // 调用新版流式 API
+      // Call the new streaming API
       const responseStream = await client.models.generateContentStream({
         model: config.modelMeta.id,
         contents,
@@ -741,7 +741,7 @@ export class GeminiAdapter extends AbstractTextProviderAdapter {
       let accumulatedReasoning = ''
       const toolCalls: ToolCall[] = []
 
-      // 遍历流式响应
+      // Iterate over the streaming response
       for await (const chunk of responseStream) {
         const text = chunk.text
         if (text) {
@@ -749,12 +749,12 @@ export class GeminiAdapter extends AbstractTextProviderAdapter {
           callbacks.onToken(text)
         }
 
-        // 检查是否有函数调用
+        // Check for function calls
         if (chunk.functionCalls && chunk.functionCalls.length > 0) {
           const convertedCalls = this.convertGeminiFunctionCallsToToolCalls(chunk.functionCalls)
           toolCalls.push(...convertedCalls)
 
-          // 通知每个工具调用
+          // Notify about each tool call
           if (callbacks.onToolCall) {
             convertedCalls.forEach((toolCall) => callbacks.onToolCall!(toolCall))
           }
@@ -780,7 +780,7 @@ export class GeminiAdapter extends AbstractTextProviderAdapter {
         }
       }
 
-      // 构建完整响应
+      // Build the complete response
       const response: LLMResponse = {
         content: accumulatedContent,
         reasoning: accumulatedReasoning || undefined,

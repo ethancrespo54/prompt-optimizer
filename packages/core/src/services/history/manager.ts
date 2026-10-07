@@ -97,7 +97,7 @@ export class HistoryManager implements IHistoryManager {
       
       const records: PromptRecord[] = JSON.parse(data);
       
-      // 直接返回记录，排序逻辑由调用者根据需求处理
+      // Return records directly; sorting is handled by the caller as needed
       return records;
     } catch (err) {
       throw new HistoryStorageError('Failed to get history records', 'read');
@@ -355,7 +355,7 @@ export class HistoryManager implements IHistoryManager {
       });
     }
     
-    // 按照最新记录的时间戳排序，最新的在前
+    // Sort by the timestamp of the latest record, newest first
     results.sort((a, b) => b.currentRecord.timestamp - a.currentRecord.timestamp);
     
     return results;
@@ -376,10 +376,10 @@ export class HistoryManager implements IHistoryManager {
     await this.saveToStorage(recordsToKeep);
   }
 
-  // 实现 IImportExportable 接口
+  // Implement the IImportExportable interface
 
   /**
-   * 导出所有历史记录
+   * Export all history records
    */
   async exportData(): Promise<PromptRecord[]> {
     try {
@@ -395,7 +395,7 @@ export class HistoryManager implements IHistoryManager {
   }
 
   /**
-   * 导入历史记录
+   * Import history records
    */
   async importData(data: any): Promise<void> {
     if (!(await this.validateData(data))) {
@@ -407,7 +407,7 @@ export class HistoryManager implements IHistoryManager {
 
     const records = data as PromptRecord[];
 
-    // 先清空所有现有历史记录（替换模式）
+    // First clear all existing history records (replace mode)
     await this.clearHistory();
 
     const failedRecords: { record: PromptRecord; error: Error }[] = [];
@@ -415,7 +415,7 @@ export class HistoryManager implements IHistoryManager {
     // Import each record individually, capturing failures
     for (const record of records) {
       try {
-        // 保持原始ID，维护数据关联性（chainId、previousId等）
+        // Keep the original IDs to preserve data relationships (chainId, previousId, etc.)
         await this.addRecord(record);
       } catch (error) {
         console.warn('Failed to import history record:', error);
@@ -425,19 +425,19 @@ export class HistoryManager implements IHistoryManager {
 
     if (failedRecords.length > 0) {
       console.warn(`Failed to import ${failedRecords.length} history records`);
-      // 不抛出错误，允许部分导入成功
+      // Do not throw; allow a partial import to succeed
     }
   }
 
   /**
-   * 获取数据类型标识
+   * Get the data type identifier
    */
   async getDataType(): Promise<string> {
     return 'history';
   }
 
   /**
-   * 验证历史记录数据格式
+   * Validate the history record data format
    */
   async validateData(data: any): Promise<boolean> {
     if (!Array.isArray(data)) {
@@ -461,10 +461,10 @@ export class HistoryManager implements IHistoryManager {
 }
 
 /**
- * 创建聊天历史管理器的工厂函数
- * @param storageProvider 存储提供器实例
- * @param modelManager 模型管理器实例
- * @returns 聊天历史管理器实例
+ * Factory function for creating the chat history manager
+ * @param storageProvider Storage provider instance
+ * @param modelManager Model manager instance
+ * @returns Chat history manager instance
  */
 export function createHistoryManager(
   storageProvider: IStorageProvider,

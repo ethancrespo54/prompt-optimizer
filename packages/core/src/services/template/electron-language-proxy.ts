@@ -2,8 +2,8 @@ import type { BuiltinTemplateLanguage, ITemplateLanguageService } from './langua
 import { TemplateStorageError } from './errors';
 
 /**
- * Electron环境下的TemplateLanguageService代理
- * 通过template namespace的IPC调用主进程中的语言相关功能
+ * TemplateLanguageService proxy for the Electron environment
+ * Calls language-related features in the main process over the template namespace IPC
  */
 export class ElectronTemplateLanguageServiceProxy implements ITemplateLanguageService {
   private electronAPI: any;
@@ -17,7 +17,7 @@ export class ElectronTemplateLanguageServiceProxy implements ITemplateLanguageSe
   }
 
   async initialize(): Promise<void> {
-    // 在Electron环境中，语言服务由主进程管理，渲染进程不需要单独初始化
+    // In the Electron environment the language service is managed by the main process; the renderer process does not need to initialize it separately
     return Promise.resolve();
   }
 
@@ -53,6 +53,6 @@ export class ElectronTemplateLanguageServiceProxy implements ITemplateLanguageSe
   }
 
   isInitialized(): boolean {
-    return true; // 在Electron环境中，主进程管理初始化状态
+    return true; // In the Electron environment the main process manages the initialization state
   }
 } 

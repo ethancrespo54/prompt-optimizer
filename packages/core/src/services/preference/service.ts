@@ -5,68 +5,68 @@ import { IMPORT_EXPORT_ERROR_CODES } from "../../constants/error-codes";
 import { StorageError } from "../storage/errors";
 import { toErrorWithCode } from "../../utils/error";
 
-// 需要导出的UI配置键 - 白名单验证
+// UI config keys to export - whitelist validation
 const UI_SETTINGS_KEYS = [
   "app:settings:ui:theme-id",
   "app:settings:ui:preferred-language",
   "app:settings:ui:builtin-template-language",
 
-  // 已废弃：模型选择已迁移到各模式的 session store
-  // 保留用于导入旧版本数据时的向后兼容，避免导入失败
-  // TODO: 确认无旧数据后可安全移除（预计 v3.0）
+  // Deprecated: model selection has moved to each mode's session store
+  // Kept for backward compatibility when importing old-version data, to avoid import failures
+  // TODO: safe to remove once no old data remains (expected in v3.0)
   "app:selected-optimize-model",
   "app:selected-test-model",
 
-  "app:selected-optimize-template", // 系统优化模板
-  "app:selected-user-optimize-template", // 用户优化模板
-  "app:selected-iterate-template", // 迭代模板
+  "app:selected-optimize-template", // System optimize template
+  "app:selected-user-optimize-template", // User optimize template
+  "app:selected-iterate-template", // Iterate template
 ] as const;
 
-// 旧版本键名映射表 - 用于兼容性处理
+// Legacy key name mapping - used for compatibility handling
 const LEGACY_KEY_MAPPING: Record<string, string> = {
-  // 旧版本的简短键名 -> 新版本的完整键名
+  // Legacy short key names -> new full key names
   "theme-id": "app:settings:ui:theme-id",
   "preferred-language": "app:settings:ui:preferred-language",
   "builtin-template-language": "app:settings:ui:builtin-template-language",
-  // 其他键名保持不变，因为它们已经有正确的前缀
+  // Other key names stay unchanged since they already have the correct prefix
 };
 
 /**
- * 将旧版本键名转换为新版本键名
- * @param key 原始键名
- * @returns 标准化后的键名
+ * Convert a legacy key name to the new key name
+ * @param key Original key name
+ * @returns Normalized key name
  */
 const normalizeSettingKey = (key: string): string => {
   return LEGACY_KEY_MAPPING[key] || key;
 };
 
 /**
- * 验证UI配置键是否安全
+ * Validate that a UI config key is safe
  */
 const isValidSettingKey = (key: string): boolean => {
-  // 先标准化键名，再验证
+  // Normalize the key name first, then validate
   const normalizedKey = normalizeSettingKey(key);
   return (
     UI_SETTINGS_KEYS.includes(normalizedKey as any) &&
     normalizedKey.length <= 50 &&
     normalizedKey.length > 0 &&
     !/[<>"\\'&\x00-\x1f\x7f-\x9f]/.test(normalizedKey)
-  ); // 排除危险字符和控制字符
+  ); // Exclude dangerous characters and control characters
 };
 
 /**
- * 验证UI配置值是否安全
+ * Validate that a UI config value is safe
  */
 const isValidSettingValue = (value: any): value is string => {
   return (
     typeof value === "string" &&
-    value.length <= 1000 && // 限制值的长度
+    value.length <= 1000 && // Limit the value length
     !/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\x9f]/.test(value)
-  ); // 排除控制字符
+  ); // Exclude control characters
 };
 
 /**
- * 基于IStorageProvider的偏好设置服务实现
+ * Preference service implementation based on IStorageProvider
  */
 export class PreferenceService implements IPreferenceService {
   private readonly PREFIX = "pref:";
@@ -78,10 +78,10 @@ export class PreferenceService implements IPreferenceService {
   }
 
   /**
-   * 获取偏好设置
-   * @param key 键名
-   * @param defaultValue 默认值
-   * @returns 设置值，如果不存在则返回默认值
+   * Get a preference
+   * @param key Key name
+   * @param defaultValue Default value
+   * @returns The setting value, or the default value if it does not exist
    */
   async get<T>(key: string, defaultValue: T): Promise<T> {
     try {
@@ -91,7 +91,7 @@ export class PreferenceService implements IPreferenceService {
       if (storedValue === null) {
         return defaultValue;
       }
-      // 将键添加到缓存中
+      // Add the key to the cache
       this.keyCache.add(key);
       return JSON.parse(storedValue) as T;
     } catch (error) {
@@ -108,9 +108,9 @@ export class PreferenceService implements IPreferenceService {
   }
 
   /**
-   * 设置偏好设置
-   * @param key 键名
-   * @param value 值
+   * Set a preference
+   * @param key Key name
+   * @param value Value
    */
   async set<T>(key: string, value: T): Promise<void> {
     try {
@@ -118,7 +118,7 @@ export class PreferenceService implements IPreferenceService {
       const stringValue = JSON.stringify(value);
 
       await this.storageProvider.setItem(prefKey, stringValue);
-      // 将键添加到缓存中
+      // Add the key to the cache
       this.keyCache.add(key);
     } catch (error) {
       console.error(
@@ -134,14 +134,14 @@ export class PreferenceService implements IPreferenceService {
   }
 
   /**
-   * 删除偏好设置
-   * @param key 键名
+   * Delete a preference
+   * @param key Key name
    */
   async delete(key: string): Promise<void> {
     try {
       const prefKey = this.getPrefKey(key);
       await this.storageProvider.removeItem(prefKey);
-      // 从缓存中移除键
+      // Remove the key from the cache
       this.keyCache.delete(key);
     } catch (error) {
       console.error(
@@ -157,17 +157,17 @@ export class PreferenceService implements IPreferenceService {
   }
 
   /**
-   * 获取所有偏好设置的键名
-   * @returns 键名列表
+   * Get the key names of all preferences
+   * @returns List of key names
    */
   async keys(): Promise<string[]> {
-    // 由于IStorageProvider没有getAllKeys方法，我们只能返回已知的键
-    // 这是一个限制，但在大多数情况下应该足够了
+    // Since IStorageProvider has no getAllKeys method, we can only return the known keys
+    // This is a limitation, but should be sufficient in most cases
     return Array.from(this.keyCache);
   }
 
   /**
-   * 清除所有偏好设置
+   * Clear all preferences
    */
   async clear(): Promise<void> {
     try {
@@ -187,8 +187,8 @@ export class PreferenceService implements IPreferenceService {
   }
 
   /**
-   * 获取所有偏好设置
-   * @returns 包含所有偏好设置的键值对对象（使用原始键名，不带前缀）
+   * Get all preferences
+   * @returns Key-value object containing all preferences (using the original key names, without the prefix)
    */
   async getAll(): Promise<Record<string, string>> {
     try {
@@ -206,7 +206,7 @@ export class PreferenceService implements IPreferenceService {
             `[PreferenceService] Failed to get preference for key "${key}":`,
             error,
           );
-          // 继续处理其他键，不因单个键失败而中断
+          // Continue with the other keys; one key's failure should not interrupt the rest
         }
       }
 
@@ -224,10 +224,10 @@ export class PreferenceService implements IPreferenceService {
     }
   }
 
-  // 实现 IImportExportable 接口
+  // Implement the IImportExportable interface
 
   /**
-   * 导出所有偏好设置
+   * Export all preferences
    */
   async exportData(): Promise<Record<string, string>> {
     try {
@@ -243,7 +243,7 @@ export class PreferenceService implements IPreferenceService {
   }
 
   /**
-   * 导入偏好设置
+   * Import preferences
    */
   async importData(data: any): Promise<void> {
     if (!(await this.validateData(data))) {
@@ -260,13 +260,13 @@ export class PreferenceService implements IPreferenceService {
 
     for (const [key, value] of Object.entries(preferences)) {
       try {
-        // 验证键名是否安全且在白名单中
+        // Validate that the key name is safe and in the whitelist
         if (!isValidSettingKey(key)) {
           console.warn(`Skipping invalid UI configuration key: ${key}`);
           continue;
         }
 
-        // 验证值是否安全
+        // Validate that the value is safe
         if (!isValidSettingValue(value)) {
           console.warn(
             `Skipping invalid UI configuration value ${key}: type=${typeof value}`,
@@ -274,12 +274,12 @@ export class PreferenceService implements IPreferenceService {
           continue;
         }
 
-        // 标准化键名（处理旧版本兼容性）
+        // Normalize the key name (handle legacy compatibility)
         const normalizedKey = normalizeSettingKey(key);
 
         await this.set(normalizedKey, value);
 
-        // 如果键名被转换了，显示转换信息
+        // If the key name was converted, show the conversion info
         if (normalizedKey !== key) {
           console.log(
             `Imported UI configuration (legacy key converted): ${key} -> ${normalizedKey} = ${value}`,
@@ -295,19 +295,19 @@ export class PreferenceService implements IPreferenceService {
 
     if (failedSettings.length > 0) {
       console.warn(`Failed to import ${failedSettings.length} UI settings`);
-      // 不抛出错误，允许部分成功的导入
+      // Do not throw; allow a partial import to succeed
     }
   }
 
   /**
-   * 获取数据类型标识
+   * Get the data type identifier
    */
   async getDataType(): Promise<string> {
     return "userSettings";
   }
 
   /**
-   * 验证偏好设置数据格式
+   * Validate the preferences data format
    */
   async validateData(data: any): Promise<boolean> {
     if (typeof data !== "object" || data === null || Array.isArray(data)) {
@@ -324,9 +324,9 @@ export class PreferenceService implements IPreferenceService {
   }
 
   /**
-   * 获取带前缀的键名
-   * @param key 原始键名
-   * @returns 带前缀的键名
+   * Get the key name with the prefix
+   * @param key Original key name
+   * @returns Key name with the prefix
    * @private
    */
   private getPrefKey(key: string): string {
@@ -335,9 +335,9 @@ export class PreferenceService implements IPreferenceService {
 }
 
 /**
- * 创建偏好设置服务
- * @param storageProvider 存储提供器
- * @returns 偏好设置服务实例
+ * Create the preference service
+ * @param storageProvider Storage provider
+ * @returns Preference service instance
  */
 export function createPreferenceService(
   storageProvider: IStorageProvider,

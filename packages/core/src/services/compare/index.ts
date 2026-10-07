@@ -2,8 +2,8 @@ export { CompareService } from './service';
 export * from './types';
 export * from './errors';
 
-// 导入服务类以创建单例
+// Import the service class to create the singleton
 import { CompareService } from './service';
 
-// 创建单例实例
+// Create the singleton instance
 export const compareService = new CompareService(); 

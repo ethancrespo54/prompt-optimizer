@@ -1,5 +1,5 @@
 /**
- * 存储错误类
+ * Storage error class
  */
 import { STORAGE_ERROR_CODES, type ErrorParams } from '../../constants/error-codes'
 

@@ -1,79 +1,79 @@
 /**
- * 变量值生成服务 - 类型定义
+ * Variable value generation service - type definitions
  *
- * 提供智能变量值生成功能的类型系统
+ * Provides the type system for intelligent variable value generation
  */
 
 /**
- * 需要生成值的变量
+ * Variables that need values generated
  */
 export interface VariableToGenerate {
-  /** 变量名 */
+  /** Variable name */
   name: string;
 
-  /** 当前值（可选，用于LLM参考） */
+  /** Current value (optional, for the LLM's reference) */
   currentValue?: string;
 
-  /** 变量来源标识（用于LLM理解变量性质）
-   * - global: 全局变量
-   * - predefined: 预定义变量
-   * - test: 临时测试变量
-   * - empty: 扫描出的空变量（未分配来源）
+  /** Variable source identifier (helps the LLM understand the nature of the variable)
+   * - global: global variable
+   * - predefined: predefined variable
+   * - test: temporary test variable
+   * - empty: scanned empty variable (no source assigned)
    */
   source?: 'global' | 'predefined' | 'test' | 'empty';
 }
 
 /**
- * 生成的变量值
+ * Generated variable value
  */
 export interface GeneratedVariableValue {
-  /** 变量名 */
+  /** Variable name */
   name: string;
 
-  /** 生成的值 */
+  /** Generated value */
   value: string;
 
-  /** 生成理由 */
+  /** Generation reason */
   reason: string;
 
-  /** 置信度（0-1，可选） */
+  /** Confidence (0-1, optional) */
   confidence?: number;
 }
 
 /**
- * 变量值生成请求
+ * Variable value generation request
  */
 export interface VariableValueGenerationRequest {
-  /** 提示词内容（用于推测变量值的上下文） */
+  /** Prompt content (context used to infer variable values) */
   promptContent: string;
 
-  /** 需要生成值的变量列表 */
+  /** List of variables that need values generated */
   variables: VariableToGenerate[];
 
-  /** 生成使用的模型键 */
+  /** Model key used for generation */
   generationModelKey: string;
 }
 
 /**
- * 变量值生成响应
+ * Variable value generation response
  */
 export interface VariableValueGenerationResponse {
-  /** 生成的变量值列表 */
+  /** List of generated variable values */
   values: GeneratedVariableValue[];
 
-  /** 一句话总结 */
+  /** One-sentence summary */
   summary: string;
 }
 
 /**
- * 变量值生成服务接口
+ * Variable value generation service interface
  */
 export interface IVariableValueGenerationService {
   /**
-   * 生成变量值
+   * Generate variable values
    *
-   * @param request - 生成请求
-   * @returns 生成结果
+   * @param request - Generation request
+   * @returns Generation result
    */
   generate(request: VariableValueGenerationRequest): Promise<VariableValueGenerationResponse>;
 }

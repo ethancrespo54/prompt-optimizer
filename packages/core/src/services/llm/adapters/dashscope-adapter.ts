@@ -10,13 +10,13 @@ interface ModelOverride {
 }
 
 /**
- * 阿里百炼（DashScope）静态模型定义
+ * Alibaba Bailian (DashScope) static model definitions
  */
 const DASHSCOPE_STATIC_MODELS: ModelOverride[] = [
   {
     id: 'qwen3-32b',
     name: 'Qwen3-32B',
-    description: '通义千问3代32B模型，性能强劲，推荐使用',
+    description: 'Tongyi Qianwen 3 32B model, strong performance, recommended',
     capabilities: {
       supportsTools: true,
       supportsReasoning: true,
@@ -26,7 +26,7 @@ const DASHSCOPE_STATIC_MODELS: ModelOverride[] = [
   {
     id: 'qwen-plus',
     name: 'Qwen Plus',
-    description: '通义千问高性能模型，适合复杂任务，支持超长上下文',
+    description: 'Tongyi Qianwen high-performance model, suited to complex tasks, supports very long context',
     capabilities: {
       supportsTools: true,
       supportsReasoning: false,
@@ -36,7 +36,7 @@ const DASHSCOPE_STATIC_MODELS: ModelOverride[] = [
   {
     id: 'qwen-turbo',
     name: 'Qwen Turbo',
-    description: '通义千问快速模型，支持超长上下文（1M tokens）',
+    description: 'Tongyi Qianwen fast model, supports very long context (1M tokens)',
     capabilities: {
       supportsTools: true,
       supportsReasoning: false,
@@ -46,7 +46,7 @@ const DASHSCOPE_STATIC_MODELS: ModelOverride[] = [
   {
     id: 'qwen-flash',
     name: 'Qwen Flash',
-    description: '通义千问极速模型，响应快速，适合简单任务',
+    description: 'Tongyi Qianwen turbo model, fast responses, suited to simple tasks',
     capabilities: {
       supportsTools: true,
       supportsReasoning: false,
@@ -56,18 +56,18 @@ const DASHSCOPE_STATIC_MODELS: ModelOverride[] = [
 ]
 
 /**
- * 阿里百炼（DashScope）适配器
- * 基于 OpenAI 兼容 API 实现
+ * Alibaba Bailian (DashScope) adapter
+ * Implemented on top of the OpenAI-compatible API
  *
- * API 端点: https://dashscope.aliyuncs.com/compatible-mode/v1
- * 文档: https://help.aliyun.com/zh/model-studio/compatibility-of-openai-with-dashscope
+ * API endpoint: https://dashscope.aliyuncs.com/compatible-mode/v1
+ * Docs: https://help.aliyun.com/zh/model-studio/compatibility-of-openai-with-dashscope
  */
 export class DashScopeAdapter extends OpenAIAdapter {
   public getProvider(): TextProvider {
     return {
       id: 'dashscope',
-      name: '阿里百炼',
-      description: '阿里云百炼大模型服务平台，提供通义千问系列模型',
+      name: 'Alibaba Bailian',
+      description: 'Alibaba Cloud Bailian LLM service platform, offering the Tongyi Qianwen model series',
       requiresApiKey: true,
       defaultBaseURL: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
       supportsDynamicModels: true,
@@ -106,11 +106,11 @@ export class DashScopeAdapter extends OpenAIAdapter {
   }
 
   /**
-   * 获取参数定义
-   * 基于阿里百炼 OpenAI 兼容模式 API 文档
-   * 文档: https://help.aliyun.com/zh/model-studio/compatibility-of-openai-with-dashscope
+   * Get parameter definitions
+   * Based on the Alibaba Bailian OpenAI-compatible mode API docs
+   * Docs: https://help.aliyun.com/zh/model-studio/compatibility-of-openai-with-dashscope
    *
-   * 注意: enable_thinking, enable_search 等非 OpenAI 标准参数需通过 extra_body 传递
+   * Note: non-OpenAI-standard parameters such as enable_thinking and enable_search must be passed through extra_body
    */
   protected getParameterDefinitions(_modelId: string): readonly ParameterDefinition[] {
     return [
@@ -219,8 +219,8 @@ export class DashScopeAdapter extends OpenAIAdapter {
   }
 
   /**
-   * 获取默认参数值
-   * 返回空对象，让服务器使用官方默认值
+   * Get default parameter values
+   * Returns an empty object so the server uses its official defaults
    */
   protected getDefaultParameterValues(_modelId: string): Record<string, unknown> {
     return {

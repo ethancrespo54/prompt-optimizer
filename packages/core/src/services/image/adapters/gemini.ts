@@ -15,7 +15,7 @@ export class GeminiImageAdapter extends AbstractImageProviderAdapter {
     return {
       id: 'gemini',
       name: 'Google Gemini',
-      description: 'Google Gemini 图像生成服务',
+      description: 'Google Gemini image generation service',
       requiresApiKey: true,
       defaultBaseURL: 'https://generativelanguage.googleapis.com',
       supportsDynamicModels: false,
@@ -36,14 +36,14 @@ export class GeminiImageAdapter extends AbstractImageProviderAdapter {
       {
         id: 'gemini-2.5-flash-image',
         name: 'Gemini 2.5 Flash Image',
-        description: 'Google Gemini 2.5 Flash 图像生成模型（Nano Banana），支持文生图、图生图和多图输入',
+        description: 'Google Gemini 2.5 Flash image generation model (Nano Banana), supporting text-to-image, image-to-image, and multi-image input',
         providerId: 'gemini',
         capabilities: {
           text2image: true,
           image2image: true,
           multiImage: true
         },
-        parameterDefinitions: [],  // Gemini 不需要用户配置参数
+        parameterDefinitions: [],  // Gemini needs no user-configurable parameters
         defaultParameterValues: {
           outputMimeType: 'image/png'
         }
@@ -51,7 +51,7 @@ export class GeminiImageAdapter extends AbstractImageProviderAdapter {
       {
         id: 'gemini-3-pro-image-preview',
         name: 'Gemini 3 Pro Image',
-        description: 'Google Gemini 3 Pro 高级图像生成模型（Nano Banana Pro），支持高分辨率输出和高级文本渲染',
+        description: 'Google Gemini 3 Pro advanced image generation model (Nano Banana Pro), supporting high-resolution output and advanced text rendering',
         providerId: 'gemini',
         capabilities: {
           text2image: true,
@@ -78,7 +78,7 @@ export class GeminiImageAdapter extends AbstractImageProviderAdapter {
       return {
         prompt: 'make this image more colorful',
         inputImage: {
-          b64: AbstractImageProviderAdapter.TEST_IMAGE_BASE64.split(',')[1], // 去除data URL前缀
+          b64: AbstractImageProviderAdapter.TEST_IMAGE_BASE64.split(',')[1], // Strip the data URL prefix
           mimeType: 'image/png'
         },
         count: 1
@@ -89,7 +89,7 @@ export class GeminiImageAdapter extends AbstractImageProviderAdapter {
   }
 
   protected getParameterDefinitions(_modelId: string): readonly any[] {
-    // 基础参数定义（如果需要的话）
+    // Base parameter definitions (if needed)
     return []
   }
 
@@ -112,10 +112,10 @@ export class GeminiImageAdapter extends AbstractImageProviderAdapter {
         })
       : new GoogleGenAI({ apiKey: config.connectionConfig?.apiKey })
 
-    // 构建请求内容
+    // Build the request content
     let contents: any
     if (request.inputImage) {
-      // 图生图：使用数组格式
+      // Image-to-image: use the array format
       contents = [
         { text: request.prompt },
         {
@@ -126,18 +126,18 @@ export class GeminiImageAdapter extends AbstractImageProviderAdapter {
         }
       ]
     } else {
-      // 文生图：直接使用文本
+      // Text-to-image: use the text directly
       contents = request.prompt
     }
 
     try {
-      // 调用 Gemini API
+      // Call the Gemini API
       const response = await genAI.models.generateContent({
         model: config.modelId,
         contents
       })
 
-      // 解析响应
+      // Parse the response
       const candidate = response.candidates?.[0]
       if (!candidate) {
         throw new ImageError(IMAGE_ERROR_CODES.INVALID_RESPONSE_FORMAT)
@@ -147,7 +147,7 @@ export class GeminiImageAdapter extends AbstractImageProviderAdapter {
       const resultImages: any[] = []
       let responseText: string | undefined
 
-      // 处理响应部分
+      // Process the response parts
       for (const part of parts) {
         if (part.text) {
           responseText = part.text
@@ -155,7 +155,7 @@ export class GeminiImageAdapter extends AbstractImageProviderAdapter {
           const imageData = part.inlineData.data
           const mimeType = part.inlineData.mimeType || 'image/png'
 
-          // 构建 data URL
+          // Build the data URL
           const dataUrl = `data:${mimeType};base64,${imageData}`
 
           resultImages.push({

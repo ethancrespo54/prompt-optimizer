@@ -1,206 +1,206 @@
 /**
- * 评估服务类型定义
+ * Evaluation service type definitions
  *
- * 提供 LLM 智能评估功能的类型系统
+ * Type system providing LLM intelligent evaluation
  */
 
 import type { BasicSubMode, ProSubMode, ImageSubMode } from '../prompt/types';
 
-// ==================== 评估类型 ====================
+// ==================== Evaluation types ====================
 
 /**
- * 评估类型枚举
+ * Evaluation type enum
  */
 export type EvaluationType =
   | 'original'
   | 'optimized'
   | 'compare'
-  | 'prompt-only'      // 仅提示词评估（无需测试结果）
-  | 'prompt-iterate';  // 带迭代需求的提示词评估
+  | 'prompt-only'      // Prompt-only evaluation (no test results needed)
+  | 'prompt-iterate';  // Prompt evaluation with an iteration requirement
 
 /**
- * 所有子模式的联合类型（用于评估模式配置）
+ * Union type of all sub-modes (used for evaluation mode configuration)
  */
 export type EvaluationSubMode = BasicSubMode | ProSubMode | ImageSubMode;
 
 /**
- * 评估模式配置
- * 用于指定评估的功能模式和子模式
+ * Evaluation mode configuration
+ * Specifies the function mode and sub-mode of the evaluation
  */
 export interface EvaluationModeConfig {
-  /** 功能模式 */
+  /** Function mode */
   functionMode: 'basic' | 'pro' | 'image';
-  /** 子模式 */
+  /** Sub-mode */
   subMode: EvaluationSubMode;
 }
 
-// ==================== Pro 模式评估上下文 ====================
+// ==================== Pro mode evaluation context ====================
 
 /**
- * Pro-System 模式评估上下文
- * 用于多消息场景中的单条消息评估
+ * Pro-System mode evaluation context
+ * Used to evaluate a single message in a multi-message scenario
  */
 export interface ProSystemEvaluationContext {
-  /** 被优化消息的元信息 */
+  /** Metadata of the message being optimized */
   targetMessage: {
-    /** 消息角色 */
+    /** Message role */
     role: 'system' | 'user' | 'assistant' | 'tool';
-    /** 消息内容（当前版本） */
+    /** Message content (current version) */
     content: string;
-    /** 原始内容（用于对比） */
+    /** Original content (for comparison) */
     originalContent?: string;
   };
-  /** 完整对话上下文 */
+  /** Full conversation context */
   conversationMessages: Array<{
-    /** 消息角色 */
+    /** Message role */
     role: string;
-    /** 消息内容 */
+    /** Message content */
     content: string;
-    /** 是否为被优化的目标消息 */
+    /** Whether this is the target message being optimized */
     isTarget?: boolean;
   }>;
 }
 
 /**
- * Pro-User 模式评估上下文
- * 用于带变量的用户提示词评估
+ * Pro-User mode evaluation context
+ * Used to evaluate user prompts with variables
  */
 export interface ProUserEvaluationContext {
-  /** 变量列表 */
+  /** Variable list */
   variables: Array<{
-    /** 变量名 */
+    /** Variable name */
     name: string;
-    /** 变量值 */
+    /** Variable value */
     value: string;
-    /** 变量来源 */
+    /** Variable source */
     source: 'predefined' | 'global' | 'temporary';
   }>;
-  /** 原始提示词（含变量占位符） */
+  /** Original prompt (with variable placeholders) */
   rawPrompt: string;
-  /** 变量替换后的提示词 */
+  /** Prompt after variable substitution */
   resolvedPrompt: string;
 }
 
 /**
- * Pro 模式评估上下文联合类型
+ * Union type of Pro mode evaluation contexts
  */
 export type ProEvaluationContext = ProSystemEvaluationContext | ProUserEvaluationContext;
 
-// ==================== 补丁操作类型 ====================
+// ==================== Patch operation types ====================
 
 /**
- * 补丁操作类型
+ * Patch operation type
  */
 export type PatchOperationType = 'insert' | 'replace' | 'delete';
 
 /**
- * 补丁操作 - 精准修复指令
+ * Patch operation - precise fix instruction
  *
- * 设计原则：
- * - 用 oldText/newText 实现简单字符串替换
- * - 支持 diff 可视化渲染（红删绿增）
- * - 本地 apply 就是简单的字符串 replace
+ * Design principles:
+ * - Use oldText/newText for simple string replacement
+ * - Supports diff visualization (red for deletions, green for additions)
+ * - Applying locally is just a simple string replace
  *
- * 操作约定：
- * - 插入：oldText 是锚点上下文，newText = oldText + 插入内容
- * - 删除：newText = ""
- * - 替换：直接 oldText → newText
+ * Operation conventions:
+ * - Insert: oldText is the anchor context, newText = oldText + inserted content
+ * - Delete: newText = ""
+ * - Replace: directly oldText → newText
  */
 export interface PatchOperation {
-  /** 操作类型 */
+  /** Operation type */
   op: PatchOperationType;
-  /** 修改前的原文本片段（用于定位和 diff 展示） */
+  /** Original text fragment before the change (used for locating and diff display) */
   oldText: string;
-  /** 修改后的文本（删除时为空字符串） */
+  /** Text after the change (empty string for deletions) */
   newText: string;
-  /** 操作说明（包含问题描述 + 修复说明） */
+  /** Operation description (includes problem description + fix description) */
   instruction: string;
-  /** 出现次数（从1开始，用于处理多次出现的情况，默认1） */
+  /** Occurrence index (starting from 1, used when the text occurs multiple times, default 1) */
   occurrence?: number;
 }
 
-// ==================== 评估请求类型 ====================
+// ==================== Evaluation request types ====================
 
 /**
- * 评估请求基础结构
+ * Base structure of an evaluation request
  */
 export interface EvaluationRequestBase {
-  /** 原始提示词（可选，用于对比） */
+  /** Original prompt (optional, for comparison) */
   originalPrompt?: string;
-  /** 用户反馈（可选，用于反馈分析） */
+  /** User feedback (optional, for feedback analysis) */
   userFeedback?: string;
-  /** 测试文本/输入 */
+  /** Test text/input */
   testContent?: string;
-  /** 评估使用的模型Key */
+  /** Model key used for the evaluation */
   evaluationModelKey: string;
-  /** 可选：自定义变量 */
+  /** Optional: custom variables */
   variables?: Record<string, string>;
-  /** 评估模式配置（必填） */
+  /** Evaluation mode configuration (required) */
   mode: EvaluationModeConfig;
-  /** Pro 模式专用上下文（可选） */
+  /** Pro mode-specific context (optional) */
   proContext?: ProEvaluationContext;
 }
 
 /**
- * 原始提示词评估请求
- * 评估原始提示词的测试结果是否达成用户目的
+ * Original prompt evaluation request
+ * Evaluates whether the test result of the original prompt achieves the user's goal
  */
 export interface OriginalEvaluationRequest extends EvaluationRequestBase {
   type: 'original';
-  /** 原始测试结果 */
+  /** Original test result */
   testResult: string;
 }
 
 /**
- * 优化提示词评估请求
- * 评估优化后提示词的测试效果
+ * Optimized prompt evaluation request
+ * Evaluates the test effect of the optimized prompt
  */
 export interface OptimizedEvaluationRequest extends EvaluationRequestBase {
   type: 'optimized';
-  /** 优化后的提示词 */
+  /** Optimized prompt */
   optimizedPrompt: string;
-  /** 优化后的测试结果 */
+  /** Optimized test result */
   testResult: string;
 }
 
 /**
- * 对比评估请求
- * 对比原始和优化后两个版本的测试效果
+ * Compare evaluation request
+ * Compares the test effect of the original and optimized versions
  */
 export interface CompareEvaluationRequest extends EvaluationRequestBase {
   type: 'compare';
-  /** 优化后的提示词 */
+  /** Optimized prompt */
   optimizedPrompt: string;
-  /** 原始测试结果 */
+  /** Original test result */
   originalTestResult: string;
-  /** 优化后的测试结果 */
+  /** Optimized test result */
   optimizedTestResult: string;
 }
 
 /**
- * 仅提示词评估请求
- * 直接评估提示词本身的质量，无需测试结果
+ * Prompt-only evaluation request
+ * Directly evaluates the quality of the prompt itself, no test results needed
  */
 export interface PromptOnlyEvaluationRequest extends EvaluationRequestBase {
   type: 'prompt-only';
-  /** 优化后的提示词 */
+  /** Optimized prompt */
   optimizedPrompt: string;
 }
 
 /**
- * 带迭代需求的提示词评估请求
- * 评估优化后的提示词是否满足迭代需求
+ * Prompt evaluation request with an iteration requirement
+ * Evaluates whether the optimized prompt meets the iteration requirement
  */
 export interface PromptIterateEvaluationRequest extends EvaluationRequestBase {
   type: 'prompt-iterate';
-  /** 优化后的提示词 */
+  /** Optimized prompt */
   optimizedPrompt: string;
-  /** 迭代需求（来自 iterationNote） */
+  /** Iteration requirement (from iterationNote) */
   iterateRequirement: string;
 }
 
 /**
- * 评估请求联合类型
+ * Union type of evaluation requests
  */
 export type EvaluationRequest =
   | OriginalEvaluationRequest
@@ -209,45 +209,45 @@ export type EvaluationRequest =
   | PromptOnlyEvaluationRequest
   | PromptIterateEvaluationRequest;
 
-// ==================== 评估结果类型 ====================
+// ==================== Evaluation result types ====================
 
 /**
- * 单个评估维度
+ * A single evaluation dimension
  */
 export interface EvaluationDimension {
-  /** 维度标识符 */
+  /** Dimension identifier */
   key: string;
-  /** 本地化显示名称（由模板返回） */
+  /** Localized display name (returned by the template) */
   label: string;
-  /** 维度分数 (0-100) */
+  /** Dimension score (0-100) */
   score: number;
 }
 
 /**
- * 评估评分结构
+ * Evaluation score structure
  */
 export interface EvaluationScore {
-  /** 总分 (0-100) */
+  /** Overall score (0-100) */
   overall: number;
-  /** 各维度评分（动态数组） */
+  /** Per-dimension scores (dynamic array) */
   dimensions: EvaluationDimension[];
 }
 
 /**
- * 评估响应（统一结构）
+ * Evaluation response (unified structure)
  */
 export interface EvaluationResponse {
-  /** 评估类型 */
+  /** Evaluation type */
   type: EvaluationType;
-  /** 评估分数 */
+  /** Evaluation score */
   score: EvaluationScore;
-  /** 方向性改进建议（最多3条，用于迭代重写） */
+  /** Directional improvement suggestions (at most 3, used for iterative rewriting) */
   improvements: string[];
-  /** 一句话总结 */
+  /** One-sentence summary */
   summary: string;
-  /** 精准修复操作（最多3条，用于直接编辑） */
+  /** Precise fix operations (at most 3, used for direct editing) */
   patchPlan: PatchOperation[];
-  /** 元数据 */
+  /** Metadata */
   metadata?: {
     model?: string;
     timestamp?: number;
@@ -255,39 +255,39 @@ export interface EvaluationResponse {
   };
 }
 
-// ==================== 流式评估回调 ====================
+// ==================== Streaming evaluation callbacks ====================
 
 /**
- * 流式评估回调处理器
+ * Streaming evaluation callback handlers
  */
 export interface EvaluationStreamHandlers {
-  /** 接收到内容 token */
+  /** Content token received */
   onToken: (token: string) => void;
-  /** 接收到分数更新（可选） */
+  /** Score update received (optional) */
   onScore?: (score: Partial<EvaluationScore>) => void;
-  /** 评估完成 */
+  /** Evaluation complete */
   onComplete: (response: EvaluationResponse) => void;
-  /** 评估出错 */
+  /** Evaluation error */
   onError: (error: Error) => void;
 }
 
-// ==================== 服务接口 ====================
+// ==================== Service interface ====================
 
 /**
- * 评估服务接口
+ * Evaluation service interface
  */
 export interface IEvaluationService {
   /**
-   * 执行评估（非流式）
-   * @param request 评估请求
-   * @returns 评估响应
+   * Run an evaluation (non-streaming)
+   * @param request Evaluation request
+   * @returns Evaluation response
    */
   evaluate(request: EvaluationRequest): Promise<EvaluationResponse>;
 
   /**
-   * 流式评估（用于实时显示）
-   * @param request 评估请求
-   * @param callbacks 流式回调处理器
+   * Streaming evaluation (for real-time display)
+   * @param request Evaluation request
+   * @param callbacks Streaming callback handlers
    */
   evaluateStream(
     request: EvaluationRequest,
@@ -295,30 +295,30 @@ export interface IEvaluationService {
   ): Promise<void>;
 }
 
-// ==================== 评估模板 ID 命名规则 ====================
+// ==================== Evaluation template ID naming rules ====================
 //
-// 模板 ID 格式: evaluation-{functionMode}-{subMode}-{type}
+// Template ID format: evaluation-{functionMode}-{subMode}-{type}
 //
-// 示例:
-//   - evaluation-basic-system-original      (基础模式/系统提示词/原始评估)
-//   - evaluation-basic-system-optimized     (基础模式/系统提示词/优化评估)
-//   - evaluation-basic-system-compare       (基础模式/系统提示词/对比评估)
-//   - evaluation-basic-system-prompt-only   (基础模式/系统提示词/仅提示词评估)
-//   - evaluation-basic-system-prompt-iterate(基础模式/系统提示词/迭代需求评估)
-//   - evaluation-basic-user-original        (基础模式/用户提示词/原始评估)
-//   - evaluation-basic-user-optimized       (基础模式/用户提示词/优化评估)
-//   - evaluation-basic-user-compare         (基础模式/用户提示词/对比评估)
-//   - evaluation-basic-user-prompt-only     (基础模式/用户提示词/仅提示词评估)
-//   - evaluation-basic-user-prompt-iterate  (基础模式/用户提示词/迭代需求评估)
-//   - evaluation-pro-multi-original         (Pro模式/多消息模式/原始评估)
-//   - evaluation-pro-multi-optimized        (Pro模式/多消息模式/优化评估)
-//   - evaluation-pro-multi-compare          (Pro模式/多消息模式/对比评估)
-//   - evaluation-pro-multi-prompt-only      (Pro模式/多消息模式/仅提示词评估)
-//   - evaluation-pro-multi-prompt-iterate   (Pro模式/多消息模式/迭代需求评估)
-//   - evaluation-pro-variable-original      (Pro模式/变量模式/原始评估)
-//   - evaluation-pro-variable-optimized     (Pro模式/变量模式/优化评估)
-//   - evaluation-pro-variable-compare       (Pro模式/变量模式/对比评估)
-//   - evaluation-pro-variable-prompt-only   (Pro模式/变量模式/仅提示词评估)
-//   - evaluation-pro-variable-prompt-iterate(Pro模式/变量模式/迭代需求评估)
+// Examples:
+//   - evaluation-basic-system-original      (basic mode / system prompt / original evaluation)
+//   - evaluation-basic-system-optimized     (basic mode / system prompt / optimized evaluation)
+//   - evaluation-basic-system-compare       (basic mode / system prompt / compare evaluation)
+//   - evaluation-basic-system-prompt-only   (basic mode / system prompt / prompt-only evaluation)
+//   - evaluation-basic-system-prompt-iterate(basic mode / system prompt / iteration requirement evaluation)
+//   - evaluation-basic-user-original        (basic mode / user prompt / original evaluation)
+//   - evaluation-basic-user-optimized       (basic mode / user prompt / optimized evaluation)
+//   - evaluation-basic-user-compare         (basic mode / user prompt / compare evaluation)
+//   - evaluation-basic-user-prompt-only     (basic mode / user prompt / prompt-only evaluation)
+//   - evaluation-basic-user-prompt-iterate  (basic mode / user prompt / iteration requirement evaluation)
+//   - evaluation-pro-multi-original         (Pro mode / multi-message mode / original evaluation)
+//   - evaluation-pro-multi-optimized        (Pro mode / multi-message mode / optimized evaluation)
+//   - evaluation-pro-multi-compare          (Pro mode / multi-message mode / compare evaluation)
+//   - evaluation-pro-multi-prompt-only      (Pro mode / multi-message mode / prompt-only evaluation)
+//   - evaluation-pro-multi-prompt-iterate   (Pro mode / multi-message mode / iteration requirement evaluation)
+//   - evaluation-pro-variable-original      (Pro mode / variable mode / original evaluation)
+//   - evaluation-pro-variable-optimized     (Pro mode / variable mode / optimized evaluation)
+//   - evaluation-pro-variable-compare       (Pro mode / variable mode / compare evaluation)
+//   - evaluation-pro-variable-prompt-only   (Pro mode / variable mode / prompt-only evaluation)
+//   - evaluation-pro-variable-prompt-iterate(Pro mode / variable mode / iteration requirement evaluation)
 //
-// 模板 ID 由 EvaluationService.getTemplateId() 动态生成，无需硬编码常量
+// Template IDs are generated dynamically by EvaluationService.getTemplateId(); no hard-coded constants are needed

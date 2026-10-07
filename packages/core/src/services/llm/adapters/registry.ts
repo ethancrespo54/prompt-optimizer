@@ -19,8 +19,8 @@ import { OllamaAdapter } from './ollama-adapter';
 import { RequestConfigError } from '../errors';
 
 /**
- * 文本模型适配器注册表实现
- * 继承抽象基类，提供文本模型特定的实现
+ * Text model adapter registry implementation
+ * Extends the abstract base class and provides text-model-specific implementations
  */
 export class TextAdapterRegistry
   extends AbstractAdapterRegistry<
@@ -44,10 +44,10 @@ export class TextAdapterRegistry
   }
 
   /**
-   * 初始化并注册所有适配器
+   * Initialize and register all adapters
    */
   protected initializeAdapters(): void {
-    // 注册适配器
+    // Register adapters
     const openaiAdapter = new OpenAIAdapter();
     const deepseekAdapter = new DeepseekAdapter();
     const siliconflowAdapter = new SiliconflowAdapter();
@@ -70,26 +70,26 @@ export class TextAdapterRegistry
     this.adapters.set('modelscope', modelscopeAdapter);
     this.adapters.set('ollama', ollamaAdapter);
 
-    // 预加载静态模型缓存
+    // Preload the static model cache
     this.preloadStaticModels();
   }
 
   /**
-   * 从适配器获取 Provider 元数据
+   * Get Provider metadata from an adapter
    */
   protected getProviderFromAdapter(adapter: ITextProviderAdapter): TextProvider {
     return adapter.getProvider();
   }
 
   /**
-   * 从适配器获取静态模型列表
+   * Get the static model list from an adapter
    */
   protected getModelsFromAdapter(adapter: ITextProviderAdapter): TextModel[] {
     return adapter.getModels();
   }
 
   /**
-   * 调用适配器的异步模型获取方法
+   * Call the adapter's async model fetching method
    */
   protected async getModelsAsyncFromAdapter(
     adapter: ITextProviderAdapter,
@@ -105,14 +105,14 @@ export class TextAdapterRegistry
   }
 
   /**
-   * 获取错误消息的提供商类型描述
+   * Get the provider type description used in error messages
    */
   protected getProviderTypeDescription(): string {
-    return '文本模型提供商';
+    return 'text model provider';
   }
 }
 
 /**
- * 工厂函数：创建 TextAdapterRegistry 实例
+ * Factory function: create a TextAdapterRegistry instance
  */
 export const createTextAdapterRegistry = () => new TextAdapterRegistry();

@@ -1,7 +1,7 @@
 /**
- * 变量值生成服务 - 核心实现
+ * Variable value generation service - core implementation
  *
- * 使用 LLM 根据提示词上下文智能推测变量值
+ * Uses an LLM to intelligently infer variable values from the prompt context
  */
 
 import type { ILLMService } from '../llm/types';
@@ -26,7 +26,7 @@ import { jsonrepair } from 'jsonrepair';
 import { toErrorWithCode } from '../../utils/error';
 
 /**
- * 变量值生成服务实现类
+ * Variable value generation service implementation class
  */
 export class VariableValueGenerationService implements IVariableValueGenerationService {
   constructor(
@@ -36,32 +36,32 @@ export class VariableValueGenerationService implements IVariableValueGenerationS
   ) {}
 
   /**
-   * 生成变量值
+   * Generate variable values
    */
   async generate(request: VariableValueGenerationRequest): Promise<VariableValueGenerationResponse> {
-    // 1. 验证请求
+    // 1. Validate the request
     this.validateRequest(request);
 
-    // 2. 验证模型
+    // 2. Validate the model
     await this.validateModel(request.generationModelKey);
 
-    // 3. 获取提示词模板
+    // 3. Get the prompt template
     const template = await this.getGenerationTemplate();
 
-    // 4. 构建模板上下文
+    // 4. Build the template context
     const context = this.buildTemplateContext(request);
 
-    // 5. 使用 TemplateProcessor 渲染模板
+    // 5. Render the template with TemplateProcessor
     const messages = TemplateProcessor.processTemplate(template, context);
 
-    // 6. 调用 LLM 发送请求
+    // 6. Call the LLM to send the request
     try {
       const result = await this.llmService.sendMessage(messages, request.generationModelKey);
 
-      // 7. 解析 LLM 返回的 JSON 结果（传递请求的变量列表用于对齐校验）
+      // 7. Parse the JSON result returned by the LLM (pass the requested variable list for alignment validation)
       return this.parseGenerationResult(result, request.variables);
     } catch (error) {
-      // 🔧 修复：保留原始错误类型，不要过度包装
+      // 🔧 Fix: preserve the original error type; do not over-wrap
       if (error instanceof VariableValueGenerationError) {
         throw error;
       }
@@ -70,7 +70,7 @@ export class VariableValueGenerationService implements IVariableValueGenerationS
   }
 
   /**
-   * 验证请求参数
+   * Validate the request parameters
    */
   private validateRequest(request: VariableValueGenerationRequest): void {
     if (!request.promptContent?.trim()) {
@@ -85,7 +85,7 @@ export class VariableValueGenerationService implements IVariableValueGenerationS
       throw new VariableValueGenerationValidationError('Variables list must not be empty.');
     }
 
-    // 验证每个变量
+    // Validate each variable
     for (let i = 0; i < request.variables.length; i++) {
       const variable = request.variables[i];
       if (!variable.name?.trim()) {
@@ -95,7 +95,7 @@ export class VariableValueGenerationService implements IVariableValueGenerationS
   }
 
   /**
-   * 验证模型是否存在
+   * Validate that the model exists
    */
   private async validateModel(modelKey: string): Promise<void> {
     const model = await this.modelManager.getModel(modelKey);
@@ -105,7 +105,7 @@ export class VariableValueGenerationService implements IVariableValueGenerationS
   }
 
   /**
-   * 获取变量值生成模板
+   * Get the variable value generation template
    */
   private async getGenerationTemplate(): Promise<Template> {
     const templateId = 'variable-value-generation';
@@ -130,14 +130,14 @@ export class VariableValueGenerationService implements IVariableValueGenerationS
   }
 
   /**
-   * 构建模板上下文
+   * Build the template context
    */
   private buildTemplateContext(request: VariableValueGenerationRequest): TemplateContext {
-    // 构建变量列表文本（用于模板注入）
+    // Build the variable list text (for template injection)
     const variablesText = request.variables
       .map((v, idx) => {
         const parts = [`${idx + 1}. ${v.name}`];
-        if (v.currentValue) parts.push(`（当前值: ${v.currentValue}）`);
+        if (v.currentValue) parts.push(`(current value: ${v.currentValue})`);
         if (v.source) parts.push(`[${v.source}]`);
         return parts.join(' ');
       })
@@ -151,28 +151,28 @@ export class VariableValueGenerationService implements IVariableValueGenerationS
   }
 
   /**
-   * 解析 LLM 生成结果
+   * Parse the LLM generation result
    */
   private parseGenerationResult(
     content: string | { content: string },
     requestedVariables: VariableToGenerate[]
   ): VariableValueGenerationResponse {
-    // 统一处理 content（可能是字符串或对象）
+    // Handle content uniformly (may be a string or an object)
     const textContent = typeof content === 'string' ? content : content.content;
 
-    // 1. 尝试提取 JSON 代码块
+    // 1. Try to extract a JSON code block
     const jsonMatch = textContent.match(/```json\s*([\s\S]*?)\s*```/i);
     const jsonText = jsonMatch ? jsonMatch[1] : textContent;
 
     try {
-      // 2. 使用 jsonrepair 修复可能的格式问题
+      // 2. Use jsonrepair to fix possible format problems
       const repaired = jsonrepair(jsonText);
       const parsed = JSON.parse(repaired);
 
-      // 3. 标准化响应（传递请求的变量列表用于对齐）
+      // 3. Normalize the response (pass the requested variable list for alignment)
       return this.normalizeGenerationResponse(parsed, requestedVariables);
     } catch (error) {
-      // 回退：尝试直接解析
+      // Fallback: try parsing directly
       try {
         const parsed = JSON.parse(jsonText);
         return this.normalizeGenerationResponse(parsed, requestedVariables);
@@ -185,8 +185,8 @@ export class VariableValueGenerationService implements IVariableValueGenerationS
   }
 
   /**
-   * 标准化并验证生成响应
-   * 🔧 修复：添加变量对齐校验，确保返回的变量与请求一致
+   * Normalize and validate the generation response
+   * 🔧 Fix: add variable alignment validation to ensure the returned variables match the request
    */
   private normalizeGenerationResponse(
     data: any,
@@ -204,11 +204,11 @@ export class VariableValueGenerationService implements IVariableValueGenerationS
       throw new VariableValueGenerationParseError('Generation result must have a "summary" string.');
     }
 
-    // 构建请求变量名集合（用于快速查找）
-    // 🔧 对请求变量名也进行trim，避免首尾空格导致匹配失败
+    // Build the set of requested variable names (for fast lookup)
+    // 🔧 Also trim the requested variable names to avoid matching failures caused by leading/trailing spaces
     const requestedNames = new Set(requestedVariables.map(v => v.name.trim()));
 
-    // 标准化每个生成的值
+    // Normalize each generated value
     const rawValues: GeneratedVariableValue[] = data.values.map((item: any, index: number) => {
       if (!item || typeof item !== 'object') {
         throw new VariableValueGenerationParseError(`values[${index}] is not a valid object.`);
@@ -234,44 +234,44 @@ export class VariableValueGenerationService implements IVariableValueGenerationS
       };
     });
 
-    // 🔧 对齐处理：过滤掉不在请求列表中的变量 + 建立Map用于快速查找
+    // 🔧 Alignment: filter out variables not in the requested list + build a Map for fast lookup
     const valueMap = new Map<string, GeneratedVariableValue>();
     for (const val of rawValues) {
       if (requestedNames.has(val.name)) {
-        // 🔧 检测LLM返回的同名重复
+        // 🔧 Detect same-name duplicates returned by the LLM
         if (valueMap.has(val.name)) {
-          console.warn(`[VariableValueGeneration] LLM返回了重复的变量名: ${val.name}，后者将覆盖前者`);
+          console.warn(`[VariableValueGeneration] The LLM returned a duplicate variable name: ${val.name}; the latter will overwrite the former`);
         }
         valueMap.set(val.name, val);
       } else {
-        console.warn(`[VariableValueGeneration] LLM返回了未请求的变量: ${val.name}`);
+        console.warn(`[VariableValueGeneration] The LLM returned a variable that was not requested: ${val.name}`);
       }
     }
 
-    // 🔧 检测请求列表中的重复变量名
+    // 🔧 Detect duplicate variable names in the requested list
     const seenRequestNames = new Set<string>();
     for (const req of requestedVariables) {
       const trimmedName = req.name.trim();
       if (seenRequestNames.has(trimmedName)) {
-        console.warn(`[VariableValueGeneration] 请求列表中存在重复的变量名: ${trimmedName}，将返回相同的生成结果`);
+        console.warn(`[VariableValueGeneration] The requested list contains a duplicate variable name: ${trimmedName}; the same generated result will be returned`);
       }
       seenRequestNames.add(trimmedName);
     }
 
-    // 🔧 补齐缺失的变量（LLM漏返回的）
+    // 🔧 Fill in missing variables (those the LLM failed to return)
     const alignedValues: GeneratedVariableValue[] = requestedVariables.map(req => {
-      // 🔧 对请求变量名trim，与Set保持一致
+      // 🔧 Trim the requested variable names to stay consistent with the Set
       const trimmedName = req.name.trim();
       const generated = valueMap.get(trimmedName);
       if (generated) {
         return generated;
       }
-      // 缺失的变量用空值补齐
-      console.warn(`[VariableValueGeneration] LLM未返回变量 "${trimmedName}"，已补齐空值`);
+      // Fill missing variables with empty values
+      console.warn(`[VariableValueGeneration] The LLM did not return variable "${trimmedName}"; filled with an empty value`);
       return {
         name: trimmedName,
         value: '',
-        reason: '（LLM未生成此变量的值）',
+        reason: '(The LLM did not generate a value for this variable)',
         confidence: 0,
       };
     });
@@ -284,12 +284,12 @@ export class VariableValueGenerationService implements IVariableValueGenerationS
 }
 
 /**
- * 创建变量值生成服务的工厂函数
+ * Factory function for creating the variable value generation service
  *
- * @param llmService - LLM 服务实例
- * @param modelManager - 模型管理器实例
- * @param templateManager - 模板管理器实例
- * @returns 变量值生成服务实例
+ * @param llmService - LLM service instance
+ * @param modelManager - Model manager instance
+ * @param templateManager - Template manager instance
+ * @returns Variable value generation service instance
  */
 export function createVariableValueGenerationService(
   llmService: ILLMService,

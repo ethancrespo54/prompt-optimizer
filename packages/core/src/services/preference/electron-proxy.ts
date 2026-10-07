@@ -26,7 +26,7 @@ export class ElectronPreferenceServiceProxy implements IPreferenceService {
 
   async set<T>(key: string, value: T): Promise<void> {
     this.ensureApiAvailable();
-    // 自动序列化，防止Vue响应式对象IPC传递错误
+    // Serialize automatically to prevent errors when Vue reactive objects are passed over IPC
     const safeValue = safeSerializeForIPC(value);
     return window.electronAPI.preference.set(key, safeValue);
   }
@@ -51,10 +51,10 @@ export class ElectronPreferenceServiceProxy implements IPreferenceService {
     return (window.electronAPI as any).preference.getAll();
   }
 
-  // 实现 IImportExportable 接口
+  // Implement the IImportExportable interface
 
   /**
-   * 导出所有偏好设置
+   * Export all preferences
    */
   async exportData(): Promise<Record<string, string>> {
     this.ensureApiAvailable();
@@ -62,17 +62,17 @@ export class ElectronPreferenceServiceProxy implements IPreferenceService {
   }
 
   /**
-   * 导入偏好设置
+   * Import preferences
    */
   async importData(data: any): Promise<void> {
     this.ensureApiAvailable();
-    // 自动序列化，防止Vue响应式对象IPC传递错误
+    // Serialize automatically to prevent errors when Vue reactive objects are passed over IPC
     const safeData = safeSerializeForIPC(data);
     return (window.electronAPI as any).preference.importData(safeData);
   }
 
   /**
-   * 获取数据类型标识
+   * Get the data type identifier
    */
   async getDataType(): Promise<string> {
     this.ensureApiAvailable();
@@ -80,11 +80,11 @@ export class ElectronPreferenceServiceProxy implements IPreferenceService {
   }
 
   /**
-   * 验证偏好设置数据格式
+   * Validate the preferences data format
    */
   async validateData(data: any): Promise<boolean> {
     this.ensureApiAvailable();
-    // 自动序列化，防止Vue响应式对象IPC传递错误
+    // Serialize automatically to prevent errors when Vue reactive objects are passed over IPC
     const safeData = safeSerializeForIPC(data);
     return (window.electronAPI as any).preference.validateData(safeData);
   }

@@ -3,8 +3,8 @@ import { safeSerializeForIPC } from '../../utils/ipc-serialization';
 import { HistoryStorageError, RecordNotFoundError } from './errors';
 
 /**
- * Electron环境下的历史记录管理器代理
- * 通过IPC与主进程中的真实HistoryManager通信
+ * History manager proxy for the Electron environment
+ * Communicates with the real HistoryManager in the main process over IPC
  */
 export class ElectronHistoryManagerProxy implements IHistoryManager {
   private get electronAPI() {
@@ -15,7 +15,7 @@ export class ElectronHistoryManagerProxy implements IHistoryManager {
   }
 
   async addRecord(record: PromptRecord): Promise<void> {
-    // 自动序列化，防止Vue响应式对象IPC传递错误
+    // Serialize automatically to prevent errors when Vue reactive objects are passed over IPC
     const safeRecord = safeSerializeForIPC(record);
     return this.electronAPI.history.addRecord(safeRecord);
   }
@@ -54,7 +54,7 @@ export class ElectronHistoryManagerProxy implements IHistoryManager {
   }
 
   async createNewChain(record: Omit<PromptRecord, 'chainId' | 'version' | 'previousId'>): Promise<PromptRecordChain> {
-    // 自动序列化，防止Vue响应式对象IPC传递错误
+    // Serialize automatically to prevent errors when Vue reactive objects are passed over IPC
     const safeRecord = safeSerializeForIPC(record);
     return this.electronAPI.history.createNewChain(safeRecord);
   }
@@ -67,7 +67,7 @@ export class ElectronHistoryManagerProxy implements IHistoryManager {
     modelKey: string;
     templateId: string;
   }): Promise<PromptRecordChain> {
-    // 自动序列化，防止Vue响应式对象IPC传递错误
+    // Serialize automatically to prevent errors when Vue reactive objects are passed over IPC
     const safeParams = safeSerializeForIPC(params);
     return this.electronAPI.history.addIteration(safeParams);
   }
@@ -76,36 +76,36 @@ export class ElectronHistoryManagerProxy implements IHistoryManager {
     return this.electronAPI.history.deleteChain(chainId);
   }
 
-  // 实现 IImportExportable 接口
+  // Implement the IImportExportable interface
 
   /**
-   * 导出所有历史记录
+   * Export all history records
    */
   async exportData(): Promise<PromptRecord[]> {
     return (this.electronAPI as any).history.exportData();
   }
 
   /**
-   * 导入历史记录
+   * Import history records
    */
   async importData(data: any): Promise<void> {
-    // 自动序列化，防止Vue响应式对象IPC传递错误
+    // Serialize automatically to prevent errors when Vue reactive objects are passed over IPC
     const safeData = safeSerializeForIPC(data);
     return (this.electronAPI as any).history.importData(safeData);
   }
 
   /**
-   * 获取数据类型标识
+   * Get the data type identifier
    */
   async getDataType(): Promise<string> {
     return (this.electronAPI as any).history.getDataType();
   }
 
   /**
-   * 验证历史记录数据格式
+   * Validate the history record data format
    */
   async validateData(data: any): Promise<boolean> {
-    // 自动序列化，防止Vue响应式对象IPC传递错误
+    // Serialize automatically to prevent errors when Vue reactive objects are passed over IPC
     const safeData = safeSerializeForIPC(data);
     return (this.electronAPI as any).history.validateData(safeData);
   }

@@ -29,13 +29,13 @@ export class ElectronPromptServiceProxy implements IPromptService {
   }
 
   async optimizePrompt(request: OptimizationRequest): Promise<string> {
-    // 自动序列化，防止Vue响应式对象IPC传递错误
+    // Serialize automatically to prevent errors when Vue reactive objects are passed over IPC
     const safeRequest = safeSerializeForIPC(request);
     return this.api.optimizePrompt(safeRequest);
   }
 
   async optimizeMessage(request: MessageOptimizationRequest): Promise<string> {
-    // 自动序列化，防止Vue响应式对象IPC传递错误
+    // Serialize automatically to prevent errors when Vue reactive objects are passed over IPC
     const safeRequest = safeSerializeForIPC(request);
     return this.api.optimizeMessage(safeRequest);
   }
@@ -76,13 +76,13 @@ export class ElectronPromptServiceProxy implements IPromptService {
   // Streaming methods are complex over IPC and are not implemented in the proxy for now.
   // They would require event-based communication rather than a simple invoke/handle.
   async optimizePromptStream(request: OptimizationRequest, callbacks: StreamHandlers): Promise<void> {
-    // 自动序列化，防止Vue响应式对象IPC传递错误
+    // Serialize automatically to prevent errors when Vue reactive objects are passed over IPC
     const safeRequest = safeSerializeForIPC(request);
     await this.api.optimizePromptStream(safeRequest, callbacks);
   }
 
   async optimizeMessageStream(request: MessageOptimizationRequest, callbacks: StreamHandlers): Promise<void> {
-    // 自动序列化，防止Vue响应式对象IPC传递错误
+    // Serialize automatically to prevent errors when Vue reactive objects are passed over IPC
     const safeRequest = safeSerializeForIPC(request);
     await this.api.optimizeMessageStream(safeRequest, callbacks);
   }
@@ -118,7 +118,7 @@ export class ElectronPromptServiceProxy implements IPromptService {
     request: CustomConversationRequest,
     callbacks: StreamHandlers
   ): Promise<void> {
-    // 自动序列化，防止Vue响应式对象IPC传递错误
+    // Serialize automatically to prevent errors when Vue reactive objects are passed over IPC
     const safeRequest = safeSerializeForIPC(request);
     await this.api.testCustomConversationStream(safeRequest, callbacks);
   }

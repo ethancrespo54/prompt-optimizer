@@ -1,5 +1,5 @@
 /**
- * 评估模板 - 基础模式/系统提示词
+ * Evaluation templates - basic mode / system prompt
  */
 
 export { template as evaluationBasicSystemOriginal } from './evaluation-original';

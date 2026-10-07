@@ -19,7 +19,7 @@ import { TypeMapper } from './type-mapper';
 import { TagTypeConverter } from './type-converter';
 
 /**
- * 收藏管理器实现
+ * Favorites manager implementation
  */
 export class FavoriteManager implements IFavoriteManager {
   private readonly STORAGE_KEYS = {
@@ -32,85 +32,85 @@ export class FavoriteManager implements IFavoriteManager {
   private initPromise: Promise<void>;
   private initialized = false;
   /**
-   * 初始化状态标志
-   * - 'pending': 初始化尚未开始
-   * - 'initializing': 正在初始化中
-   * - 'initialized': 初始化已完成
+   * Initialization state flag
+   * - 'pending': initialization has not started
+   * - 'initializing': initialization in progress
+   * - 'initialized': initialization complete
    */
   private initState: 'pending' | 'initializing' | 'initialized' = 'pending';
 
   constructor(private storageProvider: IStorageProvider) {
-    // 立即开始异步初始化
+    // Start async initialization immediately
     this.initPromise = this.initialize();
   }
 
   /**
-   * 显式初始化方法
-   * 确保默认分类和数据迁移都完成
+   * Explicit initialization method
+   * Ensures both default categories and data migration are complete
    */
   private async initialize(): Promise<void> {
     if (this.initialized) return;
 
     try {
       this.initState = 'initializing';
-      // ❌ 移除自动创建默认分类 - 改由 UI 层调用 ensureDefaultCategories
+      // ❌ Removed automatic creation of default categories - the UI layer now calls ensureDefaultCategories
       // await this.initializeDefaultCategories();
       await this.migrateLegacyData();
       this.initialized = true;
       this.initState = 'initialized';
     } catch (error) {
-      console.error('[FavoriteManager] 初始化失败:', error);
-      // 即使初始化失败,也标记为已初始化,避免阻塞后续操作
+      console.error('[FavoriteManager] Initialization failed:', error);
+      // Even if initialization fails, mark it as initialized to avoid blocking subsequent operations
       this.initialized = true;
       this.initState = 'initialized';
     }
   }
 
   /**
-   * 确保初始化完成
-   * 所有公共方法都应该先调用这个方法
+   * Ensure initialization is complete
+   * All public methods should call this first
    *
-   * 🔒 死锁防护:
-   * 如果当前正在初始化中,直接返回而不等待,允许初始化逻辑调用自身方法
+   * 🔒 Deadlock protection:
+   * If initialization is currently in progress, return directly without waiting, allowing the initialization logic to call its own methods
    */
   private async ensureInitialized(): Promise<void> {
-    // 如果正在初始化中,直接返回,避免死锁
+    // If initialization is in progress, return directly to avoid deadlock
     if (this.initState === 'initializing') {
       return;
     }
 
-    // 否则等待初始化完成
+    // Otherwise wait for initialization to complete
     await this.initPromise;
   }
 
   /**
-   * 迁移旧数据
-   * 为不包含 functionMode 的旧收藏添加默认值
+   * Migrate legacy data
+   * Add default values to legacy favorites that lack functionMode
    */
   private async migrateLegacyData(): Promise<void> {
     try {
       let migrated = false;
 
       await this.storageProvider.updateData(this.STORAGE_KEYS.FAVORITES, (favorites: any[] | null) => {
-        // 如果没有数据，返回空数组
+        // If there is no data, return an empty array
         if (!favorites || favorites.length === 0) return favorites || [];
 
         const migratedFavorites = favorites.map((favorite: any) => {
-          // 检查是否为旧数据 (没有 functionMode 字段)
+          // Check whether this is legacy data (no functionMode field)
           if (!favorite.functionMode) {
             migrated = true;
 
-            // 移除已废弃的 isPublic 字段
+            // Remove the deprecated isPublic field
             const { isPublic, originalContent, ...rest } = favorite;
 
-            // 添加新的必需字段
+            // Add the new required fields
             return {
               ...rest,
-              functionMode: 'basic',  // 默认为基础模式
-              optimizationMode: 'system',  // 默认为系统优化模式
+              functionMode: 'basic',  // Defaults to basic mode
+              optimizationMode: 'system',  // Defaults to system optimization mode
               metadata: {
                 ...(favorite.metadata || {}),
-                // 如果存在 originalContent,迁移到 metadata 中
+                // If originalContent exists, migrate it into metadata
                 ...(originalContent ? { originalContent } : {})
               }
             };
@@ -123,9 +123,9 @@ export class FavoriteManager implements IFavoriteManager {
       });
 
       if (migrated) {
-        // 迁移后更新统计信息
+        // Update statistics after migration
         await this.updateStats();
-        console.info('[FavoriteManager] 数据迁移完成，已更新收藏项格式');
+        console.info('[FavoriteManager] Data migration complete, favorite item format updated');
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
@@ -134,15 +134,15 @@ export class FavoriteManager implements IFavoriteManager {
         error instanceof Error ? error : undefined
       );
       console.warn('[FavoriteManager]', migrationError);
-      // 迁移失败不应该阻止服务初始化，仅记录警告
+      // A migration failure should not block service initialization; only log a warning
     }
   }
 
   /**
-   * 确保默认分类存在(仅首次)
-   * 由 UI 层调用,传入国际化后的分类配置
+   * Ensure default categories exist (first time only)
+   * Called by the UI layer, passing in the internationalized category config
    *
-   * @param defaultCategories 默认分类配置数组
+   * @param defaultCategories Array of default category configs
    */
   async ensureDefaultCategories(
     defaultCategories: Array<{
@@ -154,17 +154,17 @@ export class FavoriteManager implements IFavoriteManager {
     await this.ensureInitialized();
 
     try {
-      // ✅ 检查是否已初始化过默认分类
+      // ✅ Check whether default categories have already been initialized
       const hasInitialized = await this.storageProvider.getItem('favorite_categories_initialized');
       if (hasInitialized === 'true') {
-        return; // 已经初始化过,即使用户删光了也不再自动创建
+        return; // Already initialized; do not auto-create again even if the user deleted them all
       }
 
-      // ✅ 检查是否已有分类
+      // ✅ Check whether categories already exist
       const existingCategories = await this.getCategories();
 
       if (existingCategories.length === 0) {
-        // ✅ 首次使用,创建默认分类
+        // ✅ First use: create default categories
         for (let i = 0; i < defaultCategories.length; i++) {
           const category = defaultCategories[i];
           await this.addCategory({
@@ -175,28 +175,28 @@ export class FavoriteManager implements IFavoriteManager {
           });
         }
 
-        // ✅ 标记已初始化
+        // ✅ Mark as initialized
         await this.storageProvider.setItem('favorite_categories_initialized', 'true');
       }
     } catch (error) {
-      console.warn('[FavoriteManager] 确保默认分类失败:', error);
+      console.warn('[FavoriteManager] Failed to ensure default categories:', error);
     }
   }
 
   async addFavorite(favorite: Omit<FavoritePrompt, 'id' | 'createdAt' | 'updatedAt' | 'useCount'>): Promise<string> {
     await this.ensureInitialized();
 
-    // 验证输入
+    // Validate input
     if (!favorite.content?.trim()) {
       throw new FavoriteValidationError('Prompt content cannot be empty');
     }
 
-    // 验证 functionMode 必填
+    // Validate that functionMode is provided
     if (!favorite.functionMode) {
       throw new FavoriteValidationError('Function mode (functionMode) cannot be empty');
     }
 
-    // 验证功能模式分类的完整性
+    // Validate the completeness of function-mode categories
     if (favorite.functionMode === 'basic' || favorite.functionMode === 'context') {
       if (!favorite.optimizationMode) {
         throw new FavoriteValidationError(`${favorite.functionMode} mode must specify optimizationMode`);
@@ -235,8 +235,8 @@ export class FavoriteManager implements IFavoriteManager {
     try {
       await this.storageProvider.updateData(this.STORAGE_KEYS.FAVORITES, (favorites: FavoritePrompt[] | null) => {
         const favoritesList = favorites || [];
-        // 🔧 移除重复内容检查 - 允许收藏相同内容但属性不同的提示词
-        // 用户可能需要��同一内容设置不同的标题、分类、标签等
+        // 🔧 Removed duplicate content check - allow favoriting the same content with different attributes
+        // Users may need to set different titles, categories, tags, etc. for the same content
         return [...favoritesList, newFavorite];
       });
 
@@ -266,7 +266,7 @@ export class FavoriteManager implements IFavoriteManager {
       const favorites = await this.storageProvider.getItem(this.STORAGE_KEYS.FAVORITES);
       let favoritesList: FavoritePrompt[] = favorites ? JSON.parse(favorites) : [];
 
-      // 过滤
+      // Filter
       if (options.categoryId) {
         favoritesList = favoritesList.filter(f => f.category === options.categoryId);
       }
@@ -286,7 +286,7 @@ export class FavoriteManager implements IFavoriteManager {
         );
       }
 
-      // 排序
+      // Sort
       const sortBy = options.sortBy || 'updatedAt';
       const sortOrder = options.sortOrder || 'desc';
 
@@ -306,7 +306,7 @@ export class FavoriteManager implements IFavoriteManager {
         }
       });
 
-      // 分页
+      // Paginate
       if (options.offset) {
         favoritesList = favoritesList.slice(options.offset);
       }
@@ -421,8 +421,8 @@ export class FavoriteManager implements IFavoriteManager {
     try {
       await this.updateFavorite(id, { useCount: (await this.getFavorite(id)).useCount + 1 });
     } catch (error) {
-      // 静默处理使用次数增加失败，不影响主要功能
-      console.warn('增加使用次数失败:', error);
+      // Silently handle usage-count increment failures; they do not affect the main functionality
+      console.warn('Failed to increment usage count:', error);
     }
   }
 
@@ -458,7 +458,7 @@ export class FavoriteManager implements IFavoriteManager {
     try {
       await this.storageProvider.updateData(this.STORAGE_KEYS.CATEGORIES, (categories: FavoriteCategory[] | null) => {
         const categoriesList = categories || [];
-        // 检查是否已存在同名分类
+        // Check whether a category with the same name already exists
         const existing = categoriesList.find(c => c.name === category.name);
         if (existing) {
           throw new FavoriteValidationError(`Category already exists: ${category.name}`);
@@ -502,29 +502,29 @@ export class FavoriteManager implements IFavoriteManager {
   }
 
   /**
-   * 删除分类
-   * 会自动清空该分类下所有收藏的分类字段
+   * Delete category
+   * Automatically clears the category field of all favorites under this category
    *
-   * @param id 分类ID
-   * @returns 受影响的收藏数量
+   * @param id Category ID
+   * @returns Number of affected favorites
    */
   async deleteCategory(id: string): Promise<number> {
     await this.ensureInitialized();
 
     try {
-      // ✅ 获取该分类下的所有收藏
+      // ✅ Get all favorites under this category
       const allFavorites = await this.getFavorites();
       const favoritesInCategory = allFavorites.filter(f => f.category === id);
 
-      // ✅ 清空这些收藏的分类字段(不依赖"未分类"是否存在)
+      // ✅ Clear the category field of these favorites (does not depend on whether "Uncategorized" exists)
       for (const favorite of favoritesInCategory) {
         await this.updateFavorite(favorite.id, {
           ...favorite,
-          category: undefined // 清空分类
+          category: undefined // Clear category
         });
       }
 
-      // ✅ 删除分类
+      // ✅ Delete category
       await this.storageProvider.updateData(this.STORAGE_KEYS.CATEGORIES, (categories: FavoriteCategory[] | null) => {
         const categoriesList = categories || [];
         const index = categoriesList.findIndex(c => c.id === id);
@@ -552,7 +552,7 @@ export class FavoriteManager implements IFavoriteManager {
         return JSON.parse(stats);
       }
 
-      // 如果没有缓存的统计数据，计算并缓存
+      // If there is no cached statistics data, compute and cache it
       return await this.updateStats();
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
@@ -588,11 +588,11 @@ export class FavoriteManager implements IFavoriteManager {
       lastUsedAt: Math.max(...favorites.map(f => f.updatedAt), 0)
     };
 
-    // 缓存统计数据
+    // Cache the statistics data
     try {
       await this.storageProvider.setItem(this.STORAGE_KEYS.STATS, JSON.stringify(stats));
     } catch (error) {
-      console.warn('缓存统计数据失败:', error);
+      console.warn('Failed to cache statistics data:', error);
     }
 
     return stats;
@@ -612,7 +612,7 @@ export class FavoriteManager implements IFavoriteManager {
   }
 
   /**
-   * 获取独立标签库中的所有标签名称
+   * Get all tag names from the standalone tag library
    * @private
    */
   private async getAllIndependentTags(): Promise<string[]> {
@@ -621,7 +621,7 @@ export class FavoriteManager implements IFavoriteManager {
       const independentTags: FavoriteTag[] = storedTags ? JSON.parse(storedTags) : [];
       return independentTags.map(t => t.tag);
     } catch (error) {
-      console.warn('获取独立标签失败:', error);
+      console.warn('Failed to get standalone tags:', error);
       return [];
     }
   }
@@ -644,7 +644,7 @@ export class FavoriteManager implements IFavoriteManager {
         exportDate: new Date().toISOString(),
         favorites,
         categories,
-        tags  // 导出独立标签库（包含所有标签：使用中的 + 预创建的）
+        tags  // Export the standalone tag library (includes all tags: in use + pre-created)
       };
 
       return JSON.stringify(exportData, null, 2);
@@ -658,16 +658,16 @@ export class FavoriteManager implements IFavoriteManager {
   }
 
   /**
-   * 计算标签使用统计
+   * Compute tag usage statistics
    * @private
-   * @returns 包含标签名和使用次数的 Map
+   * @returns Map containing tag names and usage counts
    */
   private async computeTagCounts(): Promise<Map<string, number>> {
-    // 1. 获取独立标签
+    // 1. Get standalone tags
     const storedTags = await this.storageProvider.getItem(this.STORAGE_KEYS.TAGS);
     const independentTags: FavoriteTag[] = storedTags ? JSON.parse(storedTags) : [];
 
-    // 2. 统计收藏项中使用的标签
+    // 2. Count tags used in favorite items
     const favorites = await this.getFavorites();
     const tagCounts = new Map<string, number>();
 
@@ -677,8 +677,8 @@ export class FavoriteManager implements IFavoriteManager {
       });
     });
 
-    // 3. 合并独立标签和使用中的标签
-    // 独立标签如果未被使用，count 为 0
+    // 3. Merge standalone tags and tags in use
+    // Standalone tags that are not used have a count of 0
     independentTags.forEach(({ tag }) => {
       if (!tagCounts.has(tag)) {
         tagCounts.set(tag, 0);
@@ -692,14 +692,14 @@ export class FavoriteManager implements IFavoriteManager {
     try {
       const tagCounts = await this.computeTagCounts();
 
-      // 返回排序后的结果（使用次数降序，相同次数按标签名升序）
+      // Return sorted results (usage count descending, ties by tag name ascending)
       return Array.from(tagCounts.entries())
         .map(([tag, count]) => ({ tag, count }))
         .sort((a, b) => {
           if (b.count !== a.count) {
-            return b.count - a.count; // 按使用次数降序
+            return b.count - a.count; // Descending by usage count
           }
-          return TagTypeConverter.compareTagNames(a.tag, b.tag); // 相同次数按标签名升序
+          return TagTypeConverter.compareTagNames(a.tag, b.tag); // Ties ascending by tag name
         });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
@@ -721,10 +721,10 @@ export class FavoriteManager implements IFavoriteManager {
       await this.storageProvider.updateData(this.STORAGE_KEYS.TAGS, (tags: FavoriteTag[] | null) => {
         const tagsList = tags || [];
 
-        // 检查是否已存在
+        // Check whether it already exists
         const existing = tagsList.find(t => t.tag === trimmedTag);
         if (existing) {
-          // 标签已存在，保持幂等，不再抛错
+          // The tag already exists; stay idempotent and do not throw
           return tagsList;
         }
 
@@ -738,7 +738,7 @@ export class FavoriteManager implements IFavoriteManager {
         return [...tagsList, newTag];
       });
 
-      // 仅在新增标签时更新统计信息
+      // Only update statistics when a new tag is added
       if (added) {
         await this.updateStats();
       }
@@ -760,34 +760,34 @@ export class FavoriteManager implements IFavoriteManager {
     }
 
     if (oldTag === newTag) {
-      return 0; // 无需操作
+      return 0; // Nothing to do
     }
 
     let affectedCount = 0;
     let oldTagExistedInIndependentLib = false;
 
     try {
-      // 1. 更新独立标签库:删除旧标签,记录是否存在
+      // 1. Update the standalone tag library: delete the old tag and record whether it existed
       await this.storageProvider.updateData(this.STORAGE_KEYS.TAGS, (tags: FavoriteTag[] | null) => {
         const tagsList = tags || [];
 
-        // 检查旧标签是否存在
+        // Check whether the old tag exists
         oldTagExistedInIndependentLib = tagsList.some(t => t.tag === oldTag);
 
-        // 删除旧标签
+        // Delete the old tag
         return tagsList.filter(t => t.tag !== oldTag);
       });
 
-      // 2. 更新收藏列表中的标签
+      // 2. Update the tags in the favorites list
       await this.storageProvider.updateData(this.STORAGE_KEYS.FAVORITES, (favorites: FavoritePrompt[] | null) => {
         const favoritesList = favorites || [];
 
         favoritesList.forEach(favorite => {
           const oldTagIndex = favorite.tags.indexOf(oldTag);
           if (oldTagIndex !== -1) {
-            // 移除旧标签
+            // Remove the old tag
             favorite.tags.splice(oldTagIndex, 1);
-            // 添加新标签(如果不存在)
+            // Add the new tag (if it does not exist)
             if (!favorite.tags.includes(newTag)) {
               favorite.tags.push(newTag);
             }
@@ -799,12 +799,12 @@ export class FavoriteManager implements IFavoriteManager {
         return favoritesList;
       });
 
-      // 3. 只有当旧标签存在于独立库或被收藏使用时,才添加新标签到独立库
+      // 3. Only add the new tag to the standalone library if the old tag existed in the library or was used by favorites
       if (oldTagExistedInIndependentLib || affectedCount > 0) {
         await this.storageProvider.updateData(this.STORAGE_KEYS.TAGS, (tags: FavoriteTag[] | null) => {
           const tagsList = tags || [];
 
-          // 添加新标签(如果不存在)
+          // Add the new tag (if it does not exist)
           const hasNewTag = tagsList.some(t => t.tag === newTag);
           if (!hasNewTag) {
             tagsList.push({
@@ -837,14 +837,14 @@ export class FavoriteManager implements IFavoriteManager {
     let affectedCount = 0;
 
     try {
-      // 1. 更新独立标签库:删除所有源标签,确保目标标签存在
+      // 1. Update the standalone tag library: delete all source tags and make sure the target tag exists
       await this.storageProvider.updateData(this.STORAGE_KEYS.TAGS, (tags: FavoriteTag[] | null) => {
         const tagsList = tags || [];
 
-        // 删除所有源标签
+        // Delete all source tags
         const filteredTags = tagsList.filter(t => !sourceTags.includes(t.tag));
 
-        // 确保目标标签存在
+        // Make sure the target tag exists
         const hasTargetTag = filteredTags.some(t => t.tag === targetTag);
         if (!hasTargetTag) {
           filteredTags.push({
@@ -856,14 +856,14 @@ export class FavoriteManager implements IFavoriteManager {
         return filteredTags;
       });
 
-      // 2. 更新收藏列表中的标签
+      // 2. Update the tags in the favorites list
       await this.storageProvider.updateData(this.STORAGE_KEYS.FAVORITES, (favorites: FavoritePrompt[] | null) => {
         const favoritesList = favorites || [];
 
         favoritesList.forEach(favorite => {
           let hasSourceTag = false;
 
-          // 移除所有源标签
+          // Remove all source tags
           sourceTags.forEach(sourceTag => {
             const index = favorite.tags.indexOf(sourceTag);
             if (index !== -1) {
@@ -872,7 +872,7 @@ export class FavoriteManager implements IFavoriteManager {
             }
           });
 
-          // 如果存在源标签,添加目标标签(如果不存在)
+          // If any source tag exists, add the target tag (if it does not exist)
           if (hasSourceTag) {
             if (!favorite.tags.includes(targetTag)) {
               favorite.tags.push(targetTag);
@@ -901,13 +901,13 @@ export class FavoriteManager implements IFavoriteManager {
     let affectedCount = 0;
 
     try {
-      // 1. 从独立标签中删除
+      // 1. Delete from the standalone tags
       await this.storageProvider.updateData(this.STORAGE_KEYS.TAGS, (tags: FavoriteTag[] | null) => {
         const tagsList = tags || [];
         return tagsList.filter(t => t.tag !== tag);
       });
 
-      // 2. 从所有收藏项中删除
+      // 2. Delete from all favorite items
       await this.storageProvider.updateData(this.STORAGE_KEYS.FAVORITES, (favorites: FavoritePrompt[] | null) => {
         const favoritesList = favorites || [];
 
@@ -940,11 +940,11 @@ export class FavoriteManager implements IFavoriteManager {
       await this.storageProvider.updateData(this.STORAGE_KEYS.CATEGORIES, (categories: FavoriteCategory[] | null) => {
         const categoriesList = categories || [];
 
-        // 创建ID到分类的映射
+        // Create an ID-to-category map
         const categoryMap = new Map<string, FavoriteCategory>();
         categoriesList.forEach(cat => categoryMap.set(cat.id, cat));
 
-        // 按提供的ID顺序重新排序,并更新sortOrder
+        // Reorder by the provided ID order and update sortOrder
         const reorderedCategories: FavoriteCategory[] = [];
         categoryIds.forEach((id, index) => {
           const category = categoryMap.get(id);
@@ -957,7 +957,7 @@ export class FavoriteManager implements IFavoriteManager {
           }
         });
 
-        // 将未在ID列表中的分类追加到末尾
+        // Append categories not in the ID list to the end
         categoryMap.forEach(category => {
           reorderedCategories.push({
             ...category,
@@ -1002,7 +1002,7 @@ export class FavoriteManager implements IFavoriteManager {
       if (!importData.favorites || !Array.isArray(importData.favorites)) {
         throw new FavoriteValidationError('Invalid import data format');
       }
-      // 预处理分类：避免重复获取
+      // Preprocess categories: avoid repeated fetching
       if (importData.categories && Array.isArray(importData.categories)) {
         const existingCategories = await this.getCategories();
         const existingCategoryIds = new Set(existingCategories.map(c => c.id));
@@ -1030,7 +1030,7 @@ export class FavoriteManager implements IFavoriteManager {
         }
       }
 
-      // 预处理独立标签：一次性合并，避免重复刷新统计
+      // Preprocess standalone tags: merge once to avoid repeated statistics refreshes
       if (importData.tags && Array.isArray(importData.tags) && importData.tags.length > 0) {
         const tagsToMerge = new Set<string>();
         importData.tags.forEach((tag: unknown) => {
@@ -1178,7 +1178,7 @@ export class FavoriteManager implements IFavoriteManager {
                 result.imported++;
                 return;
               }
-              // merge 策略 fallthrough 到新增逻辑
+              // The merge strategy falls through to the add logic
             }
 
             const id = generateId(favorite.id);

@@ -1,13 +1,13 @@
 /**
  * Evaluation service error classes
- * 评估服务错误类
+ * Evaluation service error classes
  */
 
 import { EVALUATION_ERROR_CODES, type ErrorParams } from '../../constants/error-codes';
 
 /**
  * Base error class for evaluation service
- * 评估服务基础错误类
+ * Base error class for the evaluation service
  */
 export class EvaluationError extends Error {
   public readonly code: string;
@@ -28,7 +28,7 @@ export class EvaluationError extends Error {
 
 /**
  * Evaluation request validation error
- * 评估请求验证错误
+ * Evaluation request validation error
  */
 export class EvaluationValidationError extends EvaluationError {
   constructor(message: string) {
@@ -39,7 +39,7 @@ export class EvaluationValidationError extends EvaluationError {
 
 /**
  * Evaluation model error (model does not exist or is misconfigured)
- * 评估模型错误（模型不存在或配置错误）
+ * Evaluation model error (model does not exist or is misconfigured)
  */
 export class EvaluationModelError extends EvaluationError {
   constructor(modelKey: string) {
@@ -50,7 +50,7 @@ export class EvaluationModelError extends EvaluationError {
 
 /**
  * Evaluation template error (template does not exist)
- * 评估模板错误（模板不存在）
+ * Evaluation template error (template does not exist)
  */
 export class EvaluationTemplateError extends EvaluationError {
   constructor(templateId: string) {
@@ -61,7 +61,7 @@ export class EvaluationTemplateError extends EvaluationError {
 
 /**
  * Evaluation parse error (cannot parse LLM evaluation result)
- * 评估解析错误（无法解析 LLM 返回的评估结果）
+ * Evaluation parse error (unable to parse the evaluation result returned by the LLM)
  */
 export class EvaluationParseError extends EvaluationError {
   constructor(message: string) {
@@ -72,7 +72,7 @@ export class EvaluationParseError extends EvaluationError {
 
 /**
  * Evaluation execution error (LLM call failed, etc.)
- * 评估执行错误（LLM 调用失败等）
+ * Evaluation execution error (LLM call failed, etc.)
  */
 export class EvaluationExecutionError extends EvaluationError {
   constructor(message: string, public readonly cause?: Error) {

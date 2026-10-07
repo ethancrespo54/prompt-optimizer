@@ -11,25 +11,25 @@ import type {
 import { IMAGE_ERROR_CODES } from '../../../constants/error-codes'
 
 /**
- * ModelScope (魔搭) 图像生成适配器
+ * ModelScope image generation adapter
  *
- * API 端点: https://api-inference.modelscope.cn/v1/images/generations
- * 免费额度: 每天 2000 次调用
- * 文档: https://modelscope.cn/docs/model-service/API-Inference/intro
+ * API endpoint: https://api-inference.modelscope.cn/v1/images/generations
+ * Free quota: 2000 calls per day
+ * Docs: https://modelscope.cn/docs/model-service/API-Inference/intro
  *
- * 支持的模型：
- * - Tongyi-MAI/Z-Image-Turbo: 6B 参数高效图像生成模型（已验证可用）
- * - 其他模型请访问 ModelScope 文档查看当前支持列表
- * - 可以通过 buildDefaultModel() 创建任意模型 ID 的配置进行测试
+ * Supported models:
+ * - Tongyi-MAI/Z-Image-Turbo: 6B-parameter efficient image generation model (verified working)
+ * - For other models, see the ModelScope docs for the current supported list
+ * - Use buildDefaultModel() to create a config for any model ID for testing
  *
- * 环境变量支持:
- * - MODELSCOPE_API_KEY: SDK Token (Docker 环境，无 VITE_ 前缀)
- * - VITE_MODELSCOPE_API_KEY: SDK Token (开发环境，Vite 构建)
+ * Environment variable support:
+ * - MODELSCOPE_API_KEY: SDK Token (Docker environment, no VITE_ prefix)
+ * - VITE_MODELSCOPE_API_KEY: SDK Token (development environment, Vite build)
  */
 export class ModelScopeImageAdapter extends AbstractImageProviderAdapter {
   protected normalizeBaseUrl(base: string): string {
     const trimmed = base.replace(/\/$/, '')
-    // 确保 URL 以 /v1 结尾
+    // Ensure the URL ends with /v1
     return /\/v1$/.test(trimmed) ? trimmed : `${trimmed}/v1`
   }
 
@@ -37,7 +37,7 @@ export class ModelScopeImageAdapter extends AbstractImageProviderAdapter {
     return {
       id: 'modelscope',
       name: 'ModelScope',
-      description: 'ModelScope 魔搭社区图像生成服务，每天免费 2000 次调用',
+      description: 'ModelScope community image generation service, 2000 free calls per day',
       corsRestricted: true,
       requiresApiKey: true,
       defaultBaseURL: 'https://api-inference.modelscope.cn/v1',
@@ -58,7 +58,7 @@ export class ModelScopeImageAdapter extends AbstractImageProviderAdapter {
       {
         id: 'Tongyi-MAI/Z-Image-Turbo',
         name: 'Z-Image-Turbo',
-        description: 'Z-Image-Turbo 6B 参数高效图像生成模型，擅长人像生成和快速出图（10步以内）',
+        description: 'Z-Image-Turbo 6B-parameter efficient image generation model, strong at portraits and fast generation (within 10 steps)',
         providerId: 'modelscope',
         capabilities: {
           text2image: true,
@@ -99,7 +99,7 @@ export class ModelScopeImageAdapter extends AbstractImageProviderAdapter {
   protected getTestImageRequest(testType: 'text2image' | 'image2image'): Omit<ImageRequest, 'configId'> {
     if (testType === 'text2image') {
       return {
-        prompt: '一朵简单的红色花朵',
+        prompt: 'A simple red flower',
         count: 1
       }
     }
@@ -119,7 +119,7 @@ export class ModelScopeImageAdapter extends AbstractImageProviderAdapter {
   }
 
   protected async doGenerate(request: ImageRequest, config: ImageModelConfig): Promise<ImageResult> {
-    // ModelScope 适配器仅支持文生图
+    // The ModelScope adapter only supports text-to-image
     if (request.inputImage) {
       throw new ImageError(IMAGE_ERROR_CODES.MODEL_NOT_SUPPORT_IMAGE2IMAGE, undefined, { modelName: config.modelId })
     }
@@ -142,13 +142,13 @@ export class ModelScopeImageAdapter extends AbstractImageProviderAdapter {
       n: merged.n || request.count || 1
     }
 
-    // 提交异步任务
+    // Submit the async task
     const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${config.connectionConfig?.apiKey}`,
         'Content-Type': 'application/json',
-        'X-ModelScope-Async-Mode': 'true' // 异步模式
+        'X-ModelScope-Async-Mode': 'true' // Async mode
       },
       body: JSON.stringify(payload)
     })
@@ -161,7 +161,7 @@ export class ModelScopeImageAdapter extends AbstractImageProviderAdapter {
           errorMessage = errorData.message || errorData.error.message
         }
       } catch {
-        // 忽略 JSON 解析错误
+        // Ignore JSON parse errors
       }
       throw new ImageError(IMAGE_ERROR_CODES.GENERATION_FAILED, errorMessage)
     }
@@ -173,12 +173,12 @@ export class ModelScopeImageAdapter extends AbstractImageProviderAdapter {
       throw new ImageError(IMAGE_ERROR_CODES.GENERATION_FAILED, 'No task_id received from ModelScope API')
     }
 
-    // 轮询任务状态
+    // Poll the task status
     return await this.pollTaskResult(taskId, config, 120, 3000)
   }
 
   /**
-   * 轮询任务结果
+   * Poll for the task result
    */
   private async pollTaskResult(
     taskId: string,
@@ -200,7 +200,7 @@ export class ModelScopeImageAdapter extends AbstractImageProviderAdapter {
       })
 
       if (!response.ok) {
-        // 尝试解析错误响应体以提供更详细的错误信息
+        // Try to parse the error response body to provide more detailed error info
         let errorMessage = `${response.status} ${response.statusText}`
         try {
           const errorData = await response.json()
@@ -208,7 +208,7 @@ export class ModelScopeImageAdapter extends AbstractImageProviderAdapter {
             errorMessage = errorData.error || errorData.message
           }
         } catch {
-          // 如果无法解析 JSON，使用默认错误信息
+          // If the JSON cannot be parsed, use the default error message
         }
         throw new ImageError(IMAGE_ERROR_CODES.GENERATION_FAILED, `Failed to poll task status: ${errorMessage}`)
       }
@@ -217,7 +217,7 @@ export class ModelScopeImageAdapter extends AbstractImageProviderAdapter {
       const status = data.task_status
 
       if (status === 'SUCCEED') {
-        // 任务成功，解析结果
+        // Task succeeded, parse the result
         const outputImages = data.output_images || []
         if (outputImages.length === 0) {
           throw new ImageError(IMAGE_ERROR_CODES.INVALID_RESPONSE_FORMAT)
@@ -238,14 +238,14 @@ export class ModelScopeImageAdapter extends AbstractImageProviderAdapter {
           }
         }
       } else if (status === 'FAILED' || status === 'ERROR' || status === 'CANCELLED' || status === 'CANCELED') {
-        // 任务失败或被取消，提取错误信息
+        // Task failed or was cancelled, extract the error message
         const errorMessage = data.error?.message || data.error || data.message || 'Unknown error'
         throw new ImageError(IMAGE_ERROR_CODES.GENERATION_FAILED, `Task ${status.toLowerCase()}: ${errorMessage}`)
       } else if (status !== 'PENDING' && status !== 'RUNNING' && status !== 'PROCESSING') {
-        // 未知的终态，视为失败
+        // Unknown terminal state, treat as failure
         throw new ImageError(IMAGE_ERROR_CODES.GENERATION_FAILED, `Unknown task status: ${status}`)
       }
-      // task_status 为 PENDING、RUNNING 或 PROCESSING，继续轮询
+      // task_status is PENDING, RUNNING, or PROCESSING; continue polling
     }
 
     throw new ImageError(IMAGE_ERROR_CODES.GENERATION_FAILED, `Task timeout after ${maxAttempts} attempts`)

@@ -1,11 +1,11 @@
 /**
- * 上下文相关类型定义
+ * Context-related type definitions
  * 
- * 该模块定义了上下文持久化与变量管理的核心数据结构：
- * - ContextPackage: 单个上下文的完整数据包
- * - ContextStoreDoc: 单文档仓库的存储结构（包含所有上下文与当前选择）
- * - ContextRepo: 上下文仓库服务接口
- * - ContextBundle: 导入导出的数据包格式
+ * This module defines the core data structures for context persistence and variable management:
+ * - ContextPackage: the complete data package for a single context
+ * - ContextStoreDoc: the storage structure of the single-document repository (contains all contexts and the current selection)
+ * - ContextRepo: the context repository service interface
+ * - ContextBundle: the data package format for import/export
  */
 
 import type { IImportExportable } from '../../interfaces/import-export';
@@ -13,200 +13,200 @@ import type { ConversationMessage, ToolDefinition } from '../prompt/types';
 import { CONTEXT_ERROR_CODES, type ErrorParams } from '../../constants/error-codes';
 
 /**
- * 上下文模式
- * - system: 系统模式，保留完整的消息编辑能力
- * - user: 用户模式，聚焦于变量与工具管理
+ * Context mode
+ * - system: system mode, keeps full message editing capability
+ * - user: user mode, focused on variable and tool management
  */
 export type ContextMode = 'system' | 'user';
 
 /**
- * 上下文数据包
- * 包含一个完整上下文的所有信息：消息、变量覆盖、工具等
+ * Context data package
+ * Contains all information of a complete context: messages, variable overrides, tools, etc.
  */
 export interface ContextPackage {
-  /** 上下文唯一标识符 */
+  /** Unique context identifier */
   id: string;
-  /** 上下文标题 */
+  /** Context title */
   title: string;
-  /** 上下文模式 */
+  /** Context mode */
   mode: ContextMode;
-  /** 数据版本，用于未来兼容性 */
+  /** Data version, for future compatibility */
   version?: string;
-  /** 创建时间（ISO字符串） */
+  /** Creation time (ISO string) */
   createdAt: string;
-  /** 最后更新时间（ISO字符串） */
+  /** Last update time (ISO string) */
   updatedAt: string;
-  /** 对话消息列表 */
+  /** Conversation message list */
   messages: ConversationMessage[];
-  /** 变量覆盖项（仅包含上下文级覆盖，不包含全局变量） */
+  /** Variable overrides (context-level overrides only, no global variables) */
   variables: Record<string, string>;
-  /** 工具定义列表 */
+  /** Tool definition list */
   tools: ToolDefinition[];
-  /** 标签列表，用于分类和搜索 */
+  /** Tag list, used for categorization and search */
   tags?: string[];
-  /** 上下文描述 */
+  /** Context description */
   description?: string;
-  /** 元数据，用于扩展 */
+  /** Metadata, for extension */
   meta?: Record<string, any>;
 }
 
 /**
- * 上下文存储文档
- * 单文档仓库的根数据结构，包含所有上下文与当前选择
+ * Context storage document
+ * Root data structure of the single-document repository, containing all contexts and the current selection
  */
 export interface ContextStoreDoc {
-  /** 文档格式版本 */
+  /** Document format version */
   version: '1.0.0';
-  /** 当前选中的上下文ID */
+  /** Currently selected context ID */
   currentId: string;
-  /** 所有上下文的映射表 */
+  /** Map of all contexts */
   contexts: Record<string, ContextPackage>;
 }
 
 /**
- * 上下文列表项
- * 用于列表显示的精简信息
+ * Context list item
+ * Slim information used for list display
  */
 export interface ContextListItem {
-  /** 上下文ID */
+  /** Context ID */
   id: string;
-  /** 上下文标题 */
+  /** Context title */
   title: string;
-  /** 最后更新时间（ISO字符串） */
+  /** Last update time (ISO string) */
   updatedAt: string;
 }
 
 /**
- * 上下文导入导出包
- * 用于上下文集合的迁移和分享
+ * Context import/export package
+ * Used for migrating and sharing context collections
  */
 export interface ContextBundle {
-  /** 数据包类型标识 */
+  /** Data package type identifier */
   type: 'context-bundle';
-  /** 数据包版本 */
+  /** Data package version */
   version: '1.0.0';
-  /** 当前选中的上下文ID */
+  /** Currently selected context ID */
   currentId: string;
-  /** 上下文列表 */
+  /** Context list */
   contexts: ContextPackage[];
 }
 
 /**
- * 导入模式
+ * Import mode
  */
 export type ImportMode = 'replace' | 'append' | 'merge';
 
 /**
- * 导入结果统计
+ * Import result statistics
  */
 export interface ImportResult {
-  /** 成功导入的上下文数量 */
+  /** Number of contexts imported successfully */
   imported: number;
-  /** 跳过的上下文数量（格式错误等） */
+  /** Number of contexts skipped (malformed, etc.) */
   skipped: number;
-  /** 被剔除的预定义变量覆盖项数量 */
+  /** Number of predefined-variable overrides stripped */
   predefinedVariablesRemoved: number;
-  /** 生成的新ID映射（用于append模式ID冲突处理） */
+  /** Map of newly generated IDs (used for ID conflict handling in append mode) */
   idMapping?: Record<string, string>;
 }
 
 /**
- * 上下文仓库接口
- * 提供上下文的增删改查、导入导出等功能
+ * Context repository interface
+ * Provides create/read/update/delete and import/export for contexts
  */
 export interface ContextRepo extends IImportExportable {
-  // === 基础查询 ===
+  // === Basic queries ===
   /**
-   * 获取上下文列表
-   * @returns 上下文列表项数组
+   * Get the context list
+   * @returns Array of context list items
    */
   list(): Promise<ContextListItem[]>;
 
   /**
-   * 获取当前选中的上下文ID
-   * @returns 当前上下文ID
+   * Get the currently selected context ID
+   * @returns Current context ID
    */
   getCurrentId(): Promise<string>;
 
   /**
-   * 设置当前选中的上下文ID
-   * @param id 要设置的上下文ID
-   * @throws 如果指定ID不存在则抛出错误
+   * Set the currently selected context ID
+   * @param id Context ID to set
+   * @throws Throws an error if the given ID does not exist
    */
   setCurrentId(id: string): Promise<void>;
 
   /**
-   * 获取指定上下文的完整数据
-   * @param id 上下文ID
-   * @returns 上下文数据包
-   * @throws 如果指定ID不存在则抛出错误
+   * Get the complete data of the given context
+   * @param id Context ID
+   * @returns Context data package
+   * @throws Throws an error if the given ID does not exist
    */
   get(id: string): Promise<ContextPackage>;
 
-  // === 内容管理 ===
+  // === Content management ===
   /**
-   * 创建新的上下文
-   * @param meta 可选的元数据（标题、模式等）
-   * @returns 新创建的上下文ID
+   * Create a new context
+   * @param meta Optional metadata (title, mode, etc.)
+   * @returns ID of the newly created context
    */
   create(meta?: { title?: string; mode?: ContextMode }): Promise<string>;
 
   /**
-   * 复制现有上下文
-   * @param id 要复制的上下文ID
-   * @param options 可选配置，包括模式
-   * @returns 新创建的上下文ID
-   * @throws 如果源ID不存在则抛出错误
+   * Duplicate an existing context
+   * @param id ID of the context to duplicate
+   * @param options Optional config, including mode
+   * @returns ID of the newly created context
+   * @throws Throws an error if the source ID does not exist
    */
   duplicate(id: string, options?: { mode?: ContextMode }): Promise<string>;
 
   /**
-   * 重命名上下文
-   * @param id 上下文ID
-   * @param title 新标题
-   * @throws 如果指定ID不存在则抛出错误
+   * Rename the context
+   * @param id Context ID
+   * @param title New title
+   * @throws Throws an error if the given ID does not exist
    */
   rename(id: string, title: string): Promise<void>;
 
   /**
-   * 保存完整的上下文数据（覆盖模式）
-   * @param ctx 上下文数据包
+   * Save the complete context data (overwrite mode)
+   * @param ctx Context data package
    */
   save(ctx: ContextPackage): Promise<void>;
 
   /**
-   * 更新上下文的部分数据（合并模式）
-   * @param id 上下文ID
-   * @param patch 要更新的字段
-   * @throws 如果指定ID不存在则抛出错误
+   * Update part of the context data (merge mode)
+   * @param id Context ID
+   * @param patch Fields to update
+   * @throws Throws an error if the given ID does not exist
    */
   update(id: string, patch: Partial<ContextPackage>): Promise<void>;
 
   /**
-   * 删除上下文
-   * @param id 上下文ID
-   * @throws 如果指定ID不存在或为最后一个上下文则抛出错误
+   * Delete the context
+   * @param id Context ID
+   * @throws Throws an error if the given ID does not exist or it is the last context
    */
   remove(id: string): Promise<void>;
 
-  // === 导入导出 ===
+  // === Import/export ===
   /**
-   * 导出所有上下文
-   * @returns 上下文导入导出包
+   * Export all contexts
+   * @returns Context import/export package
    */
   exportAll(): Promise<ContextBundle>;
 
   /**
-   * 导入上下文集合
-   * @param bundle 上下文导入导出包
-   * @param mode 导入模式
-   * @returns 导入结果统计
+   * Import a collection of contexts
+   * @param bundle Context import/export package
+   * @param mode Import mode
+   * @returns Import result statistics
    */
   importAll(bundle: ContextBundle, mode: ImportMode): Promise<ImportResult>;
 }
 
 /**
- * 上下文服务错误类
+ * Context service error class
  */
 export class ContextError extends Error {
   public readonly code: string

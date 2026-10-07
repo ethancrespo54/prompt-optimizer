@@ -1,5 +1,5 @@
 /**
- * 提示词错误基类
+ * Base class for prompt errors
  */
 import { TEMPLATE_ERROR_CODES, type ErrorParams } from '../../constants/error-codes'
 
@@ -16,7 +16,7 @@ export class TemplateError extends Error {
 }
 
 /**
- * 提示词加载错误
+ * Prompt loading error
  */
 export class TemplateLoadError extends TemplateError {
   constructor(
@@ -32,7 +32,7 @@ export class TemplateLoadError extends TemplateError {
 }
 
 /**
- * 提示词验证错误
+ * Prompt validation error
  */
 export class TemplateValidationError extends TemplateError {
   constructor(details?: string) {
@@ -42,7 +42,7 @@ export class TemplateValidationError extends TemplateError {
 }
 
 /**
- * 提示词缓存错误
+ * Prompt cache error
  */
 export class TemplateCacheError extends TemplateError {
   constructor(details?: string) {
@@ -52,7 +52,7 @@ export class TemplateCacheError extends TemplateError {
 }
 
 /**
- * 提示词存储错误
+ * Prompt storage error
  */
 export class TemplateStorageError extends TemplateError {
   constructor(details?: string) {

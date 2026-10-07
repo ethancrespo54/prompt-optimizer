@@ -1,5 +1,5 @@
 /*
- * Prompt Optimizer - AI提示词优化工具
+ * Prompt Optimizer - AI prompt optimization tool
  * Copyright (C) 2025 linshenkx
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,7 +17,7 @@
 
 // Core package entry point
 
-// 导出模板相关
+// Export template-related
 export { TemplateManager, createTemplateManager } from './services/template/manager'
 export { TemplateProcessor } from './services/template/processor'
 export { TemplateLanguageService, createTemplateLanguageService } from './services/template/languageService'
@@ -29,13 +29,13 @@ export { ElectronTemplateManagerProxy } from './services/template/electron-proxy
 export { ElectronTemplateLanguageServiceProxy } from './services/template/electron-language-proxy'
 export { ALL_TEMPLATES } from './services/template/default-templates'
 
-// 导出历史记录相关
+// Export history-related
 export { HistoryManager, createHistoryManager } from './services/history/manager'
 export * from './services/history/types'
 export * from './services/history/errors'
 export { ElectronHistoryManagerProxy } from './services/history/electron-proxy'
 
-// 导出LLM服务相关
+// Export LLM service-related
 export type {
   ILLMService,
   Message,
@@ -55,7 +55,7 @@ export { TextAdapterRegistry, createTextAdapterRegistry } from './services/llm/a
 export { ElectronLLMProxy } from './services/llm/electron-proxy'
 export * from './services/llm/errors'
 
-// 导出模型管理相关
+// Export model management-related
 export { ModelManager, createModelManager } from './services/model/manager'
 export * from './services/model/types'
 export * from './services/model/defaults'
@@ -65,12 +65,12 @@ export * from './services/model/advancedParameterDefinitions'
 export { ElectronModelManagerProxy } from './services/model/electron-proxy'
 export { ElectronConfigManager, isElectronRenderer } from './services/model/electron-config'
 
-// 导出图像模型管理与服务
+// Export image model management and service
 export { ImageModelManager, createImageModelManager } from './services/image-model/manager'
 export { ImageService, createImageService } from './services/image/service'
 export { ImageAdapterRegistry as _ImageAdapterRegistry, createImageAdapterRegistry } from './services/image/adapters/registry'
 export { ElectronImageServiceProxy, ElectronImageModelManagerProxy } from './services/image/electron-proxy'
-// 导出图像服务类型,将 ConnectionSchema 重命名为 ImageConnectionSchema 避免与 model/types 中的 ConnectionSchema 冲突
+// Export image service types; rename ConnectionSchema to ImageConnectionSchema to avoid conflict with ConnectionSchema in model/types
 export type {
   ImageProvider,
   ImageModel,
@@ -93,11 +93,11 @@ export type {
   ImageStorageConfig,
   IImageStorageService
 } from './services/image/types'
-// 导出图像存储相关函数和类型
+// Export image storage functions and types
 export { isImageRef, createImageRef } from './services/image/types'
 export { ImageStorageService, createImageStorageService } from './services/image/storage'
 
-// 导出存储相关
+// Export storage-related
 export * from './services/storage/types'
 export { StorageFactory } from './services/storage/factory'
 export { DexieStorageProvider } from './services/storage/dexieStorageProvider'
@@ -105,30 +105,30 @@ export { LocalStorageProvider } from './services/storage/localStorageProvider'
 export { MemoryStorageProvider } from './services/storage/memoryStorageProvider'
 export { FileStorageProvider } from './services/storage/fileStorageProvider'
 
-// 导出提示词服务相关
+// Export prompt service-related
 export { PromptService } from './services/prompt/service'
 export { createPromptService } from './services/prompt/factory'
 export * from './services/prompt/types'
 export { ElectronPromptServiceProxy } from './services/prompt/electron-proxy'
 export * from './services/prompt/errors'
 
-// 导出对比服务相关
+// Export compare service-related
 export { CompareService, createCompareService } from './services/compare/service'
 export type { ICompareService } from './services/compare/types'
 export * from './services/compare/types'
 export * from './services/compare/errors'
 
-// 导出数据管理相关
+// Export data management-related
 export { DataManager, createDataManager } from './services/data/manager'
 export type { IDataManager } from './services/data/manager'
 export { ElectronDataManagerProxy } from './services/data/electron-proxy'
 
-// 导出偏好设置服务相关
+// Export preference service-related
 export * from './services/preference/types'
 export { ElectronPreferenceServiceProxy } from './services/preference/electron-proxy'
 export { PreferenceService, createPreferenceService } from './services/preference/service'
 
-// 导出环境检测工具
+// Export environment detection utilities
 export {
   isRunningInElectron,
   isElectronApiReady,
@@ -146,12 +146,12 @@ export type { CustomModelEnvConfig, ValidatedCustomModelEnvConfig, ValidationRes
 export type { LLMValidationResult, ValidationError, ValidationWarning } from './services/model/validation'
 export { validateCustomModelConfig } from './utils/environment'
 
-// 导出IPC序列化工具
+// Export IPC serialization utilities
 export { safeSerializeForIPC, debugIPCSerializability, safeSerializeArgs } from './utils/ipc-serialization'
 export { applyPatchOperationsToText } from './utils/patch-plan'
 export type { ApplyPatchResult, ApplyPatchReportItem, ApplyPatchStatus } from './utils/patch-plan'
 
-// 导出存储键常量
+// Export storage key constants
 export {
   CORE_SERVICE_KEYS,
   UI_SETTINGS_KEYS,
@@ -174,7 +174,7 @@ export type {
 // UI function-mode types are defined alongside prompt service types.
 export type { FunctionMode } from './services/prompt/types'
 
-// Export error codes for internationalization | 导出错误代码用于国际化
+// Export error codes for internationalization
 export {
   ERROR_CODES,
   EVALUATION_ERROR_CODES,
@@ -196,33 +196,33 @@ export {
 } from './constants/error-codes'
 export type { ErrorCode } from './constants/error-codes'
 
-// 导出上下文相关
+// Export context-related
 export * from './services/context/types'
 export { createContextRepo } from './services/context/repo'
 export { ElectronContextRepoProxy } from './services/context/electron-proxy'
 export * from './services/context/constants'
 
-// 导出收藏管理相关
+// Export favorites management-related
 export { FavoriteManager } from './services/favorite/manager'
 export { FavoriteManagerElectronProxy } from './services/favorite/electron-proxy'
 export { TagTypeConverter } from './services/favorite/type-converter'
 export * from './services/favorite/types'
 export * from './services/favorite/errors'
 
-// 导出高级模块相关类型
+// Export advanced module types
 export * from './types/advanced'
 
-// 导出评估服务相关
+// Export evaluation service-related
 export * from './services/evaluation/types'
 export * from './services/evaluation/errors'
 export { EvaluationService, createEvaluationService } from './services/evaluation/service'
 
-// 🆕 导出变量提取服务相关
+// 🆕 Export variable extraction service-related
 export * from './services/variable-extraction/types'
 export * from './services/variable-extraction/errors'
 export { VariableExtractionService, createVariableExtractionService } from './services/variable-extraction/service'
 
-// 🆕 导出变量值生成服务相关
+// 🆕 Export variable value generation service-related
 export * from './services/variable-value-generation/types'
 export * from './services/variable-value-generation/errors'
 export { VariableValueGenerationService, createVariableValueGenerationService } from './services/variable-value-generation/service'

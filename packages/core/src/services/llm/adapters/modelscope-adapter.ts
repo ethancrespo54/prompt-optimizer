@@ -10,16 +10,16 @@ interface ModelOverride {
 }
 
 /**
- * ModelScope (魔搭) 静态模型定义
- * 参考: https://modelscope.cn/docs/model-service/API-Inference/intro
+ * ModelScope static model definitions
+ * Reference: https://modelscope.cn/docs/model-service/API-Inference/intro
  */
 const MODELSCOPE_STATIC_MODELS: ModelOverride[] = [
   {
     id: 'Qwen/Qwen3-Coder-480B-A35B-Instruct',
     name: 'Qwen3-Coder-480B-A35B-Instruct',
-    description: '通义千问 Qwen/Qwen3-Coder-480B-A35B-Instruct，专为代码生成和理解优化',
+    description: 'Tongyi Qianwen Qwen/Qwen3-Coder-480B-A35B-Instruct, optimized for code generation and understanding',
     capabilities: {
-      supportsTools: false, // 未验证 ModelScope 的工具调用兼容性
+      supportsTools: false, // Tool call compatibility on ModelScope is unverified
       supportsReasoning: false,
       maxContextLength: 131072
     }
@@ -27,23 +27,23 @@ const MODELSCOPE_STATIC_MODELS: ModelOverride[] = [
 ]
 
 /**
- * ModelScope (魔搭) 适配器
- * 基于 OpenAI 兼容 API 实现
+ * ModelScope adapter
+ * Implemented on top of the OpenAI-compatible API
  *
- * API 端点: https://api-inference.modelscope.cn/v1
- * 免费额度: 每天 2000 次调用
- * 文档: https://modelscope.cn/docs/model-service/API-Inference/intro
+ * API endpoint: https://api-inference.modelscope.cn/v1
+ * Free quota: 2000 calls per day
+ * Docs: https://modelscope.cn/docs/model-service/API-Inference/intro
  *
- * 环境变量支持:
- * - MODELSCOPE_API_KEY: SDK Token (Docker 环境，无 VITE_ 前缀)
- * - VITE_MODELSCOPE_API_KEY: SDK Token (开发环境，Vite 构建)
+ * Environment variable support:
+ * - MODELSCOPE_API_KEY: SDK Token (Docker environment, no VITE_ prefix)
+ * - VITE_MODELSCOPE_API_KEY: SDK Token (development environment, Vite build)
  */
 export class ModelScopeAdapter extends OpenAIAdapter {
   public getProvider(): TextProvider {
     return {
       id: 'modelscope',
       name: 'ModelScope',
-      description: '阿里云魔搭社区 API 推理服务，每天免费 2000 次调用',
+      description: 'Alibaba Cloud ModelScope community API inference service, 2000 free calls per day',
       requiresApiKey: true,
       defaultBaseURL: 'https://api-inference.modelscope.cn/v1',
       supportsDynamicModels: true,

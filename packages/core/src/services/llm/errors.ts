@@ -1,6 +1,6 @@
 /**
  * Base error class
- * 基础错误类
+ * Base error class
  */
 
 import { LLM_ERROR_CODES, type ErrorParams } from '../../constants/error-codes';
@@ -15,13 +15,13 @@ export class BaseError extends Error {
     this.code = code;
     // Prefer structured params for UI translation; fall back to message as {details}.
     this.params = params ?? (message ? { details: message } : undefined);
-    Object.setPrototypeOf(this, new.target.prototype); // Ensure correct prototype chain | 确保原型链正确
+    Object.setPrototypeOf(this, new.target.prototype); // Ensure correct prototype chain
   }
 }
 
 /**
  * API error - Used for errors during API calls
- * API错误 - 用于表示API调用过程中的错误
+ * API error - represents an error during an API call
  */
 export class APIError extends BaseError {
   constructor(message: string) {
@@ -31,7 +31,7 @@ export class APIError extends BaseError {
 
 /**
  * Request configuration error - Used for request configuration validation failures
- * 请求配置错误 - 用于表示请求配置验证失败的错误
+ * Request configuration error - represents a failed request configuration validation
  */
 export class RequestConfigError extends BaseError {
   constructor(message: string) {
@@ -41,7 +41,7 @@ export class RequestConfigError extends BaseError {
 
 /**
  * Validation error - Used for parameter validation failures
- * 验证错误 - 用于表示参数验证失败的错误
+ * Validation error - represents a failed parameter validation
  */
 export class ValidationError extends BaseError {
   constructor(message: string) {
@@ -51,7 +51,7 @@ export class ValidationError extends BaseError {
 
 /**
  * Initialization error - Used for service initialization failures
- * 初始化错误 - 用于表示服务初始化失败的错误
+ * Initialization error - represents a failed service initialization
  */
 export class InitializationError extends BaseError {
   constructor(message: string) {
@@ -61,7 +61,7 @@ export class InitializationError extends BaseError {
 
 /**
  * LLM service base error
- * LLM服务基础错误
+ * Base LLM service error
  */
 export class LLMError extends Error {
   public readonly code: string;
@@ -78,7 +78,7 @@ export class LLMError extends Error {
 
 /**
  * Model configuration error
- * 模型配置错误
+ * Model configuration error
  */
 export class ModelConfigError extends LLMError {
   constructor(message: string) {
@@ -89,7 +89,7 @@ export class ModelConfigError extends LLMError {
 
 /**
  * Unified error code constants for LLM operations
- * LLM操作的统一错误代码常量
+ * Unified error code constants for LLM operations
  *
  * @deprecated Use LLM_ERROR_CODES from '@prompt-optimizer/core/constants/error-codes' instead
  */

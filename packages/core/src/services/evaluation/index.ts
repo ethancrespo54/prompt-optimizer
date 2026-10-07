@@ -1,12 +1,12 @@
 /**
- * 评估服务模块导出
+ * Evaluation service module exports
  */
 
-// 导出类型
+// Export types
 export * from './types';
 
-// 导出错误类
+// Export error classes
 export * from './errors';
 
-// 导出服务类和工厂函数
+// Export the service class and factory function
 export { EvaluationService, createEvaluationService } from './service';

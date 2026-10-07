@@ -1,65 +1,65 @@
 /**
- * 统一的存储键常量定义
+ * Unified storage key constant definitions
  *
- * 这是所有存储键的唯一数据源，UI包和Core包都从这里导入。
- * 集中管理所有存储键，避免在多个地方重复定义导致不一致。
+ * This is the single source of truth for all storage keys; both the UI and Core packages import from here.
+ * Centralizing all storage keys avoids inconsistencies caused by duplicate definitions in multiple places.
  */
 
-// 核心服务存储键
+// Core service storage keys
 export const CORE_SERVICE_KEYS = {
-  MODELS: "models", // 模型配置存储键
-  IMAGE_MODELS: "image-models", // 图像模型配置存储键
-  USER_TEMPLATES: "user-templates", // 用户模板存储键
-  PROMPT_HISTORY: "prompt_history", // 提示词历史记录存储键
+  MODELS: "models", // Model config storage key
+  IMAGE_MODELS: "image-models", // Image model config storage key
+  USER_TEMPLATES: "user-templates", // User template storage key
+  PROMPT_HISTORY: "prompt_history", // Prompt history storage key
 } as const;
 
-// UI设置相关
+// UI settings
 export const UI_SETTINGS_KEYS = {
   THEME_ID: "app:settings:ui:theme-id",
   PREFERRED_LANGUAGE: "app:settings:ui:preferred-language",
   BUILTIN_TEMPLATE_LANGUAGE: "app:settings:ui:builtin-template-language",
   FUNCTION_MODE: "app:settings:ui:function-mode",
 
-  // 子模式持久化（三种功能模式独立存储）
-  BASIC_SUB_MODE: "app:settings:ui:basic-sub-mode", // 基础模式的子模式（system/user）
-  PRO_SUB_MODE: "app:settings:ui:pro-sub-mode", // Pro 模式的子模式（multi/variable）
-  IMAGE_SUB_MODE: "app:settings:ui:image-sub-mode", // 图像模式的子模式（text2image/image2image）
+  // Sub-mode persistence (the three function modes are stored independently)
+  BASIC_SUB_MODE: "app:settings:ui:basic-sub-mode", // Basic mode sub-mode (system/user)
+  PRO_SUB_MODE: "app:settings:ui:pro-sub-mode", // Pro mode sub-mode (multi/variable)
+  IMAGE_SUB_MODE: "app:settings:ui:image-sub-mode", // Image mode sub-mode (text2image/image2image)
 } as const;
 
-// 模型选择相关
+// Model selection
 export const TEMPLATE_SELECTION_KEYS = {
-  SYSTEM_OPTIMIZE_TEMPLATE: "app:selected-optimize-template", // 系统优化模板（兼容旧版本）
-  USER_OPTIMIZE_TEMPLATE: "app:selected-user-optimize-template", // 用户优化模板
-  ITERATE_TEMPLATE: "app:selected-iterate-template", // 迭代模板
+  SYSTEM_OPTIMIZE_TEMPLATE: "app:selected-optimize-template", // System optimize template (legacy compatibility)
+  USER_OPTIMIZE_TEMPLATE: "app:selected-user-optimize-template", // User optimize template
+  ITERATE_TEMPLATE: "app:selected-iterate-template", // Iterate template
   CONTEXT_SYSTEM_OPTIMIZE_TEMPLATE:
     "app:selected-context-system-optimize-template",
   CONTEXT_USER_OPTIMIZE_TEMPLATE: "app:selected-context-user-optimize-template",
   CONTEXT_ITERATE_TEMPLATE: "app:selected-context-iterate-template",
 } as const;
 
-// 图像模式选择相关
+// Image mode selection
 export const IMAGE_MODE_KEYS = {
   SELECTED_TEXT_MODEL: "app:image-mode:selected-text-model",
   SELECTED_IMAGE_MODEL: "app:image-mode:selected-image-model",
-  // 按模式分别存储模板选择
+  // Template selection stored per mode
   SELECTED_TEMPLATE_TEXT2IMAGE: "app:image-mode:selected-template:text2image",
   SELECTED_TEMPLATE_IMAGE2IMAGE: "app:image-mode:selected-template:image2image",
   SELECTED_ITERATE_TEMPLATE: "app:image-mode:selected-iterate-template",
   COMPARE_MODE_ENABLED: "app:image-mode:compare-mode-enabled",
 } as const;
 
-// 功能模型配置相关
+// Function model configuration
 export const FUNCTION_MODEL_KEYS = {
-  // 全局评估模型
+  // Global evaluation model
   EVALUATION_MODEL: "app:function-model:evaluation-model",
 } as const;
 
 /**
- * 生成模式覆盖的存储键
- * @param type 模型类型：'optimize' 或 'test'
- * @param functionMode 功能模式：'basic' | 'pro' | 'image'
- * @param subMode 子模式：'system' | 'user' | 'multi' | 'variable' | 'text2image' | 'image2image'
- * @returns 存储键，格式如 "app:function-model:optimize:basic:system"
+ * Generates the storage key for a mode override
+ * @param type Model type: 'optimize' or 'test'
+ * @param functionMode Function mode: 'basic' | 'pro' | 'image'
+ * @param subMode Sub-mode: 'system' | 'user' | 'multi' | 'variable' | 'text2image' | 'image2image'
+ * @returns Storage key, in a format like "app:function-model:optimize:basic:system"
  */
 export function getModeModelKey(
   type: "optimize" | "test",
@@ -69,7 +69,7 @@ export function getModeModelKey(
   return `app:function-model:${type}:${functionMode}:${subMode}`;
 }
 
-// 所有存储键的联合类型
+// Union type of all storage keys
 export const ALL_STORAGE_KEYS = {
   ...CORE_SERVICE_KEYS,
   ...UI_SETTINGS_KEYS,
@@ -78,10 +78,10 @@ export const ALL_STORAGE_KEYS = {
   ...FUNCTION_MODEL_KEYS,
 } as const;
 
-// 导出所有键的数组（用于DataManager等需要遍历的场景）
+// Array of all keys (for scenarios such as DataManager that need to iterate)
 export const ALL_STORAGE_KEYS_ARRAY = Object.values(ALL_STORAGE_KEYS);
 
-// 类型定义
+// Type definitions
 export type CoreServiceKey =
   (typeof CORE_SERVICE_KEYS)[keyof typeof CORE_SERVICE_KEYS];
 export type UISettingsKey =

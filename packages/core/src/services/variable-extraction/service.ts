@@ -1,7 +1,7 @@
 /**
- * 变量提取服务实现
+ * Variable extraction service implementation
  *
- * 使用 LLM 对提示词进行智能变量提取
+ * Uses an LLM to intelligently extract variables from a prompt
  */
 
 import type { ILLMService } from '../llm/types';
@@ -25,7 +25,7 @@ import { jsonrepair } from 'jsonrepair';
 import { toErrorWithCode } from '../../utils/error';
 
 /**
- * 变量提取服务实现类
+ * Variable extraction service implementation class
  */
 export class VariableExtractionService implements IVariableExtractionService {
   constructor(
@@ -35,29 +35,29 @@ export class VariableExtractionService implements IVariableExtractionService {
   ) {}
 
   /**
-   * 提取变量
+   * Extract variables
    */
   async extract(request: VariableExtractionRequest): Promise<VariableExtractionResponse> {
-    // 1. 验证请求
+    // 1. Validate the request
     this.validateRequest(request);
 
-    // 2. 验证模型
+    // 2. Validate the model
     await this.validateModel(request.extractionModelKey);
 
-    // 3. 获取提示词模板
+    // 3. Get the prompt template
     const template = await this.getExtractionTemplate();
 
-    // 4. 构建模板上下文
+    // 4. Build the template context
     const context = this.buildTemplateContext(request);
 
-    // 5. 使用 TemplateProcessor 渲染模板
+    // 5. Render the template with TemplateProcessor
     const messages = TemplateProcessor.processTemplate(template, context);
 
-    // 6. 调用 LLM 发送请求
+    // 6. Call the LLM to send the request
     try {
       const result = await this.llmService.sendMessage(messages, request.extractionModelKey);
 
-      // 7. 解析 LLM 返回的 JSON 结果
+      // 7. Parse the JSON result returned by the LLM
       const parsed = this.parseExtractionResult(result);
       return this.filterResponse(parsed, request.existingVariableNames);
     } catch (error) {
@@ -92,7 +92,7 @@ export class VariableExtractionService implements IVariableExtractionService {
   }
 
   /**
-   * 验证请求参数
+   * Validate the request parameters
    */
   private validateRequest(request: VariableExtractionRequest): void {
     if (!request.promptContent?.trim()) {
@@ -105,7 +105,7 @@ export class VariableExtractionService implements IVariableExtractionService {
   }
 
   /**
-   * 验证模型存在性
+   * Validate that the model exists
    */
   private async validateModel(modelKey: string): Promise<void> {
     const model = await this.modelManager.getModel(modelKey);
@@ -115,7 +115,7 @@ export class VariableExtractionService implements IVariableExtractionService {
   }
 
   /**
-   * 获取提示词模板 (统一模板)
+   * Get the prompt template (unified template)
    */
   private async getExtractionTemplate(): Promise<Template> {
     const templateId = 'variable-extraction';
@@ -141,12 +141,12 @@ export class VariableExtractionService implements IVariableExtractionService {
   }
 
   /**
-   * 构建模板上下文
+   * Build the template context
    */
   private buildTemplateContext(request: VariableExtractionRequest): TemplateContext {
     const context: TemplateContext = {
       promptContent: request.promptContent,
-      existingVariableNames: request.existingVariableNames?.join(', ') || '无',
+      existingVariableNames: request.existingVariableNames?.join(', ') || 'None',
       hasExistingVariables: !!request.existingVariableNames?.length,
     };
 
@@ -154,19 +154,19 @@ export class VariableExtractionService implements IVariableExtractionService {
   }
 
   /**
-   * 解析 LLM 返回的 JSON 结果
+   * Parse the JSON result returned by the LLM
    */
   private parseExtractionResult(content: string): VariableExtractionResponse {
-    // 1. 尝试提取 JSON 代码块
+    // 1. Try to extract a JSON code block
     const jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/i);
     const jsonText = jsonMatch ? jsonMatch[1] : content;
 
     try {
-      // 2. 使用 jsonrepair 修复可能的格式问题
+      // 2. Use jsonrepair to fix possible format problems
       const repaired = jsonrepair(jsonText);
       const parsed = JSON.parse(repaired);
 
-      // 3. 标准化响应
+      // 3. Normalize the response
       return this.normalizeExtractionResponse(parsed);
     } catch (error) {
       console.warn(
@@ -174,7 +174,7 @@ export class VariableExtractionService implements IVariableExtractionService {
         error instanceof Error ? error.message : String(error)
       );
 
-      // 尝试直接解析（不通过 jsonrepair）
+      // Try parsing directly (without jsonrepair)
       try {
         const parsed = JSON.parse(jsonText);
         return this.normalizeExtractionResponse(parsed);
@@ -187,26 +187,26 @@ export class VariableExtractionService implements IVariableExtractionService {
   }
 
   /**
-   * 标准化提取响应（统一结构）
+   * Normalize the extraction response (unified structure)
    */
   private normalizeExtractionResponse(data: any): VariableExtractionResponse {
     if (!data || typeof data !== 'object') {
       throw new VariableExtractionParseError('Extraction result is not a valid object.');
     }
 
-    // 验证 variables 字段
+    // Validate the variables field
     if (!Array.isArray(data.variables)) {
       throw new VariableExtractionParseError('Extraction result must have a "variables" array.');
     }
 
-    // 验证 summary 字段
+    // Validate the summary field
     if (typeof data.summary !== 'string') {
       throw new VariableExtractionParseError('Extraction result must have a "summary" string.');
     }
 
-    // 标准化每个变量
+    // Normalize each variable
     const variables: ExtractedVariable[] = data.variables.map((variable: any, index: number) => {
-      // 验证必需字段
+      // Validate required fields
       if (!variable || typeof variable !== 'object') {
         throw new VariableExtractionParseError(`variables[${index}] is not a valid object.`);
       }
@@ -259,7 +259,7 @@ export class VariableExtractionService implements IVariableExtractionService {
 }
 
 /**
- * 创建变量提取服务的工厂函数
+ * Factory function for creating the variable extraction service
  */
 export function createVariableExtractionService(
   llmService: ILLMService,

@@ -1,53 +1,53 @@
 /**
- * 收藏的提示词记录接口
+ * Favorite prompt record interface
  */
 export interface FavoritePrompt {
-  /** 收藏ID */
+  /** Favorite ID */
   id: string;
-  /** 提示词标题 */
+  /** Prompt title */
   title: string;
-  /** 提示词内容 */
+  /** Prompt content */
   content: string;
-  /** 提示词描述 */
+  /** Prompt description */
   description?: string;
-  /** 收藏时间 */
+  /** Favorited time */
   createdAt: number;
-  /** 最后修改时间 */
+  /** Last modified time */
   updatedAt: number;
-  /** 标签 */
+  /** Tags */
   tags: string[];
-  /** 分类ID (用户自定义分类,与功能模式独立) */
+  /** Category ID (user-defined category, independent of function mode) */
   category?: string;
-  /** 使用次数 */
+  /** Usage count */
   useCount: number;
 
-  // 🆕 新增字段 - 功能模式分类体系
-  /** 功能模式 (一级分类,必填) */
+  // 🆕 New fields - function mode classification system
+  /** Function mode (first-level category, required) */
   functionMode: 'basic' | 'context' | 'image';
-  /** 优化模式 (二级分类,仅用于 basic/context 模式) */
+  /** Optimization mode (second-level category, only for basic/context modes) */
   optimizationMode?: 'system' | 'user';
-  /** 图像子模式 (二级分类,仅用于 image 模式) */
+  /** Image sub-mode (second-level category, only for image mode) */
   imageSubMode?: 'text2image' | 'image2image';
 
-  /** 元数据 (系统管理,用户不可编辑) */
+  /** Metadata (system-managed, not editable by the user) */
   metadata?: {
-    /** 原始内容 (优化前) - 仅从优化历史保存时有值 */
+    /** Original content (before optimization) - only set when saved from optimization history */
     originalContent?: string;
-    /** 来源历史记录ID - 仅从优化历史保存时有值 */
+    /** Source history record ID - only set when saved from optimization history */
     sourceHistoryId?: string;
-    /** 模型信息 */
+    /** Model info */
     modelKey?: string;
     modelName?: string;
     templateId?: string;
-    /** 收藏图片资源（通用收藏能力） */
+    /** Favorite image assets (general favorite capability) */
     media?: {
-      /** 封面图片资源 ID（优先使用） */
+      /** Cover image asset ID (preferred) */
       coverAssetId?: string;
-      /** 封面图片回退 URL（当资产持久化失败时） */
+      /** Cover image fallback URL (used when asset persistence fails) */
       coverUrl?: string;
-      /** 图片资源 ID 列表 */
+      /** Image asset ID list */
       assetIds?: string[];
-      /** 图片回退 URL 列表 */
+      /** Image fallback URL list */
       urls?: string[];
     };
     [key: string]: any;
@@ -55,77 +55,77 @@ export interface FavoritePrompt {
 }
 
 /**
- * 收藏夹分类接口
+ * Favorite category interface
  */
 export interface FavoriteCategory {
-  /** 分类ID */
+  /** Category ID */
   id: string;
-  /** 分类名称 */
+  /** Category name */
   name: string;
-  /** 分类描述 */
+  /** Category description */
   description?: string;
-  /** 父分类ID（支持层级分类） */
+  /** Parent category ID (supports hierarchical categories) */
   parentId?: string;
-  /** 分类颜色 */
+  /** Category color */
   color?: string;
-  /** 创建时间 */
+  /** Creation time */
   createdAt: number;
-  /** 排序权重 */
+  /** Sort weight */
   sortOrder: number;
 }
 
 /**
- * 收藏项统计信息
+ * Favorite statistics
  */
 export interface FavoriteStats {
-  /** 总收藏数 */
+  /** Total number of favorites */
   totalFavorites: number;
-  /** 各分类收藏数 */
+  /** Number of favorites per category */
   categoryStats: Array<{
     categoryId: string;
     categoryName: string;
     count: number;
   }>;
-  /** 标签使用统计 */
+  /** Tag usage statistics */
   tagStats: Array<{
     tag: string;
     count: number;
   }>;
-  /** 最近使用时间 */
+  /** Last used time */
   lastUsedAt?: number;
 }
 
 /**
- * 独立标签接口
+ * Standalone tag interface
  */
 export interface FavoriteTag {
-  /** 标签名称 */
+  /** Tag name */
   tag: string;
-  /** 创建时间 */
+  /** Creation time */
   createdAt: number;
 }
 
 /**
- * 标签统计信息接口
- * 用于标签管理器展示标签使用情况
+ * Tag statistics interface
+ * Used by the tag manager to show tag usage
  */
 export interface TagStatistics {
-  /** 标签名称 */
+  /** Tag name */
   name: string;
-  /** 使用次数 */
+  /** Usage count */
   count: number;
-  /** 最后使用时间（可选，暂未实现） */
+  /** Last used time (optional, not yet implemented) */
   lastUsed?: number;
 }
 
 /**
- * 收藏管理器接口
+ * Favorites manager interface
  */
 export interface IFavoriteManager {
-  /** 添加收藏 */
+  /** Add a favorite */
   addFavorite(favorite: Omit<FavoritePrompt, 'id' | 'createdAt' | 'updatedAt' | 'useCount'>): Promise<string>;
 
-  /** 获取收藏列表 */
+  /** Get the favorites list */
   getFavorites(options?: {
     categoryId?: string;
     tags?: string[];
@@ -136,46 +136,46 @@ export interface IFavoriteManager {
     offset?: number;
   }): Promise<FavoritePrompt[]>;
 
-  /** 获取收藏详情 */
+  /** Get favorite details */
   getFavorite(id: string): Promise<FavoritePrompt>;
 
-  /** 更新收藏 */
+  /** Update a favorite */
   updateFavorite(id: string, updates: Partial<FavoritePrompt>): Promise<void>;
 
-  /** 删除收藏 */
+  /** Delete a favorite */
   deleteFavorite(id: string): Promise<void>;
 
-  /** 批量删除收藏 */
+  /** Delete favorites in bulk */
   deleteFavorites(ids: string[]): Promise<void>;
 
-  /** 增加使用次数 */
+  /** Increment the usage count */
   incrementUseCount(id: string): Promise<void>;
 
-  /** 获取分类列表 */
+  /** Get the category list */
   getCategories(): Promise<FavoriteCategory[]>;
 
-  /** 添加分类 */
+  /** Add a category */
   addCategory(category: Omit<FavoriteCategory, 'id' | 'createdAt'>): Promise<string>;
 
-  /** 更新分类 */
+  /** Update a category */
   updateCategory(id: string, updates: Partial<FavoriteCategory>): Promise<void>;
 
-  /** 删除分类 */
+  /** Delete a category */
   deleteCategory(id: string): Promise<number>;
 
-  /** 获取统计信息 */
+  /** Get statistics */
   getStats(): Promise<FavoriteStats>;
 
-  /** 搜索收藏 */
+  /** Search favorites */
   searchFavorites(keyword: string, options?: {
     categoryId?: string;
     tags?: string[];
   }): Promise<FavoritePrompt[]>;
 
-  /** 导出收藏 */
+  /** Export favorites */
   exportFavorites(ids?: string[]): Promise<string>;
 
-  /** 导入收藏 */
+  /** Import favorites */
   importFavorites(data: string, options?: {
     mergeStrategy?: 'skip' | 'overwrite' | 'merge';
     categoryMapping?: Record<string, string>;
@@ -185,28 +185,28 @@ export interface IFavoriteManager {
     errors: string[];
   }>;
 
-  /** 获取所有标签及其使用统计（包含独立标签和使用中的标签） */
+  /** Get all tags with their usage statistics (including standalone tags and tags in use) */
   getAllTags(): Promise<Array<{ tag: string; count: number }>>;
 
-  /** 添加独立标签 */
+  /** Add a standalone tag */
   addTag(tag: string): Promise<void>;
 
-  /** 重命名标签 */
+  /** Rename a tag */
   renameTag(oldTag: string, newTag: string): Promise<number>;
 
-  /** 合并多个标签为一个 */
+  /** Merge multiple tags into one */
   mergeTags(sourceTags: string[], targetTag: string): Promise<number>;
 
-  /** 删除标签（同时从独立标签和所有收藏项中删除） */
+  /** Delete a tag (removes it from both standalone tags and all favorite items) */
   deleteTag(tag: string): Promise<number>;
 
-  /** 对分类进行重新排序 */
+  /** Reorder categories */
   reorderCategories(categoryIds: string[]): Promise<void>;
 
-  /** 获取分类使用统计 */
+  /** Get category usage statistics */
   getCategoryUsage(categoryId: string): Promise<number>;
 
-  /** 确保默认分类存在（仅首次执行有效） */
+  /** Ensure default categories exist (only effective on first run) */
   ensureDefaultCategories(defaultCategories: Array<{
     name: string;
     description?: string;

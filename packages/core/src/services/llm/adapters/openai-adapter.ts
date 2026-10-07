@@ -21,7 +21,7 @@ interface ModelOverride {
 }
 
 /**
- * OpenAI 静态模型定义
+ * OpenAI static model definitions
  */
 const OPENAI_STATIC_MODELS: ModelOverride[] = [
   {
@@ -47,21 +47,21 @@ const OPENAI_STATIC_MODELS: ModelOverride[] = [
 ]
 
 /**
- * OpenAI SDK适配器实现
- * 同时支持OpenAI官方API和OpenAI兼容API（DeepSeek, Zhipu等）
+ * OpenAI SDK adapter implementation
+ * Supports both the official OpenAI API and OpenAI-compatible APIs (DeepSeek, Zhipu, etc.)
  *
- * 职责：
- * - 封装OpenAI SDK调用逻辑
- * - 处理baseURL规范化（移除'/chat/completions'后缀）
- * - 支持浏览器环境（dangerouslyAllowBrowser）
- * - 支持动态模型获取（models.list() API）
- * - 保留SDK原始错误堆栈
+ * Responsibilities:
+ * - Encapsulate OpenAI SDK call logic
+ * - Handle baseURL normalization (remove the '/chat/completions' suffix)
+ * - Support browser environments (dangerouslyAllowBrowser)
+ * - Support dynamic model fetching (models.list() API)
+ * - Preserve the original SDK error stack
  */
 export class OpenAIAdapter extends AbstractTextProviderAdapter {
-  // ===== Provider元数据 =====
+  // ===== Provider metadata =====
 
   /**
-   * 获取Provider元数据
+   * Get Provider metadata
    */
   public getProvider(): TextProvider {
     return {
@@ -84,7 +84,7 @@ export class OpenAIAdapter extends AbstractTextProviderAdapter {
   }
 
   /**
-   * 获取静态模型列表（OpenAI官方模型）
+   * Get the static model list (official OpenAI models)
    */
   public getModels(): TextModel[] {
     return OPENAI_STATIC_MODELS.map((definition) => {
@@ -109,12 +109,12 @@ export class OpenAIAdapter extends AbstractTextProviderAdapter {
   }
 
   /**
-   * 动态获取模型列表（调用OpenAI models.list() API）
-   * @param config 连接配置
-   * @returns 动态获取的模型列表
+   * Dynamically fetch the model list (calls the OpenAI models.list() API)
+   * @param config Connection config
+   * @returns Dynamically fetched model list
    */
   public async getModelsAsync(config: TextModelConfig): Promise<TextModel[]> {
-    // 验证baseURL以/v1结尾
+    // Validate that the baseURL ends with /v1
     const baseURL = config.connectionConfig.baseURL || this.getProvider().defaultBaseURL
 
     const openai = this.createOpenAIInstance(config, false)
@@ -122,11 +122,11 @@ export class OpenAIAdapter extends AbstractTextProviderAdapter {
     try {
       const response = await openai.models.list()
 
-      // 检查返回格式
+      // Check the response format
       if (response && response.data && Array.isArray(response.data)) {
         const models = response.data
           .map((model) => {
-            // 使用buildDefaultModel为每个模型ID创建TextModel对象
+            // Use buildDefaultModel to create a TextModel object for each model ID
             return this.buildDefaultModel(model.id)
           })
           .sort((a, b) => a.id.localeCompare(b.id))
@@ -142,7 +142,7 @@ export class OpenAIAdapter extends AbstractTextProviderAdapter {
     } catch (error: any) {
       console.error('[OpenAIAdapter] Failed to fetch models:', error)
 
-      // 连接错误处理（包括跨域检测）
+      // Connection error handling (including CORS detection)
       if (error.message && (error.message.includes('Failed to fetch') ||
           error.message.includes('Connection error'))) {
         const isCrossOriginError = this.detectCrossOriginError(error, baseURL)
@@ -154,21 +154,21 @@ export class OpenAIAdapter extends AbstractTextProviderAdapter {
         }
       }
 
-      // API返回的错误信息
+      // Error message returned by the API
       if (error.response?.data) {
         throw new APIError(`API error: ${JSON.stringify(error.response.data)}`)
       }
 
-      // 其他错误,保持原始信息
+      // Other errors; keep the original message
       throw new APIError(error.message || 'Unknown error')
     }
   }
 
-  // ===== 参数定义（用于buildDefaultModel） =====
+  // ===== Parameter definitions (used by buildDefaultModel) =====
 
   /**
-   * 获取参数定义
-   * 基于 OpenAI 官方文档: https://platform.openai.com/docs/api-reference/chat/create
+   * Get parameter definitions
+   * Based on the official OpenAI docs: https://platform.openai.com/docs/api-reference/chat/create
    */
   protected getParameterDefinitions(_modelId: string): readonly ParameterDefinition[] {
     return [
@@ -320,30 +320,30 @@ export class OpenAIAdapter extends AbstractTextProviderAdapter {
   }
 
   /**
-   * 获取默认参数值
-   * 返回空对象,让服务器使用官方默认值,避免客户端错误默认值影响效果
+   * Get default parameter values
+   * Returns an empty object so the server uses its official defaults, avoiding wrong client-side defaults affecting results
    */
   protected getDefaultParameterValues(_modelId: string): Record<string, unknown> {
     return {}
   }
 
-  // ===== 错误检测辅助方法 =====
+  // ===== Error detection helper methods =====
 
   /**
-   * 检测是否为跨域错误
-   * 从 service.ts.backup 迁移的逻辑 (L1048-1094)
+   * Detect whether this is a CORS error
+   * Logic migrated from service.ts.backup (L1048-1094)
    *
-   * 功能说明:
-   * - 区分跨域错误(CORS)和普通网络错误
-   * - 只在浏览器环境中进行检测
-   * - 通过URL origin对比和错误特征识别
+   * Description:
+   * - Distinguishes CORS errors from ordinary network errors
+   * - Detection only happens in browser environments
+   * - Identified by comparing the URL origin and error characteristics
    *
-   * @param error 捕获的错误对象
-   * @param baseURL API的baseURL
-   * @returns true表示是跨域错误,false表示其他错误
+   * @param error The caught error object
+   * @param baseURL The API baseURL
+   * @returns true means a CORS error, false means another kind of error
    */
   private detectCrossOriginError(error: any, baseURL: string): boolean {
-    // 非浏览器环境不存在跨域问题
+    // CORS issues do not exist outside browser environments
     if (typeof window === 'undefined') {
       return false
     }
@@ -354,7 +354,7 @@ export class OpenAIAdapter extends AbstractTextProviderAdapter {
 
       const errorString = error.toString()
 
-      // 只有在不同origin且没有明显的DNS/连接错误时才认为是跨域
+      // Only treat it as CORS when the origins differ and there is no obvious DNS/connection error
       const isDifferentOrigin = apiUrl.origin !== currentUrl.origin
       const hasNetworkError =
         errorString.includes('ERR_NAME_NOT_RESOLVED') ||
@@ -365,15 +365,15 @@ export class OpenAIAdapter extends AbstractTextProviderAdapter {
 
       return isDifferentOrigin && !hasNetworkError
     } catch (urlError) {
-      // URL解析失败,当作普通连接错误处理
+      // URL parsing failed; treat it as an ordinary connection error
       console.warn('[OpenAIAdapter] Failed to parse URL for CORS detection:', urlError)
       return false
     }
   }
 
   /**
-   * 浏览器环境下，跨域请求强制使用 credentials='omit'
-   * 避免部分兼容端点在 "Access-Control-Allow-Origin: *" 时被浏览器拦截。
+   * In browser environments, cross-origin requests are forced to use credentials='omit'
+   * This avoids some compatible endpoints being blocked by the browser when they return "Access-Control-Allow-Origin: *".
    */
   private shouldForceCrossOriginCredentialOmit(input: RequestInfo | URL): boolean {
     if (typeof window === 'undefined') {
@@ -416,7 +416,7 @@ export class OpenAIAdapter extends AbstractTextProviderAdapter {
     source.forEach((value, key) => {
       const normalizedKey = key.toLowerCase()
 
-      // 精简 SDK 注入的诊断头，降低第三方网关 CORS 预检失败概率。
+      // Trim the diagnostic headers injected by the SDK to reduce the chance of CORS preflight failures with third-party gateways.
       if (
         normalizedKey.startsWith('x-stainless-') ||
         normalizedKey === 'user-agent' ||
@@ -431,28 +431,28 @@ export class OpenAIAdapter extends AbstractTextProviderAdapter {
     return sanitized
   }
 
-  // ===== SDK实例创建（从service.ts迁移） =====
+  // ===== SDK instance creation (migrated from service.ts) =====
 
   /**
-   * 创建OpenAI SDK实例
-   * 从service.ts的getOpenAIInstance方法迁移
+   * Create an OpenAI SDK instance
+   * Migrated from the getOpenAIInstance method in service.ts
    *
-   * @param config 模型配置
-   * @param isStream 是否为流式请求
-   * @returns OpenAI SDK实例
+   * @param config Model config
+   * @param isStream Whether this is a streaming request
+   * @returns OpenAI SDK instance
    */
   // NOTE: protected so OpenAI-compatible providers (e.g. Ollama) can tweak auth/baseURL
   // without re-implementing the whole chat/stream/tool plumbing.
   protected createOpenAIInstance(config: TextModelConfig, isStream: boolean = false): OpenAI {
     const apiKey = config.connectionConfig.apiKey || ''
 
-    // 处理baseURL，如果以'/chat/completions'结尾则去掉
+    // Handle the baseURL; strip it if it ends with '/chat/completions'
     let processedBaseURL = config.connectionConfig.baseURL || this.getProvider().defaultBaseURL
     if (processedBaseURL?.endsWith('/chat/completions')) {
       processedBaseURL = processedBaseURL.slice(0, -'/chat/completions'.length)
     }
 
-    // 创建OpenAI实例配置
+    // Create the OpenAI instance config
     const defaultTimeout = isStream ? 90000 : 60000
     const timeout =
       config.paramOverrides?.timeout !== undefined
@@ -466,7 +466,7 @@ export class OpenAIAdapter extends AbstractTextProviderAdapter {
       maxRetries: isStream ? 2 : 3
     }
 
-    // 浏览器环境检测
+    // Browser environment detection
     if (typeof window !== 'undefined') {
       sdkConfig.dangerouslyAllowBrowser = true
 
@@ -498,54 +498,54 @@ export class OpenAIAdapter extends AbstractTextProviderAdapter {
     return instance
   }
 
-  // ===== 核心方法实现 =====
+  // ===== Core method implementations =====
 
   /**
-   * 发送消息（结构化格式）
-   * 从service.ts的sendOpenAIMessageStructured迁移 (L126-186)
+   * Send a message (structured format)
+   * Migrated from sendOpenAIMessageStructured in service.ts (L126-186)
    *
-   * @param messages 消息数组
-   * @param config 模型配置
-   * @returns LLM响应
-   * @throws SDK原始错误（保留完整堆栈）
+   * @param messages Message array
+   * @param config Model config
+   * @returns LLM response
+   * @throws The original SDK error (full stack preserved)
    */
   protected async doSendMessage(messages: Message[], config: TextModelConfig): Promise<LLMResponse> {
     const openai = this.createOpenAIInstance(config, false)
 
-    // 格式化消息
+    // Format the messages
     const formattedMessages = messages.map((msg) => ({
       role: msg.role,
       content: msg.content
     }))
 
-    // 从paramOverrides提取参数，排除特殊字段
+    // Extract parameters from paramOverrides, excluding special fields
     const {
-      timeout, // 已在createOpenAIInstance中处理
-      model: _paramModel, // 避免覆盖主model
-      messages: _paramMessages, // 避免覆盖主messages
+      timeout, // Already handled in createOpenAIInstance
+      model: _paramModel, // Avoid overriding the main model
+      messages: _paramMessages, // Avoid overriding the main messages
       ...restParams
     } = (config.paramOverrides || {}) as any
 
     const completionConfig: any = {
       model: config.modelMeta.id,
       messages: formattedMessages,
-      ...restParams // 展开其他参数
+      ...restParams // Spread the other parameters
     }
 
     try {
       const response: any = await openai.chat.completions.create(completionConfig)
 
-      // 处理原始 SSE 字符串响应（某些 API 返回未解析的 SSE 格式）
+      // Handle raw SSE string responses (some APIs return unparsed SSE format)
       if (typeof response === 'string') {
         return this.parseSSEResponse(response, config.modelMeta.id)
       }
 
-      // 检测是否为流式响应（某些 API 强制返回流式响应）
+      // Detect streaming responses (some APIs always return a streaming response)
       if (this.isStreamResponse(response)) {
         return await this.consumeStreamResponse(response as AsyncIterable<any>, config.modelMeta.id)
       }
 
-      // 处理响应中的 reasoning_content 和普通 content
+      // Handle reasoning_content and regular content in the response
       if (!response.choices || response.choices.length === 0) {
         throw new APIError('API returned invalid response: choices is empty or missing')
       }
@@ -558,12 +558,12 @@ export class OpenAIAdapter extends AbstractTextProviderAdapter {
       let content = choice.message.content || ''
       let reasoning = ''
 
-      // 处理推理内容（如果存在）
-      // SiliconFlow 等提供商在 choice.message 中并列提供 reasoning_content 字段
+      // Handle reasoning content (if present)
+      // Providers such as SiliconFlow provide a reasoning_content field alongside choice.message
       if ((choice.message as any).reasoning_content) {
         reasoning = (choice.message as any).reasoning_content
       } else {
-        // 检测并分离content中的think标签
+        // Detect and separate think tags in the content
         const processed = this.processThinkTags(content)
         content = processed.content
         reasoning = processed.reasoning || ''
@@ -581,71 +581,71 @@ export class OpenAIAdapter extends AbstractTextProviderAdapter {
       return result
     } catch (error) {
       console.error('[OpenAIAdapter] API call failed:', error)
-      throw error // 保留原始错误堆栈，不包装
+      throw error // Preserve the original error stack without wrapping
     }
   }
 
   /**
-   * 解析原始 SSE 字符串响应
-   * 某些 OpenAI 兼容 API 会返回未解析的 SSE 格式字符串
+   * Parse a raw SSE string response
+   * Some OpenAI-compatible APIs return unparsed SSE format strings
    */
   private parseSSEResponse(sseString: string, modelId: string): LLMResponse {
     let accumulatedContent = ''
     let accumulatedReasoning = ''
     let finishReason: string | undefined
 
-    // 按行分割 SSE 数据
+    // Split the SSE data by line
     const lines = sseString.split('\n')
 
     for (const line of lines) {
       const trimmed = line.trim()
 
-      // 跳过空行
+      // Skip empty lines
       if (!trimmed) {
         continue
       }
 
-      // 跳过 [DONE] 标记（兼容 data: [DONE] 和 data:[DONE]）
+      // Skip the [DONE] marker (compatible with both data: [DONE] and data:[DONE])
       if (trimmed === 'data: [DONE]' || trimmed === 'data:[DONE]') {
         continue
       }
 
-      // 解析 data: 前缀的行（兼容有无空格：data: 或 data:）
+      // Parse lines with the data: prefix (compatible with or without a space: data: or data:)
       if (trimmed.startsWith('data:')) {
-        const jsonStr = trimmed.slice(5).trimStart() // 移除 'data:' 前缀和可能的前导空格
+        const jsonStr = trimmed.slice(5).trimStart() // Remove the 'data:' prefix and any leading space
         if (!jsonStr) {
           continue
         }
         try {
           const chunk = JSON.parse(jsonStr)
 
-          // 处理推理内容
+          // Handle reasoning content
           const reasoningContent = chunk.choices?.[0]?.delta?.reasoning_content || ''
           if (reasoningContent) {
             accumulatedReasoning += reasoningContent
           }
 
-          // 处理主要内容
+          // Handle main content
           const content = chunk.choices?.[0]?.delta?.content || ''
           if (content) {
             accumulatedContent += content
           }
 
-          // 记录完成原因
+          // Record the finish reason
           if (chunk.choices?.[0]?.finish_reason && chunk.choices[0].finish_reason !== '') {
             finishReason = chunk.choices[0].finish_reason
           }
         } catch (e) {
-          // 忽略无法解析的 chunk
+          // Ignore chunks that cannot be parsed
         }
       }
     }
 
-    // 兜底：如果 SSE 解析未得到任何内容，尝试直接解析为 JSON
+    // Fallback: if SSE parsing yields no content, try parsing directly as JSON
     if (!accumulatedContent && !accumulatedReasoning) {
       try {
         const fallbackJson = JSON.parse(sseString)
-        // 尝试提取标准 OpenAI 响应格式
+        // Try to extract the standard OpenAI response format
         const fallbackContent = fallbackJson.choices?.[0]?.message?.content || ''
         const fallbackReasoning = fallbackJson.choices?.[0]?.message?.reasoning_content || ''
         if (fallbackContent || fallbackReasoning) {
@@ -660,15 +660,15 @@ export class OpenAIAdapter extends AbstractTextProviderAdapter {
           }
         }
       } catch {
-        // JSON 解析失败，继续抛出错误
+        // JSON parsing failed; continue to throw the error
       }
-      // SSE 和 JSON 解析都失败，抛出明确错误
+      // Both SSE and JSON parsing failed; throw a clear error
       throw new APIError(
         `SSE response parsing failed: unable to extract any content from response. First 200 chars: ${sseString.slice(0, 200)}`
       )
     }
 
-    // 处理 think 标签
+    // Handle think tags
     const processed = this.processThinkTags(accumulatedContent)
 
     return {
@@ -682,21 +682,21 @@ export class OpenAIAdapter extends AbstractTextProviderAdapter {
   }
 
   /**
-   * 检测响应是否为流式响应
-   * 某些 OpenAI 兼容 API会强制返回流式响应
+   * Detect whether the response is a streaming response
+   * Some OpenAI-compatible APIs always return a streaming response
    */
   private isStreamResponse(response: any): boolean {
-    // 首先检查是否为标准的非流式响应格式
-    // 如果响应包含 choices 数组且第一个 choice 有 message 属性，则是非流式响应
+    // First check whether it is a standard non-streaming response format
+    // If the response contains a choices array and the first choice has a message property, it is a non-streaming response
     if (response && response.choices && Array.isArray(response.choices) && response.choices.length > 0) {
       const firstChoice = response.choices[0]
-      // 非流式响应有 message 属性，流式响应有 delta 属性
+      // Non-streaming responses have a message property; streaming responses have a delta property
       if (firstChoice && firstChoice.message !== undefined) {
         return false
       }
     }
 
-    // 检测是否为异步迭代器（流式响应的特征）
+    // Detect an async iterator (a characteristic of streaming responses)
     if (response && typeof response[Symbol.asyncIterator] === 'function') {
       return true
     }
@@ -705,8 +705,8 @@ export class OpenAIAdapter extends AbstractTextProviderAdapter {
   }
 
   /**
-   * 消费流式响应并聚合为完整响应
-   * 用于处理强制返回流式响应的 API
+   * Consume a streaming response and aggregate it into a complete response
+   * Used to handle APIs that always return a streaming response
    */
   private async consumeStreamResponse(stream: AsyncIterable<any>, modelId: string): Promise<LLMResponse> {
     let accumulatedContent = ''
@@ -714,25 +714,25 @@ export class OpenAIAdapter extends AbstractTextProviderAdapter {
     let finishReason: string | undefined
 
     for await (const chunk of stream) {
-      // 处理推理内容
+      // Handle reasoning content
       const reasoningContent = chunk.choices?.[0]?.delta?.reasoning_content || ''
       if (reasoningContent) {
         accumulatedReasoning += reasoningContent
       }
 
-      // 处理主要内容
+      // Handle main content
       const content = chunk.choices?.[0]?.delta?.content || ''
       if (content) {
         accumulatedContent += content
       }
 
-      // 记录完成原因
+      // Record the finish reason
       if (chunk.choices?.[0]?.finish_reason) {
         finishReason = chunk.choices[0].finish_reason
       }
     }
 
-    // 处理 think 标签
+    // Handle think tags
     const processed = this.processThinkTags(accumulatedContent)
 
     return {
@@ -746,13 +746,13 @@ export class OpenAIAdapter extends AbstractTextProviderAdapter {
   }
 
   /**
-   * 发送流式消息
-   * 从service.ts的streamOpenAIMessage迁移 (L504-585)
+   * Send a streaming message
+   * Migrated from streamOpenAIMessage in service.ts (L504-585)
    *
-   * @param messages 消息数组
-   * @param config 模型配置
-   * @param callbacks 流式响应回调
-   * @throws SDK原始错误（保留完整堆栈）
+   * @param messages Message array
+   * @param config Model config
+   * @param callbacks Streaming response callbacks
+   * @throws The original SDK error (full stack preserved)
    */
   protected async doSendMessageStream(
     messages: Message[],
@@ -760,7 +760,7 @@ export class OpenAIAdapter extends AbstractTextProviderAdapter {
     callbacks: StreamHandlers
   ): Promise<void> {
     try {
-      // 获取流式OpenAI实例
+      // Get the streaming OpenAI instance
       const openai = this.createOpenAIInstance(config, true)
 
       const formattedMessages = messages.map((msg) => ({
@@ -769,53 +769,53 @@ export class OpenAIAdapter extends AbstractTextProviderAdapter {
       }))
 
       const {
-        timeout, // 已在createOpenAIInstance中处理
-        model: _paramModel, // 避免覆盖主model
-        messages: _paramMessages, // 避免覆盖主messages
-        stream: _paramStream, // 避免覆盖stream标志
+        timeout, // Already handled in createOpenAIInstance
+        model: _paramModel, // Avoid overriding the main model
+        messages: _paramMessages, // Avoid overriding the main messages
+        stream: _paramStream, // Avoid overriding the stream flag
         ...restParams
       } = (config.paramOverrides || {}) as any
 
       const completionConfig: any = {
         model: config.modelMeta.id,
         messages: formattedMessages,
-        stream: true, // 流式标志
-        ...restParams // 用户自定义参数
+        stream: true, // Streaming flag
+        ...restParams // User-defined parameters
       }
 
-      // 直接使用流式响应
+      // Use the streaming response directly
       const stream = await openai.chat.completions.create(completionConfig)
 
-      // 累积内容
+      // Accumulate content
       let accumulatedReasoning = ''
       let accumulatedContent = ''
 
-      // think标签状态跟踪
+      // Track the think tag state
       const thinkState = { isInThinkMode: false, buffer: '' }
 
       for await (const chunk of stream as any) {
-        // 处理推理内容（SiliconFlow 等提供商在 delta 中提供 reasoning_content）
+        // Handle reasoning content (providers such as SiliconFlow supply reasoning_content in the delta)
         const reasoningContent = chunk.choices[0]?.delta?.reasoning_content || ''
         if (reasoningContent) {
           accumulatedReasoning += reasoningContent
 
-          // 如果有推理回调，发送推理内容
+          // If there is a reasoning callback, send the reasoning content
           if (callbacks.onReasoningToken) {
             callbacks.onReasoningToken(reasoningContent)
           }
         }
 
-        // 处理主要内容
+        // Handle main content
         const content = chunk.choices[0]?.delta?.content || ''
         if (content) {
           accumulatedContent += content
 
-          // 使用流式think标签处理
+          // Use streaming think tag processing
           this.processStreamContentWithThinkTags(content, callbacks, thinkState)
         }
       }
 
-      // 构建完整响应
+      // Build the complete response
       const response: LLMResponse = {
         content: accumulatedContent,
         reasoning: accumulatedReasoning || undefined,
@@ -828,19 +828,19 @@ export class OpenAIAdapter extends AbstractTextProviderAdapter {
     } catch (error) {
       console.error('[OpenAIAdapter] Stream error:', error)
       callbacks.onError(error instanceof Error ? error : new Error(String(error)))
-      throw error // 保留原始错误堆栈
+      throw error // Preserve the original error stack
     }
   }
 
   /**
-   * 发送支持工具调用的流式消息
-   * 从service.ts的streamOpenAIMessageWithTools迁移 (L591-702)
+   * Send a streaming message with tool call support
+   * Migrated from streamOpenAIMessageWithTools in service.ts (L591-702)
    *
-   * @param messages 消息数组
-   * @param config 模型配置
-   * @param tools 工具定义数组
-   * @param callbacks 流式响应回调
-   * @throws SDK原始错误（保留完整堆栈）
+   * @param messages Message array
+   * @param config Model config
+   * @param tools Array of tool definitions
+   * @param callbacks Streaming response callbacks
+   * @throws The original SDK error (full stack preserved)
    */
   public async sendMessageStreamWithTools(
     messages: Message[],
@@ -849,7 +849,7 @@ export class OpenAIAdapter extends AbstractTextProviderAdapter {
     callbacks: StreamHandlers
   ): Promise<void> {
     try {
-      // 获取流式OpenAI实例
+      // Get the streaming OpenAI instance
       const openai = this.createOpenAIInstance(config, true)
 
       const formattedMessages = messages.map((msg) => ({
@@ -883,7 +883,7 @@ export class OpenAIAdapter extends AbstractTextProviderAdapter {
       const thinkState = { isInThinkMode: false, buffer: '' }
 
       for await (const chunk of stream as any) {
-        // 处理推理内容
+        // Handle reasoning content
         const reasoningContent = chunk.choices[0]?.delta?.reasoning_content || ''
         if (reasoningContent) {
           accumulatedReasoning += reasoningContent
@@ -892,7 +892,7 @@ export class OpenAIAdapter extends AbstractTextProviderAdapter {
           }
         }
 
-        // 处理工具调用
+        // Handle tool calls
         const toolCallDeltas = chunk.choices[0]?.delta?.tool_calls
         if (toolCallDeltas) {
           for (const toolCallDelta of toolCallDeltas) {
@@ -917,7 +917,7 @@ export class OpenAIAdapter extends AbstractTextProviderAdapter {
                   currentToolCall.function.arguments += toolCallDelta.function.arguments
                 }
 
-                // 当工具调用完整时，通知回调
+                // Notify the callback when the tool call is complete
                 if (
                   currentToolCall.id &&
                   currentToolCall.function.name &&
@@ -928,7 +928,7 @@ export class OpenAIAdapter extends AbstractTextProviderAdapter {
                     JSON.parse(currentToolCall.function.arguments)
                     callbacks.onToolCall(currentToolCall)
                   } catch {
-                    // JSON 还不完整
+                    // The JSON is not complete yet
                   }
                 }
               }
@@ -936,7 +936,7 @@ export class OpenAIAdapter extends AbstractTextProviderAdapter {
           }
         }
 
-        // 处理主要内容
+        // Handle main content
         const content = chunk.choices[0]?.delta?.content || ''
         if (content) {
           accumulatedContent += content
@@ -955,7 +955,7 @@ export class OpenAIAdapter extends AbstractTextProviderAdapter {
     } catch (error) {
       console.error('[OpenAIAdapter] Stream with tools error:', error)
       callbacks.onError(error instanceof Error ? error : new Error(String(error)))
-      throw error // 保留原始错误堆栈
+      throw error // Preserve the original error stack
     }
   }
 }

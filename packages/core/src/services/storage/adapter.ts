@@ -2,15 +2,15 @@ import { IStorageProvider } from './types';
 import { StorageError } from './errors';
 
 /**
- * 存储适配器 - 为不支持高级方法的存储提供者提供兼容性
- * 隐藏原子操作实现细节，业务层无需关心
+ * Storage adapter - provides compatibility for storage providers that do not support the advanced methods
+ * Hides the atomic operation implementation details so the business layer does not need to care
  */
 export class StorageAdapter implements IStorageProvider {
   private locks: Map<string, Promise<void>> = new Map();
 
   constructor(private readonly baseProvider: IStorageProvider) {}
 
-  // 基础方法直接代理
+  // Basic methods are proxied directly
   async getItem(key: string): Promise<string | null> {
     return this.baseProvider.getItem(key);
   }
@@ -28,28 +28,28 @@ export class StorageAdapter implements IStorageProvider {
   }
 
   /**
-   * 隐藏式数据更新 - 内部实现原子性
+   * Hidden data update - atomicity is implemented internally
    */
   async updateData<T>(
     key: string, 
     modifier: (currentValue: T | null) => T
   ): Promise<void> {
-    // 如果基础提供者有updateData方法，直接使用
+    // If the base provider has an updateData method, use it directly
     if ('updateData' in this.baseProvider && typeof this.baseProvider.updateData === 'function') {
       return (this.baseProvider as any).updateData(key, modifier);
     }
 
-    // 否则使用手动实现的原子操作
+    // Otherwise use the manually implemented atomic operation
     const release = await this.acquireLock(key);
     try {
-      // 读取当前值
+      // Read the current value
       const currentData = await this.baseProvider.getItem(key);
       const currentValue: T | null = currentData ? JSON.parse(currentData) : null;
       
-      // 应用修改 - 业务逻辑错误直接透传
+      // Apply the modification - business logic errors are passed through directly
       const newValue = modifier(currentValue);
       
-      // 写入新值
+      // Write the new value
       await this.baseProvider.setItem(key, JSON.stringify(newValue));
     } finally {
       release();
@@ -57,19 +57,19 @@ export class StorageAdapter implements IStorageProvider {
   }
 
   /**
-   * 批量更新操作
+   * Batch update operation
    */
   async batchUpdate(operations: Array<{
     key: string;
     operation: 'set' | 'remove';
     value?: string;
   }>): Promise<void> {
-    // 如果基础提供者有batchUpdate方法，直接使用
+    // If the base provider has a batchUpdate method, use it directly
     if ('batchUpdate' in this.baseProvider && typeof this.baseProvider.batchUpdate === 'function') {
       return (this.baseProvider as any).batchUpdate(operations);
     }
 
-    // 否则顺序执行操作（简化实现）
+    // Otherwise execute the operations sequentially (simplified implementation)
     for (const op of operations) {
       if (op.operation === 'set' && op.value !== undefined) {
         await this.baseProvider.setItem(op.key, op.value);
@@ -80,38 +80,38 @@ export class StorageAdapter implements IStorageProvider {
   }
 
   /**
-   * 获取存储能力信息
+   * Get storage capability info
    */
   getCapabilities() {
-    // 基础提供者的能力
+    // Capabilities of the base provider
     if ('getCapabilities' in this.baseProvider && typeof this.baseProvider.getCapabilities === 'function') {
       return (this.baseProvider as any).getCapabilities();
     }
     
-    // 默认能力
+    // Default capabilities
     return {
-      supportsAtomic: true, // 通过适配器实现
+      supportsAtomic: true, // Implemented through the adapter
       supportsBatch: false,
       maxStorageSize: undefined
     };
   }
 
   /**
-   * 改进的异步锁实现
-   * 使用队列机制避免死锁和锁泄漏
+   * Improved async lock implementation
+   * Uses a queue mechanism to avoid deadlocks and lock leaks
    */
   private async acquireLock(key: string): Promise<() => void> {
-    // 如果已有锁，等待它完成
+    // If a lock already exists, wait for it to finish
     const existingLock = this.locks.get(key);
     if (existingLock) {
       try {
         await existingLock;
       } catch (error) {
-        // 忽略前一个操作的错误，继续获取锁
+        // Ignore errors from the previous operation and continue acquiring the lock
       }
     }
 
-    // 创建新锁
+    // Create a new lock
     let releaseLock: () => void;
     const lockPromise = new Promise<void>((resolve, reject) => {
       let released = false;
@@ -124,14 +124,14 @@ export class StorageAdapter implements IStorageProvider {
         }
       };
       
-      // 设置超时防止死锁
+      // Set a timeout to prevent deadlocks
       setTimeout(() => {
         if (!released) {
           released = true;
           this.locks.delete(key);
           reject(new StorageError(`Lock timeout for key: ${key}`, 'write'));
         }
-      }, 30000); // 30秒超时
+      }, 30000); // 30-second timeout
     });
     
     this.locks.set(key, lockPromise);

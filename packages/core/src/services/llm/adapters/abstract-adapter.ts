@@ -12,33 +12,33 @@ import type {
 import { RequestConfigError } from '../errors'
 
 /**
- * 抽象文本模型Provider适配器基类
- * 使用模板方法模式提供统一的验证和工具方法
+ * Abstract base class for text model Provider adapters
+ * Uses the template method pattern to provide unified validation and utility methods
  *
- * 职责：
- * - 提供公共验证逻辑（validateMessages）
- * - 提供工具方法（processThinkTags, buildDefaultModel）
- * - 定义抽象方法供子类实现（doSendMessage, doSendMessageStream）
+ * Responsibilities:
+ * - Provide shared validation logic (validateMessages)
+ * - Provide utility methods (processThinkTags, buildDefaultModel)
+ * - Define abstract methods for subclasses to implement (doSendMessage, doSendMessageStream)
  */
 export abstract class AbstractTextProviderAdapter implements ITextProviderAdapter {
-  // ===== 子类必须实现的抽象方法 =====
+  // ===== Abstract methods that subclasses must implement =====
 
   /**
-   * 获取Provider元数据
+   * Get Provider metadata
    */
   public abstract getProvider(): TextProvider
 
   /**
-   * 获取静态模型列表
+   * Get the static model list
    */
   public abstract getModels(): TextModel[]
 
   /**
-   * 发送消息（结构化格式）- 具体实现
-   * @param messages 消息数组
-   * @param config 模型配置
-   * @returns LLM响应
-   * @throws SDK原始错误（保留完整堆栈）
+   * Send a message (structured format) - concrete implementation
+   * @param messages Message array
+   * @param config Model config
+   * @returns LLM response
+   * @throws The original SDK error (full stack preserved)
    */
   protected abstract doSendMessage(
     messages: Message[],
@@ -46,11 +46,11 @@ export abstract class AbstractTextProviderAdapter implements ITextProviderAdapte
   ): Promise<LLMResponse>
 
   /**
-   * 发送流式消息 - 具体实现
-   * @param messages 消息数组
-   * @param config 模型配置
-   * @param callbacks 流式响应回调
-   * @throws SDK原始错误（保留完整堆栈）
+   * Send a streaming message - concrete implementation
+   * @param messages Message array
+   * @param config Model config
+   * @param callbacks Streaming response callbacks
+   * @throws The original SDK error (full stack preserved)
    */
   protected abstract doSendMessageStream(
     messages: Message[],
@@ -59,55 +59,55 @@ export abstract class AbstractTextProviderAdapter implements ITextProviderAdapte
   ): Promise<void>
 
   /**
-   * 获取参数定义（用于buildDefaultModel）
-   * @param modelId 模型ID
-   * @returns 参数定义数组
+   * Get parameter definitions (used by buildDefaultModel)
+   * @param modelId Model ID
+   * @returns Array of parameter definitions
    */
   protected abstract getParameterDefinitions(modelId: string): readonly ParameterDefinition[]
 
   /**
-   * 获取默认参数值（用于buildDefaultModel）
-   * @param modelId 模型ID
-   * @returns 默认参数值
+   * Get default parameter values (used by buildDefaultModel)
+   * @param modelId Model ID
+   * @returns Default parameter values
    */
   protected abstract getDefaultParameterValues(modelId: string): Record<string, unknown>
 
-  // ===== 模板方法（公共接口） =====
+  // ===== Template methods (public interface) =====
 
   /**
-   * 发送消息（模板方法）
-   * 统一验证后调用doSendMessage
+   * Send a message (template method)
+   * Calls doSendMessage after unified validation
    */
   public async sendMessage(
     messages: Message[],
     config: TextModelConfig
   ): Promise<LLMResponse> {
-    // 1. 验证消息数组
+    // 1. Validate the message array
     this.validateMessages(messages)
 
-    // 2. 调用具体实现
+    // 2. Call the concrete implementation
     return await this.doSendMessage(messages, config)
   }
 
   /**
-   * 发送流式消息（模板方法）
-   * 统一验证后调用doSendMessageStream
+   * Send a streaming message (template method)
+   * Calls doSendMessageStream after unified validation
    */
   public async sendMessageStream(
     messages: Message[],
     config: TextModelConfig,
     callbacks: StreamHandlers
   ): Promise<void> {
-    // 1. 验证消息数组
+    // 1. Validate the message array
     this.validateMessages(messages)
 
-    // 2. 调用具体实现
+    // 2. Call the concrete implementation
     await this.doSendMessageStream(messages, config, callbacks)
   }
 
   /**
-   * 发送支持工具调用的流式消息（模板方法）
-   * 默认实现调用doSendMessageStream，子类可覆盖
+   * Send a streaming message with tool call support (template method)
+   * The default implementation calls doSendMessageStream; subclasses may override
    */
   public async sendMessageStreamWithTools(
     messages: Message[],
@@ -115,20 +115,20 @@ export abstract class AbstractTextProviderAdapter implements ITextProviderAdapte
     _tools: ToolDefinition[],
     callbacks: StreamHandlers
   ): Promise<void> {
-    // 验证消息数组
+    // Validate the message array
     this.validateMessages(messages)
 
-    // 默认实现：工具参数传递给具体实现处理
-    // 子类应该覆盖此方法以处理工具调用
+    // Default implementation: pass the tool parameters to the concrete implementation
+    // Subclasses should override this method to handle tool calls
     await this.doSendMessageStream(messages, config, callbacks)
   }
 
-  // ===== 公共验证方法 =====
+  // ===== Shared validation methods =====
 
   /**
-   * 验证消息数组格式
-   * @param messages 消息数组
-   * @throws {RequestConfigError} 当消息数组无效时
+   * Validate the message array format
+   * @param messages Message array
+   * @throws {RequestConfigError} When the message array is invalid
    */
   protected validateMessages(messages: Message[]): void {
     if (!Array.isArray(messages)) {
@@ -154,22 +154,22 @@ export abstract class AbstractTextProviderAdapter implements ITextProviderAdapte
     }
   }
 
-  // ===== 工具方法 =====
+  // ===== Utility methods =====
 
   /**
-   * 处理<think>标签，分离推理内容和主要内容
-   * 从现有service.ts中的processStreamContentWithThinkTags逻辑迁移
+   * Process <think> tags, separating reasoning content from main content
+   * Migrated from the processStreamContentWithThinkTags logic in the existing service.ts
    *
-   * @param content 原始内容
-   * @returns 处理后的结果 {content: 主要内容, reasoning?: 推理内容}
+   * @param content Raw content
+   * @returns Processed result {content: main content, reasoning?: reasoning content}
    */
   protected processThinkTags(content: string): { content: string; reasoning?: string } {
-    // 如果内容不包含think标签，直接返回
+    // If the content contains no think tags, return directly
     if (!content.includes('<think>')) {
       return { content }
     }
 
-    // 提取<think>...</think>内容作为推理内容
+    // Extract the <think>...</think> content as reasoning content
     const thinkRegex = /<think>([\s\S]*?)<\/think>/g
     const reasoningParts: string[] = []
     let match
@@ -178,7 +178,7 @@ export abstract class AbstractTextProviderAdapter implements ITextProviderAdapte
       reasoningParts.push(match[1])
     }
 
-    // 移除所有<think>标签及其内容，得到主要内容
+    // Remove all <think> tags and their content to get the main content
     const mainContent = content.replace(thinkRegex, '').trim()
 
     return {
@@ -188,21 +188,21 @@ export abstract class AbstractTextProviderAdapter implements ITextProviderAdapte
   }
 
   /**
-   * 流式处理<think>标签（用于流式场景）
-   * 从现有service.ts中的processStreamContentWithThinkTags逻辑迁移
+   * Process <think> tags in a stream (for streaming scenarios)
+   * Migrated from the processStreamContentWithThinkTags logic in the existing service.ts
    *
-   * @param content 当前chunk内容
-   * @param callbacks 流式回调
-   * @param thinkState 状态对象 {isInThinkMode: boolean, buffer: string}
+   * @param content Current chunk content
+   * @param callbacks Streaming callbacks
+   * @param thinkState State object {isInThinkMode: boolean, buffer: string}
    */
   protected processStreamContentWithThinkTags(
     content: string,
     callbacks: StreamHandlers,
     thinkState: { isInThinkMode: boolean; buffer: string }
   ): void {
-    // 如果没有推理回调，过滤掉think标签后发送到主要内容流
+    // If there is no reasoning callback, filter out think tags and send to the main content stream
     if (!callbacks.onReasoningToken) {
-      // 使用processThinkTags过滤掉think标签
+      // Use processThinkTags to filter out think tags
       const { content: mainContent } = this.processThinkTags(content)
       if (mainContent) {
         callbacks.onToken(mainContent)
@@ -210,19 +210,19 @@ export abstract class AbstractTextProviderAdapter implements ITextProviderAdapte
       return
     }
 
-    // 将新内容添加到缓冲区
+    // Append the new content to the buffer
     thinkState.buffer += content
     let remaining = thinkState.buffer
     let processed = ''
 
     while (remaining.length > 0) {
       if (!thinkState.isInThinkMode) {
-        // 不在think模式中，查找<think>标签
+        // Not in think mode; look for a <think> tag
         const thinkStartIndex = remaining.indexOf('<think>')
 
         if (thinkStartIndex !== -1) {
-          // 找到了开始标签
-          // 发送开始标签前的内容到主要流
+          // Found an opening tag
+          // Send the content before the opening tag to the main stream
           if (thinkStartIndex > 0) {
             const beforeThink = remaining.slice(0, thinkStartIndex)
             callbacks.onToken(beforeThink)
@@ -231,12 +231,12 @@ export abstract class AbstractTextProviderAdapter implements ITextProviderAdapte
             processed += '<think>'
           }
 
-          // 进入think模式
+          // Enter think mode
           thinkState.isInThinkMode = true
           remaining = remaining.slice(thinkStartIndex + 7) // 7 = '<think>'.length
         } else {
-          // 没有找到开始标签
-          // 检查buffer末尾是否可能是不完整的标签开始
+          // No opening tag found
+          // Check whether the end of the buffer may be an incomplete tag start
           if (
             remaining.endsWith('<') ||
             remaining.endsWith('<t') ||
@@ -245,23 +245,23 @@ export abstract class AbstractTextProviderAdapter implements ITextProviderAdapte
             remaining.endsWith('<thin') ||
             remaining.endsWith('<think')
           ) {
-            // 可能是不完整的标签，保留在buffer中等待更多内容
+            // May be an incomplete tag; keep it in the buffer and wait for more content
             thinkState.buffer = remaining
             return
           } else {
-            // 确定没有标签，发送所有内容到主要流
+            // Definitely no tag; send all content to the main stream
             callbacks.onToken(remaining)
             processed += remaining
             remaining = ''
           }
         }
       } else {
-        // 在think模式中，查找</think>标签
+        // In think mode; look for the </think> tag
         const thinkEndIndex = remaining.indexOf('</think>')
 
         if (thinkEndIndex !== -1) {
-          // 找到了结束标签
-          // 发送结束标签前的内容到推理流
+          // Found the closing tag
+          // Send the content before the closing tag to the reasoning stream
           if (thinkEndIndex > 0) {
             const reasoningContent = remaining.slice(0, thinkEndIndex)
             callbacks.onReasoningToken!(reasoningContent)
@@ -270,12 +270,12 @@ export abstract class AbstractTextProviderAdapter implements ITextProviderAdapte
             processed += '</think>'
           }
 
-          // 退出think模式
+          // Exit think mode
           thinkState.isInThinkMode = false
           remaining = remaining.slice(thinkEndIndex + 8) // 8 = '</think>'.length
         } else {
-          // 没有找到结束标签
-          // 检查buffer末尾是否可能是不完整的标签结束
+          // No closing tag found
+          // Check whether the end of the buffer may be an incomplete tag end
           if (
             remaining.endsWith('<') ||
             remaining.endsWith('</') ||
@@ -285,11 +285,11 @@ export abstract class AbstractTextProviderAdapter implements ITextProviderAdapte
             remaining.endsWith('</thin') ||
             remaining.endsWith('</think')
           ) {
-            // 可能是不完整的标签，保留在buffer中等待更多内容
+            // May be an incomplete tag; keep it in the buffer and wait for more content
             thinkState.buffer = remaining
             return
           } else {
-            // 确定没有结束标签，发送所有内容到推理流
+            // Definitely no closing tag; send all content to the reasoning stream
             callbacks.onReasoningToken!(remaining)
             processed += remaining
             remaining = ''
@@ -298,14 +298,14 @@ export abstract class AbstractTextProviderAdapter implements ITextProviderAdapte
       }
     }
 
-    // 更新缓冲区为已处理的内容
+    // Update the buffer to the processed content
     thinkState.buffer = ''
   }
 
   /**
-   * 根据modelId获取模型信息
-   * @param modelId 模型ID
-   * @returns 模型对象或undefined
+   * Get model info by modelId
+   * @param modelId Model ID
+   * @returns The model object or undefined
    */
   protected getModelById(modelId: string): TextModel | undefined {
     const models = this.getModels()
@@ -313,22 +313,22 @@ export abstract class AbstractTextProviderAdapter implements ITextProviderAdapte
   }
 
   /**
-   * 为未知模型ID构建默认元数据（兜底逻辑）
-   * @param modelId 模型ID
-   * @returns 包含默认capabilities的TextModel对象
+   * Build default metadata for an unknown model ID (fallback logic)
+   * @param modelId Model ID
+   * @returns TextModel object with default capabilities
    */
   public buildDefaultModel(modelId: string): TextModel {
     const provider = this.getProvider()
 
     return {
       id: modelId,
-      name: modelId, // 默认使用ID作为名称
+      name: modelId, // Use the ID as the name by default
       description: `Custom model ${modelId} for ${provider.name}`,
       providerId: provider.id,
       capabilities: {
-        supportsTools: true, // 默认支持工具
-        supportsReasoning: true, // 默认支持推理
-        maxContextLength: 128000 // 默认上下文长度
+        supportsTools: true, // Supports tools by default
+        supportsReasoning: true, // Supports reasoning by default
+        maxContextLength: 128000 // Default context length
       },
       parameterDefinitions: this.getParameterDefinitions(modelId),
       defaultParameterValues: this.getDefaultParameterValues(modelId)

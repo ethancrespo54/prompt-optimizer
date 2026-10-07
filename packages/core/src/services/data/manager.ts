@@ -12,29 +12,29 @@ import {
 import { toErrorWithCode } from '../../utils/error';
 
 /**
- * 数据导入导出管理器
+ * Data import/export manager
  *
- * 采用协调者模式：
- * - DataManager只负责协调各个服务的导入导出
- * - 具体的导入导出实现由各个服务自己负责
- * - 通过IImportExportable接口统一各服务的导入导出行为
+ * Uses the coordinator pattern:
+ * - DataManager is only responsible for coordinating import/export across services
+ * - Each service is responsible for its own concrete import/export implementation
+ * - The IImportExportable interface unifies the import/export behavior of all services
  */
 
-// 旧版本兼容性处理现在由各个服务自己负责
+// Legacy-version compatibility is now handled by each service itself
 
 /**
- * 数据管理器接口
+ * Data manager interface
  */
 export interface IDataManager {
   /**
-   * 导出所有数据
-   * @returns JSON格式的数据字符串
+   * Export all data
+   * @returns Data string in JSON format
    */
   exportAllData(): Promise<string>;
 
   /**
-   * 导入所有数据
-   * @param dataString JSON格式的数据字符串
+   * Import all data
+   * @param dataString Data string in JSON format
    */
   importAllData(dataString: string): Promise<void>;
 }
@@ -64,14 +64,14 @@ export class DataManager implements IDataManager {
     const data: Record<string, any> = {};
 
     try {
-      // 使用各服务的exportData接口，使用固定的键名保持兼容性
+      // Use each service's exportData interface, with fixed key names for compatibility
       data['history'] = await this.historyManager.exportData();
       data['models'] = await this.modelManager.exportData();
       data['userTemplates'] = await this.templateManager.exportData();
       data['userSettings'] = await this.preferenceService.exportData();
       data['contexts'] = await this.contextRepo.exportData();
     } catch (error) {
-      console.error('导出数据失败:', error);
+      console.error('Failed to export data:', error);
       if (typeof (error as any)?.code === 'string') {
         throw toErrorWithCode(error)
       }
@@ -83,7 +83,7 @@ export class DataManager implements IDataManager {
       data
     };
 
-    return JSON.stringify(exportFormat, null, 2); // 格式化输出，便于调试
+    return JSON.stringify(exportFormat, null, 2); // Formatted output for easier debugging
   }
 
   async importAllData(dataString: string): Promise<void> {
@@ -119,7 +119,7 @@ export class DataManager implements IDataManager {
 
     const errors: string[] = [];
 
-    // 使用各服务的importData接口
+    // Use each service's importData interface
     const serviceMap = [
       { service: this.historyManager, dataKey: 'history' },
       { service: this.modelManager, dataKey: 'models' },
@@ -148,13 +148,13 @@ export class DataManager implements IDataManager {
 }
 
 /**
- * 创建数据管理器的工厂函数
- * @param modelManager 模型管理器实例
- * @param templateManager 模板管理器实例
- * @param historyManager 历史记录管理器实例
- * @param preferenceService 偏好设置服务实例
- * @param contextRepo 上下文仓库实例
- * @returns 数据管理器实例
+ * Factory function for creating a data manager
+ * @param modelManager Model manager instance
+ * @param templateManager Template manager instance
+ * @param historyManager History manager instance
+ * @param preferenceService Preference service instance
+ * @param contextRepo Context repository instance
+ * @returns Data manager instance
  */
 export function createDataManager(
   modelManager: IModelManager,

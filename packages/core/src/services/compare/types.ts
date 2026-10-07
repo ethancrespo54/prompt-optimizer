@@ -1,5 +1,5 @@
 /**
- * 文本变化类型
+ * Text change type
  */
 export enum ChangeType {
   UNCHANGED = 'unchanged',
@@ -8,7 +8,7 @@ export enum ChangeType {
 }
 
 /**
- * 文本片段
+ * Text fragment
  */
 export interface TextFragment {
   text: string;
@@ -17,7 +17,7 @@ export interface TextFragment {
 }
 
 /**
- * 对比结果
+ * Compare result
  */
 export interface CompareResult {
   fragments: TextFragment[];
@@ -29,27 +29,27 @@ export interface CompareResult {
 }
 
 /**
- * 对比选项
+ * Compare options
  */
 export interface CompareOptions {
-  /** 对比粒度：word（单词级）、char（字符级） */
+  /** Compare granularity: word (word level), char (character level) */
   granularity: 'word' | 'char';
-  /** 是否忽略空白符 */
+  /** Whether to ignore whitespace */
   ignoreWhitespace: boolean;
-  /** 是否区分大小写 */
+  /** Whether to be case sensitive */
   caseSensitive: boolean;
 }
 
 /**
- * 文本对比服务接口
+ * Text compare service interface
  */
 export interface ICompareService {
   /**
-   * 对比两个文本
-   * @param original 原始文本
-   * @param optimized 优化后文本
-   * @param options 对比选项
-   * @returns 对比结果
+   * Compare two texts
+   * @param original Original text
+   * @param optimized Optimized text
+   * @param options Compare options
+   * @returns Compare result
    */
   compareTexts(
     original: string,

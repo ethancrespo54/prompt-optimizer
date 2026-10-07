@@ -1,7 +1,7 @@
 /**
- * 变量提取服务
+ * Variable extraction service
  *
- * 使用 LLM 智能识别提示词中的可参数化变量
+ * Uses an LLM to intelligently identify parameterizable variables in a prompt
  */
 
 export * from './types';

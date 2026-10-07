@@ -7,19 +7,19 @@ import { StorageError } from './errors';
 export type StorageType = 'localStorage' | 'dexie' | 'memory' | 'file';
 
 /**
- * 存储工厂类
+ * Storage factory class
  */
 export class StorageFactory {
-  // 单例实例缓存
+  // Singleton instance cache
   private static instances: Map<StorageType, IStorageProvider> = new Map();
 
   /**
-   * 创建存储提供器
-   * @param type 存储类型
-   * @returns 存储提供器实例
+   * Create a storage provider
+   * @param type Storage type
+   * @returns Storage provider instance
    */
   static create(type: StorageType): IStorageProvider {
-    // 检查是否已有缓存实例
+    // Check whether there is already a cached instance
     if (StorageFactory.instances.has(type)) {
       return StorageFactory.instances.get(type)!;
     }
@@ -48,7 +48,7 @@ export class StorageFactory {
         });
     }
 
-    // 缓存实例
+    // Cache the instance
     StorageFactory.instances.set(type, instance);
     return instance;
   }
@@ -56,37 +56,37 @@ export class StorageFactory {
 
 
   /**
-   * 重置所有实例（主要用于测试）
+   * Reset all instances (mainly for testing)
    */
   static reset(): void {
     StorageFactory.instances.clear();
 
-    // 重置DexieStorageProvider的迁移状态
+    // Reset the migration state of DexieStorageProvider
     DexieStorageProvider.resetMigrationState();
   }
 
 
 
   /**
-   * 获取所有支持的存储类型
+   * Get all supported storage types
    */
   static getSupportedTypes(): StorageType[] {
     const types: StorageType[] = [];
 
-    // memory 存储总是支持的
+    // memory storage is always supported
     types.push('memory');
 
-    // 检查 localStorage 支持
+    // Check localStorage support
     if (typeof window !== 'undefined' && window.localStorage) {
       types.push('localStorage');
     }
 
-    // 检查 IndexedDB 支持
+    // Check IndexedDB support
     if (typeof window !== 'undefined' && window.indexedDB) {
       types.push('dexie');
     }
 
-    // 检查 Electron 环境支持文件存储
+    // Check whether the Electron environment supports file storage
     if (typeof process !== 'undefined' && process.versions?.electron) {
       types.push('file');
     }
@@ -95,7 +95,7 @@ export class StorageFactory {
   }
 
   /**
-   * 检查特定存储类型是否支持
+   * Check whether a specific storage type is supported
    */
   static isSupported(type: StorageType): boolean {
     return StorageFactory.getSupportedTypes().includes(type);

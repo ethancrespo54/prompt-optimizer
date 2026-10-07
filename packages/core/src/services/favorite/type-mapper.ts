@@ -1,34 +1,34 @@
 import type { PromptRecordType } from '../history/types';
 
 /**
- * 功能模式映射接口
- * 对应 FavoritePrompt 中的三层分类体系
+ * Function mode mapping interface
+ * Corresponds to the three-level classification system in FavoritePrompt
  */
 export interface FunctionModeMapping {
-  /** 功能模式 (一级分类) */
+  /** Function mode (first-level category) */
   functionMode: 'basic' | 'context' | 'image';
-  /** 优化模式 (二级分类,仅用于 basic/context 模式) */
+  /** Optimization mode (second-level category, only for basic/context modes) */
   optimizationMode?: 'system' | 'user';
-  /** 图像子模式 (二级分类,仅用于 image 模式) */
+  /** Image sub-mode (second-level category, only for image mode) */
   imageSubMode?: 'text2image' | 'image2image';
 }
 
 /**
- * 类型映射工具类
- * 负责将历史记录类型 (PromptRecordType) 映射到收藏功能模式分类
+ * Type mapping utility class
+ * Responsible for mapping history record types (PromptRecordType) to favorite function mode categories
  */
 export class TypeMapper {
   /**
-   * 从历史记录类型映射到功能模式分类
-   * @param recordType 历史记录类型
-   * @returns 功能模式映射
+   * Map from a history record type to a function mode category
+   * @param recordType History record type
+   * @returns Function mode mapping
    */
   static mapFromRecordType(recordType: PromptRecordType): FunctionModeMapping {
-    // 图像模式映射
+    // Image mode mapping
     if (recordType === 'imageOptimize' || recordType === 'contextImageOptimize' || recordType === 'imageIterate') {
       return {
         functionMode: 'image',
-        imageSubMode: 'text2image' // 默认文生图模式
+        imageSubMode: 'text2image' // Defaults to text-to-image mode
       };
     }
 
@@ -46,7 +46,7 @@ export class TypeMapper {
       };
     }
 
-    // 上下文模式映射 (context)
+    // Context mode mapping (context)
     if (recordType === 'conversationMessageOptimize' || recordType === 'contextIterate') {
       return {
         functionMode: 'context',
@@ -61,7 +61,7 @@ export class TypeMapper {
       };
     }
 
-    // 基础模式映射 (basic)
+    // Basic mode mapping (basic)
     if (recordType === 'optimize' || recordType === 'iterate') {
       return {
         functionMode: 'basic',
@@ -76,7 +76,7 @@ export class TypeMapper {
       };
     }
 
-    // 测试类型回退到基础系统模式
+    // Test types fall back to basic system mode
     if (recordType === 'test') {
       return {
         functionMode: 'basic',
@@ -84,7 +84,7 @@ export class TypeMapper {
       };
     }
 
-    // 兜底：未知类型回退到基础系统模式
+    // Fallback: unknown types fall back to basic system mode
     console.warn(`[TypeMapper] Unknown record type: ${recordType}, falling back to basic/system`);
     return {
       functionMode: 'basic',
@@ -93,22 +93,22 @@ export class TypeMapper {
   }
 
   /**
-   * 验证功能模式映射的完整性和合法性
-   * @param mapping 功能模式映射
-   * @returns 是否有效
+   * Validate the completeness and legality of a function mode mapping
+   * @param mapping Function mode mapping
+   * @returns Whether it is valid
    */
   static validateMapping(mapping: Partial<FunctionModeMapping>): boolean {
-    // 功能模式必填
+    // Function mode is required
     if (!mapping.functionMode) {
       return false;
     }
 
-    // 检查功能模式值合法性
+    // Check that the function mode value is valid
     if (!['basic', 'context', 'image'].includes(mapping.functionMode)) {
       return false;
     }
 
-    // 基础模式和上下文模式必须有优化模式
+    // Basic mode and context mode must have an optimization mode
     if (mapping.functionMode === 'basic' || mapping.functionMode === 'context') {
       if (!mapping.optimizationMode) {
         return false;
@@ -116,13 +116,13 @@ export class TypeMapper {
       if (!['system', 'user'].includes(mapping.optimizationMode)) {
         return false;
       }
-      // 这两种模式不应有 imageSubMode
+      // These two modes should not have an imageSubMode
       if (mapping.imageSubMode) {
         return false;
       }
     }
 
-    // 图像模式必须有图像子模式
+    // Image mode must have an image sub-mode
     if (mapping.functionMode === 'image') {
       if (!mapping.imageSubMode) {
         return false;
@@ -130,7 +130,7 @@ export class TypeMapper {
       if (!['text2image', 'image2image'].includes(mapping.imageSubMode)) {
         return false;
       }
-      // 图像模式不应有 optimizationMode
+      // Image mode should not have an optimizationMode
       if (mapping.optimizationMode) {
         return false;
       }
@@ -140,15 +140,15 @@ export class TypeMapper {
   }
 
   /**
-   * 从功能模式映射推断出对应的历史记录类型
-   * 主要用于反向映射和验证
-   * @param mapping 功能模式映射
-   * @returns 可能的历史记录类型
+   * Infer the corresponding history record types from a function mode mapping
+   * Mainly used for reverse mapping and validation
+   * @param mapping Function mode mapping
+   * @returns Possible history record types
    */
   static inferRecordTypes(mapping: FunctionModeMapping): PromptRecordType[] {
     const { functionMode, optimizationMode, imageSubMode } = mapping;
 
-    // 基础模式
+    // Basic mode
     if (functionMode === 'basic') {
       if (optimizationMode === 'system') {
         return ['optimize', 'iterate'];
@@ -158,7 +158,7 @@ export class TypeMapper {
       }
     }
 
-    // 上下文模式
+    // Context mode
     if (functionMode === 'context') {
       if (optimizationMode === 'system') {
         return ['conversationMessageOptimize', 'contextIterate'];
@@ -168,7 +168,7 @@ export class TypeMapper {
       }
     }
 
-    // 图像模式
+    // Image mode
     if (functionMode === 'image') {
       if (imageSubMode === 'text2image') {
         return ['imageOptimize', 'contextImageOptimize', 'imageIterate', 'text2imageOptimize'];

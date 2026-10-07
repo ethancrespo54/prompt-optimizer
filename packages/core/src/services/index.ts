@@ -1,8 +1,8 @@
 /**
- * Core Services 导出
+ * Core Services exports
  */
 
-// 导出所有服务类型和实现
+// Export all service types and implementations
 export * from './llm';
 export * from './model';
 export * from './prompt';

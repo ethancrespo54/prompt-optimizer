@@ -6,7 +6,7 @@ import type { ErrorParams } from '../../constants/error-codes';
 export type PromptErrorParams = ErrorParams;
 
 /**
- * 提示词服务基础错误
+ * Base error for the prompt service
  *
  * code: i18n key (e.g. "error.prompt.optimization")
  * params: interpolation values for UI translation
@@ -24,7 +24,7 @@ export class PromptError extends Error {
 }
 
 /**
- * 优化错误
+ * Optimization error
  */
 export class OptimizationError extends PromptError {
   constructor(originalPrompt: string, details?: string) {
@@ -37,7 +37,7 @@ export class OptimizationError extends PromptError {
 }
 
 /**
- * 迭代错误
+ * Iteration error
  */
 export class IterationError extends PromptError {
   constructor(originalPrompt: string, iterateInput: string, details?: string) {
@@ -52,7 +52,7 @@ export class IterationError extends PromptError {
 }
 
 /**
- * 测试错误
+ * Test error
  */
 export class TestError extends PromptError {
   constructor(prompt: string, testInput: string, details?: string) {
@@ -67,7 +67,7 @@ export class TestError extends PromptError {
 }
 
 /**
- * 服务依赖错误
+ * Service dependency error
  */
 export class ServiceDependencyError extends PromptError {
   constructor(serviceName: string, details?: string) {

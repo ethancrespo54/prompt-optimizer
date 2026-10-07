@@ -1,5 +1,5 @@
 /**
- * 评估模板 - Pro模式/系统提示词（多消息模式）
+ * Evaluation templates - Pro mode / system prompt (multi-message mode)
  */
 
 export { template as evaluationProSystemOriginal } from './evaluation-original';

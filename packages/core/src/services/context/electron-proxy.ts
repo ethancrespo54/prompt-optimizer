@@ -1,14 +1,14 @@
 /**
- * Electron环境下ContextRepo的渲染进程代理
+ * Renderer-process proxy for ContextRepo in the Electron environment
  *
- * 通过IPC与主进程的ContextRepo实例通信，
- * 遵循项目现有的三层架构模式：Renderer代理 → Preload桥接 → 主进程IPC处理
+ * Communicates with the main-process ContextRepo instance over IPC,
+ * following the project's existing three-layer architecture: Renderer proxy → Preload bridge → Main-process IPC handler
  */
 
 import { ContextError, CONTEXT_ERROR_CODES, type ContextRepo, type ContextPackage, type ContextBundle, type ImportMode, type ContextListItem, type ImportResult, type ContextMode } from './types';
 import { safeSerializeForIPC } from '../../utils/ipc-serialization';
 
-// 为window.electronAPI提供完整的类型定义，以确保类型安全
+// Provide complete type definitions for window.electronAPI to ensure type safety
 interface ElectronAPI {
   context: {
     list: () => Promise<ContextListItem[]>;
@@ -28,7 +28,7 @@ interface ElectronAPI {
     getDataType: () => Promise<string>;
     validateData: (data: any) => Promise<boolean>;
   };
-  // 添加其他服务的定义以避免编译错误
+  // Add definitions for other services to avoid compile errors
   [key: string]: any;
 }
 
@@ -44,7 +44,7 @@ export class ElectronContextRepoProxy implements ContextRepo {
     return window.electronAPI.context;
   }
 
-  // === 基础查询 ===
+  // === Basic queries ===
   async list(): Promise<ContextListItem[]> {
     return this.api.list();
   }
@@ -61,7 +61,7 @@ export class ElectronContextRepoProxy implements ContextRepo {
     return this.api.get(id);
   }
 
-  // === 内容管理 ===
+  // === Content management ===
   async create(meta?: { title?: string; mode?: import('./types').ContextMode }): Promise<string> {
     return this.api.create(meta);
   }
@@ -86,7 +86,7 @@ export class ElectronContextRepoProxy implements ContextRepo {
     return this.api.remove(id);
   }
 
-  // === 导入导出 ===
+  // === Import/export ===
   async exportAll(): Promise<ContextBundle> {
     return this.api.exportAll();
   }
@@ -95,7 +95,7 @@ export class ElectronContextRepoProxy implements ContextRepo {
     return this.api.importAll(safeSerializeForIPC(bundle), mode);
   }
 
-  // === IImportExportable 实现 ===
+  // === IImportExportable implementation ===
   async exportData(): Promise<ContextBundle> {
     return this.exportAll();
   }

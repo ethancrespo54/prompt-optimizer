@@ -9,7 +9,7 @@ import { CompareValidationError, CompareCalculationError } from './errors';
 import { diffChars, diffWords, type Change } from 'diff';
 
 /**
- * 默认对比选项
+ * Default compare options
  */
 const DEFAULT_OPTIONS: CompareOptions = {
   granularity: 'word',
@@ -18,11 +18,11 @@ const DEFAULT_OPTIONS: CompareOptions = {
 };
 
 /**
- * 文本对比服务实现 - 使用 jsdiff 库
+ * Text compare service implementation - uses the jsdiff library
  */
 export class CompareService implements ICompareService {
   /**
-   * 对比两个文本
+   * Compare two texts
    */
   compareTexts(
     original: string,
@@ -30,16 +30,16 @@ export class CompareService implements ICompareService {
     options?: Partial<CompareOptions>
   ): CompareResult {
     try {
-      // 验证输入
+      // Validate input
       this.validateInput(original, optimized);
       
-      // 合并选项
+      // Merge options
       const finalOptions = { ...DEFAULT_OPTIONS, ...options };
       
-      // 执行对比
+      // Perform the comparison
       const fragments = this.performTextComparison(original, optimized, finalOptions);
       
-      // 生成统计信息
+      // Generate statistics
       const summary = this.generateSummary(fragments);
       
       return {
@@ -59,7 +59,7 @@ export class CompareService implements ICompareService {
   }
 
   /**
-   * 验证输入参数
+   * Validate input parameters
    */
   private validateInput(original: string, optimized: string): void {
     if (typeof original !== 'string') {
@@ -71,7 +71,7 @@ export class CompareService implements ICompareService {
   }
 
   /**
-   * 执行文本对比 - 使用 jsdiff
+   * Perform text comparison - uses jsdiff
    */
   private performTextComparison(
     original: string,
@@ -80,12 +80,12 @@ export class CompareService implements ICompareService {
   ): TextFragment[] {
     let diffResult: Change[];
 
-    // 根据配置处理文本预处理
+    // Preprocess the text according to the config
     let processedOriginal = original;
     let processedOptimized = optimized;
 
     if (options.ignoreWhitespace) {
-      // 标准化空白符
+      // Normalize whitespace
       processedOriginal = original.replace(/\s+/g, ' ').trim();
       processedOptimized = optimized.replace(/\s+/g, ' ').trim();
     }
@@ -95,7 +95,7 @@ export class CompareService implements ICompareService {
       processedOptimized = processedOptimized.toLowerCase();
     }
 
-    // 根据粒度选择不同的 diff 方法
+    // Choose a different diff method based on granularity
     switch (options.granularity) {
       case 'char':
         diffResult = diffChars(processedOriginal, processedOptimized);
@@ -106,12 +106,12 @@ export class CompareService implements ICompareService {
         break;
     }
 
-    // 转换为我们的 TextFragment 格式
+    // Convert to our TextFragment format
     return this.convertDiffResultToFragments(diffResult, original);
   }
 
   /**
-   * 将 jsdiff 的结果转换为我们的 TextFragment 格式
+   * Convert jsdiff results to our TextFragment format
    */
   private convertDiffResultToFragments(
     diffResult: Change[],
@@ -131,12 +131,12 @@ export class CompareService implements ICompareService {
         changeType = ChangeType.UNCHANGED;
       }
 
-      // 确保文本内容来自原始输入（保持原始格式）
+      // Ensure the text content comes from the original input (preserving the original format)
       let text = change.value;
       
-      // 如果是未更改的部分，使用原始文本以保持格式
+      // For unchanged parts, use the original text to preserve formatting
       if (changeType === ChangeType.UNCHANGED) {
-        // 在原始文本中查找对应的部分
+        // Find the corresponding part in the original text
         const position = this.findTextPosition(text, originalText);
         if (position !== -1) {
           text = originalText.substring(position, position + text.length);
@@ -154,15 +154,15 @@ export class CompareService implements ICompareService {
   }
 
   /**
-   * 在文本中查找特定内容的位置
+   * Find the position of specific content in the text
    */
   private findTextPosition(searchText: string, sourceText: string): number {
-    // 简单的查找实现
+    // Simple lookup implementation
     return sourceText.indexOf(searchText);
   }
 
   /**
-   * 合并连续的相同类型片段
+   * Merge consecutive fragments of the same type
    */
   private mergeConsecutiveFragments(fragments: TextFragment[]): TextFragment[] {
     if (fragments.length === 0) return fragments;
@@ -174,10 +174,10 @@ export class CompareService implements ICompareService {
       const fragment = fragments[i];
       
       if (fragment.type === current.type) {
-        // 合并相同类型的片段
+        // Merge fragments of the same type
         current.text += fragment.text;
       } else {
-        // 添加当前片段并开始新的片段
+        // Add the current fragment and start a new one
         merged.push(current);
         current = { ...fragment, index: merged.length };
       }
@@ -189,7 +189,7 @@ export class CompareService implements ICompareService {
   }
 
   /**
-   * 生成统计信息
+   * Generate statistics
    */
   private generateSummary(fragments: TextFragment[]) {
     const summary = {
@@ -217,8 +217,8 @@ export class CompareService implements ICompareService {
 }
 
 /**
- * 创建文本对比服务实例
- * @returns 文本对比服务实例
+ * Create a text compare service instance
+ * @returns Text compare service instance
  */
 export function createCompareService(): ICompareService {
   return new CompareService();

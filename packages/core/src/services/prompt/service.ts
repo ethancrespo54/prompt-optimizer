@@ -29,7 +29,7 @@ const DEFAULT_TEMPLATES = {
 } as const;
 
 /**
- * 提示词服务实现
+ * Prompt service implementation
  */
 export class PromptService implements IPromptService {
   constructor(
@@ -42,7 +42,7 @@ export class PromptService implements IPromptService {
   }
 
   /**
-   * 检查依赖服务是否已初始化
+   * Check whether the dependent services have been initialized
    */
   private checkDependencies() {
     if (!this.modelManager) {
@@ -66,7 +66,7 @@ export class PromptService implements IPromptService {
   }
 
   /**
-   * 验证输入参数
+   * Validate input parameters
    */
   private validateInput(prompt: string, modelKey: string) {
     if (!prompt?.trim()) {
@@ -79,7 +79,7 @@ export class PromptService implements IPromptService {
   }
 
   /**
-   * 验证LLM响应
+   * Validate the LLM response
    */
   private validateResponse(response: string, prompt: string) {
     if (!response?.trim()) {
@@ -88,7 +88,7 @@ export class PromptService implements IPromptService {
   }
 
   /**
-   * 验证消息优化请求参数
+   * Validate the message optimization request parameters
    */
   private validateMessageOptimizationRequest(request: MessageOptimizationRequest) {
       if (!request.selectedMessageId?.trim()) {
@@ -103,7 +103,7 @@ export class PromptService implements IPromptService {
         throw new OptimizationError("", "Model key is required");
       }
 
-      // 验证选中的消息是否存在
+      // Validate that the selected message exists
       const selectedMessage = request.messages.find(
         msg => msg.id === request.selectedMessageId
       );
@@ -115,7 +115,7 @@ export class PromptService implements IPromptService {
         );
       }
 
-      // 验证消息内容不为空
+      // Validate that the message content is not empty
       if (!selectedMessage.content?.trim()) {
         throw new OptimizationError(
           "",
@@ -125,7 +125,7 @@ export class PromptService implements IPromptService {
   }
 
   /**
-   * 优化提示词 - 支持提示词类型和增强功能
+   * Optimize a prompt - supports prompt types and enhanced features
    */
   async optimizePrompt(request: OptimizationRequest): Promise<string> {
     try {
@@ -154,13 +154,13 @@ export class PromptService implements IPromptService {
         originalPrompt: request.targetPrompt,
         optimizationMode: request.optimizationMode,
         contextMode: request.contextMode,
-        // 传递高级上下文信息到模板
+        // Pass the advanced context info to the template
         customVariables: request.advancedContext?.variables,
         conversationMessages: request.advancedContext?.messages,
         tools: request.advancedContext?.tools,
       };
 
-      // 如果有会话消息，将其格式化为文本并添加到上下文
+      // If there are conversation messages, format them as text and add them to the context
       if (
         request.advancedContext?.messages &&
         request.advancedContext.messages.length > 0
@@ -171,7 +171,7 @@ export class PromptService implements IPromptService {
         context.conversationContext = conversationText;
       }
 
-      // 如果有工具信息，将其格式化为文本并添加到上下文
+      // If there is tool info, format it as text and add it to the context
       if (
         request.advancedContext?.tools &&
         request.advancedContext.tools.length > 0
@@ -189,8 +189,8 @@ export class PromptService implements IPromptService {
       );
 
       this.validateResponse(result, request.targetPrompt);
-      // 注意：历史记录保存由UI层的historyManager.createNewChain方法处理
-      // 移除重复的saveOptimizationHistory调用以避免重复保存
+      // Note: saving history is handled by the UI layer's historyManager.createNewChain method
+      // The duplicate saveOptimizationHistory call was removed to avoid saving twice
 
       return result;
     } catch (error) {
@@ -204,30 +204,30 @@ export class PromptService implements IPromptService {
   }
 
   /**
-   * 优化单条消息 - 多轮对话模式专用
+   * Optimize a single message - dedicated to multi-turn conversation mode
    */
   async optimizeMessage(request: MessageOptimizationRequest): Promise<string> {
     try {
-      // 验证请求参数
+      // Validate the request parameters
       this.validateMessageOptimizationRequest(request);
 
-      // 获取模型配置
+      // Get the model config
       const modelConfig = await this.modelManager.getModel(request.modelKey);
       if (!modelConfig) {
         throw new OptimizationError("", "Model not found");
       }
 
-      // 从消息数组中找到选中的消息
+      // Find the selected message in the message array
       const selectedMessage = request.messages.find(
         msg => msg.id === request.selectedMessageId
       )!;
 
-      // 获取选中消息的索引（从0开始）
+      // Get the index of the selected message (starting from 0)
       const selectedIndex = request.messages.findIndex(
         msg => msg.id === request.selectedMessageId
       );
 
-      // 获取模板（默认使用 context-message-optimize）
+      // Get the template (context-message-optimize is used by default)
       const template = await this.templateManager.getTemplate(
         request.templateId || "context-message-optimize"
       );
@@ -239,15 +239,15 @@ export class PromptService implements IPromptService {
         );
       }
 
-      // 为消息数组添加元数据（用于模板循环）
+      // Add metadata to the message array (used for template loops)
       const messagesWithMeta = request.messages.map((msg, idx) => ({
-        index: idx + 1,  // 序号从1开始
+        index: idx + 1,  // Numbering starts from 1
         roleLabel: msg.role.toUpperCase(),
         content: msg.content,
         isSelected: msg.id === request.selectedMessageId,
       }));
 
-      // 准备选中消息的数据（包含长度判断）
+      // Prepare the data of the selected message (including a length check)
       const maxLength = 200;
       const selectedMessageData = {
         index: selectedIndex + 1,
@@ -259,33 +259,33 @@ export class PromptService implements IPromptService {
           : undefined,
       };
 
-      // 构建模板上下文
+      // Build the template context
       const context: TemplateContext = {
         originalPrompt: selectedMessage.content,
         messageRole: selectedMessage.role,
         contextMode: request.contextMode,
         customVariables: request.variables,
         tools: request.tools,
-        // 🆕 模板驱动的数据
+        // 🆕 Template-driven data
         conversationMessages: messagesWithMeta,
         selectedMessage: selectedMessageData,
       };
 
-      // 如果有工具定义，格式化为工具文本
+      // If there are tool definitions, format them as tool text
       if (request.tools && request.tools.length > 0) {
         context.toolsContext = TemplateProcessor.formatToolsAsText(
           request.tools
         );
       }
 
-      // 处理模板并调用 LLM
+      // Process the template and call the LLM
       const messages = TemplateProcessor.processTemplate(template, context);
       const result = await this.llmService.sendMessage(
         messages,
         request.modelKey,
       );
 
-      // 验证响应
+      // Validate the response
       this.validateResponse(result, selectedMessage.content);
 
       return result;
@@ -300,7 +300,7 @@ export class PromptService implements IPromptService {
   }
 
   /**
-   * 迭代优化提示词
+   * Iteratively optimize a prompt
    */
   async iteratePrompt(
     originalPrompt: string,
@@ -316,18 +316,18 @@ export class PromptService implements IPromptService {
     },
   ): Promise<string> {
     try {
-      // 🔧 迭代模板只需要 lastOptimizedPrompt 和 iterateInput
-      // originalPrompt 可以为空（用户直接在工作区编辑后迭代的场景）
+      // 🔧 The iterate template only needs lastOptimizedPrompt and iterateInput
+      // originalPrompt may be empty (when the user iterates after editing directly in the workspace)
       this.validateInput(lastOptimizedPrompt, modelKey);
       this.validateInput(iterateInput, modelKey);
 
-      // 获取模型配置
+      // Get the model config
       const modelConfig = await this.modelManager.getModel(modelKey);
       if (!modelConfig) {
         throw new ServiceDependencyError("ModelManager", "Model not found");
       }
 
-      // 获取迭代提示词
+      // Get the iterate prompt
       let template;
       try {
         template = await this.templateManager.getTemplate(
@@ -351,7 +351,7 @@ export class PromptService implements IPromptService {
         );
       }
 
-      // 🔧 迭代功能必须使用高级模板（message array 格式）以支持变量替换
+      // 🔧 Iteration must use an advanced template (message array format) to support variable substitution
       if (typeof template.content === "string") {
         throw new IterationError(
           originalPrompt,
@@ -363,7 +363,7 @@ export class PromptService implements IPromptService {
         );
       }
 
-      // 使用TemplateProcessor处理模板和变量替换
+      // Use TemplateProcessor to process the template and substitute variables
       const context: TemplateContext = {
         originalPrompt,
         lastOptimizedPrompt,
@@ -372,7 +372,7 @@ export class PromptService implements IPromptService {
         tools: contextData?.tools,
       };
 
-      // 如果有会话消息，将其格式化为文本并添加到上下文
+      // If there are conversation messages, format them as text and add them to the context
       if (contextData?.messages && contextData.messages.length > 0) {
         const conversationText = TemplateProcessor.formatConversationAsText(
           contextData.messages,
@@ -380,7 +380,7 @@ export class PromptService implements IPromptService {
         context.conversationContext = conversationText;
       }
 
-      // 如果有工具信息，将其格式化为文本并添加到上下文
+      // If there is tool info, format it as text and add it to the context
       if (contextData?.tools && contextData.tools.length > 0) {
         const toolsText = TemplateProcessor.formatToolsAsText(
           contextData.tools,
@@ -390,11 +390,11 @@ export class PromptService implements IPromptService {
 
       const messages = TemplateProcessor.processTemplate(template, context);
 
-      // 发送请求
+      // Send the request
       const result = await this.llmService.sendMessage(messages, modelKey);
 
-      // 注意：迭代历史记录保存由UI层的historyManager.addIteration方法处理
-      // 移除重复的addRecord调用以避免重复保存
+      // Note: saving iteration history is handled by the UI layer's historyManager.addIteration method
+      // The duplicate addRecord call was removed to avoid saving twice
 
       return result;
     } catch (error) {
@@ -409,7 +409,7 @@ export class PromptService implements IPromptService {
   }
 
   /**
-   * 测试提示词 - 支持可选系统提示词
+   * Test a prompt - supports an optional system prompt
    */
   async testPrompt(
     systemPrompt: string,
@@ -417,7 +417,7 @@ export class PromptService implements IPromptService {
     modelKey: string,
   ): Promise<string> {
     try {
-      // 对于用户提示词优化，systemPrompt 可以为空
+      // For user prompt optimization, systemPrompt may be empty
       if (!userPrompt?.trim()) {
         throw new TestError(systemPrompt, userPrompt, "User prompt is required");
       }
@@ -432,7 +432,7 @@ export class PromptService implements IPromptService {
 
       const messages: Message[] = [];
 
-      // 只有当 systemPrompt 不为空时才添加 system 消息
+      // Only add the system message when systemPrompt is not empty
       if (systemPrompt?.trim()) {
         messages.push({ role: "system", content: systemPrompt });
       }
@@ -441,8 +441,8 @@ export class PromptService implements IPromptService {
 
       const result = await this.llmService.sendMessage(messages, modelKey);
 
-      // 注意：测试功能不保存历史记录，保持架构一致性
-      // 测试是临时性验证，不应与优化历史记录混合
+      // Note: the test feature does not save history, keeping the architecture consistent
+      // Tests are temporary verification and should not be mixed with optimization history
 
       return result;
     } catch (error) {
@@ -457,21 +457,21 @@ export class PromptService implements IPromptService {
   }
 
   /**
-   * 获取历史记录
+   * Get the history records
    */
   async getHistory(): Promise<PromptRecord[]> {
     return await this.historyManager.getRecords();
   }
 
   /**
-   * 获取迭代链
+   * Get the iteration chain
    */
   async getIterationChain(recordId: string): Promise<PromptRecord[]> {
     return await this.historyManager.getIterationChain(recordId);
   }
 
   /**
-   * 测试提示词（流式）- 支持可选系统提示词
+   * Test a prompt (streaming) - supports an optional system prompt
    */
   async testPromptStream(
     systemPrompt: string,
@@ -480,7 +480,7 @@ export class PromptService implements IPromptService {
     callbacks: StreamHandlers,
   ): Promise<void> {
     try {
-      // 对于用户提示词优化，systemPrompt 可以为空
+      // For user prompt optimization, systemPrompt may be empty
       if (!userPrompt?.trim()) {
         throw new TestError(systemPrompt, userPrompt, "User prompt is required");
       }
@@ -495,17 +495,17 @@ export class PromptService implements IPromptService {
 
       const messages: Message[] = [];
 
-      // 只有当 systemPrompt 不为空时才添加 system 消息
+      // Only add the system message when systemPrompt is not empty
       if (systemPrompt?.trim()) {
         messages.push({ role: "system", content: systemPrompt });
       }
 
       messages.push({ role: "user", content: userPrompt });
 
-      // 使用新的结构化流式响应
+      // Use the new structured streaming response
       await this.llmService.sendMessageStream(messages, modelKey, {
         onToken: callbacks.onToken,
-        onReasoningToken: callbacks.onReasoningToken, // 支持推理内容流
+        onReasoningToken: callbacks.onReasoningToken, // Supports the reasoning content stream
         onComplete: callbacks.onComplete,
         onError: callbacks.onError,
       });
@@ -521,7 +521,7 @@ export class PromptService implements IPromptService {
   }
 
   /**
-   * 优化提示词（流式）- 支持提示词类型和增强功能
+   * Optimize a prompt (streaming) - supports prompt types and enhanced features
    */
   async optimizePromptStream(
     request: OptimizationRequest,
@@ -549,23 +549,23 @@ export class PromptService implements IPromptService {
         );
       }
 
-      // 创建基础上下文
+      // Create the base context
       const baseContext: TemplateContext = {
         originalPrompt: request.targetPrompt,
         optimizationMode: request.optimizationMode,
-        // 🆕 上下文模式和渲染阶段（用于 ContextPromptRenderer）
+        // 🆕 Context mode and render phase (used by ContextPromptRenderer)
         contextMode: request.contextMode,
-        renderPhase: "optimize", // 优化阶段
+        renderPhase: "optimize", // Optimize phase
       };
 
-      // 扩展上下文以支持高级功能
+      // Extend the context to support advanced features
       const context = TemplateProcessor.createExtendedContext(
         baseContext,
         request.advancedContext?.variables,
         request.advancedContext?.messages,
       );
 
-      // 如果有会话消息，将其格式化为文本并添加到上下文
+      // If there are conversation messages, format them as text and add them to the context
       if (
         request.advancedContext?.messages &&
         request.advancedContext.messages.length > 0
@@ -576,7 +576,7 @@ export class PromptService implements IPromptService {
         context.conversationContext = conversationText;
       }
 
-      // 🆕 如果有工具信息，将其格式化为文本并添加到上下文
+      // 🆕 If there is tool info, format it as text and add it to the context
       if (
         request.advancedContext?.tools &&
         request.advancedContext.tools.length > 0
@@ -589,24 +589,24 @@ export class PromptService implements IPromptService {
 
       const messages = TemplateProcessor.processTemplate(template, context);
 
-      // 使用新的结构化流式响应
+      // Use the new structured streaming response
       await this.llmService.sendMessageStream(messages, request.modelKey, {
         onToken: callbacks.onToken,
-        onReasoningToken: callbacks.onReasoningToken, // 支持推理内容流
+        onReasoningToken: callbacks.onReasoningToken, // Supports the reasoning content stream
         onComplete: async (response) => {
           try {
             if (response) {
-              // 验证主要内容
+              // Validate the main content
               this.validateResponse(response.content, request.targetPrompt);
 
-              // 注意：历史记录保存由UI层的historyManager.createNewChain方法处理
-              // 移除重复的saveOptimizationHistory调用以避免重复保存
+              // Note: saving history is handled by the UI layer's historyManager.createNewChain method
+              // The duplicate saveOptimizationHistory call was removed to avoid saving twice
             }
 
-            // 调用原始完成回调，传递结构化响应
+            // Call the original completion callback, passing the structured response
             callbacks.onComplete(response);
           } catch (error) {
-            // 如果验证失败，调用错误回调
+            // If validation fails, call the error callback
             callbacks.onError(
               error instanceof Error ? error : new Error(String(error)),
             );
@@ -625,33 +625,33 @@ export class PromptService implements IPromptService {
   }
 
   /**
-   * 优化单条消息（流式）- 多轮对话模式专用
+   * Optimize a single message (streaming) - dedicated to multi-turn conversation mode
    */
   async optimizeMessageStream(
     request: MessageOptimizationRequest,
     callbacks: StreamHandlers,
   ): Promise<void> {
     try {
-      // 验证请求参数
+      // Validate the request parameters
       this.validateMessageOptimizationRequest(request);
 
-      // 获取模型配置
+      // Get the model config
       const modelConfig = await this.modelManager.getModel(request.modelKey);
       if (!modelConfig) {
         throw new OptimizationError("", "Model not found");
       }
 
-      // 从消息数组中找到选中的消息
+      // Find the selected message in the message array
       const selectedMessage = request.messages.find(
         msg => msg.id === request.selectedMessageId
       )!;
 
-      // 获取选中消息的索引（从0开始）
+      // Get the index of the selected message (starting from 0)
       const selectedIndex = request.messages.findIndex(
         msg => msg.id === request.selectedMessageId
       );
 
-      // 获取模板（默认使用 context-message-optimize）
+      // Get the template (context-message-optimize is used by default)
       const template = await this.templateManager.getTemplate(
         request.templateId || "context-message-optimize"
       );
@@ -663,15 +663,15 @@ export class PromptService implements IPromptService {
         );
       }
 
-      // 为消息数组添加元数据（用于模板循环）
+      // Add metadata to the message array (used for template loops)
       const messagesWithMeta = request.messages.map((msg, idx) => ({
-        index: idx + 1,  // 序号从1开始
+        index: idx + 1,  // Numbering starts from 1
         roleLabel: msg.role.toUpperCase(),
         content: msg.content,
         isSelected: msg.id === request.selectedMessageId,
       }));
 
-      // 准备选中消息的数据（包含长度判断）
+      // Prepare the data of the selected message (including a length check)
       const maxLength = 200;
       const selectedMessageData = {
         index: selectedIndex + 1,
@@ -683,43 +683,43 @@ export class PromptService implements IPromptService {
           : undefined,
       };
 
-      // 构建模板上下文
+      // Build the template context
       const context: TemplateContext = {
         originalPrompt: selectedMessage.content,
         messageRole: selectedMessage.role,
         contextMode: request.contextMode,
         customVariables: request.variables,
         tools: request.tools,
-        // 🆕 模板驱动的数据
+        // 🆕 Template-driven data
         conversationMessages: messagesWithMeta,
         selectedMessage: selectedMessageData,
       };
 
-      // 如果有工具定义，格式化为工具文本
+      // If there are tool definitions, format them as tool text
       if (request.tools && request.tools.length > 0) {
         context.toolsContext = TemplateProcessor.formatToolsAsText(
           request.tools
         );
       }
 
-      // 处理模板
+      // Process the template
       const messages = TemplateProcessor.processTemplate(template, context);
 
-      // 使用流式发送
+      // Send using streaming
       await this.llmService.sendMessageStream(messages, request.modelKey, {
         onToken: callbacks.onToken,
         onReasoningToken: callbacks.onReasoningToken,
         onComplete: async (response) => {
           try {
             if (response) {
-              // 验证主要内容
+              // Validate the main content
               this.validateResponse(response.content, selectedMessage.content);
             }
 
-            // 调用原始完成回调
+            // Call the original completion callback
             callbacks.onComplete(response);
           } catch (error) {
-            // 如果验证失败，调用错误回调
+            // If validation fails, call the error callback
             callbacks.onError(
               error instanceof Error ? error : new Error(String(error)),
             );
@@ -738,7 +738,7 @@ export class PromptService implements IPromptService {
   }
 
   /**
-   * 迭代优化提示词（流式）
+   * Iteratively optimize a prompt (streaming)
    */
   async iteratePromptStream(
     originalPrompt: string,
@@ -755,18 +755,18 @@ export class PromptService implements IPromptService {
     },
   ): Promise<void> {
     try {
-      // 🔧 迭代模板只需要 lastOptimizedPrompt 和 iterateInput
-      // originalPrompt 可以为空（用户直接在工作区编辑后迭代的场景）
+      // 🔧 The iterate template only needs lastOptimizedPrompt and iterateInput
+      // originalPrompt may be empty (when the user iterates after editing directly in the workspace)
       this.validateInput(lastOptimizedPrompt, modelKey);
       this.validateInput(iterateInput, modelKey);
 
-      // 获取模型配置
+      // Get the model config
       const modelConfig = await this.modelManager.getModel(modelKey);
       if (!modelConfig) {
         throw new ServiceDependencyError("ModelManager", "Model not found");
       }
 
-      // 获取迭代提示词
+      // Get the iterate prompt
       let template;
       try {
         template = await this.templateManager.getTemplate(templateId);
@@ -788,7 +788,7 @@ export class PromptService implements IPromptService {
         );
       }
 
-      // 🔧 迭代功能必须使用高级模板（message array 格式）以支持变量替换
+      // 🔧 Iteration must use an advanced template (message array format) to support variable substitution
       if (typeof template.content === "string") {
         throw new IterationError(
           originalPrompt,
@@ -800,7 +800,7 @@ export class PromptService implements IPromptService {
         );
       }
 
-      // 使用TemplateProcessor处理模板和变量替换
+      // Use TemplateProcessor to process the template and substitute variables
       const context: TemplateContext = {
         originalPrompt,
         lastOptimizedPrompt,
@@ -809,7 +809,7 @@ export class PromptService implements IPromptService {
         tools: contextData?.tools,
       };
 
-      // 如果有会话消息，将其格式化为文本并添加到上下文
+      // If there are conversation messages, format them as text and add them to the context
       if (contextData?.messages && contextData.messages.length > 0) {
         const conversationText = TemplateProcessor.formatConversationAsText(
           contextData.messages,
@@ -817,7 +817,7 @@ export class PromptService implements IPromptService {
         context.conversationContext = conversationText;
       }
 
-      // 如果有工具信息，将其格式化为文本并添加到上下文
+      // If there is tool info, format it as text and add it to the context
       if (contextData?.tools && contextData.tools.length > 0) {
         const toolsText = TemplateProcessor.formatToolsAsText(
           contextData.tools,
@@ -827,22 +827,22 @@ export class PromptService implements IPromptService {
 
       const messages = TemplateProcessor.processTemplate(template, context);
 
-      // 使用新的结构化流式响应
+      // Use the new structured streaming response
       await this.llmService.sendMessageStream(messages, modelKey, {
         onToken: handlers.onToken,
-        onReasoningToken: handlers.onReasoningToken, // 支持推理内容流
+        onReasoningToken: handlers.onReasoningToken, // Supports the reasoning content stream
         onComplete: async (response) => {
           try {
             if (response) {
-              // 验证迭代结果
+              // Validate the iteration result
               this.validateResponse(response.content, lastOptimizedPrompt);
             }
 
-            // 调用原始完成回调，传递结构化响应
-            // 注意：迭代历史记录由UI层的historyManager.addIteration方法处理
+            // Call the original completion callback, passing the structured response
+            // Note: iteration history is handled by the UI layer's historyManager.addIteration method
             handlers.onComplete(response);
           } catch (error) {
-            // 如果验证失败，调用错误回调
+            // If validation fails, call the error callback
             handlers.onError(
               error instanceof Error ? error : new Error(String(error)),
             );
@@ -861,10 +861,10 @@ export class PromptService implements IPromptService {
     }
   }
 
-  // === 新增：支持提示词类型的增强方法 ===
+  // === New: enhanced methods supporting prompt types ===
 
   /**
-   * 验证优化请求参数
+   * Validate the optimization request parameters
    */
   private validateOptimizationRequest(request: OptimizationRequest) {
     if (!request.targetPrompt?.trim()) {
@@ -876,7 +876,7 @@ export class PromptService implements IPromptService {
   }
 
   /**
-   * 获取默认模板ID
+   * Get the default template ID
    */
   private async getDefaultTemplateId(
     templateType:
@@ -891,19 +891,19 @@ export class PromptService implements IPromptService {
       | "contextIterate",
   ): Promise<string> {
     try {
-      // 尝试获取指定类型的模板列表
+      // Try to get the list of templates of the specified type
       const templates = await this.templateManager.listTemplatesByType(
         templateType as any,
       );
       if (templates.length > 0) {
-        // 返回列表中第一个模板的ID
+        // Return the ID of the first template in the list
         return templates[0].id;
       }
     } catch (error) {
       console.warn(`Failed to get templates for type ${templateType}`, error);
     }
 
-    // 如果指定类型没有模板，尝试获取相关类型的模板作为回退
+    // If there are no templates of the specified type, try templates of a related type as a fallback
     try {
       let fallbackTypes: (
         | "optimize"
@@ -917,23 +917,23 @@ export class PromptService implements IPromptService {
         templateType === "optimize" ||
         templateType === "conversationMessageOptimize"
       ) {
-        fallbackTypes = ["userOptimize"]; // optimize类型回退到userOptimize
+        fallbackTypes = ["userOptimize"]; // The optimize type falls back to userOptimize
       } else if (
         templateType === "userOptimize" ||
         templateType === "contextUserOptimize"
       ) {
-        fallbackTypes = ["optimize"]; // userOptimize类型回退到optimize
+        fallbackTypes = ["optimize"]; // The userOptimize type falls back to optimize
       } else if (
         templateType === "iterate" ||
         templateType === "contextIterate"
       ) {
-        fallbackTypes = ["optimize", "userOptimize"]; // iterate类型回退到任意优化类型
+        fallbackTypes = ["optimize", "userOptimize"]; // The iterate type falls back to any optimize type
       } else if (templateType === "text2imageOptimize") {
-        fallbackTypes = ["userOptimize", "optimize"]; // 文生图回退到基础优化
+        fallbackTypes = ["userOptimize", "optimize"]; // Text-to-image falls back to the basic optimize types
       } else if (templateType === "image2imageOptimize") {
-        fallbackTypes = ["text2imageOptimize", "userOptimize", "optimize"]; // 图生图优先回退到文生图
+        fallbackTypes = ["text2imageOptimize", "userOptimize", "optimize"]; // Image-to-image falls back to text-to-image first
       } else if (templateType === "imageIterate") {
-        fallbackTypes = ["iterate", "text2imageOptimize", "userOptimize"]; // 图像迭代回退到通用迭代/文生图
+        fallbackTypes = ["iterate", "text2imageOptimize", "userOptimize"]; // Image iteration falls back to general iteration / text-to-image
       }
 
       for (const fallbackType of fallbackTypes) {
@@ -947,7 +947,7 @@ export class PromptService implements IPromptService {
         }
       }
 
-      // 最后的回退：获取所有模板中第一个可用的内置模板
+      // Last fallback: get the first available built-in template among all templates
       const allTemplates = await this.templateManager.listTemplates();
       const availableTemplate = allTemplates.find((t) => t.isBuiltin);
       if (availableTemplate) {
@@ -960,35 +960,35 @@ export class PromptService implements IPromptService {
       console.error(`Fallback template search failed:`, fallbackError);
     }
 
-    // 如果所有方法都失败，抛出错误
+    // If all approaches fail, throw an error
     throw new ServiceDependencyError('TemplateManager', `No templates available for type: ${templateType}`);
   }
 
-  // saveOptimizationHistory 方法已移除
-  // 历史记录保存现在由UI层的historyManager.createNewChain方法处理
+  // The saveOptimizationHistory method was removed
+  // Saving history is now handled by the UI layer's historyManager.createNewChain method
 
-  // saveTestHistory 方法已移除
-  // 测试功能不再保存历史记录，保持架构一致性
-  // 测试是临时性验证，不应与优化历史记录混合
+  // The saveTestHistory method was removed
+  // The test feature no longer saves history, keeping the architecture consistent
+  // Tests are temporary verification and should not be mixed with optimization history
 
-  // 注意：迭代历史记录由UI层管理，而非核心服务层
-  // 原因：
-  // 1. 迭代需要现有的chainId，这个信息由UI层的状态管理器维护
-  // 2. 迭代与用户交互紧密结合，需要实时更新UI状态
-  // 3. 版本管理逻辑在UI层更容易处理
+  // Note: iteration history is managed by the UI layer, not the core service layer
+  // Reasons:
+  // 1. Iteration needs an existing chainId, which is maintained by the UI layer's state manager
+  // 2. Iteration is closely tied to user interaction and needs real-time UI state updates
+  // 3. Version management logic is easier to handle in the UI layer
   //
-  // 相比之下，优化操作会创建新的链，所以可以在核心层处理
-  // 这种混合架构是经过权衡的设计决策
+  // In contrast, an optimization creates a new chain, so it can be handled in the core layer
+  // This hybrid architecture is a deliberate design trade-off
 
   /**
-   * 自定义会话测试（流式）- 高级模式功能
+   * Custom conversation test (streaming) - advanced mode feature
    */
   async testCustomConversationStream(
     request: CustomConversationRequest,
     callbacks: StreamHandlers,
   ): Promise<void> {
     try {
-      // 验证请求
+      // Validate the request
       if (!request.modelKey?.trim()) {
         throw new TestError("", "", "Model key is required");
       }
@@ -996,13 +996,13 @@ export class PromptService implements IPromptService {
         throw new TestError("", "", "At least one message is required");
       }
 
-      // 验证模型存在
+      // Validate that the model exists
       const modelConfig = await this.modelManager.getModel(request.modelKey);
       if (!modelConfig) {
         throw new TestError("", "", "Model not found");
       }
 
-      // 处理会话消息：替换变量
+      // Process the conversation messages: substitute variables
       const processedMessages = TemplateProcessor.processConversationMessages(
         request.messages,
         request.variables,
@@ -1012,9 +1012,9 @@ export class PromptService implements IPromptService {
         throw new TestError("", "", "No valid messages after processing");
       }
 
-      // 使用流式发送，根据是否有工具选择不同的方法
+      // Use streaming sends, choosing a different method depending on whether there are tools
       if (request.tools && request.tools.length > 0) {
-        // 🆕 使用支持工具的流式发送
+        // 🆕 Use streaming sends with tool support
         await this.llmService.sendMessageStreamWithTools(
           processedMessages,
           request.modelKey,
@@ -1022,7 +1022,7 @@ export class PromptService implements IPromptService {
           {
             onToken: callbacks.onToken,
             onReasoningToken: callbacks.onReasoningToken,
-            onToolCall: callbacks.onToolCall, // 🆕 传递工具调用回调
+            onToolCall: callbacks.onToolCall, // 🆕 Pass the tool call callback
             onComplete: async (response) => {
               if (response) {
                 console.log(
@@ -1041,7 +1041,7 @@ export class PromptService implements IPromptService {
           },
         );
       } else {
-        // 传统的流式发送（无工具）
+        // Traditional streaming send (no tools)
         await this.llmService.sendMessageStream(
           processedMessages,
           request.modelKey,
@@ -1074,7 +1074,7 @@ export class PromptService implements IPromptService {
         errorMessage,
       );
 
-      // 通过回调传递错误
+      // Pass the error through the callback
       if (callbacks.onError) {
         callbacks.onError(
           new Error(`Custom conversation test failed: ${errorMessage}`),

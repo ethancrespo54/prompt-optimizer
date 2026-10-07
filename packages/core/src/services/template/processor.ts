@@ -9,25 +9,25 @@ import type {
 } from "../prompt/types";
 
 /**
- * 模板变量上下文
+ * Template variable context
  */
 export interface TemplateContext {
   originalPrompt?: string;
   iterateInput?: string;
   lastOptimizedPrompt?: string;
-  optimizationMode?: OptimizationMode; // 优化模式
-  // 上下文模式（用于区分 system/user 模式，虽然在渲染层面已无差异）
+  optimizationMode?: OptimizationMode; // Optimization mode
+  // Context mode (used to distinguish system/user modes, although there is no difference at the rendering level anymore)
   contextMode?: import("../context/types").ContextMode; // 'system' | 'user'
-  // 高级模式上下文（可选）
-  customVariables?: Record<string, string>; // 自定义变量
-  tools?: ToolDefinition[]; // 工具定义信息
-  // 格式化的上下文文本（用于模板注入）
-  conversationContext?: string; // 格式化的会话上下文
-  toolsContext?: string; // 格式化的工具上下文
-  // 消息优化专用字段
-  messageRole?: string; // 选中消息的角色（system/user）
-  conversationMessages?: any[]; // 带元数据的消息数组（用于模板循环）
-  selectedMessage?: any; // 选中消息的详细信息（用于模板显示）
+  // Advanced mode context (optional)
+  customVariables?: Record<string, string>; // Custom variables
+  tools?: ToolDefinition[]; // Tool definition info
+  // Formatted context text (for template injection)
+  conversationContext?: string; // Formatted conversation context
+  toolsContext?: string; // Formatted tools context
+  // Fields dedicated to message optimization
+  messageRole?: string; // Role of the selected message (system/user)
+  conversationMessages?: any[]; // Message array with metadata (used for template loops)
+  selectedMessage?: any; // Detailed info of the selected message (used for template display)
   // Allow additional properties for template flexibility
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
@@ -90,17 +90,17 @@ export class TemplateProcessor {
       return messages;
     }
 
-    // Advanced template: 使用 Mustache 渲染
+    // Advanced template: render with Mustache
     if (Array.isArray(template.content)) {
       return template.content.map((msg) => {
-        // 统一使用 Mustache 渲染
-        // Mustache 会：
-        // 1. 替换模板中的内置变量（如 {{originalPrompt}}）
-        // 2. 自动保留值中的占位符（如 originalPrompt = "写一首{{风格}}的歌"）
-        // 3. 支持条件渲染（{{#var}}...{{/var}}）和循环
-        // 确保数组变量至少是空数组，避免 undefined 导致 {{#var}} 块不渲染（Mustache 行为：undefined/null/false 为 false）
-        // 但是我们需要区分“不存在”和“空数组”吗？对于 {{^var}} 来说，undefined/null/empty array 都是 true（取反）
-        // 只要保证 context 中传递了正确的 key 即可。
+        // Render uniformly with Mustache
+        // Mustache will:
+        // 1. Replace the built-in variables in the template (such as {{originalPrompt}})
+        // 2. Automatically preserve placeholders in values (such as originalPrompt = "Write a song in {{style}} style")
+        // 3. Support conditional rendering ({{#var}}...{{/var}}) and loops
+        // Ensure array variables are at least empty arrays, so undefined does not make {{#var}} blocks fail to render (Mustache behavior: undefined/null/false are falsy)
+        // But do we need to distinguish "does not exist" from "empty array"? For {{^var}}, undefined/null/empty array are all true (inverted)
+        // As long as the correct key is passed in the context.
 
         const renderedContent = Mustache.render(msg.content, context);
 
@@ -124,25 +124,25 @@ export class TemplateProcessor {
   }
 
   /**
-   * 创建扩展的模板上下文
-   * 合并基础上下文和高级上下文（自定义变量）
+   * Create the extended template context
+   * Merges the base context and the advanced context (custom variables)
    */
   static createExtendedContext(
     baseContext: TemplateContext,
     customVariables?: Record<string, string>,
     conversationMessages?: ConversationMessage[],
   ): TemplateContext {
-    // 合并所有变量到上下文中
+    // Merge all variables into the context
     const extendedContext: TemplateContext = {
       ...baseContext,
       customVariables,
       conversationMessages,
     };
 
-    // 将自定义变量直接添加到上下文中，以便模板可以直接访问
+    // Add custom variables directly to the context so templates can access them directly
     if (customVariables) {
       Object.entries(customVariables).forEach(([key, value]) => {
-        // 只有当基础上下文中没有该key时才添加（预定义变量优先）
+        // Only add when the key is not in the base context (predefined variables take precedence)
         if (extendedContext[key] === undefined) {
           extendedContext[key] = value;
         }
@@ -153,8 +153,8 @@ export class TemplateProcessor {
   }
 
   /**
-   * 处理会话消息：将消息数组转换为文本
-   * 用于优化阶段将会话上下文注入到模板中
+   * Process conversation messages: convert the message array to text
+   * Used to inject the conversation context into the template during the optimization phase
    */
   static formatConversationAsText(messages: ConversationMessage[]): string {
     if (!messages || messages.length === 0) {
@@ -168,8 +168,8 @@ export class TemplateProcessor {
 
 
   /**
-   * 替换会话消息中的变量
-   * 用于测试阶段实际替换变量
+   * Substitute variables in conversation messages
+   * Used to actually substitute variables during the test phase
    */
   static processConversationMessages(
     messages: ConversationMessage[],
@@ -180,8 +180,8 @@ export class TemplateProcessor {
     }
 
     return messages.map((msg) => {
-      // 使用 Mustache 进行变量替换
-      // Mustache 会自动保留值中的占位符，无需特殊处理
+      // Use Mustache for variable substitution
+      // Mustache automatically preserves placeholders in values, so no special handling is needed
       const processedContent = Mustache.render(msg.content, variables);
 
       return {
@@ -192,8 +192,8 @@ export class TemplateProcessor {
   }
 
   /**
-   * 格式化工具信息为文本
-   * 用于优化阶段将工具上下文注入到模板中，帮助LLM理解可用工具
+   * Format tool info as text
+   * Used to inject the tool context into the template during the optimization phase, helping the LLM understand the available tools
    */
   static formatToolsAsText(tools: ToolDefinition[]): string {
     if (!tools || tools.length === 0) {
@@ -203,14 +203,14 @@ export class TemplateProcessor {
     return tools
       .map((tool) => {
         const func = tool.function;
-        let toolText = `工具名称: ${func.name}`;
+        let toolText = `Tool name: ${func.name}`;
 
         if (func.description) {
-          toolText += `\n描述: ${func.description}`;
+          toolText += `\nDescription: ${func.description}`;
         }
 
         if (func.parameters) {
-          toolText += `\n参数结构: ${JSON.stringify(func.parameters, null, 2)}`;
+          toolText += `\nParameter schema: ${JSON.stringify(func.parameters, null, 2)}`;
         }
 
         return toolText;

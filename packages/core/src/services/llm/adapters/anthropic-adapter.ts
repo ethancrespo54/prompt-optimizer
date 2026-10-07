@@ -12,28 +12,28 @@ import type {
   ToolDefinition
 } from '../types'
 
-// Anthropic 建议对于非流式请求使用较小的 max_tokens 值
-// 过大的值可能触发 "Streaming is required for operations that may take longer than 10 minutes" 错误
-// 参考: https://github.com/anthropics/anthropic-sdk-typescript#long-requests
+// Anthropic recommends a smaller max_tokens value for non-streaming requests
+// An overly large value may trigger the "Streaming is required for operations that may take longer than 10 minutes" error
+// Reference: https://github.com/anthropics/anthropic-sdk-typescript#long-requests
 const DEFAULT_MAX_TOKENS = 8192
 
 /**
- * Anthropic 官方 SDK 适配器实现
- * 使用 @anthropic-ai/sdk 包提供官方支持
+ * Anthropic official SDK adapter implementation
+ * Uses the @anthropic-ai/sdk package for official support
  *
- * 职责：
- * - 封装Anthropic官方SDK调用逻辑
- * - 处理Claude特定的消息格式和system指令
- * - 提供Claude模型静态列表
- * - 支持真正的SSE流式响应
- * - 支持工具调用
- * - 保留原始错误堆栈
+ * Responsibilities:
+ * - Encapsulate calls to the official Anthropic SDK
+ * - Handle Claude-specific message formats and system instructions
+ * - Provide the static list of Claude models
+ * - Support true SSE streaming responses
+ * - Support tool calls
+ * - Preserve the original error stack
  */
 export class AnthropicAdapter extends AbstractTextProviderAdapter {
-  // ===== Provider元数据 =====
+  // ===== Provider metadata =====
 
   /**
-   * 获取Provider元数据
+   * Get Provider metadata
    */
   public getProvider(): TextProvider {
     return {
@@ -56,14 +56,14 @@ export class AnthropicAdapter extends AbstractTextProviderAdapter {
   }
 
   /**
-   * 获取静态模型列表（Claude系列）
-   * 从service.ts的fetchAnthropicModelsInfo迁移 (L1115-1120)
+   * Get the static model list (Claude series)
+   * Migrated from fetchAnthropicModelsInfo in service.ts (L1115-1120)
    */
   public getModels(): TextModel[] {
     const providerId = 'anthropic'
 
     return [
-      // Claude 4.0 系列
+      // Claude 4.0 series
       {
         id: 'claude-opus-4-20250514',
         name: 'Claude 4.0 Opus',
@@ -94,9 +94,9 @@ export class AnthropicAdapter extends AbstractTextProviderAdapter {
   }
 
   /**
-   * 动态获取模型列表
-   * @param config 连接配置
-   * @returns 动态获取的模型列表
+   * Dynamically fetch the model list
+   * @param config Connection config
+   * @returns Dynamically fetched model list
    */
   public async getModelsAsync(config: TextModelConfig): Promise<TextModel[]> {
     const client = this.createClient(config)
@@ -104,12 +104,12 @@ export class AnthropicAdapter extends AbstractTextProviderAdapter {
     try {
       const response = await client.models.list()
 
-      // 检查返回格式
+      // Check the response format
       if (response && response.data && Array.isArray(response.data)) {
         const models = response.data
           .map((model: any) => {
-            // 使用 buildDefaultModel 为每个模型 ID 创建 TextModel 对象
-            // Anthropic API 返回的 model 对象包含: id, name, version, capabilities
+            // Use buildDefaultModel to create a TextModel object for each model ID
+            // The model objects returned by the Anthropic API contain: id, name, version, capabilities
             return this.buildDefaultModel(model.id)
           })
           .sort((a, b) => a.id.localeCompare(b.id))
@@ -126,7 +126,7 @@ export class AnthropicAdapter extends AbstractTextProviderAdapter {
     } catch (error: any) {
       console.error('[AnthropicAdapter] Failed to fetch models:', error)
 
-      // 连接错误处理（包括跨域检测）
+      // Connection error handling (including CORS detection)
       if (error.message && (error.message.includes('Failed to fetch') ||
           error.message.includes('NetworkError') ||
           error.message.includes('ECONNREFUSED') ||
@@ -134,20 +134,20 @@ export class AnthropicAdapter extends AbstractTextProviderAdapter {
         throw new APIError(`Network error: ${error.message}`)
       }
 
-      // API 错误处理
+      // API error handling
       if (error.status) {
         throw new APIError(`Anthropic API error (${error.status}): ${error.message}`)
       }
 
-      // 其他错误
+      // Other errors
       throw error
     }
   }
 
-  // ===== 参数定义（用于buildDefaultModel） =====
+  // ===== Parameter definitions (used by buildDefaultModel) =====
 
   /**
-   * 获取参数定义
+   * Get parameter definitions
    */
   protected getParameterDefinitions(_modelId: string): readonly ParameterDefinition[] {
     return [
@@ -218,19 +218,19 @@ export class AnthropicAdapter extends AbstractTextProviderAdapter {
   }
 
   /**
-   * 获取默认参数值
-   * 返回空对象,让服务器使用官方默认值,避免客户端错误默认值影响效果
+   * Get default parameter values
+   * Returns an empty object so the server uses its official defaults, avoiding wrong client-side defaults affecting results
    */
   protected getDefaultParameterValues(_modelId: string): Record<string, unknown> {
     return {
-      max_tokens: DEFAULT_MAX_TOKENS, // 8192 - Anthropic API 强制要求
+      max_tokens: DEFAULT_MAX_TOKENS, // 8192 - required by the Anthropic API
     }
   }
 
-  // ===== 核心方法实现 =====
+  // ===== Core method implementations =====
 
   /**
-   * 发送消息（使用官方 SDK）
+   * Send a message (using the official SDK)
    */
   protected async doSendMessage(
     messages: Message[],
@@ -239,23 +239,23 @@ export class AnthropicAdapter extends AbstractTextProviderAdapter {
     const client = this.createClient(config)
 
     try {
-      // 提取已知参数和自定义参数
+      // Extract known parameters and custom parameters
       const {
         max_tokens,
         temperature,
         top_p,
         top_k,
         thinking_budget_tokens,
-        ...otherParams // 其他参数（包括自定义参数）
+        ...otherParams // Other parameters (including custom parameters)
       } = (config.paramOverrides || {}) as any
 
       const requestParams: any = {
         model: config.modelMeta.id,
         messages: this.convertMessages(messages),
-        max_tokens: max_tokens ?? DEFAULT_MAX_TOKENS // 强制预设值，Anthropic API 必需
+        max_tokens: max_tokens ?? DEFAULT_MAX_TOKENS // Force a preset value; required by the Anthropic API
       }
 
-      // 只在用户明确设置时才添加参数，避免使用客户端默认值
+      // Only add parameters when the user explicitly sets them, avoiding client-side defaults
       if (temperature !== undefined) {
         requestParams.temperature = temperature
       }
@@ -266,13 +266,13 @@ export class AnthropicAdapter extends AbstractTextProviderAdapter {
         requestParams.top_k = top_k
       }
 
-      // 添加系统消息（如果有）
+      // Add the system message (if any)
       const systemMessage = this.extractSystemMessage(messages)
       if (systemMessage) {
         requestParams.system = systemMessage
       }
 
-      // 添加 Extended Thinking 配置
+      // Add the Extended Thinking config
       if (thinking_budget_tokens !== undefined && thinking_budget_tokens >= 1024) {
         requestParams.thinking = {
           type: 'enabled',
@@ -280,12 +280,12 @@ export class AnthropicAdapter extends AbstractTextProviderAdapter {
         }
       }
 
-      // 添加其他参数（包括自定义参数）
+      // Add other parameters (including custom parameters)
       Object.assign(requestParams, otherParams)
 
       const response = await client.messages.create(requestParams)
 
-      // 提取 thinking 内容
+      // Extract the thinking content
       const reasoning = this.extractThinking(response)
 
       return {
@@ -303,7 +303,7 @@ export class AnthropicAdapter extends AbstractTextProviderAdapter {
   }
 
   /**
-   * 发送流式消息（真正的 SSE 流）
+   * Send a streaming message (true SSE stream)
    */
   protected async doSendMessageStream(
     messages: Message[],
@@ -314,23 +314,23 @@ export class AnthropicAdapter extends AbstractTextProviderAdapter {
     const thinkState = { isInThinkMode: false, buffer: '' }
 
     try {
-      // 提取已知参数和自定义参数
+      // Extract known parameters and custom parameters
       const {
         max_tokens,
         temperature,
         top_p,
         top_k,
         thinking_budget_tokens,
-        ...otherParams // 其他参数（包括自定义参数）
+        ...otherParams // Other parameters (including custom parameters)
       } = (config.paramOverrides || {}) as any
 
       const requestParams: any = {
         model: config.modelMeta.id,
         messages: this.convertMessages(messages),
-        max_tokens: max_tokens ?? DEFAULT_MAX_TOKENS // 强制预设值，Anthropic API 必需
+        max_tokens: max_tokens ?? DEFAULT_MAX_TOKENS // Force a preset value; required by the Anthropic API
       }
 
-      // 只在用户明确设置时才添加参数，避免使用客户端默认值
+      // Only add parameters when the user explicitly sets them, avoiding client-side defaults
       if (temperature !== undefined) {
         requestParams.temperature = temperature
       }
@@ -341,13 +341,13 @@ export class AnthropicAdapter extends AbstractTextProviderAdapter {
         requestParams.top_k = top_k
       }
 
-      // 添加系统消息（如果有）
+      // Add the system message (if any)
       const systemMessage = this.extractSystemMessage(messages)
       if (systemMessage) {
         requestParams.system = systemMessage
       }
 
-      // 添加 Extended Thinking 配置
+      // Add the Extended Thinking config
       if (thinking_budget_tokens !== undefined && thinking_budget_tokens >= 1024) {
         requestParams.thinking = {
           type: 'enabled',
@@ -355,14 +355,14 @@ export class AnthropicAdapter extends AbstractTextProviderAdapter {
         }
       }
 
-      // 添加其他参数（包括自定义参数）
+      // Add other parameters (including custom parameters)
       Object.assign(requestParams, otherParams)
 
       const stream = await client.messages.stream(requestParams)
 
       let accumulatedReasoning = ''
 
-      // 监听原生 thinking 事件（Extended Thinking）
+      // Listen for native thinking events (Extended Thinking)
       ;(stream as any).on('thinking', (thinkingDelta: string) => {
         accumulatedReasoning += thinkingDelta
         if (callbacks.onReasoningToken) {
@@ -370,12 +370,12 @@ export class AnthropicAdapter extends AbstractTextProviderAdapter {
         }
       })
 
-      // 监听文本内容事件（同时支持 <think> 标签）
+      // Listen for text content events (<think> tags are also supported)
       ;(stream as any).on('text', (text: string) => {
         this.processStreamContentWithThinkTags(text, callbacks, thinkState)
       })
 
-      // 监听最终消息
+      // Listen for the final message
       ;(stream as any).on('message', (message: any) => {
         const response: LLMResponse = {
           content: this.extractContent(message),
@@ -393,7 +393,7 @@ export class AnthropicAdapter extends AbstractTextProviderAdapter {
         callbacks.onError(error)
       })
 
-      // 等待流完成
+      // Wait for the stream to complete
       await stream.finalMessage()
     } catch (error) {
       callbacks.onError(this.handleError(error))
@@ -402,8 +402,8 @@ export class AnthropicAdapter extends AbstractTextProviderAdapter {
   }
 
   /**
-   * 发送带工具调用的流式消息
-   * 使用标准的 messages.stream API，手动处理工具调用
+   * Send a streaming message with tool calls
+   * Uses the standard messages.stream API and handles tool calls manually
    */
   public async sendMessageStreamWithTools(
     messages: Message[],
@@ -415,24 +415,24 @@ export class AnthropicAdapter extends AbstractTextProviderAdapter {
     const thinkState = { isInThinkMode: false, buffer: '' }
 
     try {
-      // 提取已知参数和自定义参数
+      // Extract known parameters and custom parameters
       const {
         max_tokens,
         temperature,
         top_p,
         top_k,
         thinking_budget_tokens,
-        ...otherParams // 其他参数（包括自定义参数）
+        ...otherParams // Other parameters (including custom parameters)
       } = (config.paramOverrides || {}) as any
 
       const requestParams: any = {
         model: config.modelMeta.id,
         messages: this.convertMessages(messages),
         tools: this.convertTools(tools),
-        max_tokens: max_tokens ?? DEFAULT_MAX_TOKENS // 强制预设值，Anthropic API 必需
+        max_tokens: max_tokens ?? DEFAULT_MAX_TOKENS // Force a preset value; required by the Anthropic API
       }
 
-      // 只在用户明确设置时才添加参数，避免使用客户端默认值
+      // Only add parameters when the user explicitly sets them, avoiding client-side defaults
       if (temperature !== undefined) {
         requestParams.temperature = temperature
       }
@@ -443,13 +443,13 @@ export class AnthropicAdapter extends AbstractTextProviderAdapter {
         requestParams.top_k = top_k
       }
 
-      // 添加系统消息（如果有）
+      // Add the system message (if any)
       const systemMessage = this.extractSystemMessage(messages)
       if (systemMessage) {
         requestParams.system = systemMessage
       }
 
-      // 添加 Extended Thinking 配置
+      // Add the Extended Thinking config
       if (thinking_budget_tokens !== undefined && thinking_budget_tokens >= 1024) {
         requestParams.thinking = {
           type: 'enabled',
@@ -457,7 +457,7 @@ export class AnthropicAdapter extends AbstractTextProviderAdapter {
         }
       }
 
-      // 添加其他参数（包括自定义参数）
+      // Add other parameters (including custom parameters)
       Object.assign(requestParams, otherParams)
 
       const stream = await client.messages.stream(requestParams)
@@ -467,7 +467,7 @@ export class AnthropicAdapter extends AbstractTextProviderAdapter {
       const toolCalls: any[] = []
       let currentToolCallIndex = -1
 
-      // 监听原生 thinking 事件（Extended Thinking）
+      // Listen for native thinking events (Extended Thinking)
       ;(stream as any).on('thinking', (thinkingDelta: string) => {
         accumulatedReasoning += thinkingDelta
         if (callbacks.onReasoningToken) {
@@ -475,7 +475,7 @@ export class AnthropicAdapter extends AbstractTextProviderAdapter {
         }
       })
 
-      // 监听内容块开始事件
+      // Listen for content block start events
       ;(stream as any).on('contentBlockStart', (event: any) => {
         if (event.contentBlock?.type === 'tool_use') {
           currentToolCallIndex++
@@ -490,32 +490,32 @@ export class AnthropicAdapter extends AbstractTextProviderAdapter {
         }
       })
 
-      // 监听内容块增量事件
+      // Listen for content block delta events
       ;(stream as any).on('contentBlockDelta', (event: any) => {
         if (event.delta?.type === 'text_delta') {
-          // 处理文本内容
+          // Handle text content
           const text = event.delta.text || ''
           accumulatedContent += text
           this.processStreamContentWithThinkTags(text, callbacks, thinkState)
         } else if (event.delta?.type === 'input_json_delta') {
-          // 处理工具调用参数增量
+          // Handle incremental tool call arguments
           if (currentToolCallIndex >= 0 && toolCalls[currentToolCallIndex]) {
             toolCalls[currentToolCallIndex].function.arguments += event.delta.partial_json || ''
 
-            // 尝试解析完整的 JSON，如果成功则触发回调
+            // Try to parse the complete JSON; if successful, trigger the callback
             try {
               JSON.parse(toolCalls[currentToolCallIndex].function.arguments)
               if (callbacks.onToolCall) {
                 callbacks.onToolCall(toolCalls[currentToolCallIndex])
               }
             } catch {
-              // JSON 还不完整，继续累积
+              // The JSON is not complete yet; keep accumulating
             }
           }
         }
       })
 
-      // 监听最终消息
+      // Listen for the final message
       ;(stream as any).on('message', (message: any) => {
         const response: LLMResponse = {
           content: accumulatedContent,
@@ -534,7 +534,7 @@ export class AnthropicAdapter extends AbstractTextProviderAdapter {
         callbacks.onError(error)
       })
 
-      // 等待流完成
+      // Wait for the stream to complete
       await stream.finalMessage()
     } catch (error) {
       callbacks.onError(this.handleError(error))
@@ -542,19 +542,19 @@ export class AnthropicAdapter extends AbstractTextProviderAdapter {
     }
   }
 
-  // ===== 内部辅助方法 =====
+  // ===== Internal helper methods =====
 
   /**
-   * 创建配置好的客户端实例
+   * Create a configured client instance
    */
   private createClient(config: TextModelConfig): Anthropic {
     const options: any = {
       apiKey: config.connectionConfig?.apiKey || '',
-      dangerouslyAllowBrowser: true // 根据实际环境配置
+      dangerouslyAllowBrowser: true // Configure according to the actual environment
     }
 
     if (config.connectionConfig?.baseURL) {
-      // 规范化 baseURL：移除末尾的 /v1 后缀（SDK 会自动添加）
+      // Normalize the baseURL: remove a trailing /v1 suffix (the SDK adds it automatically)
       let baseURL = config.connectionConfig.baseURL
       if (baseURL.endsWith('/v1')) {
         baseURL = baseURL.slice(0, -3)
@@ -570,7 +570,7 @@ export class AnthropicAdapter extends AbstractTextProviderAdapter {
   }
 
   /**
-   * 转换消息格式
+   * Convert the message format
    */
   private convertMessages(messages: Message[]) {
     return messages
@@ -582,7 +582,7 @@ export class AnthropicAdapter extends AbstractTextProviderAdapter {
   }
 
   /**
-   * 提取系统消息
+   * Extract system messages
    */
   private extractSystemMessage(messages: Message[]): string | undefined {
     const systemMessages = messages.filter(msg => msg.role === 'system')
@@ -592,7 +592,7 @@ export class AnthropicAdapter extends AbstractTextProviderAdapter {
   }
 
   /**
-   * 提取响应内容
+   * Extract the response content
    */
   private extractContent(response: any): string {
     if (!response.content || response.content.length === 0) {
@@ -606,7 +606,7 @@ export class AnthropicAdapter extends AbstractTextProviderAdapter {
   }
 
   /**
-   * 转换工具定义
+   * Convert tool definitions
    */
   private convertTools(tools: ToolDefinition[]) {
     return tools.map(tool => ({
@@ -621,7 +621,7 @@ export class AnthropicAdapter extends AbstractTextProviderAdapter {
   }
 
   /**
-   * 提取 thinking 内容（Extended Thinking）
+   * Extract the thinking content (Extended Thinking)
    */
   private extractThinking(response: any): string | undefined {
     if (!response.content || response.content.length === 0) {
@@ -642,7 +642,7 @@ export class AnthropicAdapter extends AbstractTextProviderAdapter {
   }
 
   /**
-   * 错误处理
+   * Error handling
    */
   private handleError(error: any): Error {
     if (error.status) {

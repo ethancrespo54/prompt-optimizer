@@ -1,11 +1,11 @@
 /**
- * 变量提取服务错误类
+ * Error classes for the variable extraction service
  */
 
 import { VARIABLE_EXTRACTION_ERROR_CODES, type ErrorParams } from '../../constants/error-codes'
 
 /**
- * 变量提取服务基础错误类
+ * Base error class for the variable extraction service
  */
 export class VariableExtractionError extends Error {
   public readonly code: string
@@ -20,7 +20,7 @@ export class VariableExtractionError extends Error {
 }
 
 /**
- * 变量提取请求验证错误
+ * Variable extraction request validation error
  */
 export class VariableExtractionValidationError extends VariableExtractionError {
   constructor(details: string) {
@@ -30,7 +30,7 @@ export class VariableExtractionValidationError extends VariableExtractionError {
 }
 
 /**
- * 变量提取模型错误（模型不存在或配置错误）
+ * Variable extraction model error (model does not exist or is misconfigured)
  */
 export class VariableExtractionModelError extends VariableExtractionError {
   constructor(modelKey: string) {
@@ -40,7 +40,7 @@ export class VariableExtractionModelError extends VariableExtractionError {
 }
 
 /**
- * 变量提取解析错误（无法解析 LLM 返回的变量提取结果）
+ * Variable extraction parse error (unable to parse the variable extraction result returned by the LLM)
  */
 export class VariableExtractionParseError extends VariableExtractionError {
   constructor(details: string) {
@@ -50,7 +50,7 @@ export class VariableExtractionParseError extends VariableExtractionError {
 }
 
 /**
- * 变量提取执行错误（LLM 调用失败等）
+ * Variable extraction execution error (LLM call failed, etc.)
  */
 export class VariableExtractionExecutionError extends VariableExtractionError {
   constructor(details: string) {

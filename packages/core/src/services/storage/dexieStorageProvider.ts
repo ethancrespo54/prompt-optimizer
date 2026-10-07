@@ -3,7 +3,7 @@ import { IStorageProvider } from './types';
 import { StorageError } from './errors';
 
 /**
- * 数据表接口定义
+ * Table interface definition
  */
 interface StorageRecord {
   key: string;
@@ -12,14 +12,14 @@ interface StorageRecord {
 }
 
 /**
- * 获取数据库名称
+ * Get the database name
  *
- * 优先级：
- * 1. 测试环境：使用注入的唯一数据库名称 (window.__TEST_DB_NAME__)
- * 2. 生产环境：使用固定名称 'PromptOptimizerDB'
+ * Priority:
+ * 1. Test environment: use the injected unique database name (window.__TEST_DB_NAME__)
+ * 2. Production environment: use the fixed name 'PromptOptimizerDB'
  */
 function getDatabaseName(): string {
-  // 测试环境：从 window 对象读取测试数据库名称
+  // Test environment: read the test database name from the window object
   if (typeof window !== 'undefined') {
     const testDbName = (window as any).__TEST_DB_NAME__;
     if (testDbName) {
@@ -27,12 +27,12 @@ function getDatabaseName(): string {
     }
   }
 
-  // 生产环境：使用固定名称
+  // Production environment: use the fixed name
   return 'PromptOptimizerDB';
 }
 
 /**
- * Dexie 数据库类
+ * Dexie database class
  */
 class PromptOptimizerDB extends Dexie {
   storage!: Table<StorageRecord, string>;
@@ -40,7 +40,7 @@ class PromptOptimizerDB extends Dexie {
   constructor() {
     super(getDatabaseName());
 
-    // 定义数据库结构
+    // Define the database structure
     this.version(1).stores({
       storage: 'key, value, timestamp'
     });
@@ -48,47 +48,47 @@ class PromptOptimizerDB extends Dexie {
 }
 
 /**
- * 基于 Dexie 的存储提供器实现
+ * Storage provider implementation based on Dexie
  * 
- * 相比 LocalStorageProvider 的优势：
- * - 更大的存储容量（几GB vs 5MB）
- * - 原生事务支持，更好的并发安全
- * - 异步操作，不阻塞UI
- * - 更好的查询性能
+ * Advantages over LocalStorageProvider:
+ * - Larger storage capacity (several GB vs 5MB)
+ * - Native transaction support, better concurrency safety
+ * - Async operations that do not block the UI
+ * - Better query performance
  */
 export class DexieStorageProvider implements IStorageProvider {
   private db: PromptOptimizerDB;
   private dbOpened: Promise<void>;
   
-  // 用于原子操作的锁机制
+  // Lock mechanism for atomic operations
   private keyLocks = new Map<string, Promise<void>>();
 
   constructor() {
     this.db = new PromptOptimizerDB();
     this.dbOpened = this.db.open().then(() => undefined).catch((error) => {
       console.error('Failed to open Dexie database:', error);
-      // 抛出错误以使所有后续操作失败
+      // Throw an error so that all subsequent operations fail
       throw error;
     });
   }
 
   /**
-   * 确保数据库已打开
+   * Ensure the database is open
    */
   private async initialize(): Promise<void> {
     await this.dbOpened;
   }
 
   /**
-   * 重置迁移状态（主要用于测试）
+   * Reset the migration state (mainly for testing)
    */
   static resetMigrationState(): void {
-    // 因为迁移逻辑已移除，此函数不再需要
-    // 保留为空函数以避免破坏测试的API
+    // The migration logic has been removed, so this function is no longer needed
+    // Kept as an empty function to avoid breaking the test API
   }
 
   /**
-   * 获取存储项
+   * Get a storage item
    */
   async getItem(key: string): Promise<string | null> {
     await this.initialize();
@@ -97,13 +97,13 @@ export class DexieStorageProvider implements IStorageProvider {
       const record = await this.db.storage.get(key);
       return record?.value ?? null;
     } catch (error) {
-      console.error(`获取存储项失败 (${key}):`, error);
+      console.error(`Failed to get storage item (${key}):`, error);
       throw new StorageError(`Failed to get item: ${key}`, 'read');
     }
   }
 
   /**
-   * 设置存储项
+   * Set a storage item
    */
   async setItem(key: string, value: string): Promise<void> {
     await this.initialize();
@@ -115,13 +115,13 @@ export class DexieStorageProvider implements IStorageProvider {
         timestamp: Date.now()
       });
     } catch (error) {
-      console.error(`设置存储项失败 (${key}):`, error);
+      console.error(`Failed to set storage item (${key}):`, error);
       throw new StorageError(`Failed to set item: ${key}`, 'write');
     }
   }
 
   /**
-   * 删除存储项
+   * Delete a storage item
    */
   async removeItem(key: string): Promise<void> {
     await this.initialize();
@@ -129,13 +129,13 @@ export class DexieStorageProvider implements IStorageProvider {
     try {
       await this.db.storage.delete(key);
     } catch (error) {
-      console.error(`删除存储项失败 (${key}):`, error);
+      console.error(`Failed to delete storage item (${key}):`, error);
       throw new StorageError(`Failed to remove item: ${key}`, 'delete');
     }
   }
 
   /**
-   * 清空所有存储
+   * Clear all storage
    */
   async clearAll(): Promise<void> {
     await this.initialize();
@@ -143,14 +143,14 @@ export class DexieStorageProvider implements IStorageProvider {
     try {
       await this.db.storage.clear();
     } catch (error) {
-      console.error('清空存储失败:', error);
+      console.error('Failed to clear storage:', error);
       throw new StorageError('Failed to clear storage', 'clear');
     }
   }
 
   /**
-   * 原子更新操作
-   * 使用 Dexie 的事务机制确保原子性，带重试和降级机制
+   * Atomic update operation
+   * Uses Dexie's transaction mechanism to ensure atomicity, with retry and fallback mechanisms
    */
   async atomicUpdate<T>(
     key: string,
@@ -158,7 +158,7 @@ export class DexieStorageProvider implements IStorageProvider {
   ): Promise<void> {
     await this.initialize();
 
-    // 获取键级别的锁
+    // Get the key-level lock
     const lockKey = `atomic_${key}`;
     if (this.keyLocks.has(lockKey)) {
       await this.keyLocks.get(lockKey);
@@ -175,26 +175,26 @@ export class DexieStorageProvider implements IStorageProvider {
   }
 
   /**
-   * 隐藏式数据更新 - 内部使用原子更新实现
-   * 实现 IStorageProvider 接口要求
+   * Hidden data update - uses atomic update internally
+   * Required by the IStorageProvider interface
    */
   async updateData<T>(
     key: string,
     modifier: (currentValue: T | null) => T
   ): Promise<void> {
-    // 直接使用内部的原子更新实现
+    // Use the internal atomic update implementation directly
     await this.atomicUpdate(key, modifier);
   }
 
   /**
-   * 类型守卫：检查是否为Error对象
+   * Type guard: check whether the value is an Error object
    */
   private isError(error: unknown): error is Error {
     return error instanceof Error || (typeof error === 'object' && error !== null && 'name' in error && 'message' in error);
   }
 
   /**
-   * 带重试机制的原子更新
+   * Atomic update with a retry mechanism
    */
   private async _performAtomicUpdateWithRetry<T>(
     key: string,
@@ -206,28 +206,28 @@ export class DexieStorageProvider implements IStorageProvider {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         await this._performAtomicUpdate(key, updateFn);
-        return; // 成功，直接返回
+        return; // Succeeded, return directly
       } catch (error) {
         lastError = error as Error;
-        console.warn(`原子更新尝试 ${attempt}/${maxRetries} 失败 (${key}):`, error);
+        console.warn(`Atomic update attempt ${attempt}/${maxRetries} failed (${key}):`, error);
 
-        // 如果是事务错误且还有重试机会，等待一段时间后重试
+        // If it is a transaction error and there are retries left, wait a while and retry
         if (this.isError(error) && error.name === 'PrematureCommitError' && attempt < maxRetries) {
-          const delay = Math.min(100 * Math.pow(2, attempt - 1), 1000); // 指数退避，最大1秒
+          const delay = Math.min(100 * Math.pow(2, attempt - 1), 1000); // Exponential backoff, at most 1 second
           await new Promise(resolve => setTimeout(resolve, delay));
           continue;
         }
 
-        // 如果是最后一次尝试或非事务错误，尝试降级到简单更新
+        // If this is the last attempt or not a transaction error, try falling back to a simple update
         if (attempt === maxRetries) {
-          console.warn(`所有重试失败，尝试降级到简单更新 (${key})`);
+          console.warn(`All retries failed, trying to fall back to a simple update (${key})`);
           try {
             await this._performSimpleUpdate(key, updateFn);
-            console.log(`降级更新成功 (${key})`);
+            console.log(`Fallback update succeeded (${key})`);
             return;
           } catch (fallbackError) {
-            console.error(`降级更新也失败 (${key}):`, fallbackError);
-            throw lastError; // 抛出原始错误
+            console.error(`Fallback update also failed (${key}):`, fallbackError);
+            throw lastError; // Throw the original error
           }
         }
       }
@@ -240,70 +240,70 @@ export class DexieStorageProvider implements IStorageProvider {
   }
 
   /**
-   * 简单更新（降级方案）
+   * Simple update (fallback)
    */
   private async _performSimpleUpdate<T>(
     key: string,
     updateFn: (currentValue: T | null) => T
   ): Promise<void> {
     try {
-      // 读取当前值
+      // Read the current value
       const currentRecord = await this.db.storage.get(key);
       const currentValue = currentRecord?.value
         ? JSON.parse(currentRecord.value) as T
         : null;
 
-      // 应用更新函数
+      // Apply the update function
       const newValue = updateFn(currentValue);
 
-      // 直接写入新值（不使用事务）
+      // Write the new value directly (no transaction)
       await this.db.storage.put({
         key,
         value: JSON.stringify(newValue),
         timestamp: Date.now()
       });
     } catch (error) {
-      console.error(`简单更新失败 (${key}):`, error);
+      console.error(`Simple update failed (${key}):`, error);
       throw new StorageError(`Failed to perform simple update: ${key}`, 'write');
     }
   }
 
   /**
-   * 执行原子更新
+   * Perform the atomic update
    */
   private async _performAtomicUpdate<T>(
     key: string,
     updateFn: (currentValue: T | null) => T
   ): Promise<void> {
     try {
-      // 使用更安全的事务处理方式
+      // Use a safer transaction handling approach
       await this.db.transaction('rw', this.db.storage, async (tx) => {
         try {
-          // 读取当前值
+          // Read the current value
           const currentRecord = await tx.table('storage').get(key);
           const currentValue = currentRecord?.value
             ? JSON.parse(currentRecord.value) as T
             : null;
 
-          // 应用更新函数 - 确保同步执行
+          // Apply the update function - make sure it runs synchronously
           const newValue = updateFn(currentValue);
 
-          // 写入新值
+          // Write the new value
           await tx.table('storage').put({
             key,
             value: JSON.stringify(newValue),
             timestamp: Date.now()
           });
         } catch (innerError) {
-          // 事务内部错误，让事务回滚
-          console.error(`事务内部操作失败 (${key}):`, innerError);
+          // Error inside the transaction; let the transaction roll back
+          console.error(`Operation inside the transaction failed (${key}):`, innerError);
           throw innerError;
         }
       });
     } catch (error) {
-      console.error(`原子更新失败 (${key}):`, error);
+      console.error(`Atomic update failed (${key}):`, error);
 
-      // 如果是Dexie事务错误，提供更详细的错误信息
+      // If it is a Dexie transaction error, provide more detailed error info
       if (this.isError(error) && error.name === 'PrematureCommitError') {
         throw new StorageError(
           `Database transaction error for key ${key}: ${error.message}. Please try again.`,
@@ -316,7 +316,7 @@ export class DexieStorageProvider implements IStorageProvider {
   }
 
   /**
-   * 批量更新操作
+   * Batch update operation
    */
   async batchUpdate(operations: Array<{
     key: string;
@@ -342,24 +342,24 @@ export class DexieStorageProvider implements IStorageProvider {
           }
         }
 
-        // 批量写入
+        // Batch write
         if (updates.length > 0) {
           await this.db.storage.bulkPut(updates);
         }
 
-        // 批量删除
+        // Batch delete
         if (deletions.length > 0) {
           await this.db.storage.bulkDelete(deletions);
         }
       });
     } catch (error) {
-      console.error('批量更新失败:', error);
+      console.error('Batch update failed:', error);
       throw new StorageError('Failed to perform batch update', 'write');
     }
   }
 
   /**
-   * 获取存储统计信息
+   * Get storage statistics
    */
   async getStorageInfo(): Promise<{
     itemCount: number;
@@ -374,7 +374,7 @@ export class DexieStorageProvider implements IStorageProvider {
         .orderBy('timestamp')
         .last();
 
-      // 估算存储大小（粗略计算）
+      // Estimate the storage size (rough calculation)
       const allRecords = await this.db.storage.toArray();
       const estimatedSize = allRecords.reduce(
         (total, record) => total + record.value.length,
@@ -387,7 +387,7 @@ export class DexieStorageProvider implements IStorageProvider {
         lastUpdated: lastRecord?.timestamp ?? null
       };
     } catch (error) {
-      console.error('获取存储信息失败:', error);
+      console.error('Failed to get storage info:', error);
       return {
         itemCount: 0,
         estimatedSize: 0,
@@ -397,7 +397,7 @@ export class DexieStorageProvider implements IStorageProvider {
   }
 
   /**
-   * 导出所有数据（用于备份）
+   * Export all data (for backup)
    */
   async exportAll(): Promise<Record<string, string>> {
     await this.initialize();
@@ -412,13 +412,13 @@ export class DexieStorageProvider implements IStorageProvider {
 
       return result;
     } catch (error) {
-      console.error('导出数据失败:', error);
+      console.error('Failed to export data:', error);
       throw new StorageError('Failed to export data', 'read');
     }
   }
 
   /**
-   * 导入数据（用于恢复）
+   * Import data (for restore)
    */
   async importAll(data: Record<string, string>): Promise<void> {
     await this.initialize();
@@ -432,19 +432,19 @@ export class DexieStorageProvider implements IStorageProvider {
 
       await this.db.storage.bulkPut(records);
     } catch (error) {
-      console.error('导入数据失败:', error);
+      console.error('Failed to import data:', error);
       throw new StorageError('Failed to import data', 'write');
     }
   }
 
   /**
-   * 关闭数据库连接
+   * Close the database connection
    */
   async close(): Promise<void> {
     try {
       await this.db.close();
     } catch (error) {
-      console.error('关闭数据库失败:', error);
+      console.error('Failed to close the database:', error);
     }
   }
 } 

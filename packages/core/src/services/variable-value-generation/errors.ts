@@ -1,11 +1,11 @@
 /**
- * 变量值生成服务 - 错误类定义
+ * Variable value generation service - error class definitions
  */
 
 import { VARIABLE_VALUE_GENERATION_ERROR_CODES, type ErrorParams } from '../../constants/error-codes'
 
 /**
- * 变量值生成服务基础错误类
+ * Base error class for the variable value generation service
  */
 export class VariableValueGenerationError extends Error {
   public readonly code: string
@@ -20,7 +20,7 @@ export class VariableValueGenerationError extends Error {
 }
 
 /**
- * 变量值生成请求验证错误
+ * Variable value generation request validation error
  */
 export class VariableValueGenerationValidationError extends VariableValueGenerationError {
   constructor(details: string) {
@@ -30,7 +30,7 @@ export class VariableValueGenerationValidationError extends VariableValueGenerat
 }
 
 /**
- * 变量值生成模型错误
+ * Variable value generation model error
  */
 export class VariableValueGenerationModelError extends VariableValueGenerationError {
   constructor(modelKey: string) {
@@ -40,7 +40,7 @@ export class VariableValueGenerationModelError extends VariableValueGenerationEr
 }
 
 /**
- * 变量值生成解析错误
+ * Variable value generation parse error
  */
 export class VariableValueGenerationParseError extends VariableValueGenerationError {
   constructor(details: string) {
@@ -50,7 +50,7 @@ export class VariableValueGenerationParseError extends VariableValueGenerationEr
 }
 
 /**
- * 变量值生成执行错误（LLM 调用失败等）
+ * Variable value generation execution error (LLM call failed, etc.)
  */
 export class VariableValueGenerationExecutionError extends VariableValueGenerationError {
   constructor(details: string) {

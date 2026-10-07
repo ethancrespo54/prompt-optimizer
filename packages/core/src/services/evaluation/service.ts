@@ -1,7 +1,7 @@
 /**
- * 评估服务实现
+ * Evaluation service implementation
  *
- * 使用 LLM 对测试结果进行智能评估和打分
+ * Uses an LLM to intelligently evaluate and score test results
  */
 
 import type { ILLMService, StreamHandlers } from '../llm/types';
@@ -30,7 +30,7 @@ import {
 import { jsonrepair } from 'jsonrepair';
 
 /**
- * 评估服务实现类
+ * Evaluation service implementation class
  */
 export class EvaluationService implements IEvaluationService {
   constructor(
@@ -40,7 +40,7 @@ export class EvaluationService implements IEvaluationService {
   ) {}
 
   /**
-   * 执行评估（非流式）
+   * Run an evaluation (non-streaming)
    */
   async evaluate(request: EvaluationRequest): Promise<EvaluationResponse> {
     this.validateRequest(request);
@@ -69,7 +69,7 @@ export class EvaluationService implements IEvaluationService {
   }
 
   /**
-   * 流式评估
+   * Streaming evaluation
    */
   async evaluateStream(
     request: EvaluationRequest,
@@ -139,7 +139,7 @@ export class EvaluationService implements IEvaluationService {
   }
 
   /**
-   * 验证评估请求
+   * Validate the evaluation request
    */
   private validateRequest(request: EvaluationRequest): void {
     if (!request.evaluationModelKey?.trim()) {
@@ -205,7 +205,7 @@ export class EvaluationService implements IEvaluationService {
   }
 
   /**
-   * 验证评估模型
+   * Validate the evaluation model
    */
   private async validateModel(modelKey: string): Promise<void> {
     const model = await this.modelManager.getModel(modelKey);
@@ -215,7 +215,7 @@ export class EvaluationService implements IEvaluationService {
   }
 
   /**
-   * 获取评估模板
+   * Get the evaluation template
    */
   private async getEvaluationTemplate(type: EvaluationType, mode: EvaluationModeConfig): Promise<Template> {
     const templateId = this.getTemplateId(type, mode);
@@ -235,14 +235,14 @@ export class EvaluationService implements IEvaluationService {
   }
 
   /**
-   * 根据评估类型和模式获取模板ID
+   * Get the template ID based on the evaluation type and mode
    */
   private getTemplateId(type: EvaluationType, mode: EvaluationModeConfig): string {
     return `evaluation-${mode.functionMode}-${mode.subMode}-${type}`;
   }
 
   /**
-   * 构建模板上下文
+   * Build the template context
    */
   private buildTemplateContext(request: EvaluationRequest): TemplateContext {
     const baseContext: TemplateContext = {
@@ -256,7 +256,7 @@ export class EvaluationService implements IEvaluationService {
       baseContext.userFeedback = feedback;
     }
 
-    // 原始提示词（可选）
+    // Original prompt (optional)
     if (request.originalPrompt) {
       baseContext.originalPrompt = request.originalPrompt;
       baseContext.hasOriginalPrompt = true;
@@ -264,7 +264,7 @@ export class EvaluationService implements IEvaluationService {
       baseContext.hasOriginalPrompt = false;
     }
 
-    // Pro 模式上下文
+    // Pro mode context
     if (request.proContext) {
       baseContext.proContext = JSON.stringify(request.proContext, null, 2);
     }
@@ -310,7 +310,7 @@ export class EvaluationService implements IEvaluationService {
   }
 
   /**
-   * 解析评估结果
+   * Parse the evaluation result
    */
   private parseEvaluationResult(
     content: string,
@@ -318,8 +318,8 @@ export class EvaluationService implements IEvaluationService {
     metadata?: { model?: string; timestamp?: number; duration?: number }
   ): EvaluationResponse {
     const findEvaluationPayload = (value: unknown): unknown | null => {
-      // 允许模型返回 "{ evaluation: {...} }" / "{ data: {...} }" 之类包装结构。
-      // 为避免性能问题，这里做广度优先、有限步数的遍历。
+      // Allow the model to return wrapper structures like "{ evaluation: {...} }" / "{ data: {...} }".
+      // To avoid performance problems, this does a breadth-first traversal with a limited number of steps.
       const visited = new Set<unknown>();
       const queue: unknown[] = [value];
       let steps = 0;
@@ -335,7 +335,7 @@ export class EvaluationService implements IEvaluationService {
         if ((current as any).score !== undefined) {
           const score = (current as any).score;
 
-          // 过滤掉类似维度项 "{ key, label, score }" 这种误命中。
+          // Filter out false hits like dimension items "{ key, label, score }".
           const isDimensionLike =
             typeof (current as any).key === 'string' &&
             typeof (current as any).label === 'string' &&
@@ -383,7 +383,7 @@ export class EvaluationService implements IEvaluationService {
       }
     }
 
-    // 降级解析
+    // Fallback parsing
     const textResult = this.parseTextEvaluation(content, type, metadata);
     if (textResult) {
       console.warn('[EvaluationService] Using text fallback parsing');
@@ -396,17 +396,17 @@ export class EvaluationService implements IEvaluationService {
   }
 
   /**
-   * 从模型输出中提取可能的 JSON 片段。
+   * Extract possible JSON fragments from the model output.
    *
-   * 现实中模型可能：
-   * - 输出 ```json ... ```
-   * - 输出 ``` ... ```（无语言标注）
-   * - 在解释文字中夹杂一段 JSON
+   * In practice the model may:
+   * - output ```json ... ```
+   * - output ``` ... ``` (no language tag)
+   * - embed a piece of JSON within explanatory text
    */
   private extractJsonCandidates(content: string): string[] {
     const candidates: string[] = [];
 
-    // 1) 优先提取所有 fenced code block（不限语言），只挑看起来像 JSON 的块。
+    // 1) Prefer extracting all fenced code blocks (any language), keeping only those that look like JSON.
     const fencedRegex = /```[a-zA-Z0-9_-]*\s*([\s\S]*?)\s*```/g;
     for (const match of content.matchAll(fencedRegex)) {
       const block = (match[1] ?? '').trim();
@@ -417,7 +417,7 @@ export class EvaluationService implements IEvaluationService {
       }
     }
 
-    // 2) 尝试从正文中截取平衡的 JSON 子串（从 score 附近反向找起点）。
+    // 2) Try to cut a balanced JSON substring from the body (search backwards for the start from near "score").
     const scoreIndex = content.search(/["']score["']\s*:/);
     if (scoreIndex >= 0) {
       const objCandidate = this.extractBalancedJsonSubstring(content, scoreIndex, '{', '}');
@@ -427,7 +427,7 @@ export class EvaluationService implements IEvaluationService {
       if (arrCandidate) candidates.push(arrCandidate);
     }
 
-    // 3) 兜底：从第一个 '{' 或 '[' 开始尝试提取一个平衡块。
+    // 3) Fallback: starting from the first '{' or '[', try to extract a balanced block.
     const firstObj = content.indexOf('{');
     if (firstObj >= 0) {
       const objCandidate = this.extractBalancedFrom(content, firstObj, '{', '}');
@@ -439,10 +439,10 @@ export class EvaluationService implements IEvaluationService {
       if (arrCandidate) candidates.push(arrCandidate);
     }
 
-    // 最后再把原始内容作为候选（部分情况下 jsonrepair 能救回来）。
+    // Finally add the raw content as a candidate (in some cases jsonrepair can recover it).
     candidates.push(content);
 
-    // 去重 + 过滤明显不可能的候选
+    // Deduplicate + filter out obviously impossible candidates
     const uniq: string[] = [];
     const seen = new Set<string>();
     for (const c of candidates) {
@@ -462,7 +462,7 @@ export class EvaluationService implements IEvaluationService {
     openChar: '{' | '[',
     closeChar: '}' | ']'
   ): string | null {
-    // 从 aroundIndex 向左找一个可能的起点，然后做括号匹配。
+    // Search left from aroundIndex for a possible start, then do bracket matching.
     const start = content.lastIndexOf(openChar, aroundIndex);
     if (start < 0) return null;
     return this.extractBalancedFrom(content, start, openChar, closeChar);
@@ -520,7 +520,7 @@ export class EvaluationService implements IEvaluationService {
   }
 
   /**
-   * 标准化评估响应（统一结构）
+   * Normalize the evaluation response (unified structure)
    */
   private normalizeEvaluationResponse(
     data: any,
@@ -535,7 +535,7 @@ export class EvaluationService implements IEvaluationService {
       throw new EvaluationParseError('Evaluation result is missing the "score" field.');
     }
 
-    // 提取分数（0-100，整数）
+    // Extract the score (0-100, integer)
     const extractScore = (value: any, fieldName: string): number => {
       if (value === undefined || value === null) {
         throw new EvaluationParseError(`Evaluation result is missing score for "${fieldName}".`);
@@ -566,7 +566,7 @@ export class EvaluationService implements IEvaluationService {
       dims.forEach((dim: any, index: number) => {
         if (dim === null || dim === undefined) return;
 
-        // 常见结构：{ key, label, score }
+        // Common structure: { key, label, score }
         if (typeof dim === 'object' && !Array.isArray(dim)) {
           const key = typeof dim.key === 'string' ? dim.key : typeof dim.name === 'string' ? dim.name : '';
           const label = typeof dim.label === 'string' ? dim.label : typeof dim.title === 'string' ? dim.title : key;
@@ -578,7 +578,7 @@ export class EvaluationService implements IEvaluationService {
           return;
         }
 
-        // 兜底：如果维度是 "85" 这种，仍然保留一个占位维度。
+        // Fallback: if a dimension is something like "85", still keep a placeholder dimension.
         if (typeof dim === 'number' || typeof dim === 'string') {
           const d = toDimension(`dim${index + 1}`, `dim${index + 1}`, dim);
           if (d) out.push(d);
@@ -607,7 +607,7 @@ export class EvaluationService implements IEvaluationService {
     let overall: number | null = null;
     let dimensions: EvaluationDimension[] = [];
 
-    // score 可能直接是数字（少数模型会这样输出）
+    // score may be a number directly (a few models output it this way)
     if (typeof scoreRaw === 'number' || typeof scoreRaw === 'string') {
       overall = tryExtractScore(scoreRaw, 'overall');
     } else if (scoreRaw && typeof scoreRaw === 'object') {
@@ -619,7 +619,7 @@ export class EvaluationService implements IEvaluationService {
       } else if (dimensionsRaw && typeof dimensionsRaw === 'object') {
         dimensions = normalizeDimensionsFromObject(dimensionsRaw as Record<string, any>);
       } else {
-        // 有些模型会把维度直接平铺到 score 对象里：{ overall, goalAchievement, ... }
+        // Some models flatten the dimensions directly into the score object: { overall, goalAchievement, ... }
         const knownKeys = ['goalAchievement', 'outputQuality', 'formatCompliance', 'relevance'];
         const flattened: Record<string, any> = {};
         for (const k of knownKeys) {
@@ -633,7 +633,7 @@ export class EvaluationService implements IEvaluationService {
       }
     }
 
-    // 如果 overall 缺失，但维度存在，则按平均分计算。
+    // If overall is missing but dimensions exist, compute it as the average.
     if (overall === null && dimensions.length > 0) {
       const avg = Math.round(
         dimensions.reduce((sum, d) => sum + d.score, 0) / dimensions.length
@@ -641,9 +641,9 @@ export class EvaluationService implements IEvaluationService {
       overall = Math.max(0, Math.min(100, avg));
     }
 
-    // 如果维度缺失，但 overall 存在，则返回一个最小维度数组。
+    // If dimensions are missing but overall exists, return a minimal dimension array.
     if (dimensions.length === 0 && overall !== null) {
-      dimensions = [{ key: 'overall', label: '综合评分', score: overall }];
+      dimensions = [{ key: 'overall', label: 'Overall Score', score: overall }];
     }
 
     if (overall === null) {
@@ -655,14 +655,14 @@ export class EvaluationService implements IEvaluationService {
       dimensions,
     };
 
-    // 解析 improvements（最多3条）
+    // Parse improvements (at most 3)
     const improvements = Array.isArray(data.improvements)
       ? data.improvements.map((x: any) => String(x)).filter(Boolean).slice(0, 3)
       : typeof data.improvements === 'string' && data.improvements.trim()
         ? [data.improvements.trim()].slice(0, 3)
         : [];
 
-    // 解析 patchPlan（最多3条）
+    // Parse patchPlan (at most 3)
     const patchPlan = this.normalizePatchPlan(data.patchPlan || []).slice(0, 3);
 
     const summary = typeof data.summary === 'string' ? data.summary : '';
@@ -678,7 +678,7 @@ export class EvaluationService implements IEvaluationService {
   }
 
   /**
-   * 文本解析评估结果（降级方案）
+   * Text-parse the evaluation result (fallback)
    */
   private parseTextEvaluation(
     content: string,
@@ -686,19 +686,19 @@ export class EvaluationService implements IEvaluationService {
     metadata?: { model?: string; timestamp?: number; duration?: number }
   ): EvaluationResponse | null {
     const scorePatterns = [
-      // JSON 残片里常见的 overall 字段
+      // Common overall fields in JSON fragments
       /["']overall["']\s*[:=]\s*(\d{1,3})/i,
 
-      // 中文常见写法
+      // Common Chinese phrasings (kept so model output in Chinese is still parsed)
       /综合评分\s*[:：]?\s*(\d{1,3})(?:\s*\/\s*100)?/,
       /总[分评]\s*[:：]?\s*(\d{1,3})(?:\s*\/\s*100)?/,
       /评分\s*[:：]?\s*(\d{1,3})(?:\s*\/\s*100)?/,
 
-      // 英文常见写法
+      // Common English phrasings
       /overall(?:\s+score)?\s*[:：]?\s*(\d{1,3})(?:\s*\/\s*100)?/i,
       /score\s*[:：]?\s*(\d{1,3})(?:\s*\/\s*100)?/i,
 
-      // 纯数字 + /100
+      // Plain number + /100
       /(\d{1,3})\s*\/\s*100/,
       /(\d{1,3})\s*[分点](?:\s*[（(]满分100[)）])?/,
     ];
@@ -724,18 +724,18 @@ export class EvaluationService implements IEvaluationService {
       score: {
         overall,
         dimensions: [
-          { key: 'overall', label: '综合评分', score: overall },
+          { key: 'overall', label: 'Overall Score', score: overall },
         ],
       },
       improvements: [],
-      summary: '评估完成（解析降级）',
+      summary: 'Evaluation complete (parse fallback)',
       patchPlan: [],
       metadata,
     };
   }
 
   /**
-   * 标准化补丁计划数组（简化版）
+   * Normalize the patch plan array (simplified)
    */
   private normalizePatchPlan(patchPlan: any[]): PatchOperation[] {
     if (!Array.isArray(patchPlan)) {
@@ -755,7 +755,7 @@ export class EvaluationService implements IEvaluationService {
           opType = op.op;
         }
 
-        // 反转义 HTML 实体（LLM 可能返回转义后的 XML 标签）
+        // Unescape HTML entities (the LLM may return escaped XML tags)
         const oldText = this.unescapeHtmlEntities(String(op.oldText || ''));
         if (!oldText) {
           return null;
@@ -785,14 +785,14 @@ export class EvaluationService implements IEvaluationService {
   }
 
   /**
-   * 反转义 HTML 实体
-   * LLM 生成 JSON 时可能对 XML 标签进行 HTML 转义
-   * 支持：命名实体、十进制实体(&#123;)、十六进制实体(&#x2F;)
+   * Unescape HTML entities
+   * When generating JSON, the LLM may HTML-escape XML tags
+   * Supports: named entities, decimal entities (&#123;), hexadecimal entities (&#x2F;)
    */
   private unescapeHtmlEntities(text: string): string {
     if (!text) return text;
     return text
-      // 命名实体
+      // Named entities
       .replace(/&lt;/g, '<')
       .replace(/&gt;/g, '>')
       .replace(/&amp;/g, '&')
@@ -801,15 +801,15 @@ export class EvaluationService implements IEvaluationService {
       .replace(/&apos;/g, "'")
       .replace(/&nbsp;/g, ' ')
       .replace(/&sol;/g, '/')
-      // 十六进制实体 &#xHH; 或 &#xHHHH;
+      // Hexadecimal entities &#xHH; or &#xHHHH;
       .replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
-      // 十进制实体 &#DDD;
+      // Decimal entities &#DDD;
       .replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(parseInt(dec, 10)));
   }
 }
 
 /**
- * 创建评估服务的工厂函数
+ * Factory function for creating the evaluation service
  */
 export function createEvaluationService(
   llmService: ILLMService,

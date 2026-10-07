@@ -3,11 +3,11 @@
  * These codes are language-neutral identifiers that the UI layer
  * translates to the user's preferred language.
  *
- * 集中式错误代码，用于国际化支持。
- * 这些代码是语言中立的标识符，UI层会根据用户偏好语言进行翻译。
+ * Centralized error codes for internationalization support.
+ * These codes are language-neutral identifiers; the UI layer translates them according to the user's preferred language.
  */
 
-// Evaluation errors | 评估错误
+// Evaluation errors
 export const EVALUATION_ERROR_CODES = {
   VALIDATION_ERROR: 'error.evaluation.validation',
   MODEL_NOT_FOUND: 'error.evaluation.model_not_found',
@@ -16,7 +16,7 @@ export const EVALUATION_ERROR_CODES = {
   EXECUTION_ERROR: 'error.evaluation.execution',
 } as const;
 
-// LLM errors | LLM错误
+// LLM errors
 export const LLM_ERROR_CODES = {
   API_ERROR: 'error.llm.api',
   CONFIG_ERROR: 'error.llm.config',
@@ -33,7 +33,7 @@ export const LLM_ERROR_CODES = {
   INPUT_TOO_LONG: 'error.llm.input_too_long',
 } as const;
 
-// History errors | 历史记录错误
+// History errors
 export const HISTORY_ERROR_CODES = {
   NOT_FOUND: 'error.history.not_found',
   CHAIN_ERROR: 'error.history.chain',
@@ -42,13 +42,13 @@ export const HISTORY_ERROR_CODES = {
   VALIDATION_ERROR: 'error.history.validation',
 } as const;
 
-// Compare errors | 对比错误
+// Compare errors
 export const COMPARE_ERROR_CODES = {
   VALIDATION_ERROR: 'error.compare.validation',
   CALCULATION_ERROR: 'error.compare.calculation',
 } as const;
 
-// Storage errors | 存储错误
+// Storage errors
 export const STORAGE_ERROR_CODES = {
   READ_ERROR: 'error.storage.read',
   WRITE_ERROR: 'error.storage.write',
@@ -57,13 +57,13 @@ export const STORAGE_ERROR_CODES = {
   CONFIG_ERROR: 'error.storage.config',
 } as const;
 
-// Model errors | 模型错误
+// Model errors
 export const MODEL_ERROR_CODES = {
   VALIDATION_ERROR: 'error.model.validation',
   CONFIG_ERROR: 'error.model.config',
 } as const;
 
-// Template errors | 模板错误
+// Template errors
 export const TEMPLATE_ERROR_CODES = {
   LOAD_ERROR: 'error.template.load',
   NOT_FOUND: 'error.template.not_found',
@@ -72,7 +72,7 @@ export const TEMPLATE_ERROR_CODES = {
   STORAGE_ERROR: 'error.template.storage',
 } as const;
 
-// Context errors | 上下文错误
+// Context errors
 export const CONTEXT_ERROR_CODES = {
   NOT_FOUND: 'error.context.not_found',
   MINIMUM_VIOLATION: 'error.context.minimum_violation',
@@ -83,7 +83,7 @@ export const CONTEXT_ERROR_CODES = {
   ELECTRON_API_UNAVAILABLE: 'error.context.electron_api_unavailable',
 } as const;
 
-// Prompt errors | 提示词错误
+// Prompt errors
 export const PROMPT_ERROR_CODES = {
   OPTIMIZATION_ERROR: 'error.prompt.optimization',
   ITERATION_ERROR: 'error.prompt.iteration',
@@ -91,7 +91,7 @@ export const PROMPT_ERROR_CODES = {
   SERVICE_DEPENDENCY_ERROR: 'error.prompt.service_dependency',
 } as const;
 
-// Variable extraction errors | 变量提取错误
+// Variable extraction errors
 export const VARIABLE_EXTRACTION_ERROR_CODES = {
   VALIDATION_ERROR: 'error.variable_extraction.validation',
   MODEL_NOT_FOUND: 'error.variable_extraction.model_not_found',
@@ -99,7 +99,7 @@ export const VARIABLE_EXTRACTION_ERROR_CODES = {
   EXECUTION_ERROR: 'error.variable_extraction.execution',
 } as const;
 
-// Variable value generation errors | 变量值生成错误
+// Variable value generation errors
 export const VARIABLE_VALUE_GENERATION_ERROR_CODES = {
   VALIDATION_ERROR: 'error.variable_value_generation.validation',
   MODEL_NOT_FOUND: 'error.variable_value_generation.model_not_found',
@@ -107,7 +107,7 @@ export const VARIABLE_VALUE_GENERATION_ERROR_CODES = {
   EXECUTION_ERROR: 'error.variable_value_generation.execution',
 } as const;
 
-// Favorite errors | 收藏错误
+// Favorite errors
 export const FAVORITE_ERROR_CODES = {
   NOT_FOUND: 'error.favorite.not_found',
   ALREADY_EXISTS: 'error.favorite.already_exists',
@@ -121,7 +121,7 @@ export const FAVORITE_ERROR_CODES = {
   IMPORT_EXPORT_ERROR: 'error.favorite.import_export',
 } as const;
 
-// Image errors | 图像错误
+// Image errors
 export const IMAGE_ERROR_CODES = {
   PROMPT_EMPTY: 'error.image.prompt_empty',
   CONFIG_ID_EMPTY: 'error.image.config_id_empty',
@@ -154,14 +154,14 @@ export const IMAGE_ERROR_CODES = {
   GENERATION_FAILED: 'error.image.generation_failed',
 } as const;
 
-// Import/export errors | 导入导出错误
+// Import/export errors
 export const IMPORT_EXPORT_ERROR_CODES = {
   EXPORT_FAILED: 'error.import_export.export_failed',
   IMPORT_FAILED: 'error.import_export.import_failed',
   VALIDATION_ERROR: 'error.import_export.validation',
 } as const;
 
-// Data manager errors | 数据管理错误
+// Data manager errors
 export const DATA_ERROR_CODES = {
   INVALID_JSON: 'error.data.invalid_json',
   INVALID_FORMAT: 'error.data.invalid_format',
@@ -170,12 +170,12 @@ export const DATA_ERROR_CODES = {
   ELECTRON_API_UNAVAILABLE: 'error.data.electron_api_unavailable',
 } as const;
 
-// Core/internal errors | 核心/内部错误
+// Core/internal errors
 export const CORE_ERROR_CODES = {
   IPC_SERIALIZATION_FAILED: 'error.core.ipc_serialization_failed',
 } as const;
 
-// Export all error codes | 导出所有错误代码
+// Export all error codes
 export const ERROR_CODES = {
   EVALUATION: EVALUATION_ERROR_CODES,
   LLM: LLM_ERROR_CODES,

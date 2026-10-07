@@ -4,14 +4,14 @@ import { ModelError } from './errors';
 import { MODEL_ERROR_CODES } from '../../constants/error-codes';
 
 /**
- * Electron环境下的ModelManager代理
- * 通过IPC调用主进程中的真实ModelManager实例
+ * ModelManager proxy for the Electron environment
+ * Calls the real ModelManager instance in the main process over IPC
  */
 export class ElectronModelManagerProxy implements IModelManager {
   private electronAPI: any;
 
   constructor() {
-    // 验证Electron环境
+    // Validate the Electron environment
     if (typeof window === 'undefined' || !(window as any).electronAPI) {
       throw new ModelError(
         MODEL_ERROR_CODES.CONFIG_ERROR,
@@ -22,8 +22,8 @@ export class ElectronModelManagerProxy implements IModelManager {
   }
 
   async ensureInitialized(): Promise<void> {
-    // 在代理模式下，初始化由主进程负责，这里只是一个空实现
-    // 但我们可以添加一个IPC调用来触发主进程的ensureInitialized
+    // In proxy mode, initialization is handled by the main process; this is just an empty implementation
+    // But we could add an IPC call to trigger ensureInitialized in the main process
     await this.electronAPI.model.ensureInitialized();
   }
 
@@ -43,13 +43,13 @@ export class ElectronModelManagerProxy implements IModelManager {
   }
 
   async addModel(key: string, config: TextModelConfig): Promise<void> {
-    // 自动序列化，防止Vue响应式对象IPC传递错误
+    // Serialize automatically to prevent errors when Vue reactive objects are passed over IPC
     const safeConfig = safeSerializeForIPC(config);
     await this.electronAPI.model.addModel({ key, ...safeConfig });
   }
 
   async updateModel(key: string, config: Partial<TextModelConfig>): Promise<void> {
-    // 自动序列化，防止Vue响应式对象IPC传递错误
+    // Serialize automatically to prevent errors when Vue reactive objects are passed over IPC
     const safeConfig = safeSerializeForIPC(config);
     await this.electronAPI.model.updateModel(key, safeConfig);
   }
@@ -70,36 +70,36 @@ export class ElectronModelManagerProxy implements IModelManager {
     return this.electronAPI.model.getEnabledModels();
   }
 
-  // 实现 IImportExportable 接口
+  // Implement the IImportExportable interface
 
   /**
-   * 导出所有模型配置
+   * Export all model configs
    */
   async exportData(): Promise<TextModelConfig[]> {
     return (this.electronAPI as any).model.exportData();
   }
 
   /**
-   * 导入模型配置
+   * Import model configs
    */
   async importData(data: any): Promise<void> {
-    // 自动序列化，防止Vue响应式对象IPC传递错误
+    // Serialize automatically to prevent errors when Vue reactive objects are passed over IPC
     const safeData = safeSerializeForIPC(data);
     return (this.electronAPI as any).model.importData(safeData);
   }
 
   /**
-   * 获取数据类型标识
+   * Get the data type identifier
    */
   async getDataType(): Promise<string> {
     return (this.electronAPI as any).model.getDataType();
   }
 
   /**
-   * 验证模型数据格式
+   * Validate the model data format
    */
   async validateData(data: any): Promise<boolean> {
-    // 自动序列化，防止Vue响应式对象IPC传递错误
+    // Serialize automatically to prevent errors when Vue reactive objects are passed over IPC
     const safeData = safeSerializeForIPC(data);
     return (this.electronAPI as any).model.validateData(safeData);
   }

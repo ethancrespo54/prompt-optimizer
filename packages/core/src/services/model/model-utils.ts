@@ -3,8 +3,8 @@ import { ValidatedCustomModelEnvConfig, scanCustomModelEnvVars } from '../../uti
 import { getDefaultTextModels } from './defaults';
 
 /**
- * 获取静态模型键列表
- * 通过创建临时静态模型配置来动态获取键列表，避免硬编码
+ * Get the list of static model keys
+ * Gets the key list dynamically by creating temporary static model configs, avoiding hard-coding
  */
 function getStaticModelKeys(): string[] {
   const tempStaticModels = getDefaultTextModels();
@@ -12,12 +12,12 @@ function getStaticModelKeys(): string[] {
 }
 
 /**
- * 生成自定义模型的显示名称
- * @param suffix 后缀名
- * @returns 格式化的显示名称
+ * Generate the display name of a custom model
+ * @param suffix Suffix name
+ * @returns Formatted display name
  */
 export function generateCustomModelName(suffix: string): string {
-  // 将下划线和连字符替换为空格，并转换为标题格式
+  // Replace underscores and hyphens with spaces and convert to title case
   return suffix
     .replace(/[_-]/g, ' ')
     .split(' ')
@@ -26,16 +26,16 @@ export function generateCustomModelName(suffix: string): string {
 }
 
 /**
- * 将已验证的自定义模型环境变量配置转换为 TextModelConfig
- * 输入的配置已通过 validateCustomModelConfig 验证，确保所有必需字段存在
- * @param envConfig 已验证的环境变量配置
- * @returns TextModelConfig对象
+ * Convert a validated custom model environment variable config into a TextModelConfig
+ * The input config has passed validateCustomModelConfig, ensuring all required fields exist
+ * @param envConfig Validated environment variable config
+ * @returns TextModelConfig object
  */
 export function generateTextModelConfig(envConfig: ValidatedCustomModelEnvConfig): TextModelConfig {
-  // 输入配置已通过验证，直接使用（所有必需字段已确保存在）
+  // The input config has been validated; use it directly (all required fields are guaranteed to exist)
   const modelName = generateCustomModelName(envConfig.suffix);
 
-  // OpenAI 兼容 Provider（所有自定义模型都使用 OpenAI 兼容 API）
+  // OpenAI-compatible Provider (all custom models use an OpenAI-compatible API)
   const customProvider: TextProvider = {
     id: 'openai',
     name: 'OpenAI',
@@ -55,7 +55,7 @@ export function generateTextModelConfig(envConfig: ValidatedCustomModelEnvConfig
     }
   };
 
-  // 自定义模型元数据
+  // Custom model metadata
   const customModel: TextModel = {
     id: envConfig.model,
     name: modelName,
@@ -96,33 +96,33 @@ export function generateTextModelConfig(envConfig: ValidatedCustomModelEnvConfig
 }
 
 /**
- * 生成所有动态自定义模型配置（TextModelConfig格式）
- * @returns 动态模型配置映射
+ * Generate all dynamic custom model configs (TextModelConfig format)
+ * @returns Map of dynamic model configs
  */
 export function generateDynamicModels(): Record<string, TextModelConfig> {
   const dynamicModels: Record<string, TextModelConfig> = {};
 
   try {
-    // 获取已验证的自定义模型配置（scanCustomModelEnvVars已完成所有验证）
+    // Get the validated custom model configs (scanCustomModelEnvVars has done all validation)
     const customModelConfigs = scanCustomModelEnvVars();
 
     Object.entries(customModelConfigs).forEach(([suffix, envConfig]) => {
       try {
         const modelKey = `custom_${suffix}`;
 
-        // 检查是否与静态模型key冲突（动态获取静态模型键，避免硬编码）
+        // Check for conflicts with static model keys (get the static model keys dynamically to avoid hard-coding)
         const staticModelKeys = getStaticModelKeys();
         if (staticModelKeys.includes(suffix)) {
           console.warn(`[generateDynamicModels] Suffix conflict: ${suffix} conflicts with static model, skipping`);
           return;
         }
 
-        // 配置已通过验证，直接生成模型配置
+        // The config has been validated; generate the model config directly
         dynamicModels[modelKey] = generateTextModelConfig(envConfig);
         console.log(`[generateDynamicModels] Generated model: ${modelKey} (${dynamicModels[modelKey].name})`);
       } catch (error) {
         console.error(`[generateDynamicModels] Error generating model for ${suffix}:`, error);
-        // 继续处理其他模型，不因单个模型错误而中断
+        // Continue with the other models; one model's error should not interrupt the rest
       }
     });
 

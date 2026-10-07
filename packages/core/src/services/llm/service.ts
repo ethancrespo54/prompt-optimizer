@@ -17,7 +17,7 @@ import { TextAdapterRegistry } from './adapters/registry';
 import { mergeOverrides, splitOverridesBySchema } from '../model/parameter-utils';
 
 /**
- * LLM服务实现 - 基于 Adapter 架构
+ * LLM service implementation - based on the Adapter architecture
  */
 export class LLMService implements ILLMService {
   private registry: ITextAdapterRegistry;
@@ -30,7 +30,7 @@ export class LLMService implements ILLMService {
   }
 
   /**
-   * 验证消息格式
+   * Validate the message format
    */
   private validateMessages(messages: Message[]): void {
     if (!Array.isArray(messages)) {
@@ -53,7 +53,7 @@ export class LLMService implements ILLMService {
   }
 
   /**
-   * 验证模型配置
+   * Validate the model configuration
    */
   private validateModelConfig(
     modelConfig: TextModelConfig,
@@ -76,7 +76,7 @@ export class LLMService implements ILLMService {
   }
 
   /**
-   * 发送消息（结构化格式）
+   * Send a message (structured format)
    */
   async sendMessageStructured(messages: Message[], provider: string): Promise<LLMResponse> {
     try {
@@ -92,12 +92,12 @@ export class LLMService implements ILLMService {
       this.validateModelConfig(modelConfig);
       this.validateMessages(messages);
 
-      // 通过 Registry 获取 Adapter
+      // Get the Adapter through the Registry
       const adapter = this.registry.getAdapter(modelConfig.providerMeta.id);
 
       const runtimeConfig = this.prepareRuntimeConfig(modelConfig);
 
-      // 使用 Adapter 发送消息
+      // Use the Adapter to send the message
       return await adapter.sendMessage(messages, runtimeConfig);
 
     } catch (error: any) {
@@ -109,18 +109,18 @@ export class LLMService implements ILLMService {
   }
 
   /**
-   * 发送消息（传统格式，只返回主要内容）
+   * Send a message (legacy format, returns only the main content)
    */
   async sendMessage(messages: Message[], provider: string): Promise<string> {
     const response = await this.sendMessageStructured(messages, provider);
     
-    // 只返回主要内容，不包含推理内容
-    // 如果需要推理内容，请使用 sendMessageStructured 方法
+    // Return only the main content, not the reasoning content
+    // If you need the reasoning content, use the sendMessageStructured method
     return response.content;
   }
 
   /**
-   * 发送消息（流式,支持结构化和传统格式）
+   * Send a message (streaming, supports both structured and legacy formats)
    */
   async sendMessageStream(
     messages: Message[],
@@ -137,12 +137,12 @@ export class LLMService implements ILLMService {
 
       this.validateModelConfig(modelConfig);
 
-      // 通过 Registry 获取 Adapter
+      // Get the Adapter through the Registry
       const adapter = this.registry.getAdapter(modelConfig.providerMeta.id);
 
       const runtimeConfig = this.prepareRuntimeConfig(modelConfig);
 
-      // 使用 Adapter 发送流式消息
+      // Use the Adapter to send the streaming message
       await adapter.sendMessageStream(messages, runtimeConfig, callbacks);
 
     } catch (error) {
@@ -153,8 +153,8 @@ export class LLMService implements ILLMService {
   }
 
   /**
-   * 发送消息（流式,支持工具调用）
-   * 🆕 支持工具调用的流式消息发送
+   * Send a message (streaming, supports tool calls)
+   * 🆕 Streaming message sending with tool call support
    */
   async sendMessageStreamWithTools(
     messages: Message[],
@@ -172,12 +172,12 @@ export class LLMService implements ILLMService {
 
       this.validateModelConfig(modelConfig);
 
-      // 通过 Registry 获取 Adapter
+      // Get the Adapter through the Registry
       const adapter = this.registry.getAdapter(modelConfig.providerMeta.id);
 
       const runtimeConfig = this.prepareRuntimeConfig(modelConfig);
 
-      // 使用 Adapter 发送带工具的流式消息
+      // Use the Adapter to send a streaming message with tools
       await adapter.sendMessageStreamWithTools(messages, runtimeConfig, tools, callbacks);
 
     } catch (error) {
@@ -189,7 +189,7 @@ export class LLMService implements ILLMService {
 
 
   /**
-   * 测试连接
+   * Test the connection
    */
   async testConnection(provider: string): Promise<void> {
     try {
@@ -205,7 +205,7 @@ export class LLMService implements ILLMService {
       // Align with image model connection testing: allow testing even if the model is disabled.
       this.validateModelConfig(modelConfig, { allowDisabled: true });
 
-      // 发送一个简单的测试消息
+      // Send a simple test message
       const testMessages: Message[] = [
         {
           role: 'user',
@@ -229,20 +229,20 @@ export class LLMService implements ILLMService {
   }
 
   /**
-   * 获取模型列表，以下拉选项格式返回
-   * @param provider 提供商标识
-   * @param customConfig 自定义配置（可选）
+   * Get the model list, returned in dropdown option format
+   * @param provider Provider identifier
+   * @param customConfig Custom config (optional)
    */
   async fetchModelList(
     provider: string,
     customConfig?: Partial<TextModelConfig> | Partial<ModelConfig>
   ): Promise<ModelOption[]> {
     try {
-      // 获取基础配置
+      // Get the base config
       const baseConfig = await this.modelManager.getModel(provider);
       const modelConfig = await this.buildEffectiveModelConfig(provider, baseConfig, customConfig);
 
-      // 使用 Registry 获取模型列表
+      // Use the Registry to get the model list
       const providerId = modelConfig.providerMeta.id;
       let models: TextModel[] = [];
 
@@ -264,7 +264,7 @@ export class LLMService implements ILLMService {
         models = this.registry.getStaticModels(providerId);
       }
 
-      // 转换为选项格式
+      // Convert to option format
       return models.map(model => ({
         value: model.id,
         label: model.name
@@ -281,15 +281,15 @@ export class LLMService implements ILLMService {
   private prepareRuntimeConfig(modelConfig: TextModelConfig): TextModelConfig {
     const schema = modelConfig.modelMeta?.parameterDefinitions ?? [];
 
-    // 合并参数：支持旧格式的 customParamOverrides（向后兼容）
-    // 优先级：requestOverrides > customOverrides
-    // requestOverrides 包含当前 paramOverrides（可能已合并或未合并）
-    // customOverrides 确保旧数据的自定义参数不丢失
+    // Merge parameters: supports the legacy-format customParamOverrides (backward compatible)
+    // Priority: requestOverrides > customOverrides
+    // requestOverrides contains the current paramOverrides (possibly merged or not)
+    // customOverrides ensures that custom parameters in old data are not lost
     const mergedOverrides = mergeOverrides({
       schema,
       includeDefaults: false,
-      customOverrides: modelConfig.customParamOverrides,  // 🔧 兼容旧格式：自定义参数
-      requestOverrides: modelConfig.paramOverrides        // 当前参数（包含内置 + 可能已合并的自定义）
+      customOverrides: modelConfig.customParamOverrides,  // 🔧 Legacy-format compatibility: custom parameters
+      requestOverrides: modelConfig.paramOverrides        // Current parameters (built-in + possibly already-merged custom ones)
     });
 
     return {
@@ -299,8 +299,8 @@ export class LLMService implements ILLMService {
   }
 
   /**
-   * 构建用于获取模型列表的有效模型配置
-   * 支持 TextModelConfig 与 传统 ModelConfig 两种输入结构
+   * Build a valid model config for fetching the model list
+   * Supports both TextModelConfig and legacy ModelConfig input structures
    */
   private async buildEffectiveModelConfig(
     provider: string,
@@ -379,21 +379,21 @@ export class LLMService implements ILLMService {
 }
 
 /**
- * 创建LLM服务实例的工厂函数
- * @param modelManager 模型管理器实例
- * @returns LLM服务实例
+ * Factory function for creating an LLM service instance
+ * @param modelManager Model manager instance
+ * @returns LLM service instance
  */
 export function createLLMService(modelManager: ModelManager): ILLMService {
-  // 在Electron环境中，返回代理实例
+  // In the Electron environment, return the proxy instance
   if (isRunningInElectron()) {
     console.log('[LLM Service Factory] Electron environment detected, using proxy.');
     return new ElectronLLMProxy();
   }
 
-  // 创建 Registry 实例
+  // Create the Registry instance
   const registry = new TextAdapterRegistry();
 
-  // 返回注入了 Registry 的 LLMService 实例
+  // Return an LLMService instance with the Registry injected
   return new LLMService(modelManager, registry);
 }
 
@@ -401,14 +401,14 @@ export function createLLMService(modelManager: ModelManager): ILLMService {
 type LegacyLike = Partial<ModelConfig> & {}
 
 /**
- * 辅助方法: 判断是否为TextModelConfig结构
+ * Helper: determine whether the value has the TextModelConfig structure
  */
 function isTextConfigLike(config?: Partial<TextModelConfig> | Partial<ModelConfig>): config is Partial<TextModelConfig> {
   return !!config && typeof config === 'object' && 'providerMeta' in config;
 }
 
 /**
- * 辅助方法: 判断是否为传统ModelConfig结构
+ * Helper: determine whether the value has the legacy ModelConfig structure
  */
 function isLegacyConfigLike(config?: Partial<TextModelConfig> | Partial<ModelConfig>): config is LegacyLike {
   return !!config && typeof config === 'object' && (

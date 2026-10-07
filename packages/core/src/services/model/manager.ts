@@ -17,7 +17,7 @@ import {
 import type { ITextAdapterRegistry } from '../llm/types';
 
 /**
- * 模型管理器实现
+ * Model manager implementation
  */
 export class ModelManager implements IModelManager {
   private readonly storageKey = CORE_SERVICE_KEYS.MODELS;
@@ -26,7 +26,7 @@ export class ModelManager implements IModelManager {
   private registry?: ITextAdapterRegistry;
 
   constructor(storageProvider: IStorageProvider, registry?: ITextAdapterRegistry) {
-    // 使用适配器确保所有存储提供者都支持高级方法
+    // Use an adapter to ensure all storage providers support the advanced methods
     this.storage = new StorageAdapter(storageProvider);
     this.registry = registry;
     this.initPromise = this.init().catch(err => {
@@ -36,13 +36,13 @@ export class ModelManager implements IModelManager {
   }
 
   /**
-   * 懒加载获取 Registry 实例
-   * 使用动态 import 避免循环依赖
+   * Lazily get the Registry instance
+   * Uses a dynamic import to avoid circular dependencies
    */
   private async getRegistry(): Promise<ITextAdapterRegistry> {
     if (!this.registry) {
       try {
-        // 动态导入避免循环依赖
+        // Dynamic import to avoid circular dependencies
         const { TextAdapterRegistry } = await import('../llm/adapters/registry');
         this.registry = new TextAdapterRegistry();
         console.log('[ModelManager] Lazy-loaded TextAdapterRegistry');
@@ -55,14 +55,14 @@ export class ModelManager implements IModelManager {
   }
 
   /**
-   * 确保初始化完成
+   * Ensure initialization is complete
    */
   public async ensureInitialized(): Promise<void> {
     await this.initPromise;
   }
 
   /**
-   * 检查管理器是否已初始化
+   * Check whether the manager has been initialized
    */
   public async isInitialized(): Promise<boolean> {
     const storedData = await this.storage.getItem(this.storageKey);
@@ -70,13 +70,13 @@ export class ModelManager implements IModelManager {
   }
 
   /**
-   * 初始化模型管理器
+   * Initialize the model manager
    */
   private async init(): Promise<void> {
     try {
       console.log('[ModelManager] Initializing...');
 
-      // 在Electron渲染进程中，先同步环境变量
+      // In the Electron renderer process, sync the environment variables first
       if (isElectronRenderer()) {
         console.log('[ModelManager] Electron environment detected, syncing config from main process...');
         const configManager = ElectronConfigManager.getInstance();
@@ -84,7 +84,7 @@ export class ModelManager implements IModelManager {
         console.log('[ModelManager] Environment variables synced from main process');
       }
 
-      // 从存储中加载现有配置
+      // Load the existing configs from storage
       const storedData = await this.storage.getItem(this.storageKey);
 
       if (storedData) {
@@ -92,23 +92,23 @@ export class ModelManager implements IModelManager {
           const storedModels = JSON.parse(storedData);
           console.log('[ModelManager] Loaded existing models from storage');
 
-          // 确保所有默认模型都存在，但保留用户的自定义配置
+          // Ensure all default models exist, while keeping the user's custom configs
           const defaults = this.getDefaultModels();
           let hasUpdates = false;
           const updatedModels = { ...storedModels };
 
           for (const [key, defaultConfig] of Object.entries(defaults)) {
             if (!updatedModels[key]) {
-              // 添加缺失的默认模型
+              // Add missing default models
               updatedModels[key] = defaultConfig;
               hasUpdates = true;
               console.log(`[ModelManager] Added missing default model: ${key}`);
             } else {
-              // 检查现有模型是否为新格式
+              // Check whether the existing model is in the new format
               const existingModel = updatedModels[key];
 
               if (isTextModelConfig(existingModel)) {
-                // 已经是新格式，保留用户配置，仅在缺失关键字段时补齐默认值
+                // Already in the new format; keep the user config and only fill in defaults for missing key fields
                 const updatedModel = { ...existingModel } as TextModelConfig;
                 let patched = false;
 
@@ -128,7 +128,7 @@ export class ModelManager implements IModelManager {
                   console.log(`[ModelManager] Patched missing metadata for model: ${key}`);
                 }
 
-                // 检查是否需要自动注入 apiKey 并启用内置模型
+                // Check whether the apiKey needs to be auto-injected and the built-in model enabled
                 if (this.shouldAutoEnableBuiltinModel(key, updatedModel, defaultConfig)) {
                   updatedModels[key] = {
                     ...updatedModel,
@@ -142,7 +142,7 @@ export class ModelManager implements IModelManager {
                   console.log(`[ModelManager] Auto-enabled builtin model with new API key: ${key}`);
                 }
               } else if (isLegacyConfig(existingModel)) {
-                // 旧格式，尝试使用 Registry 转换为新格式
+                // Old format; try to convert to the new format using the Registry
                 try {
                   const registry = await this.getRegistry();
                   const convertedModel = await convertLegacyToTextModelConfigWithRegistry(key, existingModel, registry);
@@ -150,7 +150,7 @@ export class ModelManager implements IModelManager {
                   hasUpdates = true;
                   console.log(`[ModelManager] Converted legacy model to new format (via Registry): ${key}`);
                 } catch (error) {
-                  // Fallback 到硬编码转换
+                  // Fall back to hard-coded conversion
                   console.warn(`[ModelManager] Registry conversion failed for ${key}, using fallback:`, error);
                   const convertedModel = convertLegacyToTextModelConfig(key, existingModel);
                   updatedModels[key] = convertedModel;
@@ -158,7 +158,7 @@ export class ModelManager implements IModelManager {
                   console.log(`[ModelManager] Converted legacy model to new format (via fallback): ${key}`);
                 }
               } else {
-                // 未知格式，使用默认配置替换
+                // Unknown format; replace with the default config
                 updatedModels[key] = defaultConfig;
                 hasUpdates = true;
                 console.log(`[ModelManager] Replaced unknown format with default: ${key}`);
@@ -166,7 +166,7 @@ export class ModelManager implements IModelManager {
             }
           }
 
-          // 如果有更新，保存到存储
+          // If anything was updated, save it to storage
           if (hasUpdates) {
             await this.storage.setItem(this.storageKey, JSON.stringify(updatedModels));
             console.log('[ModelManager] Saved updated models to storage');
@@ -183,7 +183,7 @@ export class ModelManager implements IModelManager {
       console.log('[ModelManager] Initialization completed');
     } catch (error) {
       console.error('[ModelManager] Initialization failed:', error);
-      // 如果初始化失败，至少保存默认配置到存储
+      // If initialization fails, at least save the default configs to storage
       try {
         await this.storage.setItem(this.storageKey, JSON.stringify(this.getDefaultModels()));
       } catch (saveError) {
@@ -193,54 +193,54 @@ export class ModelManager implements IModelManager {
   }
 
   /**
-   * 获取默认模型配置（返回TextModelConfig格式）
-   * 注意：每次调用都会重新计算，确保环境变量变化能被感知
+   * Get the default model configs (returns the TextModelConfig format)
+   * Note: recomputed on every call, so environment variable changes are picked up
    */
   private getDefaultModels(): Record<string, TextModelConfig> {
-    // 在Electron环境下使用配置管理器生成配置
+    // In the Electron environment, use the config manager to generate configs
     if (isElectronRenderer()) {
       const configManager = ElectronConfigManager.getInstance();
       if (configManager.isInitialized()) {
-        // ElectronConfigManager 已支持 getAllModels()
+        // ElectronConfigManager already supports getAllModels()
         return configManager.generateDefaultModels();
       }
     }
 
-    // 调用函数重新计算（而非使用静态常量），确保环境变量变化能被感知
+    // Call the function to recompute (rather than using static constants) so environment variable changes are picked up
     return getAllModels();
   }
 
   /**
-   * 迁移配置：合并 customParamOverrides 到 paramOverrides
-   * 用于向后兼容读取旧数据格式
+   * Migrate config: merge customParamOverrides into paramOverrides
+   * Used to read the old data format for backward compatibility
    */
   private migrateConfig(config: TextModelConfig): TextModelConfig {
-    // 如果没有 customParamOverrides，直接返回
+    // If there is no customParamOverrides, return directly
     if (!config.customParamOverrides || Object.keys(config.customParamOverrides).length === 0) {
       return config
     }
 
-    // 添加迁移日志
+    // Add a migration log
     console.warn(
       `[ModelManager] Migrating customParamOverrides to paramOverrides for model '${config.id}'. ` +
       `The 'customParamOverrides' field is deprecated and will be removed in v3.0.`
     )
 
-    // 合并 customParamOverrides 到 paramOverrides
+    // Merge customParamOverrides into paramOverrides
     return {
       ...config,
       paramOverrides: {
         ...(config.paramOverrides || {}),
         ...(config.customParamOverrides || {})
       }
-      // 保留 customParamOverrides 字段以防版本回退，但新代码不再使用
+      // Keep the customParamOverrides field in case of a version rollback, but new code no longer uses it
     }
   }
 
   /**
-   * 旧存储数据里 providerMeta 可能缺少新字段；用当前 adapter 的 provider 元数据补齐。
+   * In old stored data, providerMeta may lack new fields; fill them in using the current adapter's provider metadata.
    *
-   * 目前主要用于回填 `corsRestricted`，以便 UI 能正确展示 CORS 受限标签。
+   * Currently mainly used to backfill `corsRestricted` so the UI can correctly show the CORS-restricted label.
    */
   private patchProviderMeta(config: TextModelConfig): TextModelConfig {
     const providerMeta = config.providerMeta
@@ -292,8 +292,8 @@ export class ModelManager implements IModelManager {
   }
 
   /**
-   * 从存储获取模型配置，如果不存在则返回默认配置
-   * 返回any类型以兼容新旧格式
+   * Get a model config from storage; return the default config if it does not exist
+   * Returns any to be compatible with both the old and new formats
    */
   private async getModelsFromStorage(): Promise<Record<string, any>> {
     const storedData = await this.storage.getItem(this.storageKey);
@@ -308,30 +308,30 @@ export class ModelManager implements IModelManager {
   }
 
   /**
-   * 获取所有模型配置（返回 TextModelConfig）
+   * Get all model configs (returns TextModelConfig)
    */
   async getAllModels(): Promise<TextModelConfig[]> {
     await this.ensureInitialized();
     const models = await this.getModelsFromStorage();
 
-    // 转换为 TextModelConfig 数组（先完成格式/字段迁移）
+    // Convert to a TextModelConfig array (finish the format/field migration first)
     const migratedConfigs = Object.entries(models).map(([key, config]) => {
       let textConfig: TextModelConfig
 
-      // 检查是否已经是新格式
+      // Check whether it is already in the new format
       if (isTextModelConfig(config)) {
         textConfig = config as TextModelConfig;
       }
-      // 传统格式，转换为新格式
+      // Legacy format; convert to the new format
       else if (isLegacyConfig(config)) {
         textConfig = convertLegacyToTextModelConfig(key, config);
       }
-      // 未知格式，尝试转换
+      // Unknown format; try to convert
       else {
         textConfig = convertLegacyToTextModelConfig(key, config as ModelConfig);
       }
 
-      // 读时迁移：合并 customParamOverrides 到 paramOverrides
+      // Migrate on read: merge customParamOverrides into paramOverrides
       return this.migrateConfig(textConfig)
     });
 
@@ -352,7 +352,7 @@ export class ModelManager implements IModelManager {
   }
 
   /**
-   * 获取指定模型配置（返回 TextModelConfig）
+   * Get the specified model config (returns TextModelConfig)
    */
   async getModel(key: string): Promise<TextModelConfig | undefined> {
     await this.ensureInitialized();
@@ -365,20 +365,20 @@ export class ModelManager implements IModelManager {
 
     let textConfig: TextModelConfig
 
-    // 检查是否已经是新格式
+    // Check whether it is already in the new format
     if (isTextModelConfig(config)) {
       textConfig = config as TextModelConfig;
     }
-    // 传统格式，转换为新格式
+    // Legacy format; convert to the new format
     else if (isLegacyConfig(config)) {
       textConfig = convertLegacyToTextModelConfig(key, config);
     }
-    // 未知格式，尝试转换
+    // Unknown format; try to convert
     else {
       textConfig = convertLegacyToTextModelConfig(key, config as ModelConfig);
     }
 
-    // 读时迁移：合并 customParamOverrides 到 paramOverrides
+    // Migrate on read: merge customParamOverrides into paramOverrides
     const migrated = this.migrateConfig(textConfig)
     const needsProviderMetaPatch =
       !!migrated.providerMeta && migrated.providerMeta.corsRestricted === undefined
@@ -396,13 +396,13 @@ export class ModelManager implements IModelManager {
   }
 
   /**
-   * 添加模型配置（接受 TextModelConfig）
+   * Add a model config (accepts TextModelConfig)
    */
   async addModel(key: string, config: TextModelConfig): Promise<void> {
     await this.ensureInitialized();
     this.validateTextModelConfig(config);
 
-    // 保存时移除 customParamOverrides（已合并到 paramOverrides）
+    // Remove customParamOverrides on save (already merged into paramOverrides)
     const toStore = {
       ...config,
       customParamOverrides: undefined
@@ -411,7 +411,7 @@ export class ModelManager implements IModelManager {
     await this.storage.updateData<Record<string, any>>(
       this.storageKey,
       (currentModels) => {
-        // 使用存储中的数据，如果不存在则使用默认配置
+        // Use the data from storage; if it does not exist, use the default config
         const models = currentModels || this.getDefaultModels();
 
         if (models[key]) {
@@ -420,14 +420,14 @@ export class ModelManager implements IModelManager {
 
         return {
           ...models,
-          [key]: toStore // 存储清理后的配置
+          [key]: toStore // Store the cleaned config
         };
       }
     );
   }
 
   /**
-   * 更新模型配置（接受部分 TextModelConfig）
+   * Update a model config (accepts a partial TextModelConfig)
    */
   async updateModel(key: string, config: Partial<TextModelConfig>): Promise<void> {
     await this.ensureInitialized();
@@ -435,20 +435,20 @@ export class ModelManager implements IModelManager {
     await this.storage.updateData<Record<string, any>>(
       this.storageKey,
       (currentModels) => {
-        // 使用存储中的数据，如果不存在则使用默认配置
+        // Use the data from storage; if it does not exist, use the default config
         const models = currentModels || this.getDefaultModels();
 
-        // 如果模型不存在，检查是否是内置模型
+        // If the model does not exist, check whether it is a built-in model
         if (!models[key]) {
           const defaults = this.getDefaultModels();
           if (!defaults[key]) {
             throw new ModelConfigError(`Model ${key} does not exist`);
           }
-          // 如果是内置模型但尚未配置，创建初始配置
+          // If it is a built-in model but not yet configured, create the initial config
           models[key] = defaults[key];
         }
 
-        // 获取现有配置并转换为 TextModelConfig
+        // Get the existing config and convert it to a TextModelConfig
         const existingConfig = models[key];
         let existingTextModelConfig: TextModelConfig;
 
@@ -460,25 +460,25 @@ export class ModelManager implements IModelManager {
           existingTextModelConfig = convertLegacyToTextModelConfig(key, existingConfig as ModelConfig);
         }
 
-        // 合并配置
+        // Merge the configs
         const updatedConfig: TextModelConfig = {
           ...existingTextModelConfig,
           ...config,
-          // 确保 enabled 属性存在
+          // Ensure the enabled property exists
           enabled: config.enabled !== undefined ? config.enabled : existingTextModelConfig.enabled,
           // Deep merge connectionConfig
           connectionConfig: {
             ...existingTextModelConfig.connectionConfig,
             ...(config.connectionConfig || {})
           },
-          // 处理 paramOverrides：如果明确传入了 paramOverrides，则直接替换而不是合并
-          // 这样可以确保用户删除的参数不会被错误地保留
+          // Handle paramOverrides: if paramOverrides is explicitly passed in, replace it directly rather than merging
+          // This ensures that parameters the user deleted are not wrongly retained
           paramOverrides: config.paramOverrides !== undefined
             ? config.paramOverrides
             : existingTextModelConfig.paramOverrides || {}
         };
 
-        // 如果更新了关键字段，需要验证配置
+        // If key fields were updated, the config needs to be validated
         if (
           config.name !== undefined ||
           config.providerMeta !== undefined ||
@@ -490,13 +490,13 @@ export class ModelManager implements IModelManager {
           this.validateTextModelConfig(updatedConfig);
         }
 
-        // 保存时移除 customParamOverrides（已合并到 paramOverrides）
+        // Remove customParamOverrides on save (already merged into paramOverrides)
         const toStore = {
           ...updatedConfig,
           customParamOverrides: undefined
         }
 
-        // 返回完整的模型数据，确保所有模型都被保留
+        // Return the complete model data, ensuring all models are kept
         return {
           ...models,
           [key]: toStore
@@ -506,14 +506,14 @@ export class ModelManager implements IModelManager {
   }
 
   /**
-   * 删除模型配置
+   * Delete a model config
    */
   async deleteModel(key: string): Promise<void> {
     await this.ensureInitialized();
     await this.storage.updateData<Record<string, any>>(
       this.storageKey,
       (currentModels) => {
-        // 使用存储中的数据，如果不存在则使用默认配置
+        // Use the data from storage; if it does not exist, use the default config
         const models = currentModels || this.getDefaultModels();
 
         if (!models[key]) {
@@ -526,21 +526,21 @@ export class ModelManager implements IModelManager {
   }
 
   /**
-   * 启用模型
+   * Enable a model
    */
   async enableModel(key: string): Promise<void> {
     await this.ensureInitialized();
     await this.storage.updateData<Record<string, any>>(
       this.storageKey,
       (currentModels) => {
-        // 使用存储中的数据，如果不存在则使用默认配置
+        // Use the data from storage; if it does not exist, use the default config
         const models = currentModels || this.getDefaultModels();
 
         if (!models[key]) {
           throw new ModelConfigError(`Unknown model: ${key}`);
         }
 
-        // 获取现有配置并转换为 TextModelConfig
+        // Get the existing config and convert it to a TextModelConfig
         const existingConfig = models[key];
         let textModelConfig: TextModelConfig;
 
@@ -552,7 +552,7 @@ export class ModelManager implements IModelManager {
           textModelConfig = convertLegacyToTextModelConfig(key, existingConfig as ModelConfig);
         }
 
-        // 使用完整验证
+        // Use full validation
         this.validateTextModelConfig(textModelConfig);
 
         return {
@@ -567,21 +567,21 @@ export class ModelManager implements IModelManager {
   }
 
   /**
-   * 禁用模型
+   * Disable a model
    */
   async disableModel(key: string): Promise<void> {
     await this.ensureInitialized();
     await this.storage.updateData<Record<string, any>>(
       this.storageKey,
       (currentModels) => {
-        // 使用存储中的数据，如果不存在则使用默认配置
+        // Use the data from storage; if it does not exist, use the default config
         const models = currentModels || this.getDefaultModels();
 
         if (!models[key]) {
           throw new ModelConfigError(`Unknown model: ${key}`);
         }
 
-        // 获取现有配置并转换为 TextModelConfig
+        // Get the existing config and convert it to a TextModelConfig
         const existingConfig = models[key];
         let textModelConfig: TextModelConfig;
 
@@ -605,32 +605,32 @@ export class ModelManager implements IModelManager {
   }
 
   /**
-   * 判断是否应该自动启用内置模型
-   * 条件：内置模型 + 存储的 apiKey 为空 + enabled 为 false + 新配置有 apiKey
+   * Determine whether the built-in model should be auto-enabled
+   * Conditions: built-in model + stored apiKey is empty + enabled is false + the new config has an apiKey
    */
   private shouldAutoEnableBuiltinModel(
     modelId: string,
     storedConfig: TextModelConfig,
     defaultConfig: TextModelConfig
   ): boolean {
-    // 1. 必须是内置模型
+    // 1. Must be a built-in model
     const builtinIds = getBuiltinModelIds();
     if (!builtinIds.includes(modelId)) {
       return false;
     }
 
-    // 2. 存储的配置必须是禁用状态
+    // 2. The stored config must be disabled
     if (storedConfig.enabled !== false) {
       return false;
     }
 
-    // 3. 存储的 apiKey 必须为空
+    // 3. The stored apiKey must be empty
     const storedApiKey = storedConfig.connectionConfig?.apiKey?.trim() || '';
     if (storedApiKey !== '') {
       return false;
     }
 
-    // 4. 新的默认配置必须有 apiKey
+    // 4. The new default config must have an apiKey
     const newApiKey = defaultConfig.connectionConfig?.apiKey?.trim() || '';
     if (newApiKey === '') {
       return false;
@@ -640,7 +640,7 @@ export class ModelManager implements IModelManager {
   }
 
   /**
-   * 验证 TextModelConfig 配置
+   * Validate a TextModelConfig
    */
   private validateTextModelConfig(config: TextModelConfig): void {
     const errors: string[] = [];
@@ -685,7 +685,7 @@ export class ModelManager implements IModelManager {
     }
 
     if (validation.warnings.length > 0) {
-      // warnings 不阻止保存，但在控制台提示
+      // warnings do not block saving, but are shown in the console
       validation.warnings.forEach((warning) => {
         console.warn(`[ModelManager] ${warning.message}`);
       });
@@ -699,7 +699,7 @@ export class ModelManager implements IModelManager {
 
 
   /**
-   * 获取所有已启用的模型配置（返回 TextModelConfig）
+   * Get all enabled model configs (returns TextModelConfig)
    */
   async getEnabledModels(): Promise<TextModelConfig[]> {
     await this.ensureInitialized();
@@ -707,10 +707,10 @@ export class ModelManager implements IModelManager {
     return allModels.filter(model => model.enabled);
   }
 
-  // 实现 IImportExportable 接口
+  // Implement the IImportExportable interface
 
   /**
-   * 导出所有模型配置（返回 TextModelConfig）
+   * Export all model configs (returns TextModelConfig)
    */
   async exportData(): Promise<TextModelConfig[]> {
     try {
@@ -726,10 +726,10 @@ export class ModelManager implements IModelManager {
   }
 
   /**
-   * 导入模型配置（支持 TextModelConfig 和传统 ModelConfig）
+   * Import model configs (supports TextModelConfig and legacy ModelConfig)
    */
   async importData(data: any): Promise<void> {
-    // 基本格式验证：必须是数组
+    // Basic format validation: must be an array
     if (!Array.isArray(data)) {
       throw new ImportExportError(
         'Invalid model data format: data must be an array of model configurations',
@@ -745,16 +745,16 @@ export class ModelManager implements IModelManager {
     // Import each model individually, capturing failures
     for (const model of models) {
       try {
-        // 判断是新格式还是旧格式
+        // Determine whether it is the new or old format
         let textModelConfig: TextModelConfig;
         let key: string;
 
         if (isTextModelConfig(model)) {
-          // 新格式：直接使用
+          // New format: use directly
           textModelConfig = model as TextModelConfig;
           key = textModelConfig.id;
         } else {
-          // 旧格式：转换后使用
+          // Old format: convert before use
           const legacyModel = model as ModelConfig & { key: string };
           if (!legacyModel.key) {
             console.warn(`Skipping model without key:`, model);
@@ -765,25 +765,25 @@ export class ModelManager implements IModelManager {
           textModelConfig = convertLegacyToTextModelConfig(key, legacyModel);
         }
 
-        // 验证单个模型
+        // Validate a single model
         if (!this.validateSingleTextModel(textModelConfig)) {
           console.warn(`Skipping invalid model configuration:`, model);
           failedModels.push({ model, error: new Error('Invalid model configuration') });
           continue;
         }
 
-        // 检查模型是否已存在
+        // Check whether the model already exists
         const existingModel = await this.getModel(key);
 
         if (existingModel) {
-          // 模型已存在，更新配置
+          // The model already exists; update the config
           await this.updateModel(key, {
             ...textModelConfig,
             enabled: textModelConfig.enabled !== undefined ? textModelConfig.enabled : existingModel.enabled
           });
           console.log(`Model ${key} already exists, configuration updated`);
         } else {
-          // 如果模型不存在，添加新模型
+          // If the model does not exist, add a new one
           await this.addModel(key, textModelConfig);
           console.log(`Imported new model ${key}`);
         }
@@ -795,19 +795,19 @@ export class ModelManager implements IModelManager {
 
     if (failedModels.length > 0) {
       console.warn(`Failed to import ${failedModels.length} models`);
-      // 不抛出错误，允许部分成功的导入
+      // Do not throw; allow a partial import to succeed
     }
   }
 
   /**
-   * 获取数据类型标识
+   * Get the data type identifier
    */
   async getDataType(): Promise<string> {
     return 'models';
   }
 
   /**
-   * 验证模型数据格式（支持新旧格式）
+   * Validate the model data format (supports old and new formats)
    */
   async validateData(data: any): Promise<boolean> {
     if (!Array.isArray(data)) {
@@ -815,17 +815,17 @@ export class ModelManager implements IModelManager {
     }
 
     return data.every(item => {
-      // 检查是否为新格式
+      // Check whether it is the new format
       if (isTextModelConfig(item)) {
         return this.validateSingleTextModel(item);
       }
-      // 检查是否为旧格式
+      // Check whether it is the old format
       return this.validateSingleModel(item);
     });
   }
 
   /**
-   * 验证单个 TextModelConfig 配置
+   * Validate a single TextModelConfig
    */
   private validateSingleTextModel(item: any): boolean {
     return typeof item === 'object' &&
@@ -842,12 +842,12 @@ export class ModelManager implements IModelManager {
   }
 
   /**
-   * 验证单个传统模型配置
+   * Validate a single legacy model config
    */
   private validateSingleModel(item: any): boolean {
     return typeof item === 'object' &&
       item !== null &&
-      typeof item.key === 'string' && // 导入数据必须包含key
+      typeof item.key === 'string' && // Imported data must contain key
       typeof item.name === 'string' &&
       typeof item.baseURL === 'string' &&
       typeof item.defaultModel === 'string' &&
@@ -857,9 +857,9 @@ export class ModelManager implements IModelManager {
 }
 
 /**
- * 创建模型管理器的工厂函数
- * @param storageProvider 存储提供器实例
- * @returns 模型管理器实例
+ * Factory function for creating the model manager
+ * @param storageProvider Storage provider instance
+ * @returns Model manager instance
  */
 export function createModelManager(storageProvider: IStorageProvider): ModelManager {
   return new ModelManager(storageProvider);

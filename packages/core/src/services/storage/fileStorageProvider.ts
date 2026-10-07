@@ -4,16 +4,16 @@ import { IStorageProvider } from './types';
 import { StorageError } from './errors';
 
 /**
- * 基于文件的存储提供器 - 增强版
- * 专为Electron桌面环境设计，使用JSON文件持久化存储数据
+ * File-based storage provider - enhanced version
+ * Designed for the Electron desktop environment, using JSON files to persist data
  *
- * 特性：
- * - 延迟写入优化性能，减少I/O操作
- * - 内存缓存提供快速读取
- * - 原子写入确保数据完整性
- * - 数据备份和智能恢复机制
- * - 原子性updateData操作
- * - 严格的初始化控制
+ * Features:
+ * - Delayed writes improve performance and reduce I/O operations
+ * - An in-memory cache provides fast reads
+ * - Atomic writes ensure data integrity
+ * - Data backup and smart recovery mechanisms
+ * - Atomic updateData operations
+ * - Strict initialization control
  */
 export class FileStorageProvider implements IStorageProvider {
   private filePath: string;
@@ -26,13 +26,13 @@ export class FileStorageProvider implements IStorageProvider {
   private initialized: boolean = false;
   private initializationPromise: Promise<void> | null = null;
 
-  // 配置常量
-  private readonly WRITE_DELAY = 500; // 500ms延迟写入
+  // Configuration constants
+  private readonly WRITE_DELAY = 500; // 500ms write delay
   private readonly TEMP_FILE_SUFFIX = '.tmp';
   private readonly BACKUP_FILE_SUFFIX = '.backup';
-  private readonly MAX_FLUSH_TIME = 3000; // 最大flush时间：3秒
-  private flushAttempts = 0; // flush尝试次数
-  private readonly MAX_FLUSH_ATTEMPTS = 3; // 最大flush尝试次数
+  private readonly MAX_FLUSH_TIME = 3000; // Maximum flush time: 3 seconds
+  private flushAttempts = 0; // Number of flush attempts
+  private readonly MAX_FLUSH_ATTEMPTS = 3; // Maximum number of flush attempts
   
   constructor(userDataPath: string) {
     if (!userDataPath) {
@@ -44,8 +44,8 @@ export class FileStorageProvider implements IStorageProvider {
   }
   
   /**
-   * 确保存储已初始化 - 增强版
-   * 使用单例模式确保初始化只执行一次
+   * Ensure storage is initialized - enhanced version
+   * Uses the singleton pattern to ensure initialization runs only once
    */
   private async ensureInitialized(): Promise<void> {
     if (this.initialized) {
@@ -62,8 +62,8 @@ export class FileStorageProvider implements IStorageProvider {
   }
 
   /**
-   * 初始化存储，加载现有数据 - 增强版
-   * 包含智能恢复机制
+   * Initialize storage and load existing data - enhanced version
+   * Includes a smart recovery mechanism
    */
   private async initialize(): Promise<void> {
     try {
@@ -79,36 +79,36 @@ export class FileStorageProvider implements IStorageProvider {
   }
   
   /**
-   * 从文件加载数据到内存 - 增强版，包含智能恢复机制
+   * Load data from the file into memory - enhanced version, includes a smart recovery mechanism
    */
   private async loadFromFileWithRecovery(): Promise<void> {
-    // 尝试从主文件加载
+    // Try loading from the main file
     const mainFileResult = await this.tryLoadFromFile(this.filePath, 'main');
     if (mainFileResult.success) {
       this.data = mainFileResult.data!;
-      // 成功加载主文件后，创建备份
+      // After the main file loads successfully, create a backup
       await this.createBackup();
       return;
     }
 
     console.warn('[FileStorage] Main file failed, trying backup...');
 
-    // 尝试从备份文件加载
+    // Try loading from the backup file
     const backupFileResult = await this.tryLoadFromFile(this.backupPath, 'backup');
     if (backupFileResult.success) {
       this.data = backupFileResult.data!;
       console.log('[FileStorage] Successfully recovered from backup');
 
-      // 从备份恢复后，重新创建主文件（跳过备份创建以保护现有备份）
+      // After recovering from the backup, recreate the main file (skip backup creation to protect the existing backup)
       await this.saveToFileWithoutBackup();
 
-      // 主文件恢复成功后，重新创建备份以确保备份是最新的
+      // After the main file is recovered, recreate the backup to ensure it is up to date
       try {
         await this.createBackup();
         console.log('[FileStorage] Backup refreshed after recovery');
       } catch (error) {
         console.warn('[FileStorage] Failed to refresh backup after recovery:', error);
-        // 备份失败不应该影响恢复流程
+        // A backup failure should not affect the recovery flow
       }
 
       return;
@@ -116,24 +116,24 @@ export class FileStorageProvider implements IStorageProvider {
 
     console.warn('[FileStorage] Both main and backup files failed, checking if files exist...');
 
-    // 检查是否是首次运行（文件不存在）
+    // Check whether this is the first run (the file does not exist)
     const mainExists = await this.fileExists(this.filePath);
     const backupExists = await this.fileExists(this.backupPath);
 
     if (!mainExists && !backupExists) {
-      // 首次运行，创建空存储
+      // First run; create empty storage
       console.log('[FileStorage] First run detected, creating new storage');
       this.data = new Map();
       await this.saveToFile();
       return;
     }
 
-    // 文件存在但都损坏了，这是严重问题
+    // The files exist but are all corrupted; this is a serious problem
     console.error('[FileStorage] CRITICAL: Both storage files exist but are corrupted!');
     console.error('[FileStorage] Main file error:', mainFileResult.error);
     console.error('[FileStorage] Backup file error:', backupFileResult.error);
 
-    // 在这种情况下，我们不能简单地重置数据，而是抛出错误让上层处理
+    // In this case we cannot simply reset the data; instead throw an error for the upper layer to handle
     throw new StorageError(
       `Storage corruption detected. Main: ${mainFileResult.error}, Backup: ${backupFileResult.error}`,
       'read'
@@ -141,7 +141,7 @@ export class FileStorageProvider implements IStorageProvider {
   }
 
   /**
-   * 尝试从指定文件加载数据
+   * Try loading data from the specified file
    */
   private async tryLoadFromFile(filePath: string, fileType: string): Promise<{
     success: boolean;
@@ -149,13 +149,13 @@ export class FileStorageProvider implements IStorageProvider {
     error?: string;
   }> {
     try {
-      // 检查文件是否存在
+      // Check whether the file exists
       await fs.access(filePath);
 
-      // 读取文件内容
+      // Read the file content
       const content = await fs.readFile(filePath, 'utf8');
 
-      // 验证JSON格式
+      // Validate the JSON format
       if (!this.validateJSON(content)) {
         return {
           success: false,
@@ -163,11 +163,11 @@ export class FileStorageProvider implements IStorageProvider {
         };
       }
 
-      // 解析数据
+      // Parse the data
       const parsed = JSON.parse(content);
       const data = new Map<string, string>();
 
-      // 确保所有值都是字符串类型
+      // Ensure all values are strings
       for (const [key, value] of Object.entries(parsed || {})) {
         data.set(key, typeof value === 'string' ? value : JSON.stringify(value));
       }
@@ -189,7 +189,7 @@ export class FileStorageProvider implements IStorageProvider {
   }
 
   /**
-   * 检查文件是否存在
+   * Check whether the file exists
    */
   private async fileExists(filePath: string): Promise<boolean> {
     try {
@@ -201,7 +201,7 @@ export class FileStorageProvider implements IStorageProvider {
   }
 
   /**
-   * 创建备份文件
+   * Create a backup file
    */
   private async createBackup(): Promise<void> {
     try {
@@ -211,78 +211,78 @@ export class FileStorageProvider implements IStorageProvider {
       }
     } catch (error) {
       console.warn('[FileStorage] Failed to create backup:', error);
-      // 备份失败不应该影响主要功能
+      // A backup failure should not affect the main functionality
     }
   }
   
   /**
-   * 将内存数据保存到文件 - 增强版
-   * 包含备份创建和数据验证
+   * Save in-memory data to the file - enhanced version
+   * Includes backup creation and data validation
    */
   private async saveToFile(): Promise<void> {
     const data = Object.fromEntries(this.data);
     const jsonString = JSON.stringify(data, null, 2);
 
-    // 验证数据完整性
+    // Validate data integrity
     if (!this.validateJSON(jsonString)) {
       throw new StorageError('Generated JSON is invalid', 'write');
     }
 
-    // 如果主文件存在，先创建备份
+    // If the main file exists, create a backup first
     if (await this.fileExists(this.filePath)) {
       await this.createBackup();
     }
 
-    // 原子写入主文件
+    // Atomically write the main file
     await this.atomicWrite(jsonString);
 
     console.log(`[FileStorage] Saved ${this.data.size} items to storage`);
   }
 
   /**
-   * 将内存数据保存到文件 - 不创建备份版本
-   * 用于从备份恢复时，避免覆盖完好的备份文件
+   * Save in-memory data to the file - version without creating a backup
+   * Used when recovering from a backup, to avoid overwriting an intact backup file
    */
   private async saveToFileWithoutBackup(): Promise<void> {
     const data = Object.fromEntries(this.data);
     const jsonString = JSON.stringify(data, null, 2);
 
-    // 验证数据完整性
+    // Validate data integrity
     if (!this.validateJSON(jsonString)) {
       throw new StorageError('Generated JSON is invalid', 'write');
     }
 
     console.log('[FileStorage] Saving to main file without creating backup (recovery mode)');
 
-    // 直接原子写入主文件，不创建备份
+    // Atomically write the main file directly, without creating a backup
     await this.atomicWrite(jsonString);
 
     console.log(`[FileStorage] Recovered and saved ${this.data.size} items to storage`);
   }
   
   /**
-   * 原子写入文件
+   * Atomically write a file
    */
   private async atomicWrite(data: string): Promise<void> {
     const tempPath = this.filePath + this.TEMP_FILE_SUFFIX;
     
     try {
-      // 确保目录存在
+      // Ensure the directory exists
       await fs.mkdir(path.dirname(this.filePath), { recursive: true });
       
-      // 1. 写入临时文件
+      // 1. Write the temporary file
       await fs.writeFile(tempPath, data, 'utf8');
       
-      // 2. 验证文件格式
+      // 2. Validate the file format
       if (!this.validateJSON(data)) {
         throw new StorageError('Invalid JSON format', 'write');
       }
       
-      // 3. 原子性重命名
+      // 3. Atomic rename
       await fs.rename(tempPath, this.filePath);
       
     } catch (error) {
-      // 清理临时文件
+      // Clean up the temporary file
       try {
         await fs.unlink(tempPath);
       } catch {}
@@ -293,7 +293,7 @@ export class FileStorageProvider implements IStorageProvider {
   }
   
   /**
-   * 验证JSON格式
+   * Validate the JSON format
    */
   private validateJSON(data: string): boolean {
     try {
@@ -305,12 +305,12 @@ export class FileStorageProvider implements IStorageProvider {
   }
   
   /**
-   * 调度延迟写入
+   * Schedule a delayed write
    */
   private scheduleWrite(): void {
     this.isDirty = true;
     
-    // 如果已有待写入任务，重置计时器
+    // If there is already a pending write task, reset the timer
     if (this.writeTimeout) {
       clearTimeout(this.writeTimeout);
     }
@@ -324,7 +324,7 @@ export class FileStorageProvider implements IStorageProvider {
           });
         } catch (error) {
           console.error('[FileStorage] Scheduled write failed:', error);
-          // 重置isDirty标志以避免无限重试
+          // Reset the isDirty flag to avoid infinite retries
           this.isDirty = false;
         }
       }
@@ -333,8 +333,8 @@ export class FileStorageProvider implements IStorageProvider {
   }
   
   /**
-   * 立即写入（关键时刻使用）
-   * 带有超时保护和重试限制，确保不会无限循环
+   * Write immediately (use at critical moments)
+   * Has timeout protection and a retry limit to ensure it never loops forever
    */
   async flush(): Promise<void> {
     if (this.writeTimeout) {
@@ -343,10 +343,10 @@ export class FileStorageProvider implements IStorageProvider {
     }
 
     if (!this.isDirty) {
-      return; // 没有脏数据，直接返回
+      return; // No dirty data, return directly
     }
 
-    // 检查重试次数限制
+    // Check the retry limit
     if (this.flushAttempts >= this.MAX_FLUSH_ATTEMPTS) {
       console.error('[FileStorage] Max flush attempts reached, forcing isDirty to false');
       this.isDirty = false;
@@ -357,12 +357,12 @@ export class FileStorageProvider implements IStorageProvider {
     this.flushAttempts++;
 
     try {
-      // 使用Promise.race实现超时保护
+      // Use Promise.race to implement timeout protection
       await Promise.race([
         this.acquireWriteLock(async () => {
           await this.saveToFile();
           this.isDirty = false;
-          this.flushAttempts = 0; // 成功后重置计数器
+          this.flushAttempts = 0; // Reset the counter after success
           console.log('[FileStorage] Data saved successfully');
         }),
         new Promise<never>((_, reject) =>
@@ -372,7 +372,7 @@ export class FileStorageProvider implements IStorageProvider {
     } catch (error) {
       console.error('[FileStorage] Failed to save data during flush:', error);
 
-      // 如果达到最大重试次数或者是超时错误，强制重置状态
+      // If the maximum number of retries is reached or it is a timeout error, force a state reset
       if (this.flushAttempts >= this.MAX_FLUSH_ATTEMPTS ||
           (error instanceof StorageError && error.operation === 'write' && error.params?.details === 'Flush timeout')) {
         console.warn('[FileStorage] Forcing isDirty to false to prevent infinite loop');
@@ -380,12 +380,12 @@ export class FileStorageProvider implements IStorageProvider {
         this.flushAttempts = 0;
       }
 
-      throw error; // 重新抛出错误以便上层处理
+      throw error; // Rethrow the error so the upper layer can handle it
     }
   }
   
   /**
-   * 获取写入锁，确保写入操作串行执行
+   * Acquire the write lock to ensure write operations run serially
    */
   private async acquireWriteLock<T>(operation: () => Promise<T>): Promise<T> {
     const currentLock = this.writeLock;
@@ -404,7 +404,7 @@ export class FileStorageProvider implements IStorageProvider {
     }
   }
   
-  // IStorageProvider接口实现
+  // IStorageProvider interface implementation
   
   async getItem(key: string): Promise<string | null> {
     await this.ensureInitialized();
@@ -414,32 +414,32 @@ export class FileStorageProvider implements IStorageProvider {
   async setItem(key: string, value: string): Promise<void> {
     await this.ensureInitialized();
     this.data.set(key, value);
-    this.scheduleWrite(); // 延迟写入
+    this.scheduleWrite(); // Delayed write
   }
   
   async removeItem(key: string): Promise<void> {
     await this.ensureInitialized();
     this.data.delete(key);
-    this.scheduleWrite(); // 延迟写入
+    this.scheduleWrite(); // Delayed write
   }
   
   async clearAll(): Promise<void> {
     await this.ensureInitialized();
     this.data.clear();
-    // 强制写入，即使没有脏数据
+    // Force a write even if there is no dirty data
     await this.acquireWriteLock(async () => {
       await this.saveToFile();
     });
   }
   
   /**
-   * 原子性数据更新 - 增强版
-   * 确保读-修改-写操作的原子性，防止并发问题
+   * Atomic data update - enhanced version
+   * Ensures the atomicity of read-modify-write operations to prevent concurrency problems
    */
   async updateData<T>(key: string, modifier: (currentValue: T | null) => T): Promise<void> {
     await this.ensureInitialized();
 
-    // 使用更新锁确保原子性
+    // Use the update lock to ensure atomicity
     const currentLock = this.updateLock;
     let resolveLock: () => void;
 
@@ -450,19 +450,19 @@ export class FileStorageProvider implements IStorageProvider {
     try {
       await currentLock;
 
-      // 在锁保护下执行原子操作
+      // Perform the atomic operation under lock protection
       await this.performAtomicUpdate(key, modifier);
 
     } catch (error) {
-      // 业务逻辑错误直接透传，保持错误类型
+      // Business logic errors are passed through directly, preserving the error type
       if (error instanceof Error &&
           (error.name.includes('Error') ||
            error.constructor.name !== 'Error' ||
-           error.message.includes('模型') ||
-           error.message.includes('不存在'))) {
+           error.message.includes('Model') ||
+           error.message.includes('not found'))) {
         throw error;
       }
-      // 只有真正的存储错误才包装为StorageError
+      // Only real storage errors are wrapped as StorageError
       throw new StorageError(`Data update failed: ${key}`, 'write');
     } finally {
       resolveLock!();
@@ -470,36 +470,36 @@ export class FileStorageProvider implements IStorageProvider {
   }
 
   /**
-   * 执行原子更新操作
+   * Perform the atomic update operation
    */
   private async performAtomicUpdate<T>(key: string, modifier: (currentValue: T | null) => T): Promise<void> {
-    // 重新从存储读取最新数据，确保数据一致性
+    // Re-read the latest data from storage to ensure data consistency
     const latestData = await this.getLatestData<T>(key);
 
-    // 应用修改
+    // Apply the modification
     const newValue = modifier(latestData);
 
-    // 验证新值
+    // Validate the new value
     this.validateValue(newValue);
 
-    // 写入新值
+    // Write the new value
     this.data.set(key, JSON.stringify(newValue));
-    this.scheduleWrite(); // 延迟写入
+    this.scheduleWrite(); // Delayed write
 
     console.log(`[FileStorage] Atomic update completed for key: ${key}`);
   }
 
   /**
-   * 获取最新数据，确保数据一致性
+   * Get the latest data to ensure data consistency
    */
   private async getLatestData<T>(key: string): Promise<T | null> {
-    // 如果有待写入的数据，先刷新到文件
+    // If there is pending data, flush it to the file first
     if (this.isDirty) {
       console.log('[FileStorage] Flushing pending changes before read...');
       await this.flush();
     }
 
-    // 从内存缓存读取
+    // Read from the in-memory cache
     const currentData = this.data.get(key);
     if (!currentData) {
       return null;
@@ -514,7 +514,7 @@ export class FileStorageProvider implements IStorageProvider {
   }
 
   /**
-   * 验证值的有效性
+   * Validate the validity of a value
    */
   private validateValue<T>(value: T): void {
     try {
@@ -540,7 +540,7 @@ export class FileStorageProvider implements IStorageProvider {
         }
       }
       
-      await this.flush(); // 批量操作后立即写入
+      await this.flush(); // Write immediately after the batch operation
       
     } catch (error) {
       throw new StorageError('Batch update failed', 'write');
@@ -551,7 +551,7 @@ export class FileStorageProvider implements IStorageProvider {
     return {
       supportsAtomic: true,
       supportsBatch: true,
-      maxStorageSize: undefined // 文件存储无固定大小限制
+      maxStorageSize: undefined // File storage has no fixed size limit
     };
   }
 }

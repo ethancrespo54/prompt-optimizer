@@ -3,8 +3,8 @@ import { ImageAdapterRegistry } from '../image/adapters/registry'
 import { getEnvVar } from '../../utils/environment'
 
 /**
- * Provider ID -> 环境变量 key 映射（与文本模型风格一致）
- * 新增 Provider 只需在此添加一行
+ * Provider ID -> environment variable key mapping (consistent with the text model style)
+ * To add a Provider, just add a line here
  */
 const IMAGE_PROVIDER_ENV_KEYS = {
   openrouter: 'VITE_OPENROUTER_API_KEY',
@@ -17,8 +17,8 @@ const IMAGE_PROVIDER_ENV_KEYS = {
 } as const
 
 /**
- * 配置 ID 映射（保持现有 ID 不变以兼容用户数据）
- * name 将从 provider.name 获取，无需硬编码
+ * Config ID mapping (existing IDs are kept unchanged for compatibility with user data)
+ * name is taken from provider.name; no need to hard-code it
  */
 const IMAGE_CONFIG_IDS: Record<string, string> = {
   openrouter: 'image-openrouter-nanobanana',
@@ -31,7 +31,7 @@ const IMAGE_CONFIG_IDS: Record<string, string> = {
 }
 
 /**
- * 特殊 baseURL 环境变量（仅需要覆盖的 Provider）
+ * Special baseURL environment variables (only for Providers that need an override)
  */
 const IMAGE_BASE_URL_ENV_KEYS: Record<string, string> = {
   openai: 'VITE_OPENAI_BASE_URL',
@@ -39,19 +39,19 @@ const IMAGE_BASE_URL_ENV_KEYS: Record<string, string> = {
 }
 
 /**
- * 图像模型默认配置生成器
- * 返回完整的自包含配置对象，包含 provider 和 model 完整信息
+ * Default config generator for image models
+ * Returns complete self-contained config objects, including full provider and model info
  *
- * 使用 Provider-Adapter 架构生成完整的元数据，
- * 所有配置信息（Provider ID、名称、BaseURL、默认模型、参数）均从 Adapter 获取。
+ * Uses the Provider-Adapter architecture to generate complete metadata;
+ * all config info (Provider ID, name, BaseURL, default model, parameters) comes from the Adapter.
  *
- * @param registry 可选，图像适配器注册表（用于依赖注入和测试）
+ * @param registry Optional image adapter registry (for dependency injection and testing)
  */
 export function getDefaultImageModels(registry?: IImageAdapterRegistry): Record<string, ImageModelConfig> {
   const adapterRegistry = registry || new ImageAdapterRegistry()
   const result: Record<string, ImageModelConfig> = {}
 
-  // 批量生成配置（与文本模型风格一致）
+  // Generate configs in bulk (consistent with the text model style)
   for (const [providerId, envKey] of Object.entries(IMAGE_PROVIDER_ENV_KEYS)) {
     const configId = IMAGE_CONFIG_IDS[providerId]
     if (!configId) continue
@@ -61,30 +61,30 @@ export function getDefaultImageModels(registry?: IImageAdapterRegistry): Record<
     const models = adapterRegistry.getStaticModels(providerId)
     const defaultModel = models[0] || adapter.buildDefaultModel(providerId)
 
-    // 获取 API Key（Seedream 支持备选环境变量）
+    // Get the API key (Seedream supports an alternate environment variable)
     let apiKey = getEnvVar(envKey).trim()
     if (!apiKey && providerId === 'seedream') {
       apiKey = getEnvVar('VITE_ARK_API_KEY').trim()
     }
 
-    // 获取 baseURL（支持环境变量覆盖）
+    // Get the baseURL (supports environment variable override)
     let baseURL = provider.defaultBaseURL || ''
     const baseURLEnvKey = IMAGE_BASE_URL_ENV_KEYS[providerId]
     if (baseURLEnvKey) {
       let envBaseURL = getEnvVar(baseURLEnvKey).trim()
-      // Seedream 备选
+      // Seedream alternate
       if (!envBaseURL && providerId === 'seedream') {
         envBaseURL = getEnvVar('VITE_ARK_BASE_URL').trim()
       }
       if (envBaseURL) baseURL = envBaseURL
     }
 
-    // 直接从模型获取默认参数值（与文本模型一致）
+    // Get default parameter values directly from the model (consistent with text models)
     const defaultParamValues = defaultModel.defaultParameterValues || {}
 
     result[configId] = {
       id: configId,
-      name: provider.name,  // 从 provider 获取名称，不再硬编码
+      name: provider.name,  // Take the name from provider; no longer hard-coded
       providerId,
       modelId: defaultModel.id,
       enabled: !!apiKey,
@@ -100,12 +100,12 @@ export function getDefaultImageModels(registry?: IImageAdapterRegistry): Record<
 }
 
 /**
- * 获取所有内置图像模型配置的 ID 列表
- * 用于判断某个配置是否为内置模型（而非用户自定义）
+ * Get the list of IDs of all built-in image model configs
+ * Used to determine whether a config is a built-in model (rather than user-defined)
  */
 export function getBuiltinImageConfigIds(): string[] {
   return Object.values(IMAGE_CONFIG_IDS)
 }
 
-// 直接导出所有图像模型配置（保持向后兼容，与文本模型风格一致）
+// Export all image model configs directly (backward compatible, consistent with the text model style)
 export const defaultImageModels = getDefaultImageModels()

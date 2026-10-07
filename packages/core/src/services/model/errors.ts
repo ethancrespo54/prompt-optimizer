@@ -1,5 +1,5 @@
 /**
- * 模型基础错误
+ * Base model error
  */
 import { MODEL_ERROR_CODES, type ErrorParams } from '../../constants/error-codes'
 
@@ -16,7 +16,7 @@ export class ModelError extends Error {
 }
 
 /**
- * 模型验证错误
+ * Model validation error
  */
 export class ModelValidationError extends ModelError {
   constructor(
@@ -28,4 +28,4 @@ export class ModelValidationError extends ModelError {
   }
 }
 
-// 注意: ModelConfigError 已移至 llm/errors.ts，避免重复定义 
+// Note: ModelConfigError has been moved to llm/errors.ts to avoid duplicate definitions

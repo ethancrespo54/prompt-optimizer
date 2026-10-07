@@ -7,12 +7,12 @@ import type {
 } from './types'
 
 /**
- * 图像存储数据库（IndexedDB）
- * 使用独立的数据库，与主应用数据库分离
+ * Image storage database (IndexedDB)
+ * Uses a separate database, isolated from the main application database
  *
- * 架构优化：将 metadata 和 data 拆分成两个表
- * - imageMetadata: 轻量级元数据，用于统计和查询
- * - imageData: 实际的 base64 数据，按需加载
+ * Architecture optimization: split metadata and data into two tables
+ * - imageMetadata: lightweight metadata, used for statistics and queries
+ * - imageData: the actual base64 data, loaded on demand
  */
 class ImageDB extends Dexie {
   imageMetadata!: Table<MetadataRecord, string>
@@ -21,13 +21,13 @@ class ImageDB extends Dexie {
   constructor(dbName: string) {
     super(dbName)
 
-    // Dexie 版本声明必须按升序（v1 -> v2），upgrade 回调挂在目标版本（v2）。
-    // v1: 单表 images（metadata + base64 data）
+    // Dexie version declarations must be in ascending order (v1 -> v2); the upgrade callback is attached to the target version (v2).
+    // v1: single images table (metadata + base64 data)
     this.version(1).stores({
       images: 'id, createdAt, accessedAt, sizeBytes, source'
     })
 
-    // v2: 拆分 metadata 和 data 表，提升统计性能；删除旧 images 表
+    // v2: split into metadata and data tables to improve statistics performance; drop the old images table
     this.version(2)
       .stores({
         imageMetadata: 'id, createdAt, accessedAt, sizeBytes, source',
@@ -35,7 +35,7 @@ class ImageDB extends Dexie {
         images: null
       })
       .upgrade(async tx => {
-        // 迁移旧数据到新表结构（分批处理，避免一次性加载大量 base64 导致内存尖峰）
+        // Migrate old data into the new table structure (in batches, to avoid loading a lot of base64 at once and causing a memory spike)
         const oldImages = tx.table<ImageRecordV1>('images')
         const newMetadata = tx.table<MetadataRecord>('imageMetadata')
         const newData = tx.table<DataRecord>('imageData')
@@ -73,7 +73,7 @@ class ImageDB extends Dexie {
 }
 
 /**
- * v1 旧表结构（用于 v1 -> v2 迁移）
+ * v1 legacy table structure (used for the v1 -> v2 migration)
  */
 interface ImageRecordV1 {
   id: string
@@ -86,11 +86,11 @@ interface ImageRecordV1 {
 }
 
 /**
- * 元数据表记录（轻量级）
+ * Metadata table record (lightweight)
  */
 interface MetadataRecord {
   id: string
-  metadata: string          // JSON 序列化的 ImageMetadata
+  metadata: string          // JSON-serialized ImageMetadata
   createdAt: number
   accessedAt: number
   sizeBytes: number
@@ -98,32 +98,32 @@ interface MetadataRecord {
 }
 
 /**
- * 数据表记录（重量级，按需加载）
+ * Data table record (heavyweight, loaded on demand)
  */
 interface DataRecord {
   id: string
-  data: string              // base64 编码的图像数据
+  data: string              // base64-encoded image data
 }
 
 /**
- * 默认配置
+ * Default configuration
  */
 const DEFAULT_CONFIG: ImageStorageConfig = {
   maxCacheSize: 50 * 1024 * 1024,      // 50 MB
-  maxAge: 7 * 24 * 60 * 60 * 1000,     // 7 天
-  maxCount: 100,                       // 最多 100 张
-  autoCleanupThreshold: 0.8,           // 达到 80% 时触发清理
+  maxAge: 7 * 24 * 60 * 60 * 1000,     // 7 days
+  maxCount: 100,                       // At most 100 images
+  autoCleanupThreshold: 0.8,           // Trigger cleanup at 80%
   dbName: 'PromptOptimizerImageDB',
 }
 
 /**
- * 图像存储服务实现
+ * Image storage service implementation
  *
- * 核心功能：
- * 1. 图像的保存、读取、删除
- * 2. LRU 缓存清理策略
- * 3. 配额强制执行
- * 4. 存储统计信息（仅查询 metadata 表）
+ * Core features:
+ * 1. Saving, reading, and deleting images
+ * 2. LRU cache cleanup strategy
+ * 3. Quota enforcement
+ * 4. Storage statistics (queries the metadata table only)
  */
 export class ImageStorageService implements IImageStorageService {
   private readonly db: ImageDB
@@ -135,48 +135,48 @@ export class ImageStorageService implements IImageStorageService {
   }
 
   /**
-   * 保存图像到存储
-   * @param data 完整图像数据
-   * @returns 图像 ID
+   * Save an image to storage
+   * @param data Complete image data
+   * @returns Image ID
    */
   async saveImage(data: FullImageData): Promise<string> {
     const now = Date.now()
 
-    // 准备元数据记录
+    // Prepare the metadata record
     const metadataRecord: MetadataRecord = {
       id: data.metadata.id,
       metadata: JSON.stringify(data.metadata),
       createdAt: data.metadata.createdAt,
-      accessedAt: now,  // 更新访问时间
+      accessedAt: now,  // Update the access time
       sizeBytes: data.metadata.sizeBytes,
       source: data.metadata.source
     }
 
-    // 准备数据记录
+    // Prepare the data record
     const dataRecord: DataRecord = {
       id: data.metadata.id,
       data: data.data
     }
 
-    // 同时保存到两个表（事务确保一致性）
+    // Save to both tables at once (a transaction ensures consistency)
     await this.db.transaction('rw', this.db.imageMetadata, this.db.imageData, async () => {
       await this.db.imageMetadata.put(metadataRecord)
       await this.db.imageData.put(dataRecord)
     })
 
-    // 检查是否需要自动清理
+    // Check whether automatic cleanup is needed
     await this.autoCleanupIfNeeded()
 
     return data.metadata.id
   }
 
   /**
-   * 获取图像完整数据
-   * @param id 图像 ID
-   * @returns 完整图像数据，如果不存在则返回 null
+   * Get the complete image data
+   * @param id Image ID
+   * @returns Complete image data, or null if it does not exist
    */
   async getImage(id: string): Promise<FullImageData | null> {
-    // 同时查询两个表
+    // Query both tables at once
     const [metadataRecord, dataRecord] = await Promise.all([
       this.db.imageMetadata.get(id),
       this.db.imageData.get(id)
@@ -186,10 +186,10 @@ export class ImageStorageService implements IImageStorageService {
       return null
     }
 
-    // 更新访问时间（LRU）
+    // Update the access time (LRU)
     await this.db.imageMetadata.update(id, { accessedAt: Date.now() })
 
-    // 反序列化
+    // Deserialize
     return {
       metadata: JSON.parse(metadataRecord.metadata) as ImageMetadata,
       data: dataRecord.data
@@ -197,9 +197,9 @@ export class ImageStorageService implements IImageStorageService {
   }
 
   /**
-   * 获取图像元数据（不含实际图像数据）
-   * @param id 图像 ID
-   * @returns 图像元数据，如果不存在则返回 null
+   * Get image metadata (without the actual image data)
+   * @param id Image ID
+   * @returns Image metadata, or null if it does not exist
    */
   async getMetadata(id: string): Promise<ImageMetadata | null> {
     const record = await this.db.imageMetadata.get(id)
@@ -208,15 +208,15 @@ export class ImageStorageService implements IImageStorageService {
       return null
     }
 
-    // 更新访问时间
+    // Update the access time
     await this.db.imageMetadata.update(id, { accessedAt: Date.now() })
 
     return JSON.parse(record.metadata) as ImageMetadata
   }
 
   /**
-   * 删除单个图像
-   * @param id 图像 ID
+   * Delete a single image
+   * @param id Image ID
    */
   async deleteImage(id: string): Promise<void> {
     await this.db.transaction('rw', this.db.imageMetadata, this.db.imageData, async () => {
@@ -226,8 +226,8 @@ export class ImageStorageService implements IImageStorageService {
   }
 
   /**
-   * 批量删除图像
-   * @param ids 图像 ID 数组
+   * Delete images in bulk
+   * @param ids Array of image IDs
    */
   async deleteImages(ids: string[]): Promise<void> {
     await this.db.transaction('rw', this.db.imageMetadata, this.db.imageData, async () => {
@@ -237,7 +237,7 @@ export class ImageStorageService implements IImageStorageService {
   }
 
   /**
-   * 清空所有图像
+   * Clear all images
    */
   async clearAll(): Promise<void> {
     await this.db.transaction('rw', this.db.imageMetadata, this.db.imageData, async () => {
@@ -247,15 +247,15 @@ export class ImageStorageService implements IImageStorageService {
   }
 
   /**
-   * 清理过期图像（基于 maxAge 配置，使用 accessedAt）
-   * @returns 清理的图像数量
+   * Clean up expired images (based on the maxAge config, using accessedAt)
+   * @returns Number of images cleaned up
    */
   async cleanupOldImages(): Promise<number> {
     const now = Date.now()
     const maxAge = this.config.maxAge!
     const cutoffTime = now - maxAge
 
-    // 查找过期图像（基于 accessedAt，而非 createdAt）
+    // Find expired images (based on accessedAt, not createdAt)
     const expiredImages = await this.db.imageMetadata
       .where('accessedAt')
       .below(cutoffTime)
@@ -265,18 +265,18 @@ export class ImageStorageService implements IImageStorageService {
       return 0
     }
 
-    // 删除过期图像（两个表都要删除）
+    // Delete expired images (delete from both tables)
     await this.deleteImages(expiredImages)
 
     return expiredImages.length
   }
 
   /**
-   * 强制执行配额限制
-   * 按优先级删除：
-   * 1. 过期图像（超过 maxAge，基于 accessedAt）
-   * 2. 超过 maxCount 的部分（删除最旧的）
-   * 3. 超过 maxCacheSize 的部分（删除最旧的）
+   * Enforce quota limits
+   * Delete by priority:
+   * 1. Expired images (older than maxAge, based on accessedAt)
+   * 2. The portion exceeding maxCount (delete the oldest)
+   * 3. The portion exceeding maxCacheSize (delete the oldest)
    */
   async enforceQuota(): Promise<void> {
     const maxAge = this.config.maxAge!
@@ -284,7 +284,7 @@ export class ImageStorageService implements IImageStorageService {
     const maxCacheSize = this.config.maxCacheSize!
     const now = Date.now()
 
-    // 1. 清理过期图像（基于 accessedAt）
+    // 1. Clean up expired images (based on accessedAt)
     const cutoffTime = now - maxAge
     const expiredImages = await this.db.imageMetadata
       .where('accessedAt')
@@ -295,19 +295,19 @@ export class ImageStorageService implements IImageStorageService {
       await this.deleteImages(expiredImages)
     }
 
-    // 重新获取统计（只查询 metadata 表，性能优化）
+    // Re-fetch statistics (query the metadata table only, a performance optimization)
     const updatedStats = await this.getStorageStats()
 
-    // 2. 检查数量限制
+    // 2. Check the count limit
     if (updatedStats.count > maxCount) {
       const excessCount = updatedStats.count - maxCount
       const oldestImages = await this.getOldestImages(excessCount)
       await this.deleteImages(oldestImages)
     }
 
-    // 3. 检查大小限制
+    // 3. Check the size limit
     if (updatedStats.totalBytes > maxCacheSize) {
-      // 按最旧优先删除，直到总大小低于 90% 配额
+      // Delete oldest first until the total size is below 90% of the quota
       const targetSize = Math.floor(maxCacheSize * 0.9)
       let currentSize = updatedStats.totalBytes
 
@@ -322,8 +322,8 @@ export class ImageStorageService implements IImageStorageService {
   }
 
   /**
-   * 获取存储统计信息
-   * 仅查询 metadata 表，不读取 base64 数据（性能优化）
+   * Get storage statistics
+   * Queries the metadata table only and does not read base64 data (performance optimization)
    */
   async getStorageStats(): Promise<{
     count: number
@@ -331,7 +331,7 @@ export class ImageStorageService implements IImageStorageService {
     oldestAt: number | null
     newestAt: number | null
   }> {
-    // 只查询 metadata 表，避免读取大的 base64 数据
+    // Query the metadata table only to avoid reading large base64 data
     const allMetadata = await this.db.imageMetadata.toArray()
 
     if (allMetadata.length === 0) {
@@ -357,34 +357,34 @@ export class ImageStorageService implements IImageStorageService {
   }
 
   /**
-   * 列出所有图像元数据
-   * 仅查询 metadata 表，不读取 base64 数据（性能优化）
+   * List all image metadata
+   * Queries the metadata table only and does not read base64 data (performance optimization)
    */
   async listAllMetadata(): Promise<ImageMetadata[]> {
-    // 只查询 metadata 表
+    // Query the metadata table only
     const allMetadata = await this.db.imageMetadata.toArray()
 
     return allMetadata.map(record => JSON.parse(record.metadata) as ImageMetadata)
   }
 
   /**
-   * 列出所有图像 ID
-   * @returns 图像 ID 数组
+   * List all image IDs
+   * @returns Array of image IDs
    */
   async listAllIds(): Promise<string[]> {
     return await this.db.imageMetadata.toCollection().primaryKeys()
   }
 
   /**
-   * 获取当前配置
+   * Get the current configuration
    */
   getConfig(): ImageStorageConfig {
     return { ...this.config }
   }
 
   /**
-   * 更新配置
-   * @param config 部分配置更新
+   * Update the configuration
+   * @param config Partial configuration update
    */
   async updateConfig(config: Partial<ImageStorageConfig>): Promise<void> {
     const { dbName, ...updatable } = config
@@ -395,20 +395,20 @@ export class ImageStorageService implements IImageStorageService {
 
     this.config = { ...this.config, ...updatable, dbName: this.config.dbName }
 
-    // 配置更新后立即执行清理
+    // Run cleanup immediately after the configuration is updated
     await this.enforceQuota()
   }
 
   /**
-   * 关闭数据库连接
+   * Close the database connection
    */
   async close(): Promise<void> {
     await this.db.close()
   }
 
   /**
-   * 自动清理检查（在保存后调用）
-   * 如果达到阈值，触发清理
+   * Automatic cleanup check (called after saving)
+   * Triggers cleanup if the threshold is reached
    */
   private async autoCleanupIfNeeded(): Promise<void> {
     const threshold = this.config.autoCleanupThreshold!
@@ -417,7 +417,7 @@ export class ImageStorageService implements IImageStorageService {
 
     const stats = await this.getStorageStats()
 
-    // 检查是否达到任一阈值
+    // Check whether either threshold is reached
     const sizeThreshold = maxCacheSize * threshold
     const countThreshold = maxCount * threshold
 
@@ -430,7 +430,7 @@ export class ImageStorageService implements IImageStorageService {
   }
 
   /**
-   * 获取最旧的 N 张图像 ID（按 accessedAt 排序）
+   * Get the IDs of the oldest N images (sorted by accessedAt)
    */
   private async getOldestImages(count: number): Promise<string[]> {
     const images = await this.db.imageMetadata
@@ -442,7 +442,7 @@ export class ImageStorageService implements IImageStorageService {
   }
 
   /**
-   * 获取最旧的一张图像元数据（完整记录）
+   * Get the metadata of the oldest image (full record)
    */
   private async getOldestMetadata(): Promise<MetadataRecord | null> {
     const images = await this.db.imageMetadata
@@ -455,7 +455,7 @@ export class ImageStorageService implements IImageStorageService {
 }
 
 /**
- * 创建图像存储服务实例
+ * Create an image storage service instance
  */
 export function createImageStorageService(
   config?: Partial<ImageStorageConfig>

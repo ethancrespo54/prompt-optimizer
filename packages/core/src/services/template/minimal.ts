@@ -1,12 +1,12 @@
 /**
- * 统一模板方案
- * 使用 Mustache 作为统一的模板引擎，所有环境（包括浏览器扩展）都使用相同语法
+ * Unified template approach
+ * Uses Mustache as the unified template engine; all environments (including browser extensions) use the same syntax
  */
 
 import Mustache from 'mustache';
 
-// 导出 Mustache，让用户自己决定如何使用
+// Export Mustache and let users decide how to use it
 export { Mustache };
 
-// 提供便捷函数
+// Provide convenience functions
 export const render = Mustache.render.bind(Mustache); 

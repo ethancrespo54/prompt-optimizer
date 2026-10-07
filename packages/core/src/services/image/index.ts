@@ -1,6 +1,6 @@
-// 类型定义
+// Type definitions
 export type {
-  // 基础类型
+  // Base types
   ImageParameterDefinition,
   ImageProvider,
   ImageModel,
@@ -13,19 +13,19 @@ export type {
   ImageResult,
   ImageProgressHandlers,
 
-  // 管理器接口
+  // Manager interface
   IImageModelManager,
 
-  // 适配器接口
+  // Adapter interface
   IImageProviderAdapter,
 
-  // 注册表接口
+  // Registry interface
   IImageAdapterRegistry,
 
-  // 服务接口
+  // Service interface
   IImageService,
 
-  // 图像存储类型
+  // Image storage types
   ImageMetadata,
   ImageRef,
   FullImageData,
@@ -33,16 +33,16 @@ export type {
   IImageStorageService
 } from './types'
 
-// 辅助函数
+// Helper functions
 export {
   isImageRef,
   createImageRef
 } from './types'
 
-// 抽象基类
+// Abstract base class
 export { AbstractImageProviderAdapter } from './adapters/abstract-adapter'
 
-// 图像存储服务
+// Image storage service
 export {
   ImageStorageService,
   createImageStorageService

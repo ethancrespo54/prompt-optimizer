@@ -17,8 +17,8 @@ import { ModelScopeImageAdapter } from './modelscope'
 import { OllamaImageAdapter } from './ollama'
 
 /**
- * 图像适配器注册表实现
- * 继承抽象基类，提供图像模型特定的实现
+ * Image adapter registry implementation
+ * Extends the abstract base class and provides image-model-specific implementations
  */
 export class ImageAdapterRegistry
   extends AbstractAdapterRegistry<
@@ -38,10 +38,10 @@ export class ImageAdapterRegistry
   }
 
   /**
-   * 初始化并注册所有适配器
+   * Initialize and register all adapters
    */
   protected initializeAdapters(): void {
-    // 注册所有适配器
+    // Register all adapters
     const geminiAdapter = new GeminiImageAdapter()
     const seedreamAdapter = new SeedreamImageAdapter()
     const siliconflowAdapter = new SiliconFlowImageAdapter()
@@ -60,26 +60,26 @@ export class ImageAdapterRegistry
     this.adapters.set('modelscope', modelscopeAdapter)
     this.adapters.set('ollama', ollamaAdapter)
 
-    // 预加载静态模型缓存
+    // Preload the static model cache
     this.preloadStaticModels()
   }
 
   /**
-   * 从适配器获取 Provider 元数据
+   * Get Provider metadata from an adapter
    */
   protected getProviderFromAdapter(adapter: IImageProviderAdapter): ImageProvider {
     return adapter.getProvider()
   }
 
   /**
-   * 从适配器获取静态模型列表
+   * Get the static model list from an adapter
    */
   protected getModelsFromAdapter(adapter: IImageProviderAdapter): ImageModel[] {
     return adapter.getModels()
   }
 
   /**
-   * 调用适配器的异步模型获取方法
+   * Call the adapter's async model fetching method
    */
   protected async getModelsAsyncFromAdapter(
     adapter: IImageProviderAdapter,
@@ -89,10 +89,10 @@ export class ImageAdapterRegistry
   }
 
   /**
-   * 获取错误消息的提供商类型描述
+   * Get the provider type description used in error messages
    */
   protected getProviderTypeDescription(): string {
-    return '图像提供商'
+    return 'image provider'
   }
 }
 

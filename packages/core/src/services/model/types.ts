@@ -2,21 +2,21 @@ import { IImportExportable } from '../../interfaces/import-export';
 import type { UnifiedParameterDefinition } from './parameter-schema';
 import type { BaseProvider } from '../shared/types';
 
-// 重新导出共享类型，保持向后兼容
+// Re-export shared types, keeping backward compatibility
 export type { ConnectionSchema } from '../shared/types';
 
-// === 新架构核心类型 ===
+// === New architecture core types ===
 
 /**
- * 文本模型服务提供商元数据
- * 扩展 BaseProvider，添加文本模型特有的属性（目前无额外属性）
+ * Text model service provider metadata
+ * Extends BaseProvider and adds text-model-specific properties (currently none)
  */
 export interface TextProvider extends BaseProvider {
-  // 目前与 BaseProvider 完全一致，未来可扩展文本模型特有属性
+  // Currently identical to BaseProvider; text-model-specific properties may be added in the future
 }
 
 /**
- * 文本模型元数据
+ * Text model metadata
  */
 export interface TextModel {
   readonly id: string;
@@ -33,12 +33,12 @@ export interface TextModel {
 }
 
 /**
- * 模型参数定义
+ * Model parameter definition
  */
 export type ParameterDefinition = UnifiedParameterDefinition;
 
 /**
- * 新架构的文本模型配置
+ * Text model config of the new architecture
  */
 export interface TextModelConfig {
   id: string;
@@ -51,17 +51,17 @@ export interface TextModelConfig {
     baseURL?: string;
     [key: string]: any;
   };
-  paramOverrides?: Record<string, unknown>; // 统一的参数覆盖（包含内置和自定义参数）
+  paramOverrides?: Record<string, unknown>; // Unified parameter overrides (includes built-in and custom parameters)
   /**
-   * @deprecated 已废弃，将在 v3.0 移除
-   * 旧版本的自定义参数字段，现已合并到 paramOverrides
-   * 仅用于向后兼容读取旧数据，新代码不应使用此字段
+   * @deprecated Deprecated, will be removed in v3.0
+   * Legacy custom parameter field, now merged into paramOverrides
+   * Only kept to read old data for backward compatibility; new code should not use this field
    */
   customParamOverrides?: Record<string, unknown>;
 }
 
 /**
- * 持久化时使用的TextModelConfig结构
+ * TextModelConfig structure used for persistence
  */
 export interface StoredTextModelConfig {
   id: string;
@@ -70,16 +70,16 @@ export interface StoredTextModelConfig {
   providerMeta: TextProvider;
   modelMeta: TextModel;
   connectionConfig: Record<string, any>;
-  paramOverrides?: Record<string, unknown>; // 统一的参数覆盖（包含内置和自定义参数）
+  paramOverrides?: Record<string, unknown>; // Unified parameter overrides (includes built-in and custom parameters)
   /**
-   * @deprecated 已废弃，将在 v3.0 移除
-   * 旧版本的自定义参数字段，现已合并到 paramOverrides
-   * 仅用于向后兼容读取旧数据，新代码不应使用此字段
+   * @deprecated Deprecated, will be removed in v3.0
+   * Legacy custom parameter field, now merged into paramOverrides
+   * Only kept to read old data for backward compatibility; new code should not use this field
    */
   customParamOverrides?: Record<string, unknown>;
 }
 
-// === 传统结构（兼容旧数据） ===
+// === Legacy structure (compatible with old data) ===
 
 export interface ModelConfig {
   name: string;
@@ -92,7 +92,7 @@ export interface ModelConfig {
   llmParams?: Record<string, any>;
 }
 
-// === 模型管理器接口 ===
+// === Model manager interface ===
 
 export interface IModelManager extends IImportExportable {
   ensureInitialized(): Promise<void>;

@@ -3,14 +3,14 @@ import { DataError } from './errors';
 import { DATA_ERROR_CODES } from '../../constants/error-codes';
 
 /**
- * Electron环境下的DataManager代理
- * 通过IPC调用主进程中的真实DataManager实例
+ * DataManager proxy for the Electron environment
+ * Calls the real DataManager instance in the main process over IPC
  */
 export class ElectronDataManagerProxy implements IDataManager {
   private electronAPI: any;
 
   constructor() {
-    // 验证Electron环境
+    // Validate the Electron environment
     if (typeof window === 'undefined' || !(window as any).electronAPI) {
       throw new DataError(
         DATA_ERROR_CODES.ELECTRON_API_UNAVAILABLE,

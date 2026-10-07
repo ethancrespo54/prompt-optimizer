@@ -2,61 +2,61 @@
  * Utility functions for environment detection and configuration.
  */
 
-// 常量定义
+// Constant definitions
 export const CUSTOM_API_PATTERN = /^VITE_CUSTOM_API_(KEY|BASE_URL|MODEL)_(.+)$/;
 export const SUFFIX_PATTERN = /^[a-zA-Z0-9_-]+$/;
 export const MAX_SUFFIX_LENGTH = 50;
 
-// 简单的缓存机制
+// Simple caching mechanism
 let cachedCustomModels: Record<string, ValidatedCustomModelEnvConfig> | null = null;
 
 
 
 /**
- * 自定义模型环境变量配置接口（扫描阶段）
+ * Custom model environment variable config interface (scanning stage)
  */
 export interface CustomModelEnvConfig {
-  /** 后缀名（如 qwen3, claude_local） */
+  /** Suffix name (e.g. qwen3, claude_local) */
   suffix: string;
-  /** API密钥（可选，在扫描过程中可能为undefined） */
+  /** API key (optional; may be undefined during scanning) */
   apiKey?: string;
-  /** API基础URL（可选） */
+  /** API base URL (optional) */
   baseURL?: string;
-  /** 模型名称（可选） */
+  /** Model name (optional) */
   model?: string;
 }
 
 /**
- * 已验证的自定义模型环境变量配置接口
- * 通过 validateCustomModelConfig 验证后的配置，所有必需字段都已确保存在
+ * Validated custom model environment variable config interface
+ * A config that has passed validateCustomModelConfig; all required fields are guaranteed to exist
  */
 export interface ValidatedCustomModelEnvConfig {
-  /** 后缀名（已验证格式和长度） */
+  /** Suffix name (format and length validated) */
   suffix: string;
-  /** API密钥（已验证存在） */
+  /** API key (validated to exist) */
   apiKey: string;
-  /** API基础URL（已验证格式） */
+  /** API base URL (format validated) */
   baseURL: string;
-  /** 模型名称（已验证存在） */
+  /** Model name (validated to exist) */
   model: string;
 }
 
 /**
- * 配置验证结果接口
+ * Config validation result interface
  */
 export interface ValidationResult {
-  /** 是否有效 */
+  /** Whether it is valid */
   valid: boolean;
-  /** 错误信息列表 */
+  /** List of error messages */
   errors: string[];
-  /** 警告信息列表 */
+  /** List of warning messages */
   warnings: string[];
 }
 
 /**
- * 验证自定义模型配置
- * @param config 自定义模型配置
- * @returns 验证结果
+ * Validate a custom model config
+ * @param config Custom model config
+ * @returns Validation result
  */
 export function validateCustomModelConfig(config: CustomModelEnvConfig): ValidationResult {
   const result: ValidationResult = {
@@ -65,7 +65,7 @@ export function validateCustomModelConfig(config: CustomModelEnvConfig): Validat
     warnings: []
   };
 
-  // 验证后缀名
+  // Validate the suffix name
   if (!config.suffix) {
     result.errors.push('Suffix is required');
     result.valid = false;
@@ -74,7 +74,7 @@ export function validateCustomModelConfig(config: CustomModelEnvConfig): Validat
     result.valid = false;
   }
 
-  // 验证API密钥
+  // Validate the API key
   if (!config.apiKey) {
     result.errors.push('API key is required');
     result.valid = false;
@@ -82,7 +82,7 @@ export function validateCustomModelConfig(config: CustomModelEnvConfig): Validat
     result.warnings.push('API key seems too short, please verify it is correct');
   }
 
-  // 验证baseURL（必需）
+  // Validate the baseURL (required)
   if (!config.baseURL) {
     result.errors.push('Base URL is required');
     result.valid = false;
@@ -98,7 +98,7 @@ export function validateCustomModelConfig(config: CustomModelEnvConfig): Validat
     }
   }
 
-  // 验证模型名称（必需）
+  // Validate the model name (required)
   if (!config.model) {
     result.errors.push('Model name is required');
     result.valid = false;
@@ -108,51 +108,51 @@ export function validateCustomModelConfig(config: CustomModelEnvConfig): Validat
 }
 
 /**
- * 检查是否在浏览器环境中
+ * Check whether running in a browser environment
  */
 export const isBrowser = (): boolean => {
   return typeof window !== 'undefined';
 };
 
 /**
- * 检查是否在开发模式
- * 使用统一的 VITE_LOCAL_DEV 环境变量判断，避免依赖 NODE_ENV、MODE 等内置环境变量
- * 通过 getEnvVar 动态访问，避免 Vite 编译时内联替换（类似 VITE_APP_PLATFORM 的设计）
+ * Check whether running in development mode
+ * Uses the unified VITE_LOCAL_DEV environment variable and avoids depending on built-ins like NODE_ENV and MODE
+ * Accessed dynamically through getEnvVar to avoid Vite's compile-time inline replacement (similar to the VITE_APP_PLATFORM design)
  *
- * 只有当 VITE_LOCAL_DEV 环境变量显式设置为 'true' 时才认为是开发环境
- * 支持多种环境：Vite、Node.js、Docker、Electron等
+ * Only considered a development environment when the VITE_LOCAL_DEV environment variable is explicitly set to 'true'
+ * Supports multiple environments: Vite, Node.js, Docker, Electron, etc.
  */
 export function isDevelopment(): boolean {
-  // 只检查 VITE_LOCAL_DEV 环境变量
+  // Only check the VITE_LOCAL_DEV environment variable
   const localDev = getEnvVar('VITE_LOCAL_DEV');
   return localDev === 'true';
 }
 
 
 /**
- * 检测是否在Electron环境中运行
- * 优先使用环境变量VITE_APP_PLATFORM，然后使用自动检测机制
+ * Detect whether running in an Electron environment
+ * Prefers the VITE_APP_PLATFORM environment variable, then uses automatic detection
  */
 export function isRunningInElectron(): boolean {
   if (typeof window === 'undefined') {
     return false;
   }
 
-  // 第一步：检查环境变量（最高优先级）
+  // Step 1: check the environment variable (highest priority)
   const platformEnv = getEnvVar('VITE_APP_PLATFORM');
   if (platformEnv) {
     console.log('[isRunningInElectron] Using platform from env:', platformEnv);
     return platformEnv === 'electron';
   }
 
-  // 自动检测：优先检查electronAPI
+  // Auto-detection: check electronAPI first
   const hasElectronAPI = typeof (window as any).electronAPI !== 'undefined';
   if (hasElectronAPI) {
     console.log('[isRunningInElectron] Verdict: true (via electronAPI)');
     return true;
   }
 
-  // 后备检测：检查更严格的Electron特征
+  // Fallback detection: check stricter Electron characteristics
   const hasValidElectronProcess = typeof (window as any).process !== 'undefined' &&
                                  (window as any).process?.type === 'renderer' &&
                                  (window as any).process?.versions?.electron;
@@ -167,8 +167,8 @@ export function isRunningInElectron(): boolean {
 }
 
 /**
- * 检测Electron API是否完全就绪
- * 不仅检测环境，还检测关键API的可用性
+ * Detect whether the Electron API is fully ready
+ * Detects not only the environment but also the availability of key APIs
  */
 export function isElectronApiReady(): boolean {
   if (!isRunningInElectron()) {
@@ -184,18 +184,18 @@ export function isElectronApiReady(): boolean {
     hasPreferenceApi,
   });
 
-  // 检查electronAPI.preference是否可用
+  // Check whether electronAPI.preference is available
   return hasElectronAPI && hasPreferenceApi;
 }
 
 /**
- * 等待Electron API完全就绪
- * @param timeout 超时时间（毫秒），默认5000ms
- * @returns Promise<boolean> 是否在超时前API就绪
+ * Wait for the Electron API to be fully ready
+ * @param timeout Timeout in milliseconds, default 5000ms
+ * @returns Promise<boolean> Whether the API became ready before the timeout
  */
 export function waitForElectronApi(timeout: number = 5000): Promise<boolean> {
   return new Promise((resolve) => {
-    // 如果已经就绪，立即返回
+    // If it is already ready, return immediately
     if (isElectronApiReady()) {
       console.log('[waitForElectronApi] API already ready');
       resolve(true);
@@ -214,18 +214,18 @@ export function waitForElectronApi(timeout: number = 5000): Promise<boolean> {
         console.warn('[waitForElectronApi] Timeout waiting for Electron API after', timeout, 'ms');
         resolve(false);
       }
-    }, 50); // 每50ms检查一次
+    }, 50); // Check every 50ms
   });
 }
 
 /**
- * 获取环境变量的通用函数
- * 支持多种环境：浏览器运行时配置、process.env、import.meta.env
+ * General function for getting environment variables
+ * Supports multiple environments: browser runtime config, process.env, import.meta.env
  */
 export const getEnvVar = (key: string): string => {
-  // 1. 首先检查运行时配置（Docker环境）
+  // 1. First check the runtime config (Docker environment)
   if (typeof window !== 'undefined' && window.runtime_config) {
-    // 移除 VITE_ 前缀以匹配运行时配置中的键名
+    // Remove the VITE_ prefix to match the key names in the runtime config
     const runtimeKey = key.replace('VITE_', '');
     const value = window.runtime_config[runtimeKey];
     if (value !== undefined && value !== null) {
@@ -233,44 +233,44 @@ export const getEnvVar = (key: string): string => {
     }
   }
 
-  // 2. 然后尝试 process.env（Node.js环境）
+  // 2. Then try process.env (Node.js environment)
   if (typeof process !== 'undefined' && process.env && process.env[key] !== undefined) {
     return process.env[key] || '';
   }
 
-  // 3. 然后尝试 import.meta.env（Vite 环境）
+  // 3. Then try import.meta.env (Vite environment)
   try {
-    // @ts-ignore - 在构建时忽略此错误
+    // @ts-ignore - ignore this error at build time
     if (typeof import.meta !== 'undefined' && import.meta.env) {
-      // @ts-ignore - 在构建时忽略此错误
+      // @ts-ignore - ignore this error at build time
       const value = import.meta.env[key];
       if (value) return value;
     }
   } catch {
-    // 忽略错误
+    // Ignore errors
   }
 
-  // 4. 最后返回空字符串
+  // 4. Finally return an empty string
   return '';
 };
 
 /**
- * 扫描所有自定义模型环境变量
- * 查找 VITE_CUSTOM_API_*_suffix 模式的环境变量
- * @param useCache 是否使用缓存，默认为true
- * @returns 已验证的自定义模型配置映射，key为后缀名，value为已验证的配置对象
+ * Scan all custom model environment variables
+ * Finds environment variables matching the VITE_CUSTOM_API_*_suffix pattern
+ * @param useCache Whether to use the cache, default true
+ * @returns Map of validated custom model configs, where key is the suffix name and value is the validated config object
  */
 export function scanCustomModelEnvVars(useCache: boolean = true): Record<string, ValidatedCustomModelEnvConfig> {
-  // 如果启用缓存且有缓存结果，直接返回
+  // If caching is enabled and there is a cached result, return it directly
   if (useCache && cachedCustomModels) {
     return cachedCustomModels;
   }
   const customModels: Record<string, CustomModelEnvConfig> = {};
 
-  // 获取环境变量，按优先级顺序（高优先级覆盖低优先级）
+  // Get the environment variables in priority order (higher priority overrides lower priority)
   const mergedEnv: Record<string, string> = {};
 
-  // 优先级1（最低）: import.meta.env（Vite开发环境）
+  // Priority 1 (lowest): import.meta.env (Vite development environment)
   try {
     // @ts-ignore
     if (typeof import.meta !== 'undefined' && import.meta.env) {
@@ -285,7 +285,7 @@ export function scanCustomModelEnvVars(useCache: boolean = true): Record<string,
     console.warn('[scanCustomModelEnvVars] Failed to access import.meta.env:', error);
   }
 
-  // 优先级2（中等）: process.env（Node.js环境）
+  // Priority 2 (medium): process.env (Node.js environment)
   if (typeof process !== 'undefined' && process.env) {
     Object.entries(process.env).forEach(([key, value]) => {
       if (value !== undefined) {
@@ -294,11 +294,11 @@ export function scanCustomModelEnvVars(useCache: boolean = true): Record<string,
     });
   }
 
-  // 优先级3（最高）: 运行时配置（Docker环境）
+  // Priority 3 (highest): runtime config (Docker environment)
   if (typeof window !== 'undefined' && window.runtime_config) {
     Object.entries(window.runtime_config).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
-        // 添加 VITE_ 前缀以统一处理
+        // Add the VITE_ prefix for uniform handling
         mergedEnv[`VITE_${key}`] = String(value);
       }
     });
@@ -306,25 +306,25 @@ export function scanCustomModelEnvVars(useCache: boolean = true): Record<string,
 
   console.log(`[scanCustomModelEnvVars] Environment sources loaded`);
 
-  // 使用预定义的正则表达式模式
+  // Use the predefined regular expression patterns
   const customApiPattern = CUSTOM_API_PATTERN;
 
-  // 遍历合并后的环境变量
+  // Iterate over the merged environment variables
   Object.entries(mergedEnv).forEach(([key, value]) => {
-    // 跳过undefined、null和空字符串，但允许其他falsy值
+    // Skip undefined, null, and empty strings, but allow other falsy values
     if (value === undefined || value === null || value === '') return;
 
     const match = key.match(customApiPattern);
     if (match) {
       const [, configType, suffix] = match;
 
-      // 验证后缀名（不能为空，不能包含特殊字符，不能超过长度限制）
+      // Validate the suffix name (cannot be empty, cannot contain special characters, cannot exceed the length limit)
       if (!suffix || suffix.length > MAX_SUFFIX_LENGTH || !SUFFIX_PATTERN.test(suffix)) {
         console.warn(`[scanCustomModelEnvVars] Invalid suffix in ${key}: ${suffix}`);
         return;
       }
 
-      // 初始化配置对象
+      // Initialize the config object
       if (!customModels[suffix]) {
         customModels[suffix] = {
           suffix,
@@ -334,7 +334,7 @@ export function scanCustomModelEnvVars(useCache: boolean = true): Record<string,
         };
       }
 
-      // 设置对应的配置项
+      // Set the corresponding config item
       switch (configType) {
         case 'KEY':
           customModels[suffix].apiKey = value;
@@ -352,16 +352,16 @@ export function scanCustomModelEnvVars(useCache: boolean = true): Record<string,
     }
     });
 
-  // 验证和过滤配置
+  // Validate and filter the configs
   const validModels: Record<string, ValidatedCustomModelEnvConfig> = {};
   Object.entries(customModels).forEach(([suffix, config]) => {
     const validation = validateCustomModelConfig(config);
 
     if (validation.valid) {
-      // 类型断言：验证通过的配置确保所有必需字段存在
+      // Type assertion: a config that passed validation is guaranteed to have all required fields
       validModels[suffix] = config as ValidatedCustomModelEnvConfig;
 
-      // 输出警告信息
+      // Output warning messages
       if (validation.warnings.length > 0) {
         console.warn(`[scanCustomModelEnvVars] Warnings for ${suffix}:`);
         validation.warnings.forEach(warning => {
@@ -385,7 +385,7 @@ export function scanCustomModelEnvVars(useCache: boolean = true): Record<string,
 
   console.log(`[scanCustomModelEnvVars] Found ${Object.keys(validModels).length} valid custom models:`, Object.keys(validModels));
 
-  // 缓存结果
+  // Cache the result
   if (useCache) {
     cachedCustomModels = validModels;
   }
@@ -396,8 +396,8 @@ export function scanCustomModelEnvVars(useCache: boolean = true): Record<string,
 
 
 /**
- * 清除自定义模型环境变量扫描缓存
- * 在环境变量发生变化时调用
+ * Clear the custom model environment variable scan cache
+ * Call when the environment variables change
  */
 export function clearCustomModelEnvCache(): void {
   cachedCustomModels = null;

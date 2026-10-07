@@ -1,7 +1,7 @@
 import type { OptimizationMode } from '../prompt/types';
 
 /**
- * 提示词记录类型
+ * Prompt record type
  */
 export type PromptRecordType =
   | 'optimize'
@@ -18,56 +18,56 @@ export type PromptRecordType =
   | 'conversationMessageOptimize';
 
 /**
- * 提示词记录接口
+ * Prompt record interface
  */
 export interface PromptRecord {
-  /** 记录ID */
+  /** Record ID */
   id: string;
-  /** 原始提示词 */
+  /** Original prompt */
   originalPrompt: string;
-  /** 优化/迭代后的提示词 */
+  /** Optimized/iterated prompt */
   optimizedPrompt: string;
-  /** 记录类型 */
+  /** Record type */
   type: PromptRecordType;
-  /** 所属的提示词链ID */
+  /** ID of the prompt chain it belongs to */
   chainId: string;
-  /** 在链中的版本号 */
+  /** Version number within the chain */
   version: number;
-  /** 前一个版本ID */
+  /** Previous version ID */
   previousId?: string;
-  /** 时间戳 */
+  /** Timestamp */
   timestamp: number;
-  /** 使用的模型key */
+  /** Model key used */
   modelKey: string;
   /** 
-   * 使用的模型显示名称 
-   * 通过modelKey从modelManager中获取，用于UI展示
-   * 不存储时使用modelKey作为后备显示
+   * Display name of the model used
+   * Obtained from modelManager via modelKey, used for UI display
+   * When not stored, modelKey is used as the fallback display
    */
   modelName?: string;
-  /** 使用的提示词ID */
+  /** ID of the prompt used */
   templateId: string;
-  /** 迭代时的修改说明 */
+  /** Modification note during iteration */
   iterationNote?: string;
-  /** 元数据 */
+  /** Metadata */
   metadata?: {
-    optimizationMode?: OptimizationMode;  // 优化模式
-    messageId?: string;                   // 被优化消息的 ID
-    messageRole?: string;                 // 消息角色
-    conversationSnapshot?: Array<{        // 会话快照（用于多轮对话优化）
-      id: string;                         // 消息 ID
-      role: string;                       // 消息角色
-      content: string;                    // 消息内容
-      originalContent?: string;           // 原始内容
-      chainId?: string;                   // 🆕 该消息使用的优化链 ID
-      appliedVersion?: number;            // 🆕 应用的版本号 (0=v0原始, 1=v1, 2=v2...)
+    optimizationMode?: OptimizationMode;  // Optimization mode
+    messageId?: string;                   // ID of the message being optimized
+    messageRole?: string;                 // Message role
+    conversationSnapshot?: Array<{        // Conversation snapshot (used for multi-turn conversation optimization)
+      id: string;                         // Message ID
+      role: string;                       // Message role
+      content: string;                    // Message content
+      originalContent?: string;           // Original content
+      chainId?: string;                   // 🆕 ID of the optimization chain used by this message
+      appliedVersion?: number;            // 🆕 Applied version number (0=v0 original, 1=v1, 2=v2...)
     }>;
-    [key: string]: any;                   // 保持扩展性
+    [key: string]: any;                   // Keep extensibility
   };
 }
 
 /**
- * 历史记录链类型
+ * History record chain type
  */
 export interface PromptRecordChain {
   chainId: string;
@@ -79,28 +79,28 @@ export interface PromptRecordChain {
 import { IImportExportable } from '../../interfaces/import-export';
 
 /**
- * 历史记录管理器接口
+ * History manager interface
  */
 export interface IHistoryManager extends IImportExportable {
-  /** 添加记录 */
+  /** Add a record */
   addRecord(record: PromptRecord): Promise<void>;
-  /** 获取所有记录 */
+  /** Get all records */
   getRecords(): Promise<PromptRecord[]>;
-  /** 获取指定记录 */
+  /** Get a specific record */
   getRecord(id: string): Promise<PromptRecord>;
-  /** 删除记录 */
+  /** Delete a record */
   deleteRecord(id: string): Promise<void>;
-  /** 获取迭代链 */
+  /** Get the iteration chain */
   getIterationChain(recordId: string): Promise<PromptRecord[]>;
-  /** 清除所有记录 */
+  /** Clear all records */
   clearHistory(): Promise<void>;
-  /** 获取所有记录链 */
+  /** Get all record chains */
   getAllChains(): Promise<PromptRecordChain[]>;
-  /** 获取指定链 */
+  /** Get a specific chain */
   getChain(chainId: string): Promise<PromptRecordChain>;
-  /** 创建一个新的记录链 */
+  /** Create a new record chain */
   createNewChain(params: Omit<PromptRecord, 'chainId' | 'version' | 'previousId'>): Promise<PromptRecordChain>;
-  /** 向现有链中添加一次迭代 */
+  /** Add an iteration to an existing chain */
   addIteration(params: {
     chainId: string;
     originalPrompt: string;
@@ -110,6 +110,6 @@ export interface IHistoryManager extends IImportExportable {
     iterationNote?: string;
     metadata?: Record<string, any>;
   }): Promise<PromptRecordChain>;
-  /** 删除指定ID的记录链 */
+  /** Delete the record chain with the given ID */
   deleteChain(chainId: string): Promise<void>;
 } 

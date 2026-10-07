@@ -1,9 +1,9 @@
 /**
- * 数据导入导出相关类型定义
+ * Type definitions related to data import/export
  */
 
 /**
- * 完整的导出数据结构
+ * Complete export data structure
  */
 export interface ExportData {
   version: number;
@@ -12,20 +12,20 @@ export interface ExportData {
 }
 
 /**
- * 数据管理器接口
+ * Data manager interface
  */
 export interface IDataManager {
   /**
-   * 导出所有数据
-   * @returns JSON格式的数据字符串
+   * Export all data
+   * @returns Data string in JSON format
    */
   exportAllData(): Promise<string>;
 
   /**
-   * 导入所有数据
-   * @param dataString JSON格式的数据字符串
+   * Import all data
+   * @param dataString Data string in JSON format
    */
   importAllData(dataString: string): Promise<void>;
 }
 
-// ImportExportError 已移动到 ../../interfaces/import-export.ts
+// ImportExportError has been moved to ../../interfaces/import-export.ts

@@ -4,8 +4,8 @@ import { ModelError } from './errors';
 import { MODEL_ERROR_CODES } from '../../constants/error-codes';
 
 /**
- * Electron环境下的配置管理器
- * 确保UI进程和主进程的配置状态完全一致
+ * Config manager for the Electron environment
+ * Ensures the config state of the UI process and the main process is fully consistent
  */
 export class ElectronConfigManager {
   private static instance: ElectronConfigManager;
@@ -22,7 +22,7 @@ export class ElectronConfigManager {
   }
 
   /**
-   * 从主进程同步环境变量
+   * Sync environment variables from the main process
    */
   async syncFromMainProcess(): Promise<void> {
     if (typeof window === 'undefined' || !window.electronAPI) {
@@ -38,7 +38,7 @@ export class ElectronConfigManager {
       this.initialized = true;
       console.log('[ElectronConfigManager] Environment variables synced successfully');
 
-      // 调试输出
+      // Debug output
       Object.keys(this.envVars).forEach(key => {
         const value = this.envVars[key];
         if (value) {
@@ -52,7 +52,7 @@ export class ElectronConfigManager {
   }
 
   /**
-   * 获取环境变量
+   * Get an environment variable
    */
   getEnvVar(key: string): string {
     if (!this.initialized) {
@@ -63,19 +63,19 @@ export class ElectronConfigManager {
   }
 
   /**
-   * 检查是否已初始化
+   * Check whether it has been initialized
    */
   isInitialized(): boolean {
     return this.initialized;
   }
 
   /**
-   * 生成默认模型配置（基于同步的环境变量）
+   * Generate the default model configs (based on the synced environment variables)
    *
-   * 注意：此方法现在直接调用 getAllModels()，因为 getEnvVar 已经支持多环境
-   * （包括 process.env、import.meta.env、window.runtime_config）
+   * Note: this method now calls getAllModels() directly, since getEnvVar already supports multiple environments
+   * (including process.env, import.meta.env, window.runtime_config)
    *
-   * @returns TextModelConfig 格式的模型配置
+   * @returns Model configs in TextModelConfig format
    */
   generateDefaultModels(): Record<string, TextModelConfig> {
     return getAllModels();
@@ -83,7 +83,7 @@ export class ElectronConfigManager {
 }
 
 /**
- * 检查是否在Electron渲染进程中
+ * Check whether running in the Electron renderer process
  */
 export function isElectronRenderer(): boolean {
   return typeof window !== 'undefined' && !!window.electronAPI;

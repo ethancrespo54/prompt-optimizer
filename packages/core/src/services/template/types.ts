@@ -4,20 +4,20 @@ import type { BuiltinTemplateLanguage } from './languageService';
 import type { ToolCall } from '../prompt/types';
 
 /**
- * 提示词元数据
+ * Prompt metadata
  */
 export interface TemplateMetadata {
-  version: string;          // 提示词版本
-  lastModified: number;     // 最后修改时间
-  author?: string;          // 作者（可选）
-  description?: string;     // 描述（可选）
-  templateType: 'optimize' | 'userOptimize' | 'text2imageOptimize' | 'image2imageOptimize' | 'imageIterate' | 'iterate' | 'conversationMessageOptimize' | 'contextUserOptimize' | 'contextIterate' | 'contextSystemOptimize' | 'evaluation'; // 模板类型标识（包含向后兼容的旧值）
-  language?: 'zh' | 'en';   // 模板语言（可选，主要用于内置模板语言切换）
-  [key: string]: any;       // 允许任意额外字段
+  version: string;          // Prompt version
+  lastModified: number;     // Last modified time
+  author?: string;          // Author (optional)
+  description?: string;     // Description (optional)
+  templateType: 'optimize' | 'userOptimize' | 'text2imageOptimize' | 'image2imageOptimize' | 'imageIterate' | 'iterate' | 'conversationMessageOptimize' | 'contextUserOptimize' | 'contextIterate' | 'contextSystemOptimize' | 'evaluation'; // Template type identifier (includes legacy values for backward compatibility)
+  language?: 'zh' | 'en';   // Template language (optional, mainly used for switching the built-in template language)
+  [key: string]: any;       // Allow arbitrary extra fields
 }
 
 /**
- * 消息模板定义
+ * Message template definition
  */
 export interface MessageTemplate {
   role: 'system' | 'user' | 'assistant' | 'tool';
@@ -28,27 +28,27 @@ export interface MessageTemplate {
 }
 
 /**
- * 提示词定义
+ * Prompt definition
  */
 export interface Template {
-  id: string;              // 提示词唯一标识
-  name: string;            // 提示词名称
-  content: string | MessageTemplate[];         // 提示词内容 - 支持字符串或消息数组
+  id: string;              // Unique prompt identifier
+  name: string;            // Prompt name
+  content: string | MessageTemplate[];         // Prompt content - supports a string or a message array
   metadata: TemplateMetadata;
-  isBuiltin?: boolean;     // 是否为内置提示词
+  isBuiltin?: boolean;     // Whether it is a built-in prompt
 }
 
 /**
- * 提示词来源类型
+ * Prompt source type
  */
 export type TemplateSourceType = 'builtin' | 'localStorage';
 
 export type TemplateType = TemplateMetadata['templateType'];
 
-// TemplateManagerConfig 已删除 - 配置参数从未被使用
+// TemplateManagerConfig was removed - the config parameters were never used
 
 /**
- * 提示词管理器接口
+ * Prompt manager interface
  */
 export interface ITemplateManager extends IImportExportable {
   /**
@@ -103,7 +103,7 @@ export interface ITemplateManager extends IImportExportable {
 }
 
 /**
- * 消息模板验证Schema
+ * Message template validation schema
  */
 export const messageTemplateSchema = z.object({
   role: z.enum(['system', 'user', 'assistant', 'tool']),
@@ -111,7 +111,7 @@ export const messageTemplateSchema = z.object({
 });
 
 /**
- * 提示词验证Schema
+ * Prompt validation schema
  */
 export const templateSchema = z.object({
   id: z.string().min(1),
@@ -125,8 +125,8 @@ export const templateSchema = z.object({
     lastModified: z.number(),
     author: z.string().optional(),
     description: z.string().optional(),
-    templateType: z.enum(['optimize', 'userOptimize', 'text2imageOptimize', 'image2imageOptimize', 'imageIterate', 'iterate', 'conversationMessageOptimize', 'contextUserOptimize', 'contextIterate', 'contextSystemOptimize', 'evaluation']),  // 🔧 向后兼容：保留旧枚举值
+    templateType: z.enum(['optimize', 'userOptimize', 'text2imageOptimize', 'image2imageOptimize', 'imageIterate', 'iterate', 'conversationMessageOptimize', 'contextUserOptimize', 'contextIterate', 'contextSystemOptimize', 'evaluation']),  // 🔧 Backward compatibility: keep the old enum values
     language: z.enum(['zh', 'en']).optional()
-  }).passthrough(), // 允许额外字段通过验证
+  }).passthrough(), // Allow extra fields to pass validation
   isBuiltin: z.boolean().optional()
 });

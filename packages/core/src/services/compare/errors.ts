@@ -1,6 +1,6 @@
 /**
  * Compare service error class
- * 对比服务错误类
+ * Compare service error classes
  */
 
 import { COMPARE_ERROR_CODES, type ErrorParams } from '../../constants/error-codes';
@@ -19,7 +19,7 @@ export class CompareError extends Error {
 
 /**
  * Input validation error
- * 输入验证错误
+ * Input validation error
  */
 export class CompareValidationError extends CompareError {
   constructor(message: string) {
@@ -29,7 +29,7 @@ export class CompareValidationError extends CompareError {
 
 /**
  * Compare calculation error
- * 对比计算错误
+ * Compare computation error
  */
 export class CompareCalculationError extends CompareError {
   constructor(message: string) {

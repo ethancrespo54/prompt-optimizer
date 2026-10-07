@@ -28,7 +28,7 @@ export interface ValidationWarning {
 
 
 /**
- * 验证llmParams中的已知参数（增强安全版本）
+ * Validate known parameters in llmParams (enhanced security version)
  */
 export function validateLLMParams(
   llmParams: Record<string, any> | undefined,
@@ -62,7 +62,7 @@ export function validateLLMParams(
 }
 
 /**
- * 获取提供商支持的参数列表
+ * Get the list of parameters supported by the provider
  */
 export function getSupportedParameters(provider: string): AdvancedParameterDefinition[] {
   return advancedParameterDefinitions.filter(

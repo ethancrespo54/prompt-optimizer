@@ -3,7 +3,7 @@ import type { BuiltinTemplateLanguage } from './languageService';
 import { safeSerializeForIPC } from '../../utils/ipc-serialization';
 import { TemplateStorageError } from './errors';
 
-// 为window.electronAPI提供完整的类型定义，以确保类型安全
+// Provide complete type definitions for window.electronAPI to ensure type safety
 interface ElectronAPI {
   template: {
     getTemplate: (id: string) => Promise<Template>;
@@ -22,7 +22,7 @@ interface ElectronAPI {
     getDataType: () => Promise<string>;
     validateData: (data: any) => Promise<boolean>;
   };
-  // 添加其他服务的定义以避免编译错误
+  // Add definitions for other services to avoid compile errors
   [key: string]: any;
 }
 
@@ -32,8 +32,8 @@ declare const window: {
 
 
 /**
- * Electron环境下的TemplateManager代理
- * 通过IPC调用主进程中的真实TemplateManager实例
+ * TemplateManager proxy for the Electron environment
+ * Calls the real TemplateManager instance in the main process over IPC
  */
 export class ElectronTemplateManagerProxy implements ITemplateManager {
   private electronAPI: ElectronAPI['template'];
@@ -52,7 +52,7 @@ export class ElectronTemplateManagerProxy implements ITemplateManager {
   }
 
   async saveTemplate(template: Template): Promise<void> {
-    // 自动序列化，防止Vue响应式对象IPC传递错误
+    // Serialize automatically to prevent errors when Vue reactive objects are passed over IPC
     const safeTemplate = safeSerializeForIPC(template);
     return this.electronAPI.createTemplate(safeTemplate);
   }
@@ -70,7 +70,7 @@ export class ElectronTemplateManagerProxy implements ITemplateManager {
   }
 
   async importTemplate(jsonString: string): Promise<void> {
-    // jsonString是基本类型，不需要序列化，但为了一致性保留注释
+    // jsonString is a primitive type and needs no serialization, but the comment is kept for consistency
     return this.electronAPI.importTemplate(jsonString);
   }
 
@@ -90,36 +90,36 @@ export class ElectronTemplateManagerProxy implements ITemplateManager {
     return await this.electronAPI.getSupportedBuiltinTemplateLanguages();
   }
 
-  // 实现 IImportExportable 接口
+  // Implement the IImportExportable interface
 
   /**
-   * 导出所有用户模板
+   * Export all user templates
    */
   async exportData(): Promise<Template[]> {
     return this.electronAPI.exportData();
   }
 
   /**
-   * 导入用户模板
+   * Import user templates
    */
   async importData(data: any): Promise<void> {
-    // 自动序列化，防止Vue响应式对象IPC传递错误
+    // Serialize automatically to prevent errors when Vue reactive objects are passed over IPC
     const safeData = safeSerializeForIPC(data);
     return this.electronAPI.importData(safeData);
   }
 
   /**
-   * 获取数据类型标识
+   * Get the data type identifier
    */
   async getDataType(): Promise<string> {
     return this.electronAPI.getDataType();
   }
 
   /**
-   * 验证模板数据格式
+   * Validate the template data format
    */
   async validateData(data: any): Promise<boolean> {
-    // 自动序列化，防止Vue响应式对象IPC传递错误
+    // Serialize automatically to prevent errors when Vue reactive objects are passed over IPC
     const safeData = safeSerializeForIPC(data);
     return this.electronAPI.validateData(safeData);
   }

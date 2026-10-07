@@ -5,21 +5,21 @@ import { ModelError } from './errors';
 import { MODEL_ERROR_CODES } from '../../constants/error-codes';
 
 /**
- * 将传统 ModelConfig 转换为 TextModelConfig（使用 Registry 获取元数据）
+ * Convert a legacy ModelConfig to a TextModelConfig (using the Registry to get metadata)
  *
- * 此函数用于向后兼容，将旧格式配置转换为新架构格式
+ * This function is for backward compatibility, converting old-format configs to the new architecture format
  *
- * @param key 配置键名
- * @param legacy 传统配置对象
- * @param registry Adapter注册表实例（用于获取Provider和Model元数据）
- * @returns 转换后的 TextModelConfig
+ * @param key Config key name
+ * @param legacy Legacy config object
+ * @param registry Adapter registry instance (used to get Provider and Model metadata)
+ * @returns The converted TextModelConfig
  */
 export async function convertLegacyToTextModelConfigWithRegistry(
   key: string,
   legacy: ModelConfig,
   registry: ITextAdapterRegistry
 ): Promise<TextModelConfig> {
-  // 根据 provider 确定 providerId
+  // Determine providerId from the provider
   let providerId: string;
   switch (legacy.provider) {
     case 'gemini':
@@ -45,18 +45,18 @@ export async function convertLegacyToTextModelConfigWithRegistry(
   }
 
   try {
-    // 通过 Registry 获取 Adapter
+    // Get the Adapter through the Registry
     const adapter = registry.getAdapter(providerId);
 
-    // 从 Adapter 获取 Provider 元数据
+    // Get the Provider metadata from the Adapter
     const providerMeta: TextProvider = adapter.getProvider();
 
-    // 从 Adapter 获取 Model 元数据
+    // Get the Model metadata from the Adapter
     let modelMeta: TextModel | undefined;
     const staticModels = adapter.getModels();
     modelMeta = staticModels.find(m => m.id === legacy.defaultModel);
 
-    // 如果静态模型列表中没有找到，使用 buildDefaultModel
+    // If it is not found in the static model list, use buildDefaultModel
     if (!modelMeta) {
       console.warn(`[Converter] Model ${legacy.defaultModel} not found in static models, building default`);
       modelMeta = adapter.buildDefaultModel(legacy.defaultModel);
@@ -66,7 +66,7 @@ export async function convertLegacyToTextModelConfigWithRegistry(
     const legacyParams = legacy.llmParams || {};
     const { builtIn, custom } = splitOverridesBySchema(schema, legacyParams);
 
-    // 构建 TextModelConfig
+    // Build the TextModelConfig
     const textModelConfig: TextModelConfig = {
       id: key,
       name: legacy.name,
@@ -84,7 +84,7 @@ export async function convertLegacyToTextModelConfigWithRegistry(
     return textModelConfig;
   } catch (error) {
     console.error(`[Converter] Failed to convert legacy config for ${key}:`, error);
-    // Fallback：使用 OpenAI Adapter 并禁用配置
+    // Fallback: use the OpenAI Adapter and disable the config
     try {
       const openaiAdapter = registry.getAdapter('openai');
       const providerMeta = openaiAdapter.getProvider();
@@ -93,7 +93,7 @@ export async function convertLegacyToTextModelConfigWithRegistry(
       return {
         id: key,
         name: legacy.name,
-        enabled: false, // 转换失败，禁用配置
+        enabled: false, // Conversion failed; disable the config
         providerMeta: providerMeta,
         modelMeta: modelMeta,
         connectionConfig: {
@@ -111,19 +111,19 @@ export async function convertLegacyToTextModelConfigWithRegistry(
 }
 
 /**
- * 将传统 ModelConfig 转换为 TextModelConfig（使用硬编码元数据）
+ * Convert a legacy ModelConfig to a TextModelConfig (using hard-coded metadata)
  *
- * 此函数为后备方案，不依赖 Registry，避免循环依赖
+ * This function is a fallback that does not depend on the Registry, avoiding circular dependencies
  *
- * @param key 配置键名
- * @param legacy 传统配置对象
- * @returns 转换后的 TextModelConfig
+ * @param key Config key name
+ * @param legacy Legacy config object
+ * @returns The converted TextModelConfig
  */
 export function convertLegacyToTextModelConfig(
   key: string,
   legacy: ModelConfig
 ): TextModelConfig {
-  // 根据 provider 确定 providerId
+  // Determine providerId from the provider
   let providerId: string;
   switch (legacy.provider) {
     case 'gemini':
@@ -148,17 +148,17 @@ export function convertLegacyToTextModelConfig(
       break;
   }
 
-  // 构建 Provider 元数据
+  // Build the Provider metadata
   const providerMeta: TextProvider = createProviderMeta(providerId, legacy);
 
-  // 构建 Model 元数据
+  // Build the Model metadata
   const modelMeta: TextModel = createModelMeta(legacy.defaultModel, providerId, legacy);
 
   const schema = modelMeta.parameterDefinitions ?? [];
   const legacyParams = legacy.llmParams || {};
   const { builtIn, custom } = splitOverridesBySchema(schema, legacyParams);
 
-  // 构建 TextModelConfig
+  // Build the TextModelConfig
   const textModelConfig: TextModelConfig = {
     id: key,
     name: legacy.name,
@@ -177,7 +177,7 @@ export function convertLegacyToTextModelConfig(
 }
 
 /**
- * 创建 Provider 元数据
+ * Create Provider metadata
  */
 function createProviderMeta(providerId: string, legacy: ModelConfig): TextProvider {
   if (providerId === 'gemini') {
@@ -271,7 +271,7 @@ function createProviderMeta(providerId: string, legacy: ModelConfig): TextProvid
       }
     };
   } else {
-    // OpenAI 及兼容 API - 始终使用 'OpenAI' 作为 Provider 名称
+    // OpenAI and compatible APIs - always use 'OpenAI' as the Provider name
     return {
       id: 'openai',
       name: 'OpenAI',
@@ -294,17 +294,17 @@ function createProviderMeta(providerId: string, legacy: ModelConfig): TextProvid
 }
 
 /**
- * 创建 Model 元数据
+ * Create Model metadata
  */
 function createModelMeta(modelId: string, providerId: string, legacy: ModelConfig): TextModel {
-  // 默认的 capabilities
+  // Default capabilities
   const defaultCapabilities = {
-        supportsTools: providerId !== 'gemini', // Gemini 工具支持可能不同
+        supportsTools: providerId !== 'gemini', // Gemini tool support may differ
     supportsReasoning: modelId.includes('o1') || modelId.includes('reasoner') || modelId.includes('thinking'),
     maxContextLength: 4096
   };
 
-  // 根据模型 ID 调整 capabilities
+  // Adjust capabilities based on the model ID
   if (modelId.includes('gpt-4o')) {
     defaultCapabilities.maxContextLength = 128000;
   } else if (modelId.includes('gemini')) {
@@ -327,7 +327,7 @@ function createModelMeta(modelId: string, providerId: string, legacy: ModelConfi
     defaultCapabilities.supportsTools = false;
   }
 
-  // 构建参数定义
+  // Build the parameter definitions
   const parameterDefinitions = createParameterDefinitions(providerId);
 
   return {
@@ -342,7 +342,7 @@ function createModelMeta(modelId: string, providerId: string, legacy: ModelConfi
 }
 
 /**
- * 创建参数定义
+ * Create parameter definitions
  */
 function createParameterDefinitions(providerId: string): readonly any[] {
   if (providerId === 'gemini') {
@@ -394,10 +394,10 @@ function createParameterDefinitions(providerId: string): readonly any[] {
 }
 
 /**
- * 检测配置是否为传统格式
+ * Detect whether a config is in the legacy format
  *
- * @param config 配置对象
- * @returns 如果是传统格式返回 true
+ * @param config Config object
+ * @returns true if it is in the legacy format
  */
 export function isLegacyConfig(config: any): config is ModelConfig {
   return (
@@ -412,10 +412,10 @@ export function isLegacyConfig(config: any): config is ModelConfig {
 }
 
 /**
- * 检测配置是否为新格式
+ * Detect whether a config is in the new format
  *
- * @param config 配置对象
- * @returns 如果是新格式返回 true
+ * @param config Config object
+ * @returns true if it is in the new format
  */
 export function isTextModelConfig(config: any): config is TextModelConfig {
   return (

@@ -1,63 +1,63 @@
 /**
- * 共享类型定义
- * 文本模型和图像模型服务的通用类型
+ * Shared type definitions
+ * Types common to text model and image model services
  */
 
 /**
- * 连接参数的类型安全定义
- * 用于定义 Provider 所需的连接配置结构
+ * Type-safe definition of connection parameters
+ * Used to define the connection config structure required by a Provider
  */
 export interface ConnectionSchema {
-  /** 必需字段，如 ['apiKey'] */
+  /** Required fields, e.g. ['apiKey'] */
   required: string[];
-  /** 可选字段，如 ['baseURL', 'timeout', 'region'] */
+  /** Optional fields, e.g. ['baseURL', 'timeout', 'region'] */
   optional: string[];
-  /** 字段类型约束 */
+  /** Field type constraints */
   fieldTypes: Record<string, 'string' | 'number' | 'boolean'>;
 }
 
 /**
- * 基础 Provider 接口
- * 定义所有服务提供商的共同属性
+ * Base Provider interface
+ * Defines the properties common to all service providers
  */
 export interface BaseProvider {
-  /** Provider 唯一标识，如 'openai', 'gemini' */
+  /** Unique Provider identifier, e.g. 'openai', 'gemini' */
   readonly id: string;
-  /** 显示名称，如 'OpenAI', 'Google Gemini' */
+  /** Display name, e.g. 'OpenAI', 'Google Gemini' */
   readonly name: string;
-  /** 描述信息 */
+  /** Description */
   readonly description?: string;
   /**
-   * 浏览器环境是否会被 CORS 限制（无法直接请求该 API）。
-   * - true: Web 端可能因 CORS 被浏览器拦截，建议使用 Desktop 或自行配置代理
-   * - false/undefined: 未标记为 CORS 限制（不代表一定可用，仍可能受网络/鉴权等影响）
+   * Whether the browser environment is restricted by CORS (the API cannot be requested directly).
+   * - true: the web build may be blocked by the browser due to CORS; using Desktop or configuring a proxy yourself is recommended
+   * - false/undefined: not marked as CORS-restricted (does not mean it will definitely work; network/auth issues may still apply)
    */
   readonly corsRestricted?: boolean;
-  /** 是否必须提供 API Key */
+  /** Whether an API key must be provided */
   readonly requiresApiKey: boolean;
-  /** 默认 API 地址 */
+  /** Default API address */
   readonly defaultBaseURL: string;
-  /** 是否支持动态获取模型列表 */
+  /** Whether dynamic model list fetching is supported */
   readonly supportsDynamicModels: boolean;
-  /** 连接参数结构定义 */
+  /** Connection parameter schema */
   readonly connectionSchema?: ConnectionSchema;
-  /** API Key 获取页面 URL（可选）*/
+  /** API key page URL (optional) */
   readonly apiKeyUrl?: string;
 }
 
 /**
- * 基础 Model 接口
- * 定义所有模型的共同属性
+ * Base Model interface
+ * Defines the properties common to all models
  */
 export interface BaseModel {
-  /** 模型唯一标识，如 'gpt-4', 'dall-e-3' */
+  /** Unique model identifier, e.g. 'gpt-4', 'dall-e-3' */
   readonly id: string;
-  /** 显示名称 */
+  /** Display name */
   readonly name: string;
-  /** 模型描述 */
+  /** Model description */
   readonly description?: string;
-  /** 所属 Provider ID */
+  /** ID of the Provider it belongs to */
   readonly providerId: string;
-  /** 默认参数值 */
+  /** Default parameter values */
   readonly defaultParameterValues?: Record<string, unknown>;
 }

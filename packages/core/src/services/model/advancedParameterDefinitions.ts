@@ -1,17 +1,17 @@
 // packages/core/src/services/model/advancedParameterDefinitions.ts
 
 /**
- * 旧版参数定义系统（向后兼容）
+ * Legacy parameter definition system (backward compatible)
  *
- * 注意：这个文件主要用于：
- * 1. validation.ts 中验证旧版 llmParams 参数
- * 2. 向后兼容旧版配置数据
+ * Note: this file is mainly used for:
+ * 1. Validating legacy llmParams parameters in validation.ts
+ * 2. Backward compatibility with legacy config data
  *
- * 新代码应该使用：
- * - parameter-schema.ts 中的 UnifiedParameterDefinition
- * - 各 Adapter 的 getParameterDefinitions() 方法
+ * New code should use:
+ * - UnifiedParameterDefinition in parameter-schema.ts
+ * - The getParameterDefinitions() method of each Adapter
  *
- * 该文件将在 v3.0 中标记为 deprecated，在 v4.0 移除。
+ * This file will be marked deprecated in v3.0 and removed in v4.0.
  */
 
 export interface AdvancedParameterDefinition {
@@ -177,7 +177,7 @@ export const advancedParameterDefinitions: AdvancedParameterDefinition[] = [
   labelKey: "params.thinkingBudget.label",
   descriptionKey: "params.thinkingBudget.description",
   type: "number",
-  minValue: 0,  // 允许0来禁用思考功能
+  minValue: 0,  // Allow 0 to disable the thinking feature
   maxValue: 8192,
   step: 1,
   unitKey: "params.tokens.unit",

@@ -1,8 +1,8 @@
 /**
- * IPC序列化工具
- * 用于处理Vue响应式对象在Electron IPC通信中的序列化问题
+ * IPC serialization utilities
+ * Handles the serialization problem of Vue reactive objects in Electron IPC communication
  * 
- * 这个工具专门为ElectronProxy类设计，提供统一的序列化处理
+ * This utility is designed specifically for ElectronProxy classes and provides unified serialization handling
  */
 
 import { CORE_ERROR_CODES, type ErrorParams } from '../constants/error-codes'
@@ -20,23 +20,23 @@ class IpcSerializationError extends Error {
 }
 
 /**
- * 安全序列化函数，用于清理Vue响应式对象
- * 确保所有通过IPC传递的对象都是纯净的JavaScript对象
+ * Safe serialization function used to clean Vue reactive objects
+ * Ensures that all objects passed over IPC are plain JavaScript objects
  * 
- * @param obj 要序列化的对象
- * @returns 纯净的JavaScript对象
+ * @param obj Object to serialize
+ * @returns Plain JavaScript object
  */
 export function safeSerializeForIPC<T>(obj: T): T {
   if (obj === null || obj === undefined) {
     return obj;
   }
 
-  // 对于基本类型，直接返回
+  // Primitive types are returned directly
   if (typeof obj !== 'object') {
     return obj;
   }
 
-  // 使用JSON序列化确保100%的IPC兼容性
+  // Use JSON serialization to ensure 100% IPC compatibility
   try {
     return JSON.parse(JSON.stringify(obj));
   } catch (error) {
@@ -47,11 +47,11 @@ export function safeSerializeForIPC<T>(obj: T): T {
 }
 
 /**
- * 检查对象是否可以安全地通过IPC传递
- * 主要用于开发时调试
+ * Check whether an object can be safely passed over IPC
+ * Mainly used for debugging during development
  * 
- * @param obj 要检查的对象
- * @param label 对象标签，用于日志输出
+ * @param obj Object to check
+ * @param label Object label, used for log output
  */
 export function debugIPCSerializability(obj: any, label: string = 'object'): void {
   try {
@@ -64,11 +64,11 @@ export function debugIPCSerializability(obj: any, label: string = 'object'): voi
 }
 
 /**
- * 批量序列化多个参数
- * 用于有多个参数需要序列化的场景
+ * Serialize multiple parameters in batch
+ * Used for scenarios with multiple parameters that need serialization
  * 
- * @param args 参数数组
- * @returns 序列化后的参数数组
+ * @param args Parameter array
+ * @returns Serialized parameter array
  */
 export function safeSerializeArgs<T extends any[]>(...args: T): T {
   return args.map(arg => safeSerializeForIPC(arg)) as T;

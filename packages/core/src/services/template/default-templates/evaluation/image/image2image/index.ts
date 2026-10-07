@@ -1,5 +1,5 @@
 /**
- * 评估模板 - 图像模式/图生图
+ * Evaluation templates - image mode / image-to-image
  */
 
 export { template as evaluationImageImage2ImagePromptOnly } from './evaluation-prompt-only';

@@ -1,5 +1,5 @@
 /**
- * 评估模板 - Pro模式/用户提示词（变量模式）
+ * Evaluation templates - Pro mode / user prompt (variable mode)
  */
 
 export { template as evaluationProUserOriginal } from './evaluation-original';

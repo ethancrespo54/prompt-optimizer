@@ -2,7 +2,7 @@ import { PromptRecord } from "../history/types";
 import { StreamHandlers } from "../llm/types";
 
 /**
- * 工具调用相关类型
+ * Tool-call-related types
  */
 export interface ToolCall {
   id: string;
@@ -25,116 +25,116 @@ export interface ToolDefinition {
 }
 
 /**
- * 统一的消息结构
+ * Unified message structure
  */
 export interface ConversationMessage {
   /**
-   * 消息唯一标识符（使用 uuidv4 生成）
-   * 用于建立稳定的消息-优化历史映射关系，不受数组操作影响
+   * Unique message identifier (generated with uuidv4)
+   * Used to establish a stable message-to-optimization-history mapping that is unaffected by array operations
    */
   id?: string;
   role: "system" | "user" | "assistant" | "tool";
-  content: string; // 可包含变量语法 {{variableName}}
+  content: string; // May contain variable syntax {{variableName}}
   /**
-   * 原始内容（首次创建时保存，用于 v0 版本恢复）
-   * 该字段创建后永不改变，即使消息被多次优化修改
+   * Original content (saved at first creation, used for v0 version restore)
+   * This field never changes after creation, even if the message is optimized and modified many times
    */
   originalContent?: string;
   /**
-   * 函数调用名称（assistant消息）
+   * Function call name (assistant message)
    */
   name?: string;
   /**
-   * 函数调用列表（assistant消息）
+   * Function call list (assistant message)
    */
   tool_calls?: ToolCall[];
   /**
-   * 工具调用ID（tool消息）
+   * Tool call ID (tool message)
    */
   tool_call_id?: string;
 }
 
 /**
- * 优化模式枚举
- * 用于区分不同的提示词优化类型
+ * Optimization mode enum
+ * Used to distinguish different kinds of prompt optimization
  */
 export type OptimizationMode = "system" | "user";
 
 /**
- * 功能模式枚举（Basic / Pro / Image）
+ * Function mode enum (Basic / Pro / Image)
  */
 export type FunctionMode = "basic" | "pro" | "image";
 
 /**
- * 子模式类型定义（三种功能模式独立）
- * 用于持久化各功能模式下的子模式选择
+ * Sub-mode type definitions (the three function modes are independent)
+ * Used to persist the sub-mode selection of each function mode
  */
-export type BasicSubMode = "system" | "user"; // 基础模式
-export type ProSubMode = "multi" | "variable"; // Pro 模式（多消息/变量）
-export type ImageSubMode = "text2image" | "image2image"; // 图像模式
+export type BasicSubMode = "system" | "user"; // Basic mode
+export type ProSubMode = "multi" | "variable"; // Pro mode (multi-message / variable)
+export type ImageSubMode = "text2image" | "image2image"; // Image mode
 
 /**
- * 优化请求接口
+ * Optimization request interface
  */
 export interface OptimizationRequest {
   optimizationMode: OptimizationMode;
-  targetPrompt: string; // 待优化的提示词
+  targetPrompt: string; // The prompt to optimize
   templateId?: string;
   modelKey: string;
-  // 🆕 上下文模式（用于变量替换策略）
+  // 🆕 Context mode (used for the variable substitution strategy)
   contextMode?: import("../context/types").ContextMode;
-  // 新增：高级模式上下文（可选，保持向后兼容）
+  // New: advanced mode context (optional, backward compatible)
   advancedContext?: {
-    variables?: Record<string, string>; // 自定义变量
-    messages?: ConversationMessage[]; // 自定义会话消息
-    tools?: ToolDefinition[]; // 🆕 工具定义支持
+    variables?: Record<string, string>; // Custom variables
+    messages?: ConversationMessage[]; // Custom conversation messages
+    tools?: ToolDefinition[]; // 🆕 Tool definition support
   };
 }
 
 /**
- * 消息优化请求接口（多轮对话模式专用）
- * 用于优化会话中的单条消息内容
+ * Message optimization request interface (dedicated to multi-turn conversation mode)
+ * Used to optimize the content of a single message in a conversation
  */
 export interface MessageOptimizationRequest {
-  /** 选中的消息ID（必选） */
+  /** Selected message ID (required) */
   selectedMessageId: string;
-  /** 完整的会话消息列表（必选，包含选中的消息） */
+  /** Full conversation message list (required, includes the selected message) */
   messages: ConversationMessage[];
-  /** 模型Key */
+  /** Model key */
   modelKey: string;
-  /** 优化模板ID（可选，默认使用 context-message-optimize） */
+  /** Optimization template ID (optional, defaults to context-message-optimize) */
   templateId?: string;
-  /** 上下文模式（用于变量替换策略） */
+  /** Context mode (used for the variable substitution strategy) */
   contextMode?: import("../context/types").ContextMode;
-  /** 自定义变量 */
+  /** Custom variables */
   variables?: Record<string, string>;
-  /** 工具定义 */
+  /** Tool definitions */
   tools?: ToolDefinition[];
 }
 
 /**
- * 自定义会话测试请求（与OptimizationRequest保持一致）
+ * Custom conversation test request (consistent with OptimizationRequest)
  */
 export interface CustomConversationRequest {
   modelKey: string;
-  messages: ConversationMessage[]; // 使用相同的消息结构
-  variables: Record<string, string>; // 包含预定义+自定义变量
-  tools?: ToolDefinition[]; // 🆕 工具定义支持
-  // 🆕 上下文模式（用于变量替换策略）
+  messages: ConversationMessage[]; // Use the same message structure
+  variables: Record<string, string>; // Includes predefined + custom variables
+  tools?: ToolDefinition[]; // 🆕 Tool definition support
+  // 🆕 Context mode (used for the variable substitution strategy)
   contextMode?: import("../context/types").ContextMode;
 }
 
 /**
- * 提示词服务接口
+ * Prompt service interface
  */
 export interface IPromptService {
-  /** 优化提示词 - 支持提示词类型和增强功能 */
+  /** Optimize a prompt - supports prompt types and enhanced features */
   optimizePrompt(request: OptimizationRequest): Promise<string>;
 
-  /** 优化单条消息 - 多轮对话模式专用 */
+  /** Optimize a single message - dedicated to multi-turn conversation mode */
   optimizeMessage(request: MessageOptimizationRequest): Promise<string>;
 
-  /** 迭代优化提示词 */
+  /** Iteratively optimize a prompt */
   iteratePrompt(
     originalPrompt: string,
     lastOptimizedPrompt: string,
@@ -149,32 +149,32 @@ export interface IPromptService {
     },
   ): Promise<string>;
 
-  /** 测试提示词 - 支持可选系统提示词 */
+  /** Test a prompt - supports an optional system prompt */
   testPrompt(
     systemPrompt: string,
     userPrompt: string,
     modelKey: string,
   ): Promise<string>;
 
-  /** 获取历史记录 */
+  /** Get the history records */
   getHistory(): Promise<PromptRecord[]>;
 
-  /** 获取迭代链 */
+  /** Get the iteration chain */
   getIterationChain(recordId: string): Promise<PromptRecord[]>;
 
-  /** 优化提示词（流式）- 支持提示词类型和增强功能 */
+  /** Optimize a prompt (streaming) - supports prompt types and enhanced features */
   optimizePromptStream(
     request: OptimizationRequest,
     callbacks: StreamHandlers,
   ): Promise<void>;
 
-  /** 优化单条消息（流式）- 多轮对话模式专用 */
+  /** Optimize a single message (streaming) - dedicated to multi-turn conversation mode */
   optimizeMessageStream(
     request: MessageOptimizationRequest,
     callbacks: StreamHandlers,
   ): Promise<void>;
 
-  /** 迭代优化提示词（流式） */
+  /** Iteratively optimize a prompt (streaming) */
   iteratePromptStream(
     originalPrompt: string,
     lastOptimizedPrompt: string,
@@ -190,7 +190,7 @@ export interface IPromptService {
     },
   ): Promise<void>;
 
-  /** 测试提示词（流式）- 支持可选系统提示词 */
+  /** Test a prompt (streaming) - supports an optional system prompt */
   testPromptStream(
     systemPrompt: string,
     userPrompt: string,
@@ -198,7 +198,7 @@ export interface IPromptService {
     callbacks: StreamHandlers,
   ): Promise<void>;
 
-  /** 自定义会话测试（流式）- 高级模式功能 */
+  /** Custom conversation test (streaming) - advanced mode feature */
   testCustomConversationStream(
     request: CustomConversationRequest,
     callbacks: StreamHandlers,

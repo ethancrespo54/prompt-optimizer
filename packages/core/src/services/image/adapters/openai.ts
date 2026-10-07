@@ -19,7 +19,7 @@ export class OpenAIImageAdapter extends AbstractImageProviderAdapter {
     return {
       id: 'openai',
       name: 'OpenAI',
-      description: 'OpenAI GPT Image 图像生成服务',
+      description: 'OpenAI GPT Image generation service',
       requiresApiKey: true,
       defaultBaseURL: 'https://api.openai.com/v1',
       supportsDynamicModels: false,
@@ -40,7 +40,7 @@ export class OpenAIImageAdapter extends AbstractImageProviderAdapter {
       {
         id: 'gpt-image-1',
         name: 'GPT Image 1',
-        description: 'OpenAI GPT Image 1 多功能图像生成模型，支持文生图和图像编辑',
+        description: 'OpenAI GPT Image 1 versatile image generation model, supporting text-to-image and image editing',
         providerId: 'openai',
         capabilities: {
           text2image: true,
@@ -94,7 +94,7 @@ export class OpenAIImageAdapter extends AbstractImageProviderAdapter {
       return {
         prompt: 'make this image more colorful',
         inputImage: {
-          b64: AbstractImageProviderAdapter.TEST_IMAGE_BASE64.split(',')[1], // 去除data URL前缀
+          b64: AbstractImageProviderAdapter.TEST_IMAGE_BASE64.split(',')[1], // Strip the data URL prefix
           mimeType: 'image/png'
         },
         count: 1
@@ -105,7 +105,7 @@ export class OpenAIImageAdapter extends AbstractImageProviderAdapter {
   }
 
   protected getParameterDefinitions(_modelId: string): readonly ImageParameterDefinition[] {
-    // GPT Image 1 使用统一的参数定义，n参数固定为1不暴露给用户
+    // GPT Image 1 uses unified parameter definitions; the n parameter is fixed to 1 and not exposed to users
     return [
       {
         name: 'size',
@@ -146,10 +146,10 @@ export class OpenAIImageAdapter extends AbstractImageProviderAdapter {
     const hasInputImage = !!request.inputImage
 
     if (hasInputImage) {
-      // 图像编辑模式：使用 /images/edits 端点
+      // Image editing mode: use the /images/edits endpoint
       return await this.generateImageEdit(request, config)
     } else {
-      // 文生图模式：使用 /images/generations 端点
+      // Text-to-image mode: use the /images/generations endpoint
       return await this.generateImage(request, config)
     }
   }
@@ -159,13 +159,13 @@ export class OpenAIImageAdapter extends AbstractImageProviderAdapter {
       model: config.modelId,
       prompt: request.prompt,
       response_format: 'b64_json',
-      output_format: 'png', // 固定为png
+      output_format: 'png', // Fixed to png
       stream: false,
-      // 合并参数覆盖（先合并，后强制覆盖）
+      // Merge parameter overrides (merge first, then force overrides)
       ...config.paramOverrides,
       ...request.paramOverrides
     }
-    // 隐藏并固定多图相关参数
+    // Hide and fix the multi-image-related parameters
     delete (merged as any).n
     delete (merged as any).batch_size
     const payload = { ...merged, n: 1 }
@@ -187,14 +187,14 @@ export class OpenAIImageAdapter extends AbstractImageProviderAdapter {
       throw new ImageError(IMAGE_ERROR_CODES.IMAGE2IMAGE_INPUT_IMAGE_REQUIRED)
     }
 
-    // 创建FormData
+    // Create the FormData
     const formData = new FormData()
     formData.append('model', config.modelId)
     formData.append('prompt', request.prompt)
     formData.append('response_format', 'b64_json')
-    formData.append('output_format', 'png') // 固定为png
+    formData.append('output_format', 'png') // Fixed to png
 
-    // 添加参数覆盖（隐藏多图相关参数）
+    // Add parameter overrides (hiding the multi-image-related parameters)
     const allParams: Record<string, any> = { ...config.paramOverrides, ...request.paramOverrides }
     delete allParams.n
     delete allParams.batch_size
@@ -204,10 +204,10 @@ export class OpenAIImageAdapter extends AbstractImageProviderAdapter {
       }
     }
 
-    // 固定单图
+    // Fixed to a single image
     formData.append('n', '1')
 
-    // 转换base64图像为Blob
+    // Convert the base64 image to a Blob
     const imageBlob = this.base64ToBlob(
       request.inputImage.b64 || '',
       request.inputImage.mimeType || 'image/png'
@@ -218,7 +218,7 @@ export class OpenAIImageAdapter extends AbstractImageProviderAdapter {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${config.connectionConfig?.apiKey}`
-        // 不设置Content-Type，让浏览器自动设置multipart/form-data边界
+        // Do not set Content-Type; let the browser set the multipart/form-data boundary automatically
       },
       body: formData
     })
@@ -236,7 +236,7 @@ export class OpenAIImageAdapter extends AbstractImageProviderAdapter {
         throw new ImageError(IMAGE_ERROR_CODES.INVALID_RESPONSE_FORMAT)
       }
 
-      // 构建 data URL
+      // Build the data URL
       const dataUrl = `data:image/png;base64,${item.b64_json}`
 
       return {
@@ -248,7 +248,7 @@ export class OpenAIImageAdapter extends AbstractImageProviderAdapter {
 
     return {
       images,
-      text: response.data[0]?.revised_prompt, // GPT Image 可能提供修订后的提示词
+      text: response.data[0]?.revised_prompt, // GPT Image may provide a revised prompt
       metadata: {
         providerId: 'openai',
         modelId: config.modelId,
@@ -259,9 +259,9 @@ export class OpenAIImageAdapter extends AbstractImageProviderAdapter {
   }
 
   private base64ToBlob(base64: string, mimeType: string): Blob {
-    // 移除data URL前缀（如果存在）
+    // Remove the data URL prefix (if present)
     const cleanBase64 = base64.includes(',') ? base64.split(',')[1] : base64
-    // 兼容浏览器与 Node/Electron：优先使用 atob；否则使用 Node 的 Buffer
+    // Compatible with browsers and Node/Electron: prefer atob; otherwise use Node's Buffer
     if (typeof atob === 'function') {
       const bin = atob(cleanBase64)
       const arr = new Uint8Array(bin.length)
@@ -269,7 +269,7 @@ export class OpenAIImageAdapter extends AbstractImageProviderAdapter {
       return new Blob([arr], { type: mimeType })
     } else if (typeof (globalThis as any).Buffer !== 'undefined') {
       const buf = (globalThis as any).Buffer.from(cleanBase64, 'base64')
-      // 创建新的 Uint8Array 并复制数据，确保使用普通 ArrayBuffer
+      // Create a new Uint8Array and copy the data to ensure a plain ArrayBuffer is used
       const arr = new Uint8Array(buf.length)
       for (let i = 0; i < buf.length; i++) {
         arr[i] = buf[i]
@@ -285,7 +285,7 @@ export class OpenAIImageAdapter extends AbstractImageProviderAdapter {
     const response = await fetch(url, options)
 
     if (!response.ok) {
-      // 直接穿透错误，保持与其他适配器一致
+      // Pass errors through directly, consistent with the other adapters
       let errorMessage = `OpenAI API error: ${response.status} ${response.statusText}`
       try {
         const errorData = await response.json()
@@ -293,7 +293,7 @@ export class OpenAIImageAdapter extends AbstractImageProviderAdapter {
           errorMessage = errorData.error.message
         }
       } catch {
-        // 忽略JSON解析错误，使用默认错误消息
+        // Ignore JSON parse errors and use the default error message
       }
       throw new ImageError(IMAGE_ERROR_CODES.GENERATION_FAILED, errorMessage)
     }

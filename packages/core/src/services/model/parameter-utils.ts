@@ -6,47 +6,47 @@ import {
 } from './parameter-schema'
 
 /**
- * 智能解析自定义参数值，自动推断类型
+ * Intelligently parse a custom parameter value, inferring the type automatically
  * - true/false -> boolean
  * - null -> null
- * - 整数/浮点数 -> number
- * - JSON 对象/数组 -> object/array
- * - 其他 -> string
+ * - Integer/float -> number
+ * - JSON object/array -> object/array
+ * - Other -> string
  */
 export function parseCustomValue(value: string): unknown {
   const trimmed = value.trim()
   const lower = trimmed.toLowerCase()
 
-  // 布尔值
+  // Boolean
   if (lower === 'true') return true
   if (lower === 'false') return false
 
   // null
   if (lower === 'null') return null
 
-  // 整数
+  // Integer
   if (/^-?\d+$/.test(trimmed)) {
     const num = parseInt(trimmed, 10)
     if (Number.isSafeInteger(num)) return num
   }
 
-  // 浮点数
+  // Float
   if (/^-?\d+\.\d+$/.test(trimmed)) {
     const num = parseFloat(trimmed)
     if (Number.isFinite(num)) return num
   }
 
-  // JSON 对象或数组
+  // JSON object or array
   if ((trimmed.startsWith('{') && trimmed.endsWith('}')) ||
       (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
     try {
       return JSON.parse(trimmed)
     } catch {
-      // 解析失败，作为字符串处理
+      // Parsing failed; treat as a string
     }
   }
 
-  // 默认作为字符串
+  // Treat as a string by default
   return trimmed
 }
 

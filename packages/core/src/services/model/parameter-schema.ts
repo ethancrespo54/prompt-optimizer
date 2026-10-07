@@ -1,11 +1,11 @@
 /**
- * 统一的参数 Schema 定义
- * 供文本模型与图像模型适配器返回参数元数据使用
+ * Unified parameter schema definition
+ * Used by text and image model adapters to return parameter metadata
  */
 
 /**
- * 危险键名列表（小写比较）
- * - 阻止用户注入原型链或可执行上下文
+ * List of dangerous key names (compared in lowercase)
+ * - Prevents users from injecting the prototype chain or executable context
  */
 export const DANGEROUS_PARAM_KEY_PATTERNS = [
   '__proto__',
@@ -35,54 +35,54 @@ export const DANGEROUS_PARAM_KEY_PATTERNS = [
 export type UnifiedParameterValueType = 'string' | 'number' | 'integer' | 'boolean'
 
 /**
- * 统一参数定义
+ * Unified parameter definition
  */
 export interface UnifiedParameterDefinition {
-  /** SDK 参数名称（必填，唯一） */
+  /** SDK parameter name (required, unique) */
   name: string
-  /** i18n 标签键 */
+  /** i18n label key */
   labelKey?: string
-  /** i18n 描述键 */
+  /** i18n description key */
   descriptionKey?: string
-  /** 兼容字段：直接提供的描述 */
+  /** Compatibility field: directly supplied description */
   description?: string
-  /** 参数值类型 */
+  /** Parameter value type */
   type: UnifiedParameterValueType
-  /** 默认值（可为空，未定义时不下发） */
+  /** Default value (may be empty; not sent when undefined) */
   defaultValue?: unknown
-  /** 兼容字段：旧版默认值字段 */
+  /** Compatibility field: legacy default value field */
   default?: unknown
-  /** 数值最小值 */
+  /** Numeric minimum */
   minValue?: number
-  /** 数值最大值 */
+  /** Numeric maximum */
   maxValue?: number
-  /** 兼容字段：旧版最小/最大值 */
+  /** Compatibility fields: legacy min/max values */
   min?: number
   max?: number
-  /** 数值步长 */
+  /** Numeric step */
   step?: number
-  /** 枚举值列表 */
+  /** List of enum values */
   allowedValues?: string[]
-  /** 枚举值的 i18n 标签键数组 */
+  /** Array of i18n label keys for the enum values */
   allowedValueLabelKeys?: string[]
-  /** 文本单位，如 px、steps */
+  /** Text unit, e.g. px, steps */
   unit?: string
-  /** 单位 i18n 键 */
+  /** Unit i18n key */
   unitKey?: string
-  /** 是否必填 */
+  /** Whether required */
   required?: boolean
-  /** 额外标签，例如 ['safety', 'beta'] */
+  /** Extra tags, e.g. ['safety', 'beta'] */
   tags?: string[]
   /**
-   * 默认是否允许发送空字符串
-   * - true: 空字符串视为有效值
-   * - false/未定义: 空字符串按空值处理
+   * Whether sending an empty string is allowed by default
+   * - true: an empty string is treated as a valid value
+   * - false/undefined: an empty string is treated as empty
    */
   sendEmptyString?: boolean
 }
 
 /**
- * 判断值是否为空（undefined/null/空字符串/空数组）
+ * Determine whether a value is empty (undefined/null/empty string/empty array)
  */
 export function isValueEmpty(value: unknown): boolean {
   if (value === undefined || value === null) {
@@ -101,8 +101,8 @@ export function isValueEmpty(value: unknown): boolean {
 }
 
 /**
- * 规范化默认值
- * - 空值统一转换为 undefined，避免在请求中下发
+ * Normalize the default value
+ * - Empty values are uniformly converted to undefined so they are not sent in requests
  */
 export function normalizeDefaultValue<T>(value: T): T | undefined {
   if (isValueEmpty(value)) {
@@ -113,10 +113,10 @@ export function normalizeDefaultValue<T>(value: T): T | undefined {
 }
 
 /**
- * 检查自定义参数键名是否安全
- * - 不能为空
- * - 不允许包含危险关键字
- * - 不允许存在空白字符
+ * Check whether a custom parameter key name is safe
+ * - Must not be empty
+ * - Must not contain dangerous keywords
+ * - Must not contain whitespace characters
  */
 export function isSafeCustomKey(key: string): boolean {
   if (!key) return false
@@ -124,7 +124,7 @@ export function isSafeCustomKey(key: string): boolean {
   const trimmed = key.trim()
   if (!trimmed) return false
 
-  // 允许字母、数字、点、下划线、短横线与斜杠
+  // Allow letters, digits, dots, underscores, hyphens, and slashes
   const allowedPattern = /^[A-Za-z0-9._\-:/]+$/
   if (!allowedPattern.test(trimmed)) {
     return false

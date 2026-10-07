@@ -2,22 +2,22 @@ import { IStorageProvider } from './types';
 import { StorageError } from './errors';
 
 /**
- * 简单的异步锁实现
+ * Simple async lock implementation
  */
 class AsyncLock {
   private locks: Map<string, Promise<void>> = new Map();
 
   async acquire(key: string): Promise<() => void> {
-    // 等待现有锁完成
+    // Wait for the existing lock to finish
     while (this.locks.has(key)) {
       try {
         await this.locks.get(key);
       } catch {
-        // 忽略锁中的错误，继续尝试获取锁
+        // Ignore errors in the lock and keep trying to acquire it
       }
     }
 
-    // 创建新锁
+    // Create a new lock
     let releaseLock: () => void;
     const lockPromise = new Promise<void>((resolve) => {
       releaseLock = () => {
@@ -28,13 +28,13 @@ class AsyncLock {
 
     this.locks.set(key, lockPromise);
 
-    // 返回释放函数
+    // Return the release function
     return releaseLock!;
   }
 }
 
 /**
- * 增强的LocalStorageProvider，提供事务性操作
+ * Enhanced LocalStorageProvider providing transactional operations
  */
 export class LocalStorageProvider implements IStorageProvider {
   private lock = new AsyncLock();
@@ -85,29 +85,29 @@ export class LocalStorageProvider implements IStorageProvider {
   }
 
   /**
-   * 隐藏式数据更新 - 内部自动选择最优实现
-   * 业务层无需关心是否支持原子操作
-   * @param key 存储键
-   * @param modifier 修改函数，接收当前值，返回新值
+   * Hidden data update - automatically chooses the best implementation internally
+   * The business layer does not need to care whether atomic operations are supported
+   * @param key Storage key
+   * @param modifier Modifier function that receives the current value and returns the new value
    */
   public async updateData<T>(
     key: string, 
     modifier: (currentValue: T | null) => T
   ): Promise<void> {
-    // LocalStorageProvider 内部使用手动原子操作
+    // LocalStorageProvider uses manual atomic operations internally
     const release = await this.lock.acquire(key);
     try {
-      // 读取当前值
+      // Read the current value
       const currentData = localStorage.getItem(key);
       const currentValue: T | null = currentData ? JSON.parse(currentData) : null;
       
-      // 应用修改 - 允许业务逻辑错误透传
+      // Apply the modification - allow business logic errors to pass through
       const newValue = modifier(currentValue);
       
-      // 写入新值
+      // Write the new value
       localStorage.setItem(key, JSON.stringify(newValue));
     } catch (error) {
-      // 业务逻辑错误直接透传，保持错误类型
+      // Business logic errors are passed through directly, preserving the error type
       if (error instanceof Error &&
           (error.name.includes('Error') ||
            error.constructor.name !== 'Error' ||
@@ -116,7 +116,7 @@ export class LocalStorageProvider implements IStorageProvider {
            error.message.includes('not exist'))) {
         throw error;
       }
-      // 只有真正的存储错误才包装为StorageError
+      // Only real storage errors are wrapped as StorageError
       throw new StorageError(`Failed to update data: ${key}`, 'write');
     } finally {
       release();
@@ -124,26 +124,26 @@ export class LocalStorageProvider implements IStorageProvider {
   }
 
   /**
-   * 获取存储能力信息
+   * Get storage capability info
    */
   public getCapabilities() {
     return {
-      supportsAtomic: true, // 通过手动锁实现
+      supportsAtomic: true, // Implemented through a manual lock
       supportsBatch: true,
-      maxStorageSize: 5 * 1024 * 1024 // 约5MB
+      maxStorageSize: 5 * 1024 * 1024 // About 5MB
     };
   }
 
   /**
-   * 批量操作
-   * @param operations 批量操作列表
+   * Batch operation
+   * @param operations List of batch operations
    */
   public async batchUpdate(operations: Array<{
     key: string;
     operation: 'set' | 'remove';
     value?: string;
   }>): Promise<void> {
-    // 获取所有相关键的锁
+    // Acquire the locks of all related keys
     const keys = operations.map(op => op.key);
     const releases = await Promise.all(keys.map(key => this.lock.acquire(key)));
     
@@ -158,7 +158,7 @@ export class LocalStorageProvider implements IStorageProvider {
     } catch (error) {
       throw new StorageError('Failed to perform batch update', 'write');
     } finally {
-      // 释放所有锁
+      // Release all locks
       releases.forEach(release => release());
     }
   }

@@ -22,8 +22,8 @@ declare const window: {
 };
 
 /**
- * Electron 收藏服务代理
- * 在渲染进程中通过 window.electronAPI 与主进程的收藏服务通信
+ * Electron favorites service proxy
+ * Communicates with the main-process favorites service via window.electronAPI in the renderer process
  */
 export class FavoriteManagerElectronProxy implements IFavoriteManager {
 
@@ -46,7 +46,7 @@ export class FavoriteManagerElectronProxy implements IFavoriteManager {
         throw toErrorWithCode(error)
       }
 
-      // 将IPC错误转换为具体的错误类型
+      // Convert IPC errors into specific error types
       if (error.code === 'FAVORITE_NOT_FOUND') {
         throw new FavoriteNotFoundError(error.id || '');
       }
@@ -66,7 +66,7 @@ export class FavoriteManagerElectronProxy implements IFavoriteManager {
       if (error.code === 'CATEGORY_ALREADY_EXISTS') {
         throw new FavoriteValidationError(error.message || 'Category already exists')
       }
-      // 标签相关错误
+      // Tag-related errors
       if (error.code === 'TAG_ALREADY_EXISTS') {
         throw new FavoriteTagAlreadyExistsError(error.tag || '');
       }
@@ -76,7 +76,7 @@ export class FavoriteManagerElectronProxy implements IFavoriteManager {
       if (error.code === 'TAG_ERROR') {
         throw new FavoriteTagError(FAVORITE_ERROR_CODES.TAG_ERROR, error.message || '', { details: error.message || '' });
       }
-      // 数据迁移和导入导出错误
+      // Data migration and import/export errors
       if (error.code === 'MIGRATION_ERROR') {
         throw new FavoriteMigrationError(error.message || '', error.cause);
       }

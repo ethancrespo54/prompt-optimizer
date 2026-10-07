@@ -19,11 +19,11 @@ export class SeedreamImageAdapter extends AbstractImageProviderAdapter {
   getProvider(): ImageProvider {
     return {
       id: 'seedream',
-      name: 'Seedream (火山方舟)',
-      description: '火山方舟 Seedream 图像生成模型',
+      name: 'Seedream (Volcano Ark)',
+      description: 'Volcano Ark Seedream image generation model',
       requiresApiKey: true,
       defaultBaseURL: 'https://ark.cn-beijing.volces.com/api/v3',
-      supportsDynamicModels: false,  // 不支持动态获取
+      supportsDynamicModels: false,  // Dynamic fetching is not supported
       connectionSchema: {
         required: ['apiKey'],
         optional: ['baseURL'],
@@ -36,12 +36,12 @@ export class SeedreamImageAdapter extends AbstractImageProviderAdapter {
   }
 
   getModels(): ImageModel[] {
-    // 返回静态的模型列表（只保留4.0版本）
+    // Return the static model list (only the 4.0 version is kept)
     return [
       {
         id: 'doubao-seedream-4-0-250828',
         name: 'Doubao Seedream 4.0',
-        description: '火山方舟 Doubao Seedream 4.0 高质量图像生成模型',
+        description: 'Volcano Ark Doubao Seedream 4.0 high-quality image generation model',
         providerId: 'seedream',
         capabilities: {
           text2image: true,
@@ -92,7 +92,7 @@ export class SeedreamImageAdapter extends AbstractImageProviderAdapter {
   }
 
   protected getParameterDefinitions(_modelId: string): readonly any[] {
-    // 所有模型使用统一的参数定义（只保留4.0版本）
+    // All models use unified parameter definitions (only the 4.0 version is kept)
     return [
       {
         name: 'size',
@@ -129,7 +129,7 @@ export class SeedreamImageAdapter extends AbstractImageProviderAdapter {
   }
 
   protected getDefaultParameterValues(_modelId: string): Record<string, unknown> {
-    // 所有模型使用统一的默认值
+    // All models use unified default values
     return {
       size: '2K',
       sequential_image_generation: 'disabled',
@@ -150,17 +150,17 @@ export class SeedreamImageAdapter extends AbstractImageProviderAdapter {
   protected getTestImageRequest(testType: 'text2image' | 'image2image'): Omit<ImageRequest, 'configId'> {
     if (testType === 'text2image') {
       return {
-        prompt: '一朵花',
+        prompt: 'A flower',
         count: 1
       }
     }
 
     if (testType === 'image2image') {
       return {
-        prompt: '把它变成红色',
+        prompt: 'Make it red',
         count: 1,
         inputImage: {
-          b64: AbstractImageProviderAdapter.TEST_IMAGE_BASE64.split(',')[1], // 去掉data:前缀
+          b64: AbstractImageProviderAdapter.TEST_IMAGE_BASE64.split(',')[1], // Strip the data: prefix
           mimeType: 'image/png'
         }
       }
@@ -170,25 +170,25 @@ export class SeedreamImageAdapter extends AbstractImageProviderAdapter {
   }
 
   protected async doGenerate(request: ImageRequest, config: ImageModelConfig): Promise<ImageResult> {
-    // 构建请求体（隐藏多图相关参数，强制单图）
+    // Build the request body (hide the multi-image-related parameters and force a single image)
     const overrides: Record<string, any> = { ...config.paramOverrides, ...request.paramOverrides }
     delete overrides.n
     delete overrides.batch_size
     const payload: any = {
       model: config.modelId,
       prompt: request.prompt,
-      sequential_image_generation: 'disabled', // 固定禁用组图
+      sequential_image_generation: 'disabled', // Fixed to disable image sets
       ...overrides,
       n: 1
     }
 
-    // 图生图支持：添加图像输入
+    // Image-to-image support: add the image input
     if (request.inputImage?.b64) {
       const mime = request.inputImage.mimeType || 'image/png'
       payload.image = `data:${mime};base64,${request.inputImage.b64}`
     }
 
-    // 生成数量固定为1（当前不支持多图）
+    // The generation count is fixed to 1 (multiple images are not currently supported)
 
     const response = await this.apiCall(config, '/images/generations', {
       method: 'POST',
@@ -201,7 +201,7 @@ export class SeedreamImageAdapter extends AbstractImageProviderAdapter {
 
     const data = response
 
-    // 解析响应
+    // Parse the response
     const images = data.data?.map((item: any) => ({
       url: item.url,
       b64: item.b64_json,

@@ -3,13 +3,13 @@ import { ALL_TEMPLATES } from './default-templates';
 import { TemplateLoadError, TemplateValidationError } from './errors';
 
 /**
- * 静态模板加载器 - 简化版
+ * Static template loader - simplified version
  *
- * 🎯 极简设计：模板自身包含完整信息（id、name、language、type等）
- * 🔄 直接使用：无需复杂的元数据推导和映射
+ * 🎯 Minimal design: templates carry their own complete info (id, name, language, type, etc.)
+ * 🔄 Used directly: no complex metadata derivation or mapping needed
  */
 
-// 类型定义（支持 9 类：基础 + 上下文 + 图像 + 评估）
+// Type definitions (supports 9 categories: basic + context + image + evaluation)
 export type TemplateType =
   | 'optimize'
   | 'user-optimize'
@@ -33,14 +33,14 @@ export class StaticLoader {
   private static templateCache: StaticTemplateCollection | null = null;
 
   /**
-   * 静态加载器总是支持的（因为使用的是静态导入）
+   * The static loader is always supported (since static imports are used)
    */
   public isSupported(): boolean {
     return true;
   }
 
   /**
-   * 语言映射：将 TemplateManager 的语言标识符映射到标准语言标识符
+   * Language mapping: map the TemplateManager language identifier to the standard language identifier
    */
   private mapLanguage(language: string): Language {
     switch (language) {
@@ -54,7 +54,7 @@ export class StaticLoader {
   }
 
   /**
-   * 加载所有模板（使用模板自身的完整信息）
+   * Load all templates (using each template's own complete info)
    */
   public loadTemplates(): StaticTemplateCollection {
     if (StaticLoader.templateCache) {
@@ -62,7 +62,7 @@ export class StaticLoader {
     }
 
     try {
-      console.log(`🔄 静态导入开始加载模板...`);
+      console.log(`🔄 Static import started loading templates...`);
       
       const all: Record<string, Template> = {};
       const byLanguage: Record<Language, Record<string, Template>> = { en: {} };
@@ -79,20 +79,20 @@ export class StaticLoader {
         'evaluation': { en: {} }
       };
 
-      // 处理每个模板
+      // Process each template
       Object.values(ALL_TEMPLATES).forEach(template => {
         const { id, metadata } = template;
         const { language, templateType } = metadata;
         
-        // 验证内置模板必须包含language字段
+        // Validate that built-in templates must contain the language field
         if (template.isBuiltin && !language) {
-          console.error(`❌ 内置模板缺少language字段: ${id}`);
+          console.error(`❌ Built-in template is missing the language field: ${id}`);
           throw new TemplateValidationError(
             `Built-in template '${id}' is missing required 'language' field in metadata`,
           );
         }
         
-        // 规范化模板类型（直接使用 metadata.templateType）
+        // Normalize the template type (use metadata.templateType directly)
         let normalizedType: TemplateType;
         switch (templateType) {
           case 'userOptimize':
@@ -126,12 +126,12 @@ export class StaticLoader {
             break;
         }
         
-        // 存储到各个分类中
+        // Store into each category
         all[id] = template;
         
-        // 只有内置模板且有language字段时才按语言分类
+        // Only categorize by language when the template is built-in and has a language field
         if (template.isBuiltin && language) {
-          const lang = language as Language;  // 类型断言确保language是Language类型
+          const lang = language as Language;  // Type assertion to ensure language is of type Language
           byLanguage[lang][id] = template;
           byType[normalizedType][lang][id] = template;
         }
@@ -139,9 +139,9 @@ export class StaticLoader {
 
       const result = { all, byLanguage, byType };
       
-      console.log(`✅ 成功加载 ${Object.keys(all).length} 个模板`, {
-        '总数': Object.keys(all).length,
-        '英文': Object.keys(byLanguage.en).length,
+      console.log(`✅ Successfully loaded ${Object.keys(all).length} templates`, {
+        'total': Object.keys(all).length,
+        'English': Object.keys(byLanguage.en).length,
         optimize: Object.keys(byType.optimize.en).length,
         'user-optimize': Object.keys(byType['user-optimize'].en).length,
         text2imageOptimize: Object.keys(byType.text2imageOptimize.en).length,
@@ -158,7 +158,7 @@ export class StaticLoader {
       return result;
 
     } catch (error) {
-      console.error('❌ 静态导入加载模板失败:', error);
+      console.error('❌ Failed to load templates via static import:', error);
       throw new TemplateLoadError(
         'static-loader',
         `Failed to load static templates: ${error instanceof Error ? error.message : String(error)}`,
@@ -167,7 +167,7 @@ export class StaticLoader {
   }
 
   /**
-   * 根据语言加载模板
+   * Load templates by language
    */
   public loadTemplatesByLanguage(language: string): Record<string, Template> {
     const mappedLanguage = this.mapLanguage(language);
@@ -176,7 +176,7 @@ export class StaticLoader {
   }
 
   /**
-   * 根据类型和语言获取模板
+   * Get templates by type and language
    */
   public getTemplatesByType(type: TemplateType, language: string = 'en'): Record<string, Template> {
     const mappedLanguage = this.mapLanguage(language);
@@ -185,7 +185,7 @@ export class StaticLoader {
   }
 
   /**
-   * 获取所有模板 ID
+   * Get all template IDs
    */
   public getAllTemplateIds(): string[] {
     const collection = this.loadTemplates();
@@ -200,14 +200,14 @@ export class StaticLoader {
   }
 
   /**
-   * 获取默认英文模板集合
+   * Get the default English template set
    */
   public getDefaultTemplatesEn(): Record<string, Template> {
     return this.loadTemplatesByLanguage('en');
   }
 
   /**
-   * 获取加载状态信息
+   * Get the loader status info
    */
   public getLoaderStatus() {
     const collection = this.loadTemplates();
@@ -221,7 +221,7 @@ export class StaticLoader {
   }
 
   /**
-   * 重新加载模板（清除缓存）
+   * Reload templates (clear the cache)
    */
   public reloadTemplates(): Record<string, Template> {
     StaticLoader.templateCache = null;
@@ -229,8 +229,8 @@ export class StaticLoader {
   }
 }
 
-// 创建单例实例
+// Create the singleton instance
 const staticLoader = new StaticLoader();
 
-// 导出单例实例供外部使用
+// Export the singleton instance for external use
 export { staticLoader }; 

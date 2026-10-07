@@ -107,7 +107,7 @@ export class ElectronImageModelManagerProxy implements IImageModelManager {
     return await this.electronAPI.imageModel.isInitialized()
   }
 
-  // 新的配置 CRUD 操作
+  // New config CRUD operations
   async addConfig(config: ImageModelConfig): Promise<void> {
     const safeCfg = JSON.parse(JSON.stringify(config))
     await this.electronAPI.imageModel.addConfig(safeCfg)
@@ -134,7 +134,7 @@ export class ElectronImageModelManagerProxy implements IImageModelManager {
     return await this.electronAPI.imageModel.getEnabledConfigs()
   }
 
-  // IImportExportable 接口
+  // IImportExportable interface
   async exportData(): Promise<any> {
     return await this.electronAPI.imageModel.exportData()
   }

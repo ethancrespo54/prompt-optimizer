@@ -19,7 +19,7 @@ export class SiliconFlowImageAdapter extends AbstractImageProviderAdapter {
     return {
       id: 'siliconflow',
       name: 'SiliconFlow',
-      description: 'SiliconFlow 多模型图像生成平台',
+      description: 'SiliconFlow multi-model image generation platform',
       requiresApiKey: true,
       defaultBaseURL: 'https://api.siliconflow.cn/v1',
       supportsDynamicModels: false,
@@ -35,12 +35,12 @@ export class SiliconFlowImageAdapter extends AbstractImageProviderAdapter {
   }
 
   getModels(): ImageModel[] {
-    // 返回静态的基础模型列表（离线可用）
+    // Return the static base model list (available offline)
     return [
       {
         id: 'Kwai-Kolors/Kolors',
         name: 'Kolors',
-        description: 'Kwai-Kolors 高质量图像生成模型',
+        description: 'Kwai-Kolors high-quality image generation model',
         providerId: 'siliconflow',
         capabilities: {
           text2image: true,
@@ -99,7 +99,7 @@ export class SiliconFlowImageAdapter extends AbstractImageProviderAdapter {
       {
         id: 'Qwen/Qwen-Image',
         name: 'Qwen Image',
-        description: 'Qwen 多模态图像生成模型，支持文本生成和CFG控制',
+        description: 'Qwen multimodal image generation model, supporting text generation and CFG control',
         providerId: 'siliconflow',
         capabilities: {
           text2image: true,
@@ -145,7 +145,7 @@ export class SiliconFlowImageAdapter extends AbstractImageProviderAdapter {
   }
 
   async getModelsAsync(connectionConfig: Record<string, any>): Promise<ImageModel[]> {
-    // 验证连接配置
+    // Validate the connection config
     this.validateConnectionConfig(connectionConfig)
 
     const headers = {
@@ -154,7 +154,7 @@ export class SiliconFlowImageAdapter extends AbstractImageProviderAdapter {
     const baseURL = connectionConfig.baseURL || this.getProvider().defaultBaseURL
 
     try {
-      // 规范化临时配置，供 apiCall 解析 baseURL 与认证
+      // Normalize the temporary config so apiCall can resolve baseURL and authentication
       const tmpConfig: ImageModelConfig = {
         id: 'siliconflow_dynamic',
         name: 'siliconflow_dynamic',
@@ -166,7 +166,7 @@ export class SiliconFlowImageAdapter extends AbstractImageProviderAdapter {
         model: this.buildDefaultModel('')
       } as any
 
-      // 分别获取不同能力的模型
+      // Fetch the models for each capability separately
       const [text2imageResponse, image2imageResponse] = await Promise.all([
         this.apiCall(tmpConfig, '/models?type=image&sub_type=text-to-image', {
           method: 'GET',
@@ -178,7 +178,7 @@ export class SiliconFlowImageAdapter extends AbstractImageProviderAdapter {
         })
       ])
 
-      // 组装模型能力
+      // Assemble the model capabilities
       return this.assembleModelCapabilities(
         text2imageResponse.data || [],
         image2imageResponse.data || []
@@ -193,7 +193,7 @@ export class SiliconFlowImageAdapter extends AbstractImageProviderAdapter {
     const image2imageSet = new Set(image2imageModels.map((m: any) => m.id))
     const allModelsMap = new Map()
 
-    // 处理文生图模型
+    // Process text-to-image models
     text2imageModels.forEach((model: any) => {
       allModelsMap.set(model.id, {
         id: model.id,
@@ -202,7 +202,7 @@ export class SiliconFlowImageAdapter extends AbstractImageProviderAdapter {
         providerId: 'siliconflow',
         capabilities: {
           text2image: true,
-          image2image: image2imageSet.has(model.id), // 检查是否也支持图生图
+          image2image: image2imageSet.has(model.id), // Check whether it also supports image-to-image
           multiImage: false
         },
         parameterDefinitions: this.getParameterDefinitions(model.id),
@@ -210,7 +210,7 @@ export class SiliconFlowImageAdapter extends AbstractImageProviderAdapter {
       })
     })
 
-    // 处理纯图生图模型（不在文生图列表中的）
+    // Process image-to-image-only models (those not in the text-to-image list)
     image2imageModels.forEach((model: any) => {
       if (!allModelsMap.has(model.id)) {
         allModelsMap.set(model.id, {
@@ -219,7 +219,7 @@ export class SiliconFlowImageAdapter extends AbstractImageProviderAdapter {
           description: `SiliconFlow ${model.id} model (Image-to-Image only)`,
           providerId: 'siliconflow',
           capabilities: {
-            text2image: false,    // 纯图生图模型
+            text2image: false,    // Image-to-image-only model
             image2image: true,
             multiImage: false
           },
@@ -233,10 +233,10 @@ export class SiliconFlowImageAdapter extends AbstractImageProviderAdapter {
   }
 
   protected validateConnectionConfig(connectionConfig: Record<string, any>): void {
-    // 基础验证
+    // Basic validation
     super.validateConnectionConfig(connectionConfig)
 
-    // SiliconFlow 特定验证
+    // SiliconFlow-specific validation
     if (!connectionConfig.apiKey) {
       throw new ImageError(IMAGE_ERROR_CODES.API_KEY_REQUIRED, undefined, { providerName: 'SiliconFlow' })
     }
@@ -255,7 +255,7 @@ export class SiliconFlowImageAdapter extends AbstractImageProviderAdapter {
         prompt: 'make it red',
         count: 1,
         inputImage: {
-          b64: AbstractImageProviderAdapter.TEST_IMAGE_BASE64.split(',')[1], // 去掉data:前缀
+          b64: AbstractImageProviderAdapter.TEST_IMAGE_BASE64.split(',')[1], // Strip the data: prefix
           mimeType: 'image/png'
         }
       }
@@ -265,9 +265,9 @@ export class SiliconFlowImageAdapter extends AbstractImageProviderAdapter {
   }
 
   protected async doGenerate(request: ImageRequest, config: ImageModelConfig): Promise<ImageResult> {
-    // 构建请求体，隐藏多图相关参数并固定为单图
+    // Build the request body, hiding the multi-image-related parameters and fixing a single image
     const mergedParams: Record<string, any> = {
-      // 使用默认参数和覆盖参数
+      // Use default parameters and override parameters
       ...config.paramOverrides,
       ...request.paramOverrides
     }
@@ -281,12 +281,12 @@ export class SiliconFlowImageAdapter extends AbstractImageProviderAdapter {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: config.modelId, // 直接使用配置中的模型ID
+        model: config.modelId, // Use the model ID from the config directly
         prompt: request.prompt,
-        // 固定单图（当前不支持多图）
+        // Fixed to a single image (multiple images are not currently supported)
         ...mergedParams,
         batch_size: 1,
-        // 处理输入图像（如果有）
+        // Process the input image (if any)
         ...(request.inputImage?.b64 && {
           image: `data:${request.inputImage.mimeType || 'image/png'};base64,${request.inputImage.b64}`
         })
@@ -344,7 +344,7 @@ export class SiliconFlowImageAdapter extends AbstractImageProviderAdapter {
   protected getParameterDefinitions(modelId: string): readonly ImageParameterDefinition[] {
     const modelName = modelId.toLowerCase()
 
-    // 基础参数
+    // Base parameters
     const baseParams: ImageParameterDefinition[] = [
       {
         name: 'image_size',
@@ -365,7 +365,7 @@ export class SiliconFlowImageAdapter extends AbstractImageProviderAdapter {
       }
     ]
 
-    // Qwen-Image 模型特定参数
+    // Qwen-Image model-specific parameters
     if (modelName.includes('qwen')) {
       baseParams[0] = {
         name: 'image_size',
@@ -396,7 +396,7 @@ export class SiliconFlowImageAdapter extends AbstractImageProviderAdapter {
       })
     }
 
-    // Kolors 模型特定参数
+    // Kolors model-specific parameters
     if (modelName.includes('kolors')) {
       baseParams[0] = {
         name: 'image_size',
@@ -437,7 +437,7 @@ export class SiliconFlowImageAdapter extends AbstractImageProviderAdapter {
       num_inference_steps: 20
     }
 
-    // Qwen-Image 模型默认值
+    // Qwen-Image model defaults
     if (modelName.includes('qwen')) {
       return {
         image_size: '1328x1328',
@@ -446,7 +446,7 @@ export class SiliconFlowImageAdapter extends AbstractImageProviderAdapter {
       }
     }
 
-    // Kolors 模型默认值
+    // Kolors model defaults
     if (modelName.includes('kolors')) {
       return {
         ...baseDefaults,
@@ -454,7 +454,7 @@ export class SiliconFlowImageAdapter extends AbstractImageProviderAdapter {
       }
     }
 
-    // 其他模型使用基础默认值
+    // Other models use the base defaults
     return baseDefaults
   }
 }

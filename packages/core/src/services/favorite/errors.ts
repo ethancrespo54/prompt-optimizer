@@ -1,5 +1,5 @@
 /**
- * 收藏服务相关错误类型
+ * Error types related to the favorites service
  */
 
 import { FAVORITE_ERROR_CODES, type ErrorParams } from '../../constants/error-codes'
@@ -62,7 +62,7 @@ export class FavoriteStorageError extends FavoriteError {
 }
 
 /**
- * 标签相关错误
+ * Tag-related errors
  */
 export class FavoriteTagError extends FavoriteError {
   constructor(code: string, details?: string, params?: ErrorParams) {
@@ -72,7 +72,7 @@ export class FavoriteTagError extends FavoriteError {
 }
 
 /**
- * 标签已存在错误
+ * Tag already exists error
  */
 export class FavoriteTagAlreadyExistsError extends FavoriteTagError {
   constructor(tag: string) {
@@ -102,7 +102,7 @@ export class FavoriteMigrationError extends FavoriteError {
 }
 
 /**
- * 导入导出错误
+ * Import/export errors
  */
 export class FavoriteImportExportError extends FavoriteError {
   constructor(message: string, public cause?: Error, public details?: string[]) {

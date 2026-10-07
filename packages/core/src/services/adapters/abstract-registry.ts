@@ -1,11 +1,11 @@
 /**
- * 适配器注册表抽象基类
- * 提供文本和图像适配器注册表的共享逻辑
+ * Abstract base class for adapter registries
+ * Provides shared logic for text and image adapter registries
  *
- * @template TAdapter 适配器类型
- * @template TProvider Provider 元数据类型
- * @template TModel Model 元数据类型
- * @template TConnectionConfig 连接配置类型（用于动态模型获取）
+ * @template TAdapter Adapter type
+ * @template TProvider Provider metadata type
+ * @template TModel Model metadata type
+ * @template TConnectionConfig Connection config type (used for dynamic model fetching)
  */
 export abstract class AbstractAdapterRegistry<
   TAdapter,
@@ -21,22 +21,22 @@ export abstract class AbstractAdapterRegistry<
   }
 
   /**
-   * 子类必须实现：初始化并注册所有适配器
+   * Subclasses must implement: initialize and register all adapters
    */
   protected abstract initializeAdapters(): void;
 
   /**
-   * 子类必须实现：从适配器获取 Provider 元数据
+   * Subclasses must implement: get Provider metadata from an adapter
    */
   protected abstract getProviderFromAdapter(adapter: TAdapter): TProvider;
 
   /**
-   * 子类必须实现：从适配器获取静态模型列表
+   * Subclasses must implement: get the static model list from an adapter
    */
   protected abstract getModelsFromAdapter(adapter: TAdapter): TModel[];
 
   /**
-   * 子类必须实现：调用适配器的异步模型获取方法
+   * Subclasses must implement: call the adapter's async model fetching method
    */
   protected abstract getModelsAsyncFromAdapter(
     adapter: TAdapter,
@@ -44,28 +44,28 @@ export abstract class AbstractAdapterRegistry<
   ): Promise<TModel[]>;
 
   /**
-   * 子类可选实现：获取错误消息的提供商类型描述
+   * Optional for subclasses: get the provider type description used in error messages
    */
   protected getProviderTypeDescription(): string {
-    return '提供商';
+    return 'provider';
   }
 
   /**
-   * 子类可覆盖：生成“未知 Provider”错误（用于 i18n 对齐）
+   * Overridable by subclasses: generate the "unknown Provider" error (aligned with i18n)
    */
   protected createUnknownProviderError(providerId: string): Error {
     return new Error(`Unknown ${this.getProviderTypeDescription()}: ${providerId}`);
   }
 
   /**
-   * 子类可覆盖：生成“不支持动态模型”错误（用于 i18n 对齐）
+   * Overridable by subclasses: generate the "dynamic models not supported" error (aligned with i18n)
    */
   protected createDynamicModelUnsupportedError(provider: TProvider): Error {
     return new Error(`${provider.name} does not support dynamic model fetching`);
   }
 
   /**
-   * 预加载所有 Provider 的静态模型到缓存
+   * Preload the static models of all Providers into the cache
    */
   protected preloadStaticModels(): void {
     this.adapters.forEach((adapter, providerId) => {
@@ -76,13 +76,13 @@ export abstract class AbstractAdapterRegistry<
     });
   }
 
-  // ===== 基础适配器管理 =====
+  // ===== Basic adapter management =====
 
   /**
-   * 通过 providerId 获取适配器实例
-   * @param providerId Provider ID（自动转换为小写）
-   * @returns 适配器实例
-   * @throws {Error} 当 providerId 不存在时
+   * Get an adapter instance by providerId
+   * @param providerId Provider ID (automatically lowercased)
+   * @returns Adapter instance
+   * @throws {Error} When providerId does not exist
    */
   public getAdapter(providerId: string): TAdapter {
     const adapter = this.adapters.get(providerId.toLowerCase());
@@ -92,11 +92,11 @@ export abstract class AbstractAdapterRegistry<
     return adapter;
   }
 
-  // ===== 元数据查询 =====
+  // ===== Metadata queries =====
 
   /**
-   * 获取所有已注册的 Provider 元数据
-   * @returns Provider 元数据数组
+   * Get metadata for all registered Providers
+   * @returns Array of Provider metadata
    */
   public getAllProviders(): TProvider[] {
     const providers: TProvider[] = [];
@@ -113,36 +113,36 @@ export abstract class AbstractAdapterRegistry<
     return providers;
   }
 
-  // ===== 静态模型获取（即时可用） =====
+  // ===== Static model retrieval (immediately available) =====
 
   /**
-   * 获取静态模型列表（带缓存）
+   * Get the static model list (cached)
    * @param providerId Provider ID
-   * @returns 静态模型数组
+   * @returns Array of static models
    */
   public getStaticModels(providerId: string): TModel[] {
     const normalizedId = providerId.toLowerCase();
 
-    // 尝试从缓存获取
+    // Try to get from the cache
     if (this.staticModelsCache.has(normalizedId)) {
       return this.staticModelsCache.get(normalizedId)!;
     }
 
-    // 如果缓存未命中，从适配器获取
+    // On a cache miss, get from the adapter
     const adapter = this.getAdapter(normalizedId);
     const models = this.getModelsFromAdapter(adapter);
     this.staticModelsCache.set(normalizedId, models);
     return models;
   }
 
-  // ===== 动态模型获取（需要连接配置） =====
+  // ===== Dynamic model retrieval (requires connection config) =====
 
   /**
-   * 动态获取模型列表
+   * Dynamically fetch the model list
    * @param providerId Provider ID
-   * @param connectionConfig 连接配置
-   * @returns 动态获取的模型数组
-   * @throws {Error} 当 Provider 不支持动态获取时
+   * @param connectionConfig Connection config
+   * @returns Array of dynamically fetched models
+   * @throws {Error} When the Provider does not support dynamic fetching
    */
   public async getDynamicModels(
     providerId: string,
@@ -163,15 +163,15 @@ export abstract class AbstractAdapterRegistry<
     }
   }
 
-  // ===== 统一的模型获取接口（自动选择静态或动态） =====
+  // ===== Unified model retrieval interface (automatically chooses static or dynamic) =====
 
   /**
-   * 统一的模型获取接口
-   * 优先动态获取，失败则 fallback 到静态模型
+   * Unified model retrieval interface
+   * Prefers dynamic fetching and falls back to static models on failure
    *
    * @param providerId Provider ID
-   * @param connectionConfig 连接配置（可选，提供时尝试动态获取）
-   * @returns 模型数组
+   * @param connectionConfig Connection config (optional; when provided, dynamic fetching is attempted)
+   * @returns Array of models
    */
   public async getModels(
     providerId: string,
@@ -180,12 +180,12 @@ export abstract class AbstractAdapterRegistry<
     const adapter = this.getAdapter(providerId);
     const provider = this.getProviderFromAdapter(adapter);
 
-    // 如果支持动态获取且提供了连接配置，尝试动态获取
+    // If dynamic fetching is supported and a connection config is provided, try dynamic fetching
     if (provider.supportsDynamicModels && connectionConfig) {
       try {
         const dynamicModels = await this.getDynamicModels(providerId, connectionConfig);
 
-        // 合并静态和动态模型，动态模型优先
+        // Merge static and dynamic models; dynamic models take precedence
         const staticModels = this.getStaticModels(providerId);
         const dynamicIds = new Set(dynamicModels.map((m) => m.id));
         const mergedModels = [
@@ -196,21 +196,21 @@ export abstract class AbstractAdapterRegistry<
         return mergedModels;
       } catch (error) {
         console.warn(
-          `动态模型加载失败 (${providerId})，回退到静态模型:`,
+          `Dynamic model loading failed (${providerId}), falling back to static models:`,
           error
         );
-        // 降级到静态模型
+        // Fall back to static models
         return this.getStaticModels(providerId);
       }
     }
 
-    // 返回静态模型
+    // Return static models
     return this.getStaticModels(providerId);
   }
 
   /**
-   * 获取所有静态模型的组合视图
-   * @returns Provider-Model 对数组
+   * Get a combined view of all static models
+   * @returns Array of Provider-Model pairs
    */
   public getAllStaticModels(): Array<{ provider: TProvider; model: TModel }> {
     const result: Array<{ provider: TProvider; model: TModel }> = [];
@@ -225,12 +225,12 @@ export abstract class AbstractAdapterRegistry<
     return result;
   }
 
-  // ===== 能力检查 =====
+  // ===== Capability checks =====
 
   /**
-   * 检查 Provider 是否支持动态模型获取
+   * Check whether the Provider supports dynamic model fetching
    * @param providerId Provider ID
-   * @returns 是否支持动态获取
+   * @returns Whether dynamic fetching is supported
    */
   public supportsDynamicModels(providerId: string): boolean {
     try {
@@ -241,13 +241,13 @@ export abstract class AbstractAdapterRegistry<
     }
   }
 
-  // ===== 验证方法 =====
+  // ===== Validation methods =====
 
   /**
-   * 验证 Provider 和 Model 组合是否有效
+   * Validate whether the Provider and Model combination is valid
    * @param providerId Provider ID
    * @param modelId Model ID
-   * @returns 是否有效
+   * @returns Whether it is valid
    */
   public validateProviderModel(providerId: string, modelId: string): boolean {
     try {
@@ -258,10 +258,10 @@ export abstract class AbstractAdapterRegistry<
     }
   }
 
-  // ===== 辅助方法：清除缓存 =====
+  // ===== Helper: clear cache =====
 
   /**
-   * 清除静态模型缓存并重新加载
+   * Clear the static model cache and reload
    */
   public clearCache(): void {
     this.staticModelsCache.clear();

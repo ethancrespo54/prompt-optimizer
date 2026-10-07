@@ -4,7 +4,7 @@ export interface IStorageProvider {
   removeItem(key: string): Promise<void>;
   clearAll(): Promise<void>;
   
-  // 隐藏式高级方法 - 内部自动选择最优实现
+  // Hidden advanced methods - automatically choose the best implementation internally
   updateData<T>(key: string, modifier: (currentValue: T | null) => T): Promise<void>;
   batchUpdate(operations: Array<{
     key: string;
@@ -12,7 +12,7 @@ export interface IStorageProvider {
     value?: string;
   }>): Promise<void>;
   
-  // 可选：存储能力查询（用于监控和调试）
+  // Optional: storage capability query (for monitoring and debugging)
   getCapabilities?(): {
     supportsAtomic: boolean;
     supportsBatch: boolean;

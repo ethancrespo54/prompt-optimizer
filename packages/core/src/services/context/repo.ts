@@ -1,11 +1,11 @@
 /**
- * 上下文仓库实现
+ * Context repository implementation
  * 
- * 基于IStorageProvider的单文档仓库，管理多个上下文的持久化：
- * - 使用单一键 'ctx:store' 存储所有上下文与当前选择
- * - 通过updateData保证原子更新与并发安全
- * - 支持导入导出功能，包含多种导入模式
- * - 预定义变量覆盖项剔除保护
+ * A single-document repository based on IStorageProvider that manages persistence of multiple contexts:
+ * - Stores all contexts and the current selection under a single key 'ctx:store'
+ * - Uses updateData to guarantee atomic updates and concurrency safety
+ * - Supports import/export, including multiple import modes
+ * - Strips predefined-variable overrides as a protection
  */
 
 import type { IStorageProvider } from '../storage/types';
@@ -29,42 +29,42 @@ import {
 } from './constants';
 
 /**
- * 生成唯一ID
+ * Generate a unique ID
  */
 function generateId(): string {
   return `ctx-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 }
 
 /**
- * 获取当前时间的ISO字符串
+ * Get the current time as an ISO string
  */
 function getCurrentISOTime(): string {
   return new Date().toISOString();
 }
 
 /**
- * 基于上一次时间戳生成严格单调递增的 ISO 时间
+ * Generate a strictly monotonically increasing ISO time based on the previous timestamp
  */
 function getMonotonicISO(previous?: string): string {
   const nowIso = new Date().toISOString();
   if (!previous) return nowIso;
-  // 直接字符串比较对 ISO8601 有序有效
+  // Direct string comparison works for ISO8601 ordering
   if (nowIso > previous) return nowIso;
   const nextMs = new Date(previous).getTime() + 1;
   return new Date(nextMs).toISOString();
 }
 
 /**
- * 检查是否为预定义变量名
+ * Check whether a name is a predefined variable name
  */
 function isPredefinedVariable(name: string): boolean {
   return (PREDEFINED_VARIABLES as readonly string[]).includes(name);
 }
 
 /**
- * 剔除变量对象中的预定义变量覆盖项
- * @param variables 原始变量对象
- * @returns [清理后的变量对象, 被剔除的数量]
+ * Strip predefined-variable overrides from the variables object
+ * @param variables Original variables object
+ * @returns [Cleaned variables object, number of entries stripped]
  */
 function sanitizeVariables(variables: Record<string, string>): [Record<string, string>, number] {
   const sanitized: Record<string, string> = {};
@@ -73,7 +73,7 @@ function sanitizeVariables(variables: Record<string, string>): [Record<string, s
   for (const [name, value] of Object.entries(variables)) {
     if (isPredefinedVariable(name)) {
       removedCount++;
-      // 只记录警告，不输出console（按照要求）
+      // Only record a warning; do not output to console (as required)
       if (process.env.NODE_ENV === 'development') {
         console.warn(`[ContextRepo] Removed predefined variable override: ${name}`);
       }
@@ -86,7 +86,7 @@ function sanitizeVariables(variables: Record<string, string>): [Record<string, s
 }
 
 /**
- * 上下文仓库实现类
+ * Context repository implementation class
  */
 export class ContextRepoImpl implements ContextRepo {
   private storage: IStorageProvider;
@@ -95,16 +95,16 @@ export class ContextRepoImpl implements ContextRepo {
     this.storage = storage;
   }
 
-  // === 私有辅助方法 ===
+  // === Private helper methods ===
 
   /**
-   * 获取存储文档，如果不存在则初始化
+   * Get the storage document, initializing it if it does not exist
    */
   private async getStoreDoc(): Promise<ContextStoreDoc> {
     const data = await this.storage.getItem(CONTEXT_STORE_KEY);
     
     if (!data) {
-      // 初始化默认文档
+      // Initialize the default document
       const now = getCurrentISOTime();
       const defaultContext: ContextPackage = {
         id: DEFAULT_CONTEXT_CONFIG.id,
@@ -129,7 +129,7 @@ export class ContextRepoImpl implements ContextRepo {
         }
       };
 
-      // 立即保存初始文档
+      // Save the initial document immediately
       await this.storage.setItem(CONTEXT_STORE_KEY, JSON.stringify(doc));
       return doc;
     }
@@ -137,12 +137,12 @@ export class ContextRepoImpl implements ContextRepo {
     try {
       const doc = JSON.parse(data) as ContextStoreDoc;
 
-      // 基础验证
+      // Basic validation
       if (!doc.currentId || !doc.contexts || typeof doc.contexts !== 'object') {
         throw new ContextError(CONTEXT_ERROR_CODES.INVALID_STORE, 'Invalid document structure');
       }
 
-      // 迁移逻辑：为旧文档的上下文补写 mode 字段
+      // Migration logic: backfill the mode field for contexts in old documents
       let migrated = false;
       for (const ctx of Object.values(doc.contexts)) {
         if (!ctx.mode) {
@@ -151,7 +151,7 @@ export class ContextRepoImpl implements ContextRepo {
         }
       }
 
-      // 如果有迁移，需要保存回存储
+      // If anything was migrated, save it back to storage
       if (migrated) {
         await this.storage.setItem(CONTEXT_STORE_KEY, JSON.stringify(doc));
         if (process.env.NODE_ENV === 'development') {
@@ -159,9 +159,9 @@ export class ContextRepoImpl implements ContextRepo {
         }
       }
 
-      // 确保currentId对应的上下文存在
+      // Ensure the context for currentId exists
       if (!doc.contexts[doc.currentId]) {
-        // 修复：选择第一个可用的上下文
+        // Fix: select the first available context
         const availableIds = Object.keys(doc.contexts);
         if (availableIds.length > 0) {
           doc.currentId = availableIds[0];
@@ -182,7 +182,7 @@ export class ContextRepoImpl implements ContextRepo {
   }
 
   /**
-   * 更新存储文档
+   * Update the storage document
    */
   private async updateStoreDoc(
     updater: (doc: ContextStoreDoc) => ContextStoreDoc
@@ -192,7 +192,7 @@ export class ContextRepoImpl implements ContextRepo {
     await this.storage.updateData<ContextStoreDoc>(
       CONTEXT_STORE_KEY,
       (currentDoc: ContextStoreDoc | null) => {
-        // 如果当前数据为空，创建完整的默认文档
+        // If the current data is empty, create a complete default document
         let baseDoc: ContextStoreDoc;
         if (!currentDoc) {
           const now = getCurrentISOTime();
@@ -229,7 +229,7 @@ export class ContextRepoImpl implements ContextRepo {
     return updatedDoc!;
   }
 
-  // === 公共API方法 ===
+  // === Public API methods ===
 
   async list(): Promise<ContextListItem[]> {
     const doc = await this.getStoreDoc();
@@ -295,11 +295,11 @@ export class ContextRepoImpl implements ContextRepo {
   }
 
   async duplicate(id: string, options?: { mode?: import('./types').ContextMode }): Promise<string> {
-    const originalCtx = await this.get(id); // 会抛出错误如果不存在
+    const originalCtx = await this.get(id); // Throws an error if it does not exist
     const newId = generateId();
     const now = getCurrentISOTime();
 
-    // 复制时也需要清理变量
+    // Variables also need to be cleaned when duplicating
     const [sanitizedVariables] = sanitizeVariables(originalCtx.variables);
 
     const newContext: ContextPackage = {
@@ -334,7 +334,7 @@ export class ContextRepoImpl implements ContextRepo {
   }
 
   async save(ctx: ContextPackage): Promise<void> {
-    // 剔除预定义变量覆盖项
+    // Strip predefined-variable overrides
     const [sanitizedVariables, removedCount] = sanitizeVariables(ctx.variables);
     
     const contextToSave: ContextPackage = {
@@ -361,7 +361,7 @@ export class ContextRepoImpl implements ContextRepo {
         throw new ContextError(CONTEXT_ERROR_CODES.NOT_FOUND, undefined, { context: id });
       }
 
-      // 处理变量更新时的预定义变量剔除
+      // Handle stripping of predefined variables on variable updates
       let sanitizedVariables = patch.variables;
       let removedCount = 0;
       
@@ -369,7 +369,7 @@ export class ContextRepoImpl implements ContextRepo {
         [sanitizedVariables, removedCount] = sanitizeVariables(patch.variables);
       }
 
-      // 只读字段保护：剔除不可变字段，只允许更新特定字段
+      // Read-only field protection: strip immutable fields and only allow specific fields to be updated
       const allowedFields = ['title', 'messages', 'tools', 'tags', 'description', 'meta'] as const;
       const safeUpdate: Partial<ContextPackage> = {};
       
@@ -379,7 +379,7 @@ export class ContextRepoImpl implements ContextRepo {
         }
       }
       
-      // 合并安全的更新字段
+      // Merge the safe update fields
       Object.assign(context, safeUpdate, {
         mode: patch.mode ?? context.mode ?? DEFAULT_CONTEXT_MODE,
         variables: sanitizedVariables || context.variables,
@@ -396,25 +396,25 @@ export class ContextRepoImpl implements ContextRepo {
 
   async remove(id: string): Promise<void> {
     await this.updateStoreDoc(doc => {
-      // 先检查上下文是否存在
+      // First check that the context exists
       if (!doc.contexts[id]) {
         throw new ContextError(CONTEXT_ERROR_CODES.NOT_FOUND, undefined, { context: id });
       }
 
       const contextIds = Object.keys(doc.contexts);
       
-      // 再检查是否为最后一个上下文
+      // Then check whether it is the last context
       if (contextIds.length <= 1) {
         throw new ContextError(CONTEXT_ERROR_CODES.MINIMUM_VIOLATION);
       }
 
-      // 删除上下文
+      // Delete the context
       delete doc.contexts[id];
 
-      // 如果删除的是当前上下文，需要切换到其他上下文
+      // If the deleted one is the current context, switch to another
       if (doc.currentId === id) {
         const remainingIds = Object.keys(doc.contexts);
-        // 优先选择default，否则选择第一个可用的
+        // Prefer default, otherwise choose the first available
         doc.currentId = remainingIds.includes(DEFAULT_CONTEXT_CONFIG.id) 
           ? DEFAULT_CONTEXT_CONFIG.id 
           : remainingIds[0];
@@ -436,7 +436,7 @@ export class ContextRepoImpl implements ContextRepo {
   }
 
   async importAll(bundle: ContextBundle, mode: ImportMode): Promise<ImportResult> {
-    // 验证bundle格式
+    // Validate the bundle format
     if (!bundle || bundle.type !== 'context-bundle' || !Array.isArray(bundle.contexts)) {
       throw new ContextError(CONTEXT_ERROR_CODES.IMPORT_FORMAT_ERROR, 'Invalid context bundle format');
     }
@@ -455,11 +455,11 @@ export class ContextRepoImpl implements ContextRepo {
 
       switch (mode) {
         case 'replace':
-          // 替换模式：清空现有数据
+          // Replace mode: clear existing data
           doc.contexts = {};
           doc.currentId = bundle.currentId;
           
-          // 导入所有上下文
+          // Import all contexts
           for (const ctx of bundle.contexts) {
             try {
               const [sanitizedVariables, removedCount] = sanitizeVariables(ctx.variables);
@@ -479,14 +479,14 @@ export class ContextRepoImpl implements ContextRepo {
             }
           }
 
-          // 验证currentId是否有效
+          // Validate that currentId is valid
           if (!doc.contexts[doc.currentId] && Object.keys(doc.contexts).length > 0) {
             doc.currentId = Object.keys(doc.contexts)[0];
           }
           break;
 
         case 'append':
-          // 追加模式：处理ID冲突
+          // Append mode: handle ID conflicts
           for (const ctx of bundle.contexts) {
             try {
               const [sanitizedVariables, removedCount] = sanitizeVariables(ctx.variables);
@@ -494,7 +494,7 @@ export class ContextRepoImpl implements ContextRepo {
 
               let finalId = ctx.id;
               
-              // 如果ID冲突，生成新ID
+              // If the ID conflicts, generate a new ID
               if (doc.contexts[ctx.id]) {
                 finalId = generateId();
                 idMapping[ctx.id] = finalId;
@@ -517,14 +517,14 @@ export class ContextRepoImpl implements ContextRepo {
           break;
 
         case 'merge':
-          // 合并模式：同ID覆盖，变量合并
+          // Merge mode: same ID overwrites, variables are merged
           for (const ctx of bundle.contexts) {
             try {
               const [sanitizedVariables, removedCount] = sanitizeVariables(ctx.variables);
               predefinedVariablesRemoved += removedCount;
 
               if (doc.contexts[ctx.id]) {
-                // 存在同ID：合并变量，其他字段以导入为准
+                // Same ID exists: merge variables; other fields follow the import
                 const existingCtx = doc.contexts[ctx.id];
                 const mergedVariables = {
                   ...existingCtx.variables,
@@ -538,7 +538,7 @@ export class ContextRepoImpl implements ContextRepo {
                   updatedAt: now
                 };
               } else {
-                // 新ID：直接添加
+                // New ID: add directly
                 doc.contexts[ctx.id] = {
                   ...ctx,
                   mode: ctx.mode || DEFAULT_CONTEXT_MODE,
@@ -554,12 +554,12 @@ export class ContextRepoImpl implements ContextRepo {
           break;
       }
 
-      // 确保至少有一个上下文存在
+      // Ensure at least one context exists
       if (Object.keys(doc.contexts).length === 0) {
         throw new ContextError(CONTEXT_ERROR_CODES.IMPORT_FORMAT_ERROR, 'Import failed: No valid contexts found');
       }
 
-      // 确保currentId有效
+      // Ensure currentId is valid
       if (!doc.contexts[doc.currentId]) {
         doc.currentId = Object.keys(doc.contexts)[0];
       }
@@ -580,7 +580,7 @@ export class ContextRepoImpl implements ContextRepo {
     return result;
   }
 
-  // === IImportExportable 实现 ===
+  // === IImportExportable implementation ===
 
   async exportData(): Promise<ContextBundle> {
     return this.exportAll();
@@ -611,7 +611,7 @@ export class ContextRepoImpl implements ContextRepo {
 }
 
 /**
- * 创建ContextRepo实例的工厂函数
+ * Factory function for creating a ContextRepo instance
  */
 export function createContextRepo(storage: IStorageProvider): ContextRepo {
   return new ContextRepoImpl(storage);

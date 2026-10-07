@@ -1,8 +1,8 @@
 /**
- * 评估模板导出
+ * Evaluation template exports
  */
 
-// 基础模式 - 系统提示词评估
+// Basic mode - system prompt evaluation
 export {
   evaluationBasicSystemOriginal,
   evaluationBasicSystemOriginalEn,
@@ -16,7 +16,7 @@ export {
   evaluationBasicSystemPromptIterateEn,
 } from './basic/system';
 
-// 基础模式 - 用户提示词评估
+// Basic mode - user prompt evaluation
 export {
   evaluationBasicUserOriginal,
   evaluationBasicUserOriginalEn,
@@ -30,7 +30,7 @@ export {
   evaluationBasicUserPromptIterateEn,
 } from './basic/user';
 
-// 高级模式 - 系统提示词评估（多消息模式）
+// Advanced mode - system prompt evaluation (multi-message mode)
 export {
   evaluationProSystemOriginal,
   evaluationProSystemOriginalEn,
@@ -44,7 +44,7 @@ export {
   evaluationProSystemPromptIterateEn,
 } from './pro/system';
 
-// 高级模式 - 用户提示词评估（变量模式）
+// Advanced mode - user prompt evaluation (variable mode)
 export {
   evaluationProUserOriginal,
   evaluationProUserOriginalEn,
@@ -58,13 +58,13 @@ export {
   evaluationProUserPromptIterateEn,
 } from './pro/user';
 
-// 图像模式 - 文生图评估
+// Image mode - text-to-image evaluation
 export {
   evaluationImageText2ImagePromptOnly,
   evaluationImageText2ImagePromptOnlyEn,
 } from './image/text2image';
 
-// 图像模式 - 图生图评估
+// Image mode - image-to-image evaluation
 export {
   evaluationImageImage2ImagePromptOnly,
   evaluationImageImage2ImagePromptOnlyEn,

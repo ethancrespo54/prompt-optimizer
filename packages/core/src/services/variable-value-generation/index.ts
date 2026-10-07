@@ -1,5 +1,5 @@
 /**
- * 变量值生成服务 - 统一导出
+ * Variable value generation service - unified exports
  */
 
 export * from './types';

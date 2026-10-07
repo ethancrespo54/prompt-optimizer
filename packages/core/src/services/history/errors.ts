@@ -1,6 +1,6 @@
 /**
  * History base error
- * 历史记录基础错误
+ * Base history record error
  */
 
 import { HISTORY_ERROR_CODES, type ErrorParams } from '../../constants/error-codes';
@@ -19,7 +19,7 @@ export class HistoryError extends Error {
 
 /**
  * History not found error
- * 历史记录未找到错误
+ * History record not found error
  */
 export class HistoryNotFoundError extends HistoryError {
   constructor(id: string) {
@@ -30,7 +30,7 @@ export class HistoryNotFoundError extends HistoryError {
 
 /**
  * History chain error
- * 历史记录链错误
+ * History record chain error
  */
 export class HistoryChainError extends HistoryError {
   constructor(message: string) {
@@ -41,7 +41,7 @@ export class HistoryChainError extends HistoryError {
 
 /**
  * Record not found error
- * 记录不存在错误
+ * Record does not exist error
  */
 export class RecordNotFoundError extends HistoryError {
   constructor(
@@ -56,12 +56,12 @@ export class RecordNotFoundError extends HistoryError {
 
 /**
  * History storage error
- * 历史记录存储错误
+ * History record storage error
  *
  * Note: This class is different from StorageError in storage/errors.ts,
  * specifically for storage operation errors in the history module
- * 注意：此类与 storage/errors.ts 中的 StorageError 不同，
- * 专用于历史记录模块的存储操作错误
+ * Note: this class differs from StorageError in storage/errors.ts;
+ * it is dedicated to storage-operation errors in the history module
  */
 export class HistoryStorageError extends HistoryError {
   constructor(
@@ -76,7 +76,7 @@ export class HistoryStorageError extends HistoryError {
 
 /**
  * Record validation error
- * 记录验证错误
+ * Record validation error
  */
 export class RecordValidationError extends HistoryError {
   constructor(

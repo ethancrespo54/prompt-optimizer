@@ -30,8 +30,8 @@ export class ImageService implements IImageService {
   }
 
   async validateRequest(request: ImageRequest): Promise<void> {
-    // 兼容入口：仍按是否携带 inputImage 判断模式。
-    // 注意：这是 legacy 行为；推荐调用方使用显式的 validateText2ImageRequest/validateImage2ImageRequest。
+    // Compatibility entry: still determines the mode by whether inputImage is provided.
+    // Note: this is legacy behavior; callers are recommended to use the explicit validateText2ImageRequest/validateImage2ImageRequest.
     if (request.inputImage) {
       const image2image: Image2ImageRequest = { ...request, inputImage: request.inputImage }
       await this.validateImage2ImageRequest(image2image)
@@ -44,7 +44,7 @@ export class ImageService implements IImageService {
   }
 
   async validateText2ImageRequest(request: Text2ImageRequest): Promise<void> {
-    // 显式文生图：不允许携带 inputImage（即使调用方用 any 绕过类型）
+    // Explicit text-to-image: inputImage is not allowed (even if the caller bypasses the type with any)
     const unsafeInputImage = (request as unknown as { inputImage?: unknown }).inputImage
     if (unsafeInputImage !== undefined && unsafeInputImage !== null) {
       throw new ImageError(IMAGE_ERROR_CODES.TEXT2IMAGE_INPUT_IMAGE_NOT_ALLOWED)
@@ -57,7 +57,7 @@ export class ImageService implements IImageService {
       throw new ImageError(IMAGE_ERROR_CODES.CONFIG_NOT_FOUND, undefined, { configId: request.configId })
     }
 
-    // 能力校验：优先使用 config.model（动态/自定义模型），静态列表作为兜底
+    // Capability check: prefer config.model (dynamic/custom models), with the static list as a fallback
     const configModel = config.model
     const staticModels = this.registry.getStaticModels(config.providerId)
     const staticModel = staticModels.find(m => m.id === config.modelId)
@@ -65,7 +65,7 @@ export class ImageService implements IImageService {
     const modelName = configModel?.name ?? staticModel?.name ?? config.modelId
 
     if (capabilities && !capabilities.text2image) {
-      // 对于仅支持图生图的模型，给出更明确指引
+      // For models that only support image-to-image, give clearer guidance
       if (capabilities.image2image) {
         throw new ImageError(IMAGE_ERROR_CODES.MODEL_ONLY_SUPPORTS_IMAGE2IMAGE_NEED_INPUT, undefined, { modelName })
       }
@@ -80,7 +80,7 @@ export class ImageService implements IImageService {
       throw new ImageError(IMAGE_ERROR_CODES.IMAGE2IMAGE_INPUT_IMAGE_REQUIRED)
     }
 
-    // 强制仅支持 base64 输入图（不支持 url）
+    // Force base64-only input images (urls are not supported)
     const unsafeUrl = (request.inputImage as unknown as { url?: unknown }).url
     if (typeof unsafeUrl === 'string' && unsafeUrl.trim()) {
       throw new ImageError(IMAGE_ERROR_CODES.INPUT_IMAGE_URL_NOT_SUPPORTED)
@@ -90,7 +90,7 @@ export class ImageService implements IImageService {
       throw new ImageError(IMAGE_ERROR_CODES.INPUT_IMAGE_B64_REQUIRED)
     }
 
-    // 复用原有的输入图像格式/大小校验
+    // Reuse the existing input image format/size validation
     this.validateInputImage(request.inputImage)
 
     const config = await this.imageModelManager.getConfig(request.configId)
@@ -98,7 +98,7 @@ export class ImageService implements IImageService {
       throw new ImageError(IMAGE_ERROR_CODES.CONFIG_NOT_FOUND, undefined, { configId: request.configId })
     }
 
-    // 能力校验：优先使用 config.model（动态/自定义模型），静态列表作为兜底
+    // Capability check: prefer config.model (dynamic/custom models), with the static list as a fallback
     const configModel = config.model
     const staticModels = this.registry.getStaticModels(config.providerId)
     const staticModel = staticModels.find(m => m.id === config.modelId)
@@ -111,7 +111,7 @@ export class ImageService implements IImageService {
   }
 
   private async validateBaseRequest(request: Pick<ImageRequest, 'prompt' | 'configId' | 'count'>): Promise<void> {
-    // 验证基本字段
+    // Validate basic fields
     if (!request?.prompt || !request.prompt.trim()) {
       throw new ImageError(IMAGE_ERROR_CODES.PROMPT_EMPTY)
     }
@@ -120,7 +120,7 @@ export class ImageService implements IImageService {
       throw new ImageError(IMAGE_ERROR_CODES.CONFIG_ID_EMPTY)
     }
 
-    // 验证配置是否存在且启用
+    // Validate that the config exists and is enabled
     const config = await this.imageModelManager.getConfig(request.configId)
     if (!config) {
       throw new ImageError(IMAGE_ERROR_CODES.CONFIG_NOT_FOUND, undefined, { configId: request.configId })
@@ -129,14 +129,14 @@ export class ImageService implements IImageService {
       throw new ImageError(IMAGE_ERROR_CODES.CONFIG_NOT_ENABLED, undefined, { configName: config.name })
     }
 
-    // 快速验证：仅检查提供商是否存在（本地操作）
+    // Quick validation: only check that the provider exists (local operation)
     try {
       this.registry.getAdapter(config.providerId)
     } catch {
       throw new ImageError(IMAGE_ERROR_CODES.PROVIDER_NOT_FOUND, undefined, { providerId: config.providerId })
     }
 
-    // 验证生成数量（仅支持单图）
+    // Validate the generation count (only a single image is supported)
     const count = request.count ?? 1
     if (count !== 1) {
       throw new ImageError(IMAGE_ERROR_CODES.ONLY_SINGLE_IMAGE_SUPPORTED)
@@ -144,20 +144,20 @@ export class ImageService implements IImageService {
   }
 
   private validateInputImage(inputImage: { b64: string; mimeType?: string }): void {
-    // validateImage2ImageRequest 已经校验 b64 非空
+    // validateImage2ImageRequest has already verified that b64 is non-empty
 
-    // 验证输入图像格式
+    // Validate the input image format
     if (typeof inputImage.b64 !== 'string') {
       throw new ImageError(IMAGE_ERROR_CODES.INPUT_IMAGE_INVALID_FORMAT)
     }
 
-    // 验证输入图像 MIME 类型和大小
+    // Validate the input image MIME type and size
     const mime = (inputImage.mimeType || '').toLowerCase()
     if (mime && mime !== 'image/png' && mime !== 'image/jpeg') {
       throw new ImageError(IMAGE_ERROR_CODES.INPUT_IMAGE_UNSUPPORTED_MIME, undefined, { mimeType: inputImage.mimeType })
     }
 
-    // 估算 base64 大小：每4字符≈3字节，去除末尾填充
+    // Estimate the base64 size: every 4 characters ≈ 3 bytes, minus trailing padding
     const len = inputImage.b64.length
     const padding = (inputImage.b64.endsWith('==') ? 2 : inputImage.b64.endsWith('=') ? 1 : 0)
     const bytes = Math.floor((len * 3) / 4) - padding
@@ -178,28 +178,28 @@ export class ImageService implements IImageService {
   }
 
   async generate(request: ImageRequest): Promise<ImageResult> {
-    // 兼容入口：保留原行为
+    // Compatibility entry: keep the original behavior
     await this.validateRequest(request)
     return await this.generateInternal(request)
   }
 
   private async generateInternal(request: ImageRequest): Promise<ImageResult> {
-    // 获取配置
+    // Get the config
     const config = await this.imageModelManager.getConfig(request.configId)
     if (!config) {
       throw new ImageError(IMAGE_ERROR_CODES.CONFIG_NOT_FOUND, undefined, { configId: request.configId })
     }
 
-    // 获取适配器
+    // Get the adapter
     const adapter = this.registry.getAdapter(config.providerId)
     const runtimeConfig = this.prepareRuntimeConfig(config)
     const runtimeRequest = this.prepareRuntimeRequest(request, runtimeConfig)
 
     try {
-      // 调用适配器生成
+      // Call the adapter to generate
       const result = await adapter.generate(runtimeRequest, runtimeConfig)
 
-      // 确保返回结果包含完整的元数据
+      // Ensure the result contains complete metadata
       if (!result.metadata) {
         result.metadata = {
           providerId: config.providerId,
@@ -207,7 +207,7 @@ export class ImageService implements IImageService {
           configId: config.id
         }
       } else {
-        // 补充溯源信息
+        // Add provenance info
         result.metadata.providerId = config.providerId
         result.metadata.modelId = config.modelId
         result.metadata.configId = config.id
@@ -223,16 +223,16 @@ export class ImageService implements IImageService {
       if (isRecord(error) && typeof error.code === 'string') {
         throw toErrorWithCode(error)
       }
-      // 注意：不要把底层 message 拼给用户，交给 UI 用 code+params 翻译。
+      // Note: do not concatenate the underlying message for the user; leave it to the UI to translate via code+params.
       const details = error instanceof Error ? error.message : String(error)
       throw new ImageError(IMAGE_ERROR_CODES.GENERATION_FAILED, details, { details })
     }
   }
 
 
-  // 新增：连接测试（不要求配置已保存）
+  // New: connection test (does not require the config to be saved)
   async testConnection(config: ImageModelConfig): Promise<ImageResult> {
-    // 构造一个最小的请求（根据模型能力选择文本或图像测试）
+    // Build a minimal request (choose a text or image test based on model capabilities)
     const adapter = this.registry.getAdapter(config.providerId)
     const runtimeConfig = this.prepareRuntimeConfig(config)
     const caps = (config.model?.capabilities) || this.registry.getStaticModels(config.providerId).find(m => m.id === config.modelId)?.capabilities || { text2image: true }
@@ -252,7 +252,7 @@ export class ImageService implements IImageService {
       paramOverrides: baseReq.paramOverrides
     }
 
-    // 强制：测试连接如果走 image2image，必须使用 base64 输入（不支持 url）
+    // Enforced: if the connection test uses image2image, it must use base64 input (urls are not supported)
     if (testType === 'image2image') {
       const unsafeInputImage = (request as unknown as { inputImage?: unknown }).inputImage
       const unsafeB64 = isRecord(unsafeInputImage) ? unsafeInputImage.b64 : undefined
@@ -267,7 +267,7 @@ export class ImageService implements IImageService {
     }
 
     const runtimeRequest = this.prepareRuntimeRequest(request, runtimeConfig)
-    // 直接调用适配器，绕过 imageModelManager 的存储查找
+    // Call the adapter directly, bypassing the storage lookup in imageModelManager
     try {
       return await adapter.generate(runtimeRequest, runtimeConfig)
     } catch (error) {
@@ -282,7 +282,7 @@ export class ImageService implements IImageService {
     }
   }
 
-  // 新增：获取动态模型
+  // New: get dynamic models
   async getDynamicModels(providerId: string, connectionConfig: Record<string, any>): Promise<ImageModel[]> {
     return await this.registry.getDynamicModels(providerId, connectionConfig)
   }
@@ -290,13 +290,13 @@ export class ImageService implements IImageService {
   private prepareRuntimeConfig(config: ImageModelConfig): ImageModelConfig {
     const schema = config.model?.parameterDefinitions ?? []
 
-    // 合并参数：支持旧格式的 customParamOverrides（向后兼容）
-    // 优先级：requestOverrides > customOverrides
+    // Merge parameters: supports the legacy-format customParamOverrides (backward compatible)
+    // Priority: requestOverrides > customOverrides
     const mergedOverrides = mergeOverrides({
       schema,
       includeDefaults: false,
-      customOverrides: config.customParamOverrides,  // 🔧 兼容旧格式：自定义参数
-      requestOverrides: config.paramOverrides        // 当前参数（包含内置 + 可能已合并的自定义）
+      customOverrides: config.customParamOverrides,  // 🔧 Legacy-format compatibility: custom parameters
+      requestOverrides: config.paramOverrides        // Current parameters (built-in + possibly already-merged custom ones)
     })
 
     return {
@@ -306,7 +306,7 @@ export class ImageService implements IImageService {
   }
 
   private prepareRuntimeRequest(request: ImageRequest, config: ImageModelConfig): ImageRequest {
-    // 最终兜底：不允许把 url 输入图透传给适配器。
+    // Final safeguard: never pass a url input image through to the adapter.
     const unsafeInputImage = (request as unknown as { inputImage?: unknown }).inputImage
     if (isRecord(unsafeInputImage) && typeof unsafeInputImage.url === 'string' && unsafeInputImage.url.trim()) {
       throw new ImageError(IMAGE_ERROR_CODES.INPUT_IMAGE_URL_NOT_SUPPORTED)
@@ -314,13 +314,13 @@ export class ImageService implements IImageService {
 
     const schema = config.model?.parameterDefinitions ?? []
 
-    // 请求级别的参数覆盖，同样需要考虑旧格式
+    // Request-level parameter overrides must also account for the legacy format
     const unsafeCustomOverrides = (request as unknown as { customParamOverrides?: unknown }).customParamOverrides
     const customOverrides = isRecord(unsafeCustomOverrides) ? unsafeCustomOverrides : undefined
     const sanitized = mergeOverrides({
       schema,
       includeDefaults: false,
-      customOverrides, // 兼容旧字段（向后兼容）
+      customOverrides, // Legacy field compatibility (backward compatible)
       requestOverrides: request.paramOverrides
     })
 

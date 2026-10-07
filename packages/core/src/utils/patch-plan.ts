@@ -15,11 +15,11 @@ export interface ApplyPatchResult {
 }
 
 /**
- * 查找文本中第 N 次出现的位置
- * @param haystack 被搜索的文本
- * @param needle 要查找的文本
- * @param occurrence 第几次出现（从 1 开始）
- * @returns 找到的索引，未找到返回 -1
+ * Find the position of the Nth occurrence in the text
+ * @param haystack Text being searched
+ * @param needle Text to find
+ * @param occurrence Which occurrence (starting from 1)
+ * @returns The index found, or -1 if not found
  */
 function findNthOccurrence(
   haystack: string,
@@ -39,7 +39,7 @@ function findNthOccurrence(
 }
 
 /**
- * 统计文本在源字符串中出现的次数
+ * Count the number of occurrences of the text in the source string
  */
 function countOccurrences(haystack: string, needle: string): number {
   if (!needle) return 0
@@ -53,15 +53,15 @@ function countOccurrences(haystack: string, needle: string): number {
 }
 
 /**
- * 应用单个补丁操作到文本
+ * Apply a single patch operation to the text
  *
- * 简化的 apply 逻辑：
- * - 找到 oldText 在文本中的位置
- * - 用 newText 替换
+ * Simplified apply logic:
+ * - Find the position of oldText in the text
+ * - Replace it with newText
  *
- * @param input 原始文本
- * @param operation 单个补丁操作
- * @returns 应用结果
+ * @param input Original text
+ * @param operation Single patch operation
+ * @returns Application result
  */
 export function applyPatchOperationsToText(
   input: string,
