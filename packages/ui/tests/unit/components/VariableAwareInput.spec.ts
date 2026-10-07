@@ -4,8 +4,8 @@ import { ref, nextTick } from 'vue'
 import VariableAwareInput from '../../../src/components/variable-extraction/VariableAwareInput.vue'
 
 describe('VariableAwareInput', () => {
-  describe('组件渲染', () => {
-    it('应该正确渲染组件', () => {
+  describe('Component rendering', () => {
+    it('should render the component correctly', () => {
       const wrapper = mount(VariableAwareInput, {
         props: {
           modelValue: 'Hello {{name}}'
@@ -16,7 +16,7 @@ describe('VariableAwareInput', () => {
       expect(wrapper.find('.variable-aware-input-wrapper').exists()).toBe(true)
     })
 
-    it('应该渲染 CodeMirror 容器', () => {
+    it('should render the CodeMirror container', () => {
       const wrapper = mount(VariableAwareInput, {
         props: {
           modelValue: ''
@@ -26,18 +26,18 @@ describe('VariableAwareInput', () => {
       expect(wrapper.find('.codemirror-container').exists()).toBe(true)
     })
 
-    it('应该接受 placeholder 属性', () => {
+    it('should accept the placeholder prop', () => {
       const wrapper = mount(VariableAwareInput, {
         props: {
           modelValue: '',
-          placeholder: '请输入内容'
+          placeholder: 'Enter content'
         }
       })
 
-      expect(wrapper.props('placeholder')).toBe('请输入内容')
+      expect(wrapper.props('placeholder')).toBe('Enter content')
     })
 
-    it('应该接受 autosize 属性', () => {
+    it('should accept the autosize prop', () => {
       const wrapper = mount(VariableAwareInput, {
         props: {
           modelValue: '',
@@ -49,8 +49,8 @@ describe('VariableAwareInput', () => {
     })
   })
 
-  describe('Props 传递', () => {
-    it('应该接受全局变量列表', () => {
+  describe('Props passing', () => {
+    it('should accept the global variable list', () => {
       const wrapper = mount(VariableAwareInput, {
         props: {
           modelValue: '',
@@ -61,7 +61,7 @@ describe('VariableAwareInput', () => {
       expect(wrapper.props('existingGlobalVariables')).toEqual(['var1', 'var2'])
     })
 
-    it('应该接受临时变量列表', () => {
+    it('should accept the temporary variable list', () => {
       const wrapper = mount(VariableAwareInput, {
         props: {
           modelValue: '',
@@ -72,7 +72,7 @@ describe('VariableAwareInput', () => {
       expect(wrapper.props('existingTemporaryVariables')).toEqual(['temp1', 'temp2'])
     })
 
-    it('应该接受预定义变量列表', () => {
+    it('should accept the predefined variable list', () => {
       const wrapper = mount(VariableAwareInput, {
         props: {
           modelValue: '',
@@ -83,7 +83,7 @@ describe('VariableAwareInput', () => {
       expect(wrapper.props('predefinedVariables')).toEqual(['system1', 'system2'])
     })
 
-    it('应该接受变量值映射', () => {
+    it('should accept the variable value map', () => {
       const wrapper = mount(VariableAwareInput, {
         props: {
           modelValue: '',
@@ -99,8 +99,8 @@ describe('VariableAwareInput', () => {
     })
   })
 
-  describe('双向绑定', () => {
-    it('应该显示初始值', () => {
+  describe('Two-way binding', () => {
+    it('should display the initial value', () => {
       const wrapper = mount(VariableAwareInput, {
         props: {
           modelValue: 'Initial text'
@@ -110,20 +110,20 @@ describe('VariableAwareInput', () => {
       expect(wrapper.props('modelValue')).toBe('Initial text')
     })
 
-    it('应该在值变化时触发 update:modelValue 事件', async () => {
+    it('should trigger the update:modelValue event when the value changes', async () => {
       const wrapper = mount(VariableAwareInput, {
         props: {
           modelValue: 'Initial'
         }
       })
 
-      // 模拟编辑器内容变化
+      // Simulate an editor content change
       await wrapper.setProps({ modelValue: 'Updated' })
 
       expect(wrapper.props('modelValue')).toBe('Updated')
     })
 
-    it('应该支持 v-model 双向绑定', async () => {
+    it('should support v-model two-way binding', async () => {
       const modelValue = ref('Test')
 
       const wrapper = mount(VariableAwareInput, {
@@ -137,7 +137,7 @@ describe('VariableAwareInput', () => {
 
       expect(wrapper.props('modelValue')).toBe('Test')
 
-      // 模拟值更新
+      // Simulate a value update
       await wrapper.vm.$emit('update:modelValue', 'New value')
       await nextTick()
 
@@ -145,8 +145,8 @@ describe('VariableAwareInput', () => {
     })
   })
 
-  describe('变量提取功能', () => {
-    it('应该在选择文本时显示提取按钮', () => {
+  describe('Variable extraction', () => {
+    it('should show the extract button when text is selected', () => {
       const wrapper = mount(VariableAwareInput, {
         props: {
           modelValue: 'Select this text'
@@ -160,31 +160,31 @@ describe('VariableAwareInput', () => {
         }
       })
 
-      // 提取按钮的 Popover 应该存在 (作为 stub)
-      // 由于 CodeMirror 在 JSDOM 环境中可能无法完全渲染,我们只检查组件是否挂载成功
+      // The extract button Popover should exist (as a stub)
+      // Since CodeMirror may not fully render in the JSDOM environment, we only check that the component mounted successfully
       expect(wrapper.exists()).toBe(true)
     })
 
-    it('应该在点击提取按钮时打开对话框', async () => {
+    it('should open the dialog when the extract button is clicked', async () => {
       const wrapper = mount(VariableAwareInput, {
         props: {
           modelValue: 'Test text'
         }
       })
 
-      // 变量提取对话框组件应该存在
+      // The variable extraction dialog component should exist
       const dialog = wrapper.findComponent({ name: 'VariableExtractionDialog' })
       expect(dialog.exists()).toBe(true)
     })
 
-    it('应该在提取确认后触发 variable-extracted 事件', async () => {
+    it('should trigger the variable-extracted event after extraction is confirmed', async () => {
       const wrapper = mount(VariableAwareInput, {
         props: {
           modelValue: 'Test text'
         }
       })
 
-      // 模拟提取确认
+      // Simulate extraction confirmation
       await wrapper.vm.$emit('variable-extracted', {
         variableName: 'testVar',
         variableValue: 'Test text',
@@ -199,7 +199,7 @@ describe('VariableAwareInput', () => {
       }])
     })
 
-    it('应该在提取后替换文本为变量占位符', async () => {
+    it('should replace the text with a variable placeholder after extraction', async () => {
       const wrapper = mount(VariableAwareInput, {
         props: {
           modelValue: 'Hello world',
@@ -207,7 +207,7 @@ describe('VariableAwareInput', () => {
         }
       })
 
-      // 模拟提取操作后的文本更新
+      // Simulate the text update after the extraction
       await wrapper.vm.$emit('update:modelValue', 'Hello {{name}}')
 
       expect(wrapper.emitted('update:modelValue')).toBeTruthy()
@@ -215,8 +215,8 @@ describe('VariableAwareInput', () => {
     })
   })
 
-  describe('缺失变量添加功能', () => {
-    it('应该在点击添加按钮时触发 add-missing-variable 事件', async () => {
+  describe('Adding missing variables', () => {
+    it('should trigger the add-missing-variable event when the add button is clicked', async () => {
       const wrapper = mount(VariableAwareInput, {
         props: {
           modelValue: '{{missingVar}}'
@@ -229,7 +229,7 @@ describe('VariableAwareInput', () => {
       expect(wrapper.emitted('add-missing-variable')?.[0]).toEqual(['missingVar'])
     })
 
-    it('应该支持添加多个缺失变量', async () => {
+    it('should support adding multiple missing variables', async () => {
       const wrapper = mount(VariableAwareInput, {
         props: {
           modelValue: '{{var1}} {{var2}} {{var3}}'
@@ -244,8 +244,8 @@ describe('VariableAwareInput', () => {
     })
   })
 
-  describe('变量高亮', () => {
-    it('应该为全局变量应用高亮', () => {
+  describe('Variable highlighting', () => {
+    it('should apply highlighting to global variables', () => {
       const wrapper = mount(VariableAwareInput, {
         props: {
           modelValue: '{{globalVar}}',
@@ -254,11 +254,11 @@ describe('VariableAwareInput', () => {
         }
       })
 
-      // CodeMirror 容器应该存在
+      // The CodeMirror container should exist
       expect(wrapper.find('.codemirror-container').exists()).toBe(true)
     })
 
-    it('应该为临时变量应用高亮', () => {
+    it('should apply highlighting to temporary variables', () => {
       const wrapper = mount(VariableAwareInput, {
         props: {
           modelValue: '{{tempVar}}',
@@ -270,7 +270,7 @@ describe('VariableAwareInput', () => {
       expect(wrapper.find('.codemirror-container').exists()).toBe(true)
     })
 
-    it('应该为预定义变量应用高亮', () => {
+    it('should apply highlighting to predefined variables', () => {
       const wrapper = mount(VariableAwareInput, {
         props: {
           modelValue: '{{sysVar}}',
@@ -282,7 +282,7 @@ describe('VariableAwareInput', () => {
       expect(wrapper.find('.codemirror-container').exists()).toBe(true)
     })
 
-    it('应该为缺失变量应用高亮', () => {
+    it('should apply highlighting to missing variables', () => {
       const wrapper = mount(VariableAwareInput, {
         props: {
           modelValue: '{{missingVar}}'

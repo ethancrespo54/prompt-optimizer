@@ -8,12 +8,12 @@ vi.mock('vue-i18n', () => ({
   })
 }))
 
-describe('ToolCallDisplay 基础测试', () => {
+describe('ToolCallDisplay basic test', () => {
   const defaultProps = {
     toolCalls: []
   }
 
-  it('应该正确渲染', () => {
+  it('should render correctly', () => {
     const wrapper = mount(ToolCallDisplay, {
       props: defaultProps,
       global: {

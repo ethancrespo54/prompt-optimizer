@@ -5,14 +5,14 @@ import VariableAwareInput from '../../src/components/variable-extraction/Variabl
 import { useVariableDetection } from '../../src/components/variable-extraction/useVariableDetection'
 
 /**
- * 变量高亮系统集成测试
+ * Variable highlighting system integration test
  *
- * 测试完整的用户工作流和组件间交互
+ * Tests the complete user workflow and interactions between components
  */
-describe('variable-highlighting-system 集成测试', () => {
-  describe('完整工作流: 添加缺失变量', () => {
-    it('应该完成从检测到添加的完整流程', async () => {
-      // 1. 初始状态: 输入包含缺失变量的文本
+describe('variable-highlighting-system integration test', () => {
+  describe('Full workflow: adding a missing variable', () => {
+    it('should complete the full flow from detection to adding', async () => {
+      // 1. Initial state: input text contains missing variables
       const modelValue = ref('Hello {{name}}, you are {{age}} years old')
       const globalVariables = ref<Record<string, string>>({})
       const temporaryVariables = ref<Record<string, string>>({})
@@ -24,30 +24,30 @@ describe('variable-highlighting-system 集成测试', () => {
         predefinedVariables
       )
 
-      // 2. 检测变量
+      // 2. Detect variables
       let variables = extractVariables(modelValue.value)
       expect(variables).toHaveLength(2)
       expect(variables[0].source).toBe('missing')
       expect(variables[1].source).toBe('missing')
 
-      // 3. 模拟用户添加第一个缺失变量到临时变量
+      // 3. Simulate the user adding the first missing variable as a temporary variable
       temporaryVariables.value['name'] = ''
 
-      // 4. 重新检测,第一个变量应该变为临时变量
+      // 4. Re-detect; the first variable should become a temporary variable
       variables = extractVariables(modelValue.value)
       expect(variables[0].source).toBe('temporary')
       expect(variables[1].source).toBe('missing')
 
-      // 5. 添加第二个缺失变量
+      // 5. Add the second missing variable
       temporaryVariables.value['age'] = ''
 
-      // 6. 重新检测,两个变量都应该是临时变量
+      // 6. Re-detect; both variables should be temporary variables
       variables = extractVariables(modelValue.value)
       expect(variables[0].source).toBe('temporary')
       expect(variables[1].source).toBe('temporary')
     })
 
-    it('应该支持从缺失变量到全局变量的转换', async () => {
+    it('should support converting a missing variable to a global variable', async () => {
       const modelValue = ref('User: {{username}}')
       const globalVariables = ref<Record<string, string>>({})
       const temporaryVariables = ref<Record<string, string>>({})
@@ -59,16 +59,16 @@ describe('variable-highlighting-system 集成测试', () => {
         predefinedVariables
       )
 
-      // 初始: 缺失变量
+      // Initial: missing variable
       let variables = extractVariables(modelValue.value)
       expect(variables[0].source).toBe('missing')
 
-      // 添加到临时变量
+      // Add to temporary variables
       temporaryVariables.value['username'] = 'John'
       variables = extractVariables(modelValue.value)
       expect(variables[0].source).toBe('temporary')
 
-      // 保存到全局变量
+      // Save to global variables
       globalVariables.value['username'] = 'John'
       delete temporaryVariables.value['username']
       variables = extractVariables(modelValue.value)
@@ -76,8 +76,8 @@ describe('variable-highlighting-system 集成测试', () => {
     })
   })
 
-  describe('完整工作流: 变量提取', () => {
-    it('应该完成从选择到提取的完整流程', async () => {
+  describe('Full workflow: variable extraction', () => {
+    it('should complete the full flow from selection to extraction', async () => {
       const wrapper = mount(VariableAwareInput, {
         props: {
           modelValue: 'Hello John, you are 25 years old',
@@ -86,30 +86,30 @@ describe('variable-highlighting-system 集成测试', () => {
         }
       })
 
-      // 1. 初始文本不包含变量
+      // 1. The initial text contains no variables
       expect(wrapper.props('modelValue')).toBe('Hello John, you are 25 years old')
 
-      // 2. 模拟用户选择 "John" 并提取为变量
+      // 2. Simulate the user selecting "John" and extracting it as a variable
       await wrapper.vm.$emit('variable-extracted', {
         variableName: 'name',
         variableValue: 'John',
         variableType: 'temporary'
       })
 
-      // 3. 验证事件被触发
+      // 3. Verify the event was triggered
       expect(wrapper.emitted('variable-extracted')).toBeTruthy()
       const extractedEvent = wrapper.emitted('variable-extracted')?.[0]?.[0] as any
       expect(extractedEvent.variableName).toBe('name')
       expect(extractedEvent.variableValue).toBe('John')
 
-      // 4. 模拟文本替换
+      // 4. Simulate text replacement
       await wrapper.setProps({
         modelValue: 'Hello {{name}}, you are 25 years old',
         existingTemporaryVariables: ['name'],
         temporaryVariableValues: { name: 'John' }
       })
 
-      // 5. 验证变量被正确识别
+      // 5. Verify the variable is recognized correctly
       const globalVariables = ref<Record<string, string>>({})
       const temporaryVariables = ref({ name: 'John' })
       const predefinedVariables = ref<Record<string, string>>({})
@@ -126,17 +126,17 @@ describe('variable-highlighting-system 集成测试', () => {
       expect(variables[0].source).toBe('temporary')
     })
 
-    it('应该支持全部替换功能', async () => {
+    it('should support replace-all', async () => {
       const text = 'test test test'
       const globalVariables = ref<Record<string, string>>({})
       const temporaryVariables = ref<Record<string, string>>({})
       const predefinedVariables = ref<Record<string, string>>({})
 
-      // 模拟全部替换
+      // Simulate replace-all
       const newText = text.replace(/test/g, '{{testVar}}')
       expect(newText).toBe('{{testVar}} {{testVar}} {{testVar}}')
 
-      // 添加变量
+      // Add the variable
       temporaryVariables.value['testVar'] = 'test'
 
       const { extractVariables } = useVariableDetection(
@@ -150,37 +150,37 @@ describe('variable-highlighting-system 集成测试', () => {
       expect(variables.every(v => v.source === 'temporary')).toBe(true)
     })
 
-    it('应该保护现有变量不被破坏', () => {
+    it('should protect existing variables from being corrupted', () => {
       const text = 'customer {{customer_name}} customer'
 
-      // 模拟安全替换 (仅替换占位符外部的 "customer")
+      // Simulate safe replacement (only replaces "customer" outside the placeholders)
       const replaceOutsideVariables = (text: string, search: string, replace: string) => {
-        // 简化版实现
+        // Simplified implementation
         const parts = text.split(/(\{\{[^}]+\}\})/g)
         return parts.map((part, index) => {
           if (index % 2 === 0) {
-            // 非变量部分
+            // Non-variable part
             return part.replace(new RegExp(search, 'g'), replace)
           }
-          return part // 变量部分保持不变
+          return part // The variable part is left unchanged
         }).join('')
       }
 
       const newText = replaceOutsideVariables(text, 'customer', '{{user}}')
       expect(newText).toBe('{{user}} {{customer_name}} {{user}}')
 
-      // 验证变量名没有被破坏
+      // Verify the variable name was not corrupted
       expect(newText).toContain('{{customer_name}}')
     })
   })
 
-  describe('完整工作流: 自动完成', () => {
-    it('应该在输入 {{ 时触发补全', () => {
+  describe('Full workflow: autocomplete', () => {
+    it('should trigger completion when typing {{', () => {
       const globalVariables = { username: 'John', email: 'john@example.com' }
       const temporaryVariables = { tempVar: 'temp' }
       const predefinedVariables = { systemVar: 'system' }
 
-      // 模拟补全选项生成
+      // Simulate completion option generation
       const completionOptions = [
         ...Object.keys(predefinedVariables).map(name => ({ name, source: 'predefined', boost: 3 })),
         ...Object.keys(globalVariables).map(name => ({ name, source: 'global', boost: 2 })),
@@ -188,29 +188,29 @@ describe('variable-highlighting-system 集成测试', () => {
       ]
 
       expect(completionOptions).toHaveLength(4)
-      expect(completionOptions[0].boost).toBe(3) // 预定义优先级最高
-      expect(completionOptions[3].boost).toBe(1) // 临时变量优先级最低
+      expect(completionOptions[0].boost).toBe(3) // Predefined has the highest priority
+      expect(completionOptions[3].boost).toBe(1) // Temporary variables have the lowest priority
     })
 
-    it('应该正确插入补全的变量', () => {
+    it('should insert the completed variable correctly', () => {
       const text = 'Hello {{'
       const selectedVariable = 'name'
 
-      // 模拟补全插入
+      // Simulate completion insertion
       const newText = text + selectedVariable + '}}'
       expect(newText).toBe('Hello {{name}}')
 
-      // 验证变量格式正确
+      // Verify the variable format is correct
       expect(newText).toMatch(/\{\{[^}]+\}\}/)
     })
 
-    it('应该显示变量值预览', () => {
+    it('should display a preview of the variable value', () => {
       const variables = {
         shortVar: 'short',
         longVar: 'a'.repeat(100)
       }
 
-      // 模拟值预览生成
+      // Simulate value preview generation
       const previews = Object.entries(variables).map(([name, value]) => ({
         name,
         preview: value.length > 50 ? value.substring(0, 50) + '...' : value
@@ -222,60 +222,60 @@ describe('variable-highlighting-system 集成测试', () => {
     })
   })
 
-  describe('完整工作流: 临时变量同步', () => {
-    it('应该在输入框和测试区之间同步变量', async () => {
-      // 模拟输入框状态
+  describe('Full workflow: temporary variable sync', () => {
+    it('should sync variables between the input box and the test area', async () => {
+      // Simulate the input box state
       const inputVariables = ref<Record<string, string>>({})
 
-      // 模拟测试区状态
+      // Simulate the test area state
       const testVariables = ref<Record<string, string>>({})
 
-      // 1. 在输入框添加缺失变量
+      // 1. Add a missing variable in the input box
       inputVariables.value['newVar'] = ''
 
-      // 2. 同步到测试区
+      // 2. Sync to the test area
       testVariables.value['newVar'] = ''
       expect(testVariables.value).toHaveProperty('newVar')
 
-      // 3. 在测试区修改变量值
+      // 3. Modify the variable value in the test area
       testVariables.value['newVar'] = 'new value'
 
-      // 4. 同步回输入框
+      // 4. Sync back to the input box
       inputVariables.value['newVar'] = 'new value'
       expect(inputVariables.value['newVar']).toBe('new value')
 
-      // 5. 在测试区删除变量
+      // 5. Delete the variable in the test area
       delete testVariables.value['newVar']
 
-      // 6. 同步回输入框 (变量变为缺失状态)
+      // 6. Sync back to the input box (the variable becomes missing)
       delete inputVariables.value['newVar']
       expect(inputVariables.value).not.toHaveProperty('newVar')
     })
 
-    it('应该支持批量清空临时变量', () => {
+    it('should support clearing temporary variables in bulk', () => {
       const temporaryVariables = ref({
         var1: 'value1',
         var2: 'value2',
         var3: 'value3'
       })
 
-      // 记录被清空的变量名
+      // Record the names of the cleared variables
       const removedNames = Object.keys(temporaryVariables.value)
       expect(removedNames).toHaveLength(3)
 
-      // 清空所有临时变量
+      // Clear all temporary variables
       temporaryVariables.value = {}
       expect(Object.keys(temporaryVariables.value)).toHaveLength(0)
 
-      // 验证所有变量都被移除
+      // Verify all variables were removed
       removedNames.forEach(name => {
         expect(temporaryVariables.value).not.toHaveProperty(name)
       })
     })
   })
 
-  describe('变量优先级系统', () => {
-    it('应该按优先级显示变量 (预定义 > 全局 > 临时)', () => {
+  describe('Variable priority system', () => {
+    it('should display variables by priority (predefined > global > temporary)', () => {
       const globalVariables = ref({ var1: 'global', var2: 'global' })
       const temporaryVariables = ref({ var1: 'temp', var2: 'temp', var3: 'temp' })
       const predefinedVariables = ref({ var1: 'predef', var2: 'predef', var3: 'predef', var4: 'predef' })
@@ -289,14 +289,14 @@ describe('variable-highlighting-system 集成测试', () => {
       const text = '{{var1}} {{var2}} {{var3}} {{var4}} {{var5}}'
       const variables = extractVariables(text)
 
-      expect(variables[0].source).toBe('predefined') // var1: 预定义优先
-      expect(variables[1].source).toBe('predefined') // var2: 预定义优先
-      expect(variables[2].source).toBe('predefined') // var3: 预定义优先
-      expect(variables[3].source).toBe('predefined') // var4: 仅预定义
-      expect(variables[4].source).toBe('missing')    // var5: 缺失
+      expect(variables[0].source).toBe('predefined') // var1: predefined takes priority
+      expect(variables[1].source).toBe('predefined') // var2: predefined takes priority
+      expect(variables[2].source).toBe('predefined') // var3: predefined takes priority
+      expect(variables[3].source).toBe('predefined') // var4: predefined only
+      expect(variables[4].source).toBe('missing')    // var5: missing
     })
 
-    it('应该在变量升级时更新优先级', () => {
+    it('should update priority when a variable is upgraded', () => {
       const globalVariables = ref<Record<string, string>>({})
       const temporaryVariables = ref({ testVar: 'temp' })
       const predefinedVariables = ref<Record<string, string>>({})
@@ -309,24 +309,24 @@ describe('variable-highlighting-system 集成测试', () => {
 
       const text = '{{testVar}}'
 
-      // 初始: 临时变量
+      // Initial: temporary variable
       let variables = extractVariables(text)
       expect(variables[0].source).toBe('temporary')
 
-      // 升级到全局变量
+      // Upgrade to a global variable
       globalVariables.value['testVar'] = 'global'
       variables = extractVariables(text)
       expect(variables[0].source).toBe('global')
 
-      // 升级到预定义变量
+      // Upgrade to a predefined variable
       predefinedVariables.value['testVar'] = 'predef'
       variables = extractVariables(text)
       expect(variables[0].source).toBe('predefined')
     })
   })
 
-  describe('复杂场景测试', () => {
-    it('应该处理包含多种变量类型的复杂文本', () => {
+  describe('Complex scenario tests', () => {
+    it('should handle complex text containing multiple variable types', () => {
       const globalVariables = ref({ global1: 'g1', global2: 'g2' })
       const temporaryVariables = ref({ temp1: 't1' })
       const predefinedVariables = ref({ predef1: 'p1' })
@@ -352,12 +352,12 @@ describe('variable-highlighting-system 集成测试', () => {
       expect(stats.missing).toBe(2)
     })
 
-    it('应该处理变量名包含特殊字符的情况', () => {
+    it('should handle variable names containing special characters', () => {
       const globalVariables = ref({
         'user-name': 'John',
         'user.email': 'john@example.com',
         'user_id': '123',
-        '用户名': '张三'
+        'usuário': 'José'
       })
       const temporaryVariables = ref<Record<string, string>>({})
       const predefinedVariables = ref<Record<string, string>>({})
@@ -368,19 +368,19 @@ describe('variable-highlighting-system 集成测试', () => {
         predefinedVariables
       )
 
-      const text = '{{user-name}} {{user.email}} {{user_id}} {{用户名}}'
+      const text = '{{user-name}} {{user.email}} {{user_id}} {{usuário}}'
       const variables = extractVariables(text)
 
       expect(variables).toHaveLength(4)
       expect(variables.every(v => v.source === 'global')).toBe(true)
     })
 
-    it('应该处理大量变量的性能场景', () => {
+    it('should handle the performance scenario with many variables', () => {
       const globalVariables = ref<Record<string, string>>({})
       const temporaryVariables = ref<Record<string, string>>({})
       const predefinedVariables = ref<Record<string, string>>({})
 
-      // 创建100个变量
+      // Create 100 variables
       for (let i = 0; i < 100; i++) {
         globalVariables.value[`var${i}`] = `value${i}`
       }
@@ -391,7 +391,7 @@ describe('variable-highlighting-system 集成测试', () => {
         predefinedVariables
       )
 
-      // 创建包含所有变量的文本
+      // Create text containing all variables
       const text = Object.keys(globalVariables.value)
         .map(name => `{{${name}}}`)
         .join(' ')
@@ -403,8 +403,8 @@ describe('variable-highlighting-system 集成测试', () => {
     })
   })
 
-  describe('错误处理和边界情况', () => {
-    it('应该处理不完整的变量占位符', () => {
+  describe('Error handling and edge cases', () => {
+    it('should handle incomplete variable placeholders', () => {
       const globalVariables = ref<Record<string, string>>({})
       const temporaryVariables = ref<Record<string, string>>({})
       const predefinedVariables = ref<Record<string, string>>({})
@@ -418,12 +418,12 @@ describe('variable-highlighting-system 集成测试', () => {
       const text = '{{incomplete or {{valid}} more {{incomplete'
       const variables = extractVariables(text)
 
-      // 只应该提取完整的变量
+      // Should only extract complete variables
       expect(variables).toHaveLength(1)
       expect(variables[0].name).toBe('valid')
     })
 
-    it('应该过滤 Mustache 控制标签', () => {
+    it('should filter out Mustache control tags', () => {
       const globalVariables = ref<Record<string, string>>({})
       const temporaryVariables = ref<Record<string, string>>({})
       const predefinedVariables = ref<Record<string, string>>({})
@@ -437,12 +437,12 @@ describe('variable-highlighting-system 集成测试', () => {
       const text = '{{#if}} {{name}} {{/if}} {{^else}} {{!comment}}'
       const variables = extractVariables(text)
 
-      // 只应该提取 {{name}}
+      // Should only extract {{name}}
       expect(variables).toHaveLength(1)
       expect(variables[0].name).toBe('name')
     })
 
-    it('应该处理空值和 undefined', () => {
+    it('should handle empty values and undefined', () => {
       const globalVariables = ref({ emptyVar: '', undefinedVar: undefined as any })
       const temporaryVariables = ref<Record<string, string>>({})
       const predefinedVariables = ref<Record<string, string>>({})
@@ -458,34 +458,34 @@ describe('variable-highlighting-system 集成测试', () => {
 
       expect(variables).toHaveLength(2)
       expect(variables[0].value).toBe('')
-      // undefined 会被转换为空字符串,因为 DetectedVariable.value 类型是 string
+      // undefined is converted to an empty string, because the DetectedVariable.value type is string
       expect(variables[1].value).toBe('')
     })
   })
 
-  describe('用户体验测试', () => {
-    it('应该提供即时反馈', async () => {
+  describe('User experience test', () => {
+    it('should provide instant feedback', async () => {
       const temporaryVariables = ref<Record<string, string>>({})
 
-      // 模拟用户添加变量并等待响应式更新
+      // Simulate the user adding a variable and waiting for the reactive update
       temporaryVariables.value['newVar'] = ''
       await nextTick()
 
       expect(temporaryVariables.value.newVar).toBe('')
     })
 
-    it('应该支持撤销操作', () => {
+    it('should support undo', () => {
       const history: string[] = []
       let currentText = 'Hello world'
 
-      // 记录初始状态
+      // Record the initial state
       history.push(currentText)
 
-      // 执行操作
+      // Perform the operation
       currentText = 'Hello {{name}}'
       history.push(currentText)
 
-      // 撤销
+      // Undo
       history.pop()
       currentText = history[history.length - 1]
 

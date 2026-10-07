@@ -1,6 +1,6 @@
 /**
- * 全局测试设置文件
- * 为所有测试提供通用的 mock 和环境配置
+ * Global test setup file
+ * Provides common mocks and environment configuration for all tests
  */
 
 import { vi } from 'vitest'
@@ -9,7 +9,7 @@ import { createI18n } from 'vue-i18n'
 import enUS from '../src/i18n/locales/en-US'
 import { setupErrorDetection } from './utils/error-detection'
 
-// 创建测试用的 i18n 实例
+// Create an i18n instance for tests
 const i18n = createI18n({
   legacy: false,
   locale: 'en-US',
@@ -19,17 +19,17 @@ const i18n = createI18n({
   }
 })
 
-// 配置 Vue Test Utils 全局插件
+// Configure Vue Test Utils global plugins
 config.global.plugins = [i18n]
 
-// 配置 Naive UI 全局插件
-// 为了避免在每个测试中都需要手动配置 Naive UI,我们在全局设置中配置它
+// Configure the Naive UI global plugin
+// To avoid configuring Naive UI manually in every test, we configure it in the global setup
 config.global.stubs = {
-  // 保留 Teleport 以支持 Naive UI 的弹窗组件
+  // Keep Teleport to support Naive UI's popup components
   Teleport: true
 }
 
-// 创建全局消息 API mock (Naive UI 依赖)
+// Create a global message API mock (Naive UI depends on it)
 if (typeof window !== 'undefined') {
   (window as any).$message = {
     success: vi.fn(),
@@ -70,7 +70,7 @@ Object.assign(window, {
 })
 
 // Mock ResizeObserver (commonly used in modern components)
-// 使用真正的类而不是 vi.fn().mockImplementation()，因为某些库在模块顶层实例化
+// Use a real class instead of vi.fn().mockImplementation(), because some libraries instantiate at module top level
 class MockResizeObserver {
   callback: ResizeObserverCallback | null = null
   observe = vi.fn()
@@ -161,17 +161,17 @@ if (typeof Range !== 'undefined') {
 
 console.log('[Test Setup] Global browser API mocks initialized')
 
-// ========== Pinia 服务清理（防止测试污染）==========
+// ========== Pinia service cleanup (prevents test pollution) ==========
 import { afterEach } from 'vitest'
 import { setPiniaServices } from '../src/plugins/pinia'
 
 /**
- * 全局测试清理：确保每个测试用例后都清理 Pinia 服务
- * 避免测试用例之间的状态污染
+ * Global test cleanup: make sure Pinia services are cleaned up after every test case
+ * Avoids state pollution between test cases
  *
- * 这是 Codex 建议的"兜底机制"：
- * - 即使测试用例忘记手动清理，全局 afterEach 也会自动清理
- * - 配合 pinia-test-helpers.ts 中的 helper 使用效果更佳
+ * This is the "fallback mechanism" suggested by Codex:
+ * - Even if a test case forgets to clean up manually, the global afterEach cleans up automatically
+ * - Works even better together with the helpers in pinia-test-helpers.ts
  */
 afterEach(() => {
   setPiniaServices(null)
@@ -179,5 +179,5 @@ afterEach(() => {
 
 console.log('[Test Setup] Pinia services cleanup registered')
 
-// ========== UI 错误检测（console + 未捕获异常）==========
+// ========== UI error detection (console + uncaught exceptions) ==========
 setupErrorDetection()

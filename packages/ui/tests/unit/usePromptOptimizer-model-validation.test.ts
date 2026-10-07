@@ -10,7 +10,7 @@ vi.mock('../../src/composables/useToast', () => ({
   })
 }))
 
-// useStorage已被移除，不再需要mock
+// useStorage has been removed; mocking is no longer needed
 
 vi.mock('vue-i18n', async (importOriginal) => {
   const actual = await importOriginal()

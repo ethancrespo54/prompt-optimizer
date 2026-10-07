@@ -108,12 +108,12 @@ describe('ImportExportDialog', () => {
     }))
   })
 
-  it('应该提供完整的导入格式选项', () => {
+  it('should provide the full set of import format options', () => {
     const wrapper = createWrapper()
     expect(wrapper.vm.importFormats.map(f => f.id)).toEqual(['smart', 'openai', 'langfuse', 'conversation'])
   })
 
-  it('会话格式导入成功后应该触发 import-success 事件', async () => {
+  it('should trigger the import-success event after a successful conversation format import', async () => {
     const wrapper = createWrapper()
     wrapper.vm.selectedImportFormat = 'conversation'
     wrapper.vm.importData = JSON.stringify({
@@ -128,7 +128,7 @@ describe('ImportExportDialog', () => {
     expect(wrapper.vm.importError).toBe('')
   })
 
-  it('无效 JSON 数据会设置错误信息', async () => {
+  it('invalid JSON data should set an error message', async () => {
     const wrapper = createWrapper()
     wrapper.vm.importData = 'invalid json'
     wrapper.vm.selectedImportFormat = 'smart'
@@ -138,7 +138,7 @@ describe('ImportExportDialog', () => {
     expect(wrapper.vm.importError.length).toBeGreaterThan(0)
   })
 
-  it('导出预览应该与实际导出结构一致', async () => {
+  it('the export preview should match the actual export structure', async () => {
     const wrapper = createWrapper({
       mode: 'export',
       messages: [{ role: 'user', content: 'test' }],
@@ -153,7 +153,7 @@ describe('ImportExportDialog', () => {
     expect(preview.metadata.origin).toBe('import_export_dialog')
   })
 
-  it('导出成功会触发 export-success 并清除错误信息', async () => {
+  it('a successful export should trigger export-success and clear the error message', async () => {
     const wrapper = createWrapper({
       mode: 'export',
       messages: [{ role: 'user', content: 'test' }]
@@ -165,7 +165,7 @@ describe('ImportExportDialog', () => {
     expect(wrapper.vm.exportError).toBe('')
   })
 
-  it('导出失败会展示错误并触发 export-error', async () => {
+  it('a failed export should show an error and trigger export-error', async () => {
     mockContextEditor.exportToClipboard.mockResolvedValueOnce(false)
     const wrapper = createWrapper({
       mode: 'export',
@@ -178,7 +178,7 @@ describe('ImportExportDialog', () => {
     expect(wrapper.emitted('export-error')).toBeTruthy()
   })
 
-  it('选择 OpenAI 格式时预览应基于转换结果', async () => {
+  it('selecting the OpenAI format should base the preview on the converted result', async () => {
     const wrapper = createWrapper({
       mode: 'export',
       messages: [{ role: 'user', content: 'preview' }]

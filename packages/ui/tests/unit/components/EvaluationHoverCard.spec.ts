@@ -93,7 +93,7 @@ const baseResult = {
     dimensions: [
       {
         key: 'clarity',
-        label: '清晰度',
+        label: 'Clarity',
         score: 90,
       },
     ],
@@ -120,13 +120,13 @@ const createWrapper = () =>
   })
 
 describe('EvaluationHoverCard feedback editor interaction', () => {
-  it('默认应展示反馈编辑器', async () => {
+  it('should show the feedback editor by default', async () => {
     const wrapper = createWrapper()
 
     expect(wrapper.find('[data-testid="feedback-editor-stub"]').exists()).toBe(true)
   })
 
-  it('点击重新评估：无反馈则 emit evaluate；有反馈则 emit evaluate-with-feedback', async () => {
+  it('clicking re-evaluate: emits evaluate without feedback; emits evaluate-with-feedback with feedback', async () => {
     const wrapper = createWrapper()
 
     const findReEvaluateButton = () =>
@@ -156,7 +156,7 @@ describe('EvaluationHoverCard feedback editor interaction', () => {
     expect(withFeedback).toBeTruthy()
     expect(withFeedback?.[0]?.[0]).toEqual({ feedback: 'needs work' })
 
-    // feedback 会在触发后清空：再次点击应回退到无反馈逻辑
+    // feedback is cleared after triggering: clicking again should fall back to the no-feedback logic
     const reEvaluateButton3 = findReEvaluateButton()
     expect(reEvaluateButton3).toBeTruthy()
 

@@ -136,12 +136,12 @@ describe('ModelManager', () => {
 
   it('mounts successfully with provided services', async () => {
     const wrapper = mountComponent()
-    // 组件应该成功挂载
+    // The component should mount successfully
     expect(wrapper.exists()).toBe(true)
-    // ModelManager 不再在挂载时直接调用 getAllModels
-    // 数据加载由子组件 TextModelManager 和 ImageModelManager 处理
+    // ModelManager no longer calls getAllModels directly on mount
+    // Data loading is handled by the child components TextModelManager and ImageModelManager
 
-    // 验证组件结构包含 TextModelManager 和 ImageModelManager 存根
+    // Verify the component structure contains the TextModelManager and ImageModelManager stubs
     expect(wrapper.html()).toBeTruthy()
   })
 })

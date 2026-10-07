@@ -1,7 +1,7 @@
 import { vi } from 'vitest'
 import { config } from '@vue/test-utils'
 
-// 模拟 window 对象
+// Mock the window object
 const windowMock = {
   localStorage: {
     store: new Map(),
@@ -20,28 +20,28 @@ const windowMock = {
   }
 };
 
-// 全局注入 window mock
+// Inject the window mock globally
 Object.defineProperty(global, 'window', {
   value: windowMock,
   writable: true,
   configurable: true
 });
 
-// 全局注入 localStorage
+// Inject localStorage globally
 Object.defineProperty(global, 'localStorage', {
   value: windowMock.localStorage,
   writable: true,
   configurable: true
 });
 
-// 模拟 Teleport 组件
+// Mock the Teleport component
 config.global.stubs = {
   Teleport: {
     template: '<div><slot /></div>'
   }
 }
 
-// 在每个测试之前重置 mock 状态
+// Reset the mock state before each test
 beforeEach(() => {
   windowMock.localStorage.store.clear();
   vi.clearAllMocks();

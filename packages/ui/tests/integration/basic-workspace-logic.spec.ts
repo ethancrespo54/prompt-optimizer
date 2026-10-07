@@ -251,7 +251,7 @@ describe('Basic workspace logic (smoke)', () => {
 
     const promptService = {
       testPromptStream: vi.fn(async (_system: any, _user: any, _modelKey: any, handlers: any) => {
-        // 第一次调用：original；第二次：optimized
+        // First call: original; second call: optimized
         const isOriginal = promptService.testPromptStream.mock.calls.length === 1
         handlers.onToken(isOriginal ? 'O' : 'N')
         handlers.onToken(isOriginal ? '1' : '2')

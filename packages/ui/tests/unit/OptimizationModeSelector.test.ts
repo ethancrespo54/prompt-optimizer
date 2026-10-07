@@ -13,7 +13,7 @@ describe('OptimizationModeSelector', () => {
     const radioButtons = wrapper.findAll('.n-radio-button, [role="radio"]')
     expect(radioButtons.length).toBeGreaterThan(0)
 
-    // 文案由 i18n 决定（全局 setup.ts 已注入），这里只验证可渲染且有内容
+    // The copy is determined by i18n (injected by the global setup.ts); here we only verify it renders with content
     expect(wrapper.text().length).toBeGreaterThan(0)
   })
 })

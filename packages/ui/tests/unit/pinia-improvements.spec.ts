@@ -1,9 +1,9 @@
 /**
- * Pinia 改进功能测试
+ * Pinia improvements test
  *
- * 基于 Codex 建议添加的回归测试：
- * 1. useTemporaryVariables() 无 active pinia 时抛错
- * 2. withMockPiniaServices() 的清理/恢复行为
+ * Regression tests added based on Codex suggestions:
+ * 1. useTemporaryVariables() throws when there is no active pinia
+ * 2. Cleanup/restore behavior of withMockPiniaServices()
  */
 
 import { describe, it, expect, beforeEach } from 'vitest'
@@ -11,67 +11,67 @@ import { setPiniaServices, getPiniaServices } from '../../src/plugins/pinia'
 import { useTemporaryVariables } from '../../src/composables/variable/useTemporaryVariables'
 import { createTestPinia, withMockPiniaServices, createPreferenceServiceStub } from '../utils/pinia-test-helpers'
 
-describe('Pinia 改进功能测试', () => {
-  // 每个测试前清理全局服务
+describe('Pinia improvements test', () => {
+  // Clean up global services before each test
   beforeEach(() => {
     setPiniaServices(null)
   })
 
-  describe('useTemporaryVariables 错误处理', () => {
-    it('应该在无 active pinia 时抛出清晰错误', () => {
-      // ✅ Codex 建议：测试无 active pinia 时的错误抛出
+  describe('useTemporaryVariables error handling', () => {
+    it('should throw a clear error when there is no active pinia', () => {
+      // ✅ Codex suggestion: test the error thrown when there is no active pinia
       expect(() => {
         useTemporaryVariables()
       }).toThrow('[useTemporaryVariables] Pinia not installed or no active pinia instance')
     })
 
-    it('错误信息应包含 installPinia 指引', () => {
-      // ✅ Codex 建议：确保错误信息包含如何修复的指引
+    it('the error message should include installPinia guidance', () => {
+      // ✅ Codex suggestion: make sure the error message includes guidance on how to fix it
       try {
         useTemporaryVariables()
-        expect.fail('应该抛出错误')
+        expect.fail('Should have thrown an error')
       } catch (error: any) {
         expect(error.message).toContain('installPinia(app)')
         expect(error.message).toContain('component setup')
       }
     })
 
-    it('应该在有 active pinia 时正常工作', () => {
-      // 创建测试环境
+    it('should work normally when there is an active pinia', () => {
+      // Create the test environment
       const { pinia } = createTestPinia()
 
-      // 应该不抛错
+      // Should not throw
       expect(() => {
         useTemporaryVariables()
       }).not.toThrow()
     })
   })
 
-  describe('withMockPiniaServices 清理/恢复行为', () => {
-    it('应该在测试后恢复到调用前的服务状态', async () => {
-      // ✅ Codex 建议：测试"设置→还原"行为
+  describe('withMockPiniaServices cleanup/restore behavior', () => {
+    it('should restore to the service state before the call after the test', async () => {
+      // ✅ Codex suggestion: test the "set → restore" behavior
 
-      // 1. 设置初始服务
+      // 1. Set the initial services
       const initialService = { test: 'initial' } as any
       setPiniaServices(initialService)
       expect(getPiniaServices()).toBe(initialService)
 
-      // 2. 在 withMockPiniaServices 内使用新服务
+      // 2. Use the new services inside withMockPiniaServices
       await withMockPiniaServices(
         { preferenceService: createPreferenceServiceStub() },
         async ({ services }) => {
-          // 内部应该是新服务
+          // Inside should be the new services
           expect(getPiniaServices()).not.toBe(initialService)
           expect(services.preferenceService).toBeDefined()
         }
       )
 
-      // 3. 退出后应该恢复到初始服务
+      // 3. After exiting, it should restore to the initial services
       expect(getPiniaServices()).toBe(initialService)
     })
 
-    it('应该支持嵌套调用', async () => {
-      // ✅ Codex 建议：支持嵌套 helper
+    it('should support nested calls', async () => {
+      // ✅ Codex suggestion: support nested helpers
 
       const outerService = { test: 'outer' } as any
       const innerService = { test: 'inner' } as any
@@ -84,7 +84,7 @@ describe('Pinia 改进功能测试', () => {
           const currentOuter = getPiniaServices()
           expect(currentOuter).not.toBe(outerService)
 
-          // 嵌套调用
+          // Nested call
           await withMockPiniaServices(
             { preferenceService: createPreferenceServiceStub() },
             async () => {
@@ -93,17 +93,17 @@ describe('Pinia 改进功能测试', () => {
             }
           )
 
-          // 退出内层后应该恢复到外层
+          // After exiting the inner call, it should restore to the outer one
           expect(getPiniaServices()).toBe(currentOuter)
         }
       )
 
-      // 退出外层后应该恢复到最初
+      // After exiting the outer call, it should restore to the original
       expect(getPiniaServices()).toBe(outerService)
     })
 
-    it('应该在测试函数抛错时仍然恢复状态', async () => {
-      // ✅ 测试错误处理场景
+    it('should still restore the state when the test function throws', async () => {
+      // ✅ Test the error handling scenario
 
       const initialService = { test: 'initial' } as any
       setPiniaServices(initialService)
@@ -112,20 +112,20 @@ describe('Pinia 改进功能测试', () => {
         await withMockPiniaServices(
           { preferenceService: createPreferenceServiceStub() },
           async () => {
-            throw new Error('测试错误')
+            throw new Error('Test error')
           }
         )
-        expect.fail('应该抛出错误')
+        expect.fail('Should have thrown an error')
       } catch (error: any) {
-        expect(error.message).toBe('测试错误')
+        expect(error.message).toBe('Test error')
       }
 
-      // 即使测试函数抛错，也应该恢复状态
+      // Even if the test function throws, the state should be restored
       expect(getPiniaServices()).toBe(initialService)
     })
 
-    it('应该在 null 状态下也能正常恢复', async () => {
-      // 初始状态为 null
+    it('should also restore correctly from a null state', async () => {
+      // The initial state is null
       setPiniaServices(null)
       expect(getPiniaServices()).toBeNull()
 
@@ -136,13 +136,13 @@ describe('Pinia 改进功能测试', () => {
         }
       )
 
-      // 应该恢复到 null
+      // Should restore to null
       expect(getPiniaServices()).toBeNull()
     })
   })
 
-  describe('createTestPinia 基础功能', () => {
-    it('应该创建预配置的 Pinia 实例', () => {
+  describe('createTestPinia basic functionality', () => {
+    it('should create a preconfigured Pinia instance', () => {
       const { pinia, services, cleanup } = createTestPinia()
 
       expect(pinia).toBeDefined()
@@ -151,7 +151,7 @@ describe('Pinia 改进功能测试', () => {
       expect(cleanup).toBeInstanceOf(Function)
     })
 
-    it('应该支持服务覆盖', () => {
+    it('should support service overrides', () => {
       const customGet = vi.fn()
       const { services } = createTestPinia({
         preferenceService: createPreferenceServiceStub({
@@ -162,7 +162,7 @@ describe('Pinia 改进功能测试', () => {
       expect(services.preferenceService.get).toBe(customGet)
     })
 
-    it('cleanup 应该清理全局服务', () => {
+    it('cleanup should clear the global services', () => {
       const { cleanup } = createTestPinia()
 
       expect(getPiniaServices()).not.toBeNull()

@@ -129,6 +129,6 @@ describe('ImageModelManager', () => {
     })
   }
 
-  // TODO: 添加测试用例
-  it.todo('应该正确初始化组件')
+  // TODO: add test cases
+  it.todo('should initialize the component correctly')
 })

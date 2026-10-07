@@ -2,10 +2,10 @@ import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { ActionButtonUI, ContentCardUI } from '../../src'
 
-describe('基础UI组件测试', () => {
+describe('Basic UI component test', () => {
   describe('ActionButtonUI', () => {
-    it('应该正确渲染按钮文本', () => {
-      const buttonText = '测试按钮'
+    it('should render the button text correctly', () => {
+      const buttonText = 'Test button'
       const wrapper = mount(ActionButtonUI, {
         props: {
           text: buttonText,
@@ -15,10 +15,10 @@ describe('基础UI组件测试', () => {
       expect(wrapper.text()).toContain(buttonText)
     })
 
-    it('应该正确处理loading状态', async () => {
+    it('should handle the loading state correctly', async () => {
       const wrapper = mount(ActionButtonUI, {
         props: {
-          text: '测试按钮',
+          text: 'Test button',
           icon: '??',
           loading: false
         }
@@ -32,8 +32,8 @@ describe('基础UI组件测试', () => {
   })
 
   describe('ContentCardUI', () => {
-    it('应该正确渲染slot内容', () => {
-      const slotContent = '测试内容'
+    it('should render slot content correctly', () => {
+      const slotContent = 'Test content'
       const wrapper = mount(ContentCardUI, {
         slots: {
           default: slotContent
