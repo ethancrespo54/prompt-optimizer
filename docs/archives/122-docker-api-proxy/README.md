@@ -1,91 +1,91 @@
-# Docker API代理功能
+# Docker API Proxy Feature
 
-## 📋 项目概述
+## 📋 Project Overview
 
-**项目编号**：122  
-**项目名称**：Docker API代理功能实现  
-**完成时间**：2025-01-14  
-**开发周期**：1天（约8小时）  
-**项目状态**：✅ 已完成  
+**Project number**: 122  
+**Project name**: Docker API Proxy Feature Implementation  
+**Completion date**: 2025-01-14  
+**Development cycle**: 1 day (about 8 hours)  
+**Project status**: ✅ Completed  
 
-## 🎯 项目目标
+## 🎯 Project Goals
 
-为Docker部署环境实现与Vercel代理功能对等的API代理解决方案，解决前端跨域问题，支持所有LLM API调用。
+Implement an API proxy solution for Docker deployment environments with parity to the Vercel proxy feature, resolving frontend cross-origin issues and supporting all LLM API calls.
 
-### 主要目标
-- 实现Docker环境下的跨域API代理功能
-- 支持普通HTTP请求和SSE流式响应
-- 提供与Vercel代理一致的用户体验
-- 确保零依赖、高性能、易维护
+### Main Goals
+- Implement cross-origin API proxy functionality in the Docker environment
+- Support regular HTTP requests and SSE streaming responses
+- Provide a user experience consistent with the Vercel proxy
+- Ensure zero dependencies, high performance and easy maintenance
 
-### 技术目标
-- 采用nginx本地转发 + Node.js代理的简化架构
-- 实现零依赖的Node.js代理服务
-- 完善的错误处理和日志记录
-- 前端UI无缝集成
+### Technical Goals
+- Adopt the simplified architecture of nginx local forwarding + a Node.js proxy
+- Implement a zero-dependency Node.js proxy service
+- Thorough error handling and logging
+- Seamless frontend UI integration
 
-## ✅ 完成情况
+## ✅ Completion Status
 
-### 核心功能完成情况
-- ✅ **基础代理功能**：支持GET、POST、PUT、DELETE、OPTIONS、HEAD
-- ✅ **流式响应支持**：正确的SSE透传实现
-- ✅ **错误处理**：智能错误分类和用户友好消息
-- ✅ **环境检测**：自动检测Docker环境可用性
-- ✅ **UI集成**：ModelManager.vue完整集成
-- ✅ **国际化支持**：中英文文本完整
-- ✅ **数据持久化**：模型配置保存和加载
+### Core Feature Completion
+- ✅ **Basic proxy functionality**: supports GET, POST, PUT, DELETE, OPTIONS, HEAD
+- ✅ **Streaming response support**: correct SSE passthrough implementation
+- ✅ **Error handling**: smart error classification and user-friendly messages
+- ✅ **Environment detection**: automatically detects the availability of the Docker environment
+- ✅ **UI integration**: ModelManager.vue is fully integrated
+- ✅ **Internationalization support**: complete Chinese and English text
+- ✅ **Data persistence**: model configuration is saved and loaded
 
-### 技术实现完成情况
-- ✅ **Node.js代理服务**：零依赖实现，使用内置模块
-- ✅ **nginx配置优化**：本地转发，流式响应支持
-- ✅ **前端集成**：环境检测、UI组件、LLM服务支持
-- ✅ **类型定义**：完整的TypeScript支持
-- ✅ **构建验证**：所有包构建成功
+### Technical Implementation Completion
+- ✅ **Node.js proxy service**: zero-dependency implementation using built-in modules
+- ✅ **nginx configuration optimization**: local forwarding with streaming response support
+- ✅ **Frontend integration**: environment detection, UI components, LLM service support
+- ✅ **Type definitions**: complete TypeScript support
+- ✅ **Build verification**: all packages build successfully
 
-## 🎉 主要成果
+## 🎉 Main Results
 
-### 架构改进
-- **简化架构设计**：采用nginx本地转发避免复杂的动态代理配置
-- **零依赖实现**：Node.js代理服务只使用内置模块，提高安全性和可维护性
-- **职责清晰**：nginx负责转发，Node.js负责代理逻辑
+### Architecture Improvements
+- **Simplified architecture design**: uses nginx local forwarding to avoid complex dynamic proxy configuration
+- **Zero-dependency implementation**: the Node.js proxy service uses only built-in modules, improving security and maintainability
+- **Clear responsibilities**: nginx handles forwarding and Node.js handles the proxy logic
 
-### 稳定性提升
-- **完善错误处理**：智能错误分类，超时504、连接错误502、格式错误400
-- **请求追踪系统**：唯一请求ID，便于调试和监控
-- **超时策略优化**：流式5分钟，普通2分钟，支持环境变量配置
+### Stability Improvements
+- **Thorough error handling**: smart error classification — timeout 504, connection error 502, format error 400
+- **Request tracing system**: unique request IDs for debugging and monitoring
+- **Timeout strategy optimization**: 5 minutes for streaming and 2 minutes for regular requests, configurable via environment variables
 
-### 开发体验优化
-- **详细日志记录**：时间戳、请求ID、IP、耗时等完整信息
-- **类型安全**：完整的TypeScript支持
-- **易于维护**：代码简洁，配置清晰
+### Developer Experience Improvements
+- **Detailed logging**: complete information such as timestamp, request ID, IP and duration
+- **Type safety**: complete TypeScript support
+- **Easy to maintain**: concise code and clear configuration
 
-### 用户体验提升
-- **无缝集成**：与现有Vercel代理体验一致
-- **智能显示**：根据环境自动显示相关选项
-- **视觉区分**：蓝色主题区别于Vercel紫色主题
+### User Experience Improvements
+- **Seamless integration**: consistent with the existing Vercel proxy experience
+- **Smart display**: relevant options are shown automatically based on the environment
+- **Visual distinction**: a blue theme distinguishes it from the purple Vercel theme
 
-## 🚀 后续工作
+## 🚀 Follow-up Work
 
-### 已识别的待办事项
-无重要未完成任务，功能已完整实现。
+### Identified To-dos
+No significant unfinished tasks; the feature has been fully implemented.
 
-### 建议的改进方向
-1. **安全增强**：根据实际需求添加URL白名单（可选）
-2. **监控增强**：集成专业监控工具（可选）
-3. **性能优化**：根据使用情况调整超时策略（可选）
+### Suggested Improvement Directions
+1. **Security enhancement**: add a URL allowlist as needed (optional)
+2. **Monitoring enhancement**: integrate professional monitoring tools (optional)
+3. **Performance optimization**: adjust the timeout strategy based on usage (optional)
 
-### 维护建议
-1. **定期测试**：确保代理功能持续正常
-2. **日志监控**：关注错误日志和性能指标
-3. **版本更新**：保持Node.js版本更新
+### Maintenance Suggestions
+1. **Regular testing**: ensure the proxy functionality keeps working
+2. **Log monitoring**: watch error logs and performance metrics
+3. **Version updates**: keep the Node.js version up to date
 
-## 📁 核心交付物
+## 📁 Core Deliverables
 
-### 新增文件
+### New Files
 ```
 node-proxy/
-├── package.json          # Node.js项目配置
-└── server.js             # 零依赖代理服务器
+├── package.json          # Node.js project configuration
+└── server.js             # zero-dependency proxy server
 
 docs/workspace/
 ├── stage1-completion-report.md
@@ -93,67 +93,67 @@ docs/workspace/
 └── project-completion-report.md
 ```
 
-### 修改文件
+### Modified Files
 ```
 docker/
-├── nginx.conf            # 添加API代理配置
-└── supervisord.conf      # 添加node-proxy进程
+├── nginx.conf            # add API proxy configuration
+└── supervisord.conf      # add the node-proxy process
 
 packages/core/src/
-├── services/llm/service.ts    # 添加Docker代理支持
-├── services/model/types.ts    # 添加useDockerProxy类型
-├── utils/environment.ts       # 添加Docker环境检测
-└── index.ts                   # 导出新函数
+├── services/llm/service.ts    # add Docker proxy support
+├── services/model/types.ts    # add the useDockerProxy type
+├── utils/environment.ts       # add Docker environment detection
+└── index.ts                   # export the new function
 
 packages/ui/src/
-├── components/ModelManager.vue # 集成Docker代理UI
-└── i18n/locales/              # 添加国际化文本
+├── components/ModelManager.vue # integrate the Docker proxy UI
+└── i18n/locales/              # add internationalized text
 ```
 
-## 🎯 项目价值
+## 🎯 Project Value
 
-### 技术价值
-- **架构统一**：三种部署方式都有一致的代理解决方案
-- **技术简化**：避免了nginx动态代理的复杂性
-- **可维护性**：零依赖实现，易于理解和维护
+### Technical Value
+- **Unified architecture**: all three deployment methods have a consistent proxy solution
+- **Simplified technology**: avoids the complexity of nginx dynamic proxying
+- **Maintainability**: zero-dependency implementation that is easy to understand and maintain
 
-### 用户价值
-- **功能完整**：Docker用户也能享受完整的代理功能
-- **体验一致**：与Vercel部署用户体验相同
-- **使用简单**：自动检测，无需手动配置
+### User Value
+- **Complete features**: Docker users also enjoy the full proxy functionality
+- **Consistent experience**: the same experience as Vercel deployment users
+- **Easy to use**: automatic detection, no manual configuration
 
-### 业务价值
-- **部署灵活性**：支持更多部署方式
-- **用户覆盖**：满足Docker部署用户需求
-- **竞争优势**：完整的跨域解决方案
+### Business Value
+- **Deployment flexibility**: supports more deployment methods
+- **User coverage**: meets the needs of Docker deployment users
+- **Competitive advantage**: a complete cross-origin solution
 
-## 📊 测试验证
+## 📊 Test Verification
 
-### 功能测试
-- ✅ **基础代理**：httpbin.org代理成功，200状态码
-- ✅ **错误处理**：无效域名返回友好错误，502状态码
-- ✅ **流式响应**：httpbin流式端点正常工作
-- ✅ **环境检测**：Docker环境检测正确
+### Functional Tests
+- ✅ **Basic proxy**: proxying httpbin.org succeeds with a 200 status code
+- ✅ **Error handling**: an invalid domain returns a friendly error with a 502 status code
+- ✅ **Streaming response**: the httpbin streaming endpoint works correctly
+- ✅ **Environment detection**: Docker environment detection is correct
 
-### 性能测试
-- ✅ **响应时间**：6-7秒（httpbin.org正常延迟）
-- ✅ **内存使用**：稳定，无内存泄漏
-- ✅ **并发处理**：支持多个同时请求
-- ✅ **资源清理**：定时器正确清理
+### Performance Tests
+- ✅ **Response time**: 6-7 seconds (normal latency of httpbin.org)
+- ✅ **Memory usage**: stable, no memory leaks
+- ✅ **Concurrency handling**: supports multiple simultaneous requests
+- ✅ **Resource cleanup**: timers are cleaned up correctly
 
-### 集成测试
-- ✅ **前端UI**：代理选项正确显示和保存
-- ✅ **LLM服务**：Docker代理配置正确传递
-- ✅ **构建系统**：Core和UI包构建成功
-- ✅ **类型检查**：TypeScript检查通过
+### Integration Tests
+- ✅ **Frontend UI**: proxy options are displayed and saved correctly
+- ✅ **LLM services**: the Docker proxy configuration is passed correctly
+- ✅ **Build system**: the Core and UI packages build successfully
+- ✅ **Type checking**: TypeScript checks pass
 
-## 🔗 相关文档
+## 🔗 Related Documents
 
-- [技术实现详解](./implementation.md) - 详细的技术实现和架构设计
-- [开发经验总结](./experience.md) - 可复用的开发经验和最佳实践
+- [Technical Implementation Details](./implementation.md) - Detailed technical implementation and architecture design
+- [Development Lessons Learned](./experience.md) - Reusable development experience and best practices
 
-## 📈 项目影响
+## 📈 Project Impact
 
-这个项目成功实现了Prompt Optimizer在三种部署方式（Vercel、Desktop、Docker）下的统一跨域代理解决方案，为用户提供了一致且优秀的使用体验，是项目基础设施的重要完善。
+This project successfully implemented a unified cross-origin proxy solution for Prompt Optimizer across the three deployment methods (Vercel, Desktop, Docker), giving users a consistent and excellent experience. It is an important improvement to the project's infrastructure.
 
-**项目状态：✅ 100%完成，生产就绪！**
+**Project status: ✅ 100% complete, production ready!**

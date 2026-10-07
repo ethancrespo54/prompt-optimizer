@@ -1,241 +1,241 @@
-# UI 改造任务文档
+# UI Rework Task Document
 
-> **文档版本**: v2.1  
-> **创建日期**: 2025-10-21  
-> **最后更新**: 2025-10-23  
-> **改造范围**: 上下文模式导航栏 + 测试区操作栏 + 变量系统重构  
-> **优先级**: P0 🔴 高优先级  
-> **状态**: ✅ 所有阶段已完成并通过测试
-
----
-
-## 📋 改造概述
-
-### ✅ 已完成的改造 (v1.0 - v2.1)
-
-1. **子模式选择器移到导航栏** - ✅ 已完成 (v1.0)
-2. **快捷操作栏移到测试区** - ✅ 已完成 (v1.1)
-3. **变量系统重构** - ✅ 已完成 (v2.0)
-   - ✅ 移除冗余的"会话变量"
-   - ✅ 引入测试区临时变量
-   - ✅ 三层变量合并逻辑 (全局 < 测试 < 预定义)
-   - ✅ 通过所有功能测试和回归测试
-   - 详见: [变量系统重构设计文档](./design.md)
+> **Document version**: v2.1  
+> **Created**: 2025-10-21  
+> **Last updated**: 2025-10-23  
+> **Rework scope**: Context mode navigation bar + test area action bar + variable system refactor  
+> **Priority**: P0 🔴 High priority  
+> **Status**: ✅ All phases completed and tested
 
 ---
 
-## 🎯 改造目标
+## 📋 Rework Overview
 
-### ✅ 目标 1: 子模式选择器移到导航栏 (已完成)
+### ✅ Completed Reworks (v1.0 - v2.1)
 
-**问题陈述:**
-- 当前子模式选择器（系统提示词/用户提示词）位于工作区内的输入面板
-- 给用户造成"局部设置"的错觉，实际上它切换整个工作区
-- 与功能模式选择器（基础/上下文/图像）层级不一致
+1. **Sub-mode selector moved to the navigation bar** - ✅ Completed (v1.0)
+2. **Quick action bar moved to the test area** - ✅ Completed (v1.1)
+3. **Variable system refactor** - ✅ Completed (v2.0)
+   - ✅ Removed the redundant "conversation variables"
+   - ✅ Introduced temporary variables in the test area
+   - ✅ Three-layer variable merge logic (Global < Test < Predefined)
+   - ✅ Passed all functional and regression tests
+   - See: [Variable System Refactor Design Document](./design.md)
 
-**改造目标:**
-- 将子模式选择器移到导航栏，紧邻功能模式选择器右侧
-- 仅在「上下文模式」时显示 `[系统提示词|用户提示词]`
-- 基础模式和图像模式也显示子模式选择器
+---
 
-**实施状态**: ✅ **已完成** (2025-10-22)
-- 提交: 之前已完成
-- 文件: `packages/web/src/App.vue`
+## 🎯 Rework Goals
 
-**期望效果:**
+### ✅ Goal 1: Move the Sub-mode Selector to the Navigation Bar (Completed)
+
+**Problem statement:**
+- The current sub-mode selector (System Prompt / User Prompt) lives in the input panel inside the workspace
+- It gives users the illusion of a "local setting", when it actually switches the whole workspace
+- It is inconsistent in hierarchy with the function mode selector (Basic / Context / Image)
+
+**Rework goals:**
+- Move the sub-mode selector to the navigation bar, right next to the function mode selector
+- Show `[System Prompt|User Prompt]` only in "Context mode"
+- Basic mode and Image mode also show a sub-mode selector
+
+**Implementation status**: ✅ **Completed** (2025-10-22)
+- Commit: completed earlier
+- File: `packages/web/src/App.vue`
+
+**Expected result:**
 ```
-改造前:
+Before:
 ┌────────────────────────────────────────────────────────┐
-│ 📝 Prompt Optimizer | [基础|上下文|图像] | 📝📜⚙️... │
+│ 📝 Prompt Optimizer | [Basic|Context|Image] | 📝📜⚙️... │
 ├────────────────────────────────────────────────────────┤
-│ 工作区                                                 │
+│ Workspace                                              │
 │ ┌────────────────────────────────────────────────────┐│
-│ │ [系统提示词|用户提示词] [模型▾] [模板▾]           ││ ← 在这里
-│ │ 输入框...                                          ││
+│ │ [System Prompt|User Prompt] [Model▾] [Template▾]  ││ ← here
+│ │ Input box...                                       ││
 │ └────────────────────────────────────────────────────┘│
 └────────────────────────────────────────────────────────┘
 
-改造后:
+After:
 ┌────────────────────────────────────────────────────────┐
 │ 📝 Prompt Optimizer                                    │
-│ [基础|上下文|图像] [系统提示词|用户提示词] 📝📜⚙️... │ ← 移到这里
+│ [Basic|Context|Image] [System Prompt|User Prompt] 📝📜⚙️... │ ← moved here
 ├────────────────────────────────────────────────────────┤
-│ 工作区                                                 │
+│ Workspace                                              │
 │ ┌────────────────────────────────────────────────────┐│
-│ │ 用户提示词输入 [模型▾] [模板▾]                    ││ ← 简洁清晰
-│ │ 输入框...                                          ││
+│ │ User prompt input [Model▾] [Template▾]            ││ ← clean and clear
+│ │ Input box...                                       ││
 │ └────────────────────────────────────────────────────┘│
 └────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-### ✅ 目标 2: 快捷操作栏移到测试区 (已完成)
+### ✅ Goal 2: Move the Quick Action Bar to the Test Area (Completed)
 
-**问题陈述:**
-- 当前快捷操作栏（📊全局变量 📝会话变量 🔧工具管理）位于左侧优化区上方
-- 作用域不明确，视觉上像是"只影响左侧"
-- 但实际上这些操作主要在测试时使用，与右侧测试区关联更强
-- 占用优化区垂直空间，而优化区需要显示较长的提示词内容
+**Problem statement:**
+- The current quick action bar (📊Global Variables 📝Conversation Variables 🔧Tool Management) sits above the left optimization area
+- Its scope is unclear, and it visually looks like it "only affects the left side"
+- But these actions are mainly used during testing and are more strongly related to the test area on the right
+- It takes up vertical space in the optimization area, which needs to display long prompt content
 
-**改造目标:**
-- 将快捷操作栏移到右侧测试区顶部
-- 作为测试区的操作工具栏，明确其作用域
-- 释放优化区的垂直空间
+**Rework goals:**
+- Move the quick action bar to the top of the test area on the right
+- Make it the action toolbar of the test area, clarifying its scope
+- Free up vertical space in the optimization area
 
-**实施状态**: ✅ **已完成** (2025-10-22)
-- 提交: `ce90d47` - refactor(ui): 优化上下文模式快捷操作栏位置
-- 文件: `ContextUserWorkspace.vue`, `ContextSystemWorkspace.vue`
+**Implementation status**: ✅ **Completed** (2025-10-22)
+- Commit: `ce90d47` - refactor(ui): optimize the position of the context mode quick action bar
+- Files: `ContextUserWorkspace.vue`, `ContextSystemWorkspace.vue`
 
-**期望效果:**
+**Expected result:**
 ```
-改造前:
+Before:
 ┌────────────────────────┬───────────────────────────────┐
-│ 左侧优化区             │ 右侧测试区                     │
+│ Left optimization area │ Right test area                │
 │ ┌────────────────────┐│                               │
-│ │📊📝🔧 快捷操作     ││ 测试内容...                   │
+│ │📊📝🔧 Quick actions ││ Test content...               │
 │ └────────────────────┘│                               │
 │ ┌────────────────────┐│                               │
-│ │ 提示词输入         ││                               │
+│ │ Prompt input       ││                               │
 │ └────────────────────┘│                               │
 └────────────────────────┴───────────────────────────────┘
 
-改造后:
+After:
 ┌────────────────────────┬───────────────────────────────┐
-│ 左侧优化区             │ 右侧测试区                     │
+│ Left optimization area │ Right test area                │
 │                        │ ┌───────────────────────────┐│
-│ ┌────────────────────┐│ │ 测试 📊全局 📝会话 🔧工具 ││ ← 移到这里
-│ │ 提示词输入         ││ └───────────────────────────┘│
-│ │ (空间增加)         ││ ┌───────────────────────────┐│
-│ └────────────────────┘│ │ 变量输入...               ││
-│ ┌────────────────────┐│ │ 测试结果...               ││
-│ │ 优化结果           ││ └───────────────────────────┘│
+│ ┌────────────────────┐│ │ Test 📊Global 📝Conv. 🔧Tools ││ ← moved here
+│ │ Prompt input       ││ └───────────────────────────┘│
+│ │ (more space)       ││ ┌───────────────────────────┐│
+│ └────────────────────┘│ │ Variable input...         ││
+│ ┌────────────────────┐│ │ Test results...           ││
+│ │ Optimization result││ └───────────────────────────┘│
 └────────────────────────┴───────────────────────────────┘
 ```
 
 ---
 
-### ✅ 目标 3: 变量系统重构 (已完成)
+### ✅ Goal 3: Variable System Refactor (Completed)
 
-**问题陈述:**
-- 当前有两种持久化变量: "全局变量" 和 "会话变量"
-- 实际上只有一个默认上下文,无法切换上下文
-- "会话变量"名不副实,本质上是另一个全局变量池
-- 两种变量造成用户困惑: "有什么区别?" "应该用哪个?"
+**Problem statement:**
+- There are currently two kinds of persistent variables: "global variables" and "conversation variables"
+- In fact there is only one default context, and contexts cannot be switched
+- "Conversation variables" don't live up to their name; they are essentially another global variable pool
+- Two kinds of variables confuse users: "What's the difference?" "Which one should I use?"
 
-**改造目标:**
-- **移除**: 会话变量相关UI和代码 ✅
-- **保留**: 全局变量 (持久化,跨会话共享) ✅
-- **新增**: 测试区临时变量 (内存存储,刷新丢失) ✅
-- **简化**: 变量系统概念,降低学习成本 ✅
+**Rework goals:**
+- **Remove**: Conversation variable UI and code ✅
+- **Keep**: Global variables (persistent, shared across sessions) ✅
+- **Add**: Temporary variables in the test area (stored in memory, lost on refresh) ✅
+- **Simplify**: The variable system concepts, lowering the learning cost ✅
 
-**实际效果:**
+**Actual result:**
 ```
-改造前:
+Before:
 ┌─────────────────────────────────────────┐
-│ 测试区                                   │
+│ Test Area                                │
 ├─────────────────────────────────────────┤
-│ [测试] [📊全局变量] [📝会话变量] [🔧工具] │
-│         ↑ 困惑: 有什么区别?              │
+│ [Test] [📊Global Variables] [📝Conversation Variables] [🔧Tools] │
+│         ↑ Confusing: what's the difference? │
 ├─────────────────────────────────────────┤
 
-改造后:
+After:
 ┌─────────────────────────────────────────┐
-│ 测试区                                   │
+│ Test Area                                │
 ├─────────────────────────────────────────┤
-│ [测试] [📊全局变量] [🔧工具管理]        │
-│         ↑ 清晰: 永久保存的配置           │
+│ [Test] [📊Global Variables] [🔧Tool Management] │
+│         ↑ Clear: permanently saved configuration │
 ├─────────────────────────────────────────┤
-│ 变量输入 (临时,刷新丢失):               │
-│ {{style}}    [欢快________] 📊          │
-│              ↑ 测试输入    ↑ 使用全局值  │
-│ {{topic}}    [写歌________]             │
+│ Variable input (temporary, lost on refresh): │
+│ {{style}}    [Cheerful___] 📊           │
+│              ↑ Test input  ↑ Uses global value │
+│ {{topic}}    [Write a song]             │
 ├─────────────────────────────────────────┤
-│ [▶ 测试]                                │
+│ [▶ Test]                                │
 └─────────────────────────────────────────┘
 ```
 
-**详细设计**: 见 [变量系统重构设计文档](./variable-system-redesign.md)
+**Detailed design**: See [Variable System Refactor Design Document](./variable-system-redesign.md)
 
-**实施状态**: ✅ **已完成** (2025-10-23)
-- 提交: `3f53812` - refactor(ui): 重构变量系统并移除会话变量功能
-- 文件: 多个核心文件,详见变量系统重构设计文档
-- 测试: 已通过所有功能测试和回归测试
+**Implementation status**: ✅ **Completed** (2025-10-23)
+- Commit: `3f53812` - refactor(ui): refactor the variable system and remove the conversation variables feature
+- Files: Multiple core files; see the Variable System Refactor Design Document for details
+- Tests: Passed all functional and regression tests
 
 ---
 
-## 📊 改造前后对比
+## 📊 Before and After Comparison
 
-### v1.0 已完成的改造
+### Reworks Completed in v1.0
 
-| 改造项 | 改造前 | 改造后 | 改进效果 |
+| Rework item | Before | After | Improvement |
 |-------|--------|--------|---------|
-| **子模式选择器位置** | 工作区输入面板内 | 导航栏功能模式右侧 | ✅ 层级清晰<br/>✅ 作用域明确 |
-| **快捷操作栏位置** | 左侧优化区上方 | 右侧测试区顶部 | ✅ 使用场景匹配<br/>✅ 操作路径最短 |
-| **优化区垂直空间** | 被快捷操作栏占用 | 完全释放 | ✅ 显示更多内容 |
-| **用户认知负担** | 高（层级混乱） | 低（清晰分明） | ✅ 易于理解 |
+| **Sub-mode selector position** | Inside the workspace input panel | Navigation bar, right of the function mode | ✅ Clear hierarchy<br/>✅ Clear scope |
+| **Quick action bar position** | Above the left optimization area | Top of the right test area | ✅ Matches the usage scenario<br/>✅ Shortest action path |
+| **Optimization area vertical space** | Taken up by the quick action bar | Fully freed | ✅ Shows more content |
+| **User cognitive load** | High (confusing hierarchy) | Low (clear and distinct) | ✅ Easy to understand |
 
-### v2.0 已完成的改造
+### Reworks Completed in v2.0
 
-| 改造项 | 改造前 | 改造后 | 改进效果 | 状态 |
+| Rework item | Before | After | Improvement | Status |
 |-------|--------|--------|---------|------|
-| **变量系统** | 全局变量 + 会话变量 (都持久化) | 全局变量 (持久化) + 测试变量 (临时) | ✅ 概念清晰<br/>✅ 符合直觉<br/>✅ 降低学习成本 | ✅ 已验证 |
-| **测试区操作栏** | 3个按钮 | 2个按钮 | ✅ UI简化<br/>✅ 减少困惑 | ✅ 已验证 |
-| **变量输入方式** | 需要打开管理器 | 测试区直接输入 | ✅ 操作便捷<br/>✅ 贴近使用场景 | ✅ 已验证 |
-| **持久化开销** | 高 (所有变量都持久化) | 低 (只持久化全局变量) | ✅ 性能优化 | ✅ 已验证 |
+| **Variable system** | Global variables + conversation variables (both persisted) | Global variables (persisted) + test variables (temporary) | ✅ Clear concepts<br/>✅ Matches intuition<br/>✅ Lower learning cost | ✅ Verified |
+| **Test area action bar** | 3 buttons | 2 buttons | ✅ Simpler UI<br/>✅ Less confusion | ✅ Verified |
+| **Variable input method** | Must open the manager | Entered directly in the test area | ✅ Convenient<br/>✅ Close to the usage scenario | ✅ Verified |
+| **Persistence overhead** | High (all variables persisted) | Low (only global variables persisted) | ✅ Performance optimization | ✅ Verified |
 
 ---
 
-## 🗂️ 改造范围
+## 🗂️ Rework Scope
 
-### 需要修改的文件
+### Files to Modify
 
-#### 核心组件（必改）
+#### Core Components (must change)
 ```
 packages/web/src/
-└── App.vue                            # 添加子模式选择器到导航栏
+└── App.vue                            # Add the sub-mode selector to the navigation bar
 
 packages/ui/src/components/
-├── MainLayoutUI.vue                   # 优化导航栏布局（可选）
-├── InputPanel.vue                     # 移除子模式选择器插槽
+├── MainLayoutUI.vue                   # Optimize navigation bar layout (optional)
+├── InputPanel.vue                     # Remove the sub-mode selector slot
 ├── context-mode/
-│   ├── ContextUserWorkspace.vue       # 移除快捷操作栏 + 添加测试区操作栏
-│   ├── ContextSystemWorkspace.vue     # 移除快捷操作栏 + 添加测试区操作栏
-│   └── ContextModeActions.vue         # 废弃或重构为测试区操作栏组件
-└── TestAreaPanel.vue                  # 可选：添加 header-actions 插槽
+│   ├── ContextUserWorkspace.vue       # Remove the quick action bar + add the test area action bar
+│   ├── ContextSystemWorkspace.vue     # Remove the quick action bar + add the test area action bar
+│   └── ContextModeActions.vue         # Deprecate or refactor into the test area action bar component
+└── TestAreaPanel.vue                  # Optional: add a header-actions slot
 ```
 
-#### 文档（必更新）
+#### Documents (must update)
 ```
 docs/workspace/
-├── ui-design-analysis.md              # 更新设计分析
-└── ui-refactor-plan.md                # 本文档
+├── ui-design-analysis.md              # Update the design analysis
+└── ui-refactor-plan.md                # This document
 ```
 
 ---
 
-## 📝 详细实施方案
+## 📝 Detailed Implementation Plan
 
-### 改造 1: 子模式选择器移到导航栏
+### Rework 1: Move the Sub-mode Selector to the Navigation Bar
 
-#### Step 1.1: 修改 App.vue 导航栏
+#### Step 1.1: Modify the App.vue Navigation Bar
 
-**文件**: `packages/web/src/App.vue`
+**File**: `packages/web/src/App.vue`
 
-**修改内容:**
+**Changes:**
 ```vue
 <template>
   <MainLayoutUI>
     <!-- Core Navigation Slot -->
     <template #core-nav>
       <NSpace :size="12" align="center">
-        <!-- 功能模式选择器 -->
+        <!-- Function mode selector -->
         <FunctionModeSelector
           v-model="functionMode"
           @update:modelValue="handleModeSelect"
         />
 
-        <!-- ✅ 新增：子模式选择器（仅上下文模式显示） -->
+        <!-- ✅ New: sub-mode selector (shown only in Context mode) -->
         <OptimizationModeSelector
           v-if="functionMode === 'pro'"
           v-model="selectedOptimizationMode"
@@ -251,7 +251,7 @@ docs/workspace/
           v-if="selectedOptimizationMode === 'system'"
           ...
         >
-          <!-- ❌ 移除子模式选择器插槽 -->
+          <!-- ❌ Remove the sub-mode selector slot -->
           <!-- <template #optimization-mode-selector>...</template> -->
         </ContextSystemWorkspace>
 
@@ -267,11 +267,11 @@ docs/workspace/
 <script setup lang="ts">
 import OptimizationModeSelector from '@/components/OptimizationModeSelector.vue';
 
-// 新增状态管理
+// New state management
 const handleModeSelect = (mode: 'basic' | 'pro' | 'image') => {
   functionMode.value = mode;
   
-  // 切换到上下文模式时，默认为系统提示词
+  // When switching to Context mode, default to the system prompt
   if (mode === 'pro') {
     selectedOptimizationMode.value = 'system';
   }
@@ -284,16 +284,16 @@ const handleOptimizationModeChange = (mode: OptimizationMode) => {
 </script>
 ```
 
-**代码行数**: ~20 行新增/修改  
-**风险等级**: 🟢 低风险（纯 UI 调整）
+**Lines of code**: ~20 lines added/modified  
+**Risk level**: 🟢 Low risk (pure UI adjustment)
 
 ---
 
-#### Step 1.2: 移除工作区子模式选择器
+#### Step 1.2: Remove the Workspace Sub-mode Selector
 
-**文件 1**: `packages/ui/src/components/InputPanel.vue`
+**File 1**: `packages/ui/src/components/InputPanel.vue`
 
-**修改内容:**
+**Changes:**
 ```vue
 <template>
   <div class="input-panel">
@@ -301,31 +301,31 @@ const handleOptimizationModeChange = (mode: OptimizationMode) => {
       <NText strong>{{ label }}</NText>
       
       <NSpace :size="8">
-        <!-- ❌ 移除子模式选择器插槽 -->
+        <!-- ❌ Remove the sub-mode selector slot -->
         <!-- <slot name="optimization-mode-selector"></slot> -->
         
-        <!-- 保留模型和模板选择 -->
+        <!-- Keep the model and template selection -->
         <slot name="model-select"></slot>
         <slot name="template-select"></slot>
       </NSpace>
     </NSpace>
     
-    <!-- 提示词输入区域 -->
+    <!-- Prompt input area -->
     <NInput ... />
   </div>
 </template>
 ```
 
-**文件 2**: `packages/ui/src/components/context-mode/ContextUserWorkspace.vue`
+**File 2**: `packages/ui/src/components/context-mode/ContextUserWorkspace.vue`
 
-**修改内容:**
+**Changes:**
 ```vue
 <template>
   <NFlex justify="space-between">
     <NFlex vertical>
       <NCard>
         <InputPanelUI ...>
-          <!-- ❌ 移除子模式选择器插槽 -->
+          <!-- ❌ Remove the sub-mode selector slot -->
           <template #model-select>...</template>
           <template #template-select>...</template>
         </InputPanelUI>
@@ -343,47 +343,47 @@ const handleOptimizationModeChange = (mode: OptimizationMode) => {
 </template>
 ```
 
-**文件 3**: `packages/ui/src/components/context-mode/ContextSystemWorkspace.vue`（同样修改）
+**File 3**: `packages/ui/src/components/context-mode/ContextSystemWorkspace.vue` (same changes)
 
-**代码行数**: ~10 行删除（每个文件）  
-**风险等级**: 🟡 中等风险（影响现有布局）
+**Lines of code**: ~10 lines deleted (per file)  
+**Risk level**: 🟡 Medium risk (affects the existing layout)
 
 ---
 
-### 改造 2: 快捷操作栏移到测试区
+### Rework 2: Move the Quick Action Bar to the Test Area
 
-#### Step 2.1: 修改 ContextUserWorkspace.vue
+#### Step 2.1: Modify ContextUserWorkspace.vue
 
-**文件**: `packages/ui/src/components/context-mode/ContextUserWorkspace.vue`
+**File**: `packages/ui/src/components/context-mode/ContextUserWorkspace.vue`
 
-**修改内容:**
+**Changes:**
 ```vue
 <template>
   <NFlex justify="space-between" :style="{ width: '100%', height: '100%', gap: '16px' }">
-    <!-- 左侧：优化区域 -->
+    <!-- Left: optimization area -->
     <NFlex vertical :style="{ flex: 1, overflow: 'auto', height: '100%' }">
-      <!-- ❌ 移除原有的快捷操作栏 -->
+      <!-- ❌ Remove the original quick action bar -->
       <!-- <NCard size="small">
         <ContextModeActions ... />
       </NCard> -->
 
-      <!-- 提示词输入面板 -->
+      <!-- Prompt input panel -->
       <NCard :style="{ flexShrink: 0, minHeight: '200px' }">
         <InputPanelUI ... />
       </NCard>
 
-      <!-- 优化结果面板 -->
+      <!-- Optimization result panel -->
       <NCard :style="{ flex: 1, minHeight: '200px', overflow: 'hidden' }">
         <PromptPanelUI ... />
       </NCard>
     </NFlex>
 
-    <!-- 右侧：测试区域 -->
+    <!-- Right: test area -->
     <NFlex vertical :style="{ flex: 1, overflow: 'auto', height: '100%', gap: '12px' }">
-      <!-- ✅ 新增：测试区操作栏 -->
+      <!-- ✅ New: test area action bar -->
       <NCard size="small" :style="{ flexShrink: 0 }">
         <NSpace justify="space-between" align="center">
-          <!-- 左侧：区域标识 -->
+          <!-- Left: area indicator -->
           <NSpace align="center" :size="8">
             <NText strong>{{ t('test.areaTitle') }}</NText>
             <NTag :bordered="false" type="info" size="small">
@@ -391,7 +391,7 @@ const handleOptimizationModeChange = (mode: OptimizationMode) => {
               {{ t('contextMode.user.label') }}
             </NTag>
             
-            <!-- 缺失变量警告（可选） -->
+            <!-- Missing variable warning (optional) -->
             <NTag
               v-if="missingVariables.length > 0"
               type="warning"
@@ -406,7 +406,7 @@ const handleOptimizationModeChange = (mode: OptimizationMode) => {
             </NTag>
           </NSpace>
 
-          <!-- 右侧：变量管理快捷操作 -->
+          <!-- Right: variable management quick actions -->
           <NSpace :size="8">
             <NButton
               size="small"
@@ -447,7 +447,7 @@ const handleOptimizationModeChange = (mode: OptimizationMode) => {
         </NSpace>
       </NCard>
 
-      <!-- 测试区主内容 -->
+      <!-- Main test area content -->
       <NCard :style="{ flex: 1, overflow: 'auto' }" content-style="height: 100%;">
         <TestAreaPanel ... />
       </NCard>
@@ -467,9 +467,9 @@ const breakpoints = useBreakpoints({
 
 const isMobile = breakpoints.smaller('tablet');
 
-// 计算缺失变量
+// Compute missing variables
 const missingVariables = computed(() => {
-  // 从 props 中获取变量信息
+  // Get variable information from props
   const allVars = new Set<string>();
   const providedVars = {
     ...props.globalVariables,
@@ -477,44 +477,44 @@ const missingVariables = computed(() => {
     ...props.predefinedVariables,
   };
   
-  // 从 optimizedPrompt 中提取占位符
+  // Extract placeholders from optimizedPrompt
   const regex = /\{\{([^{}]+)\}\}/g;
   let match;
   while ((match = regex.exec(props.optimizedPrompt)) !== null) {
     allVars.add(match[1].trim());
   }
   
-  // 找出缺失的变量
+  // Find the missing variables
   return Array.from(allVars).filter(v => !providedVars[v]);
 });
 </script>
 ```
 
-**代码行数**: ~60 行新增，~10 行删除  
-**风险等级**: 🟡 中等风险（布局调整）
+**Lines of code**: ~60 lines added, ~10 lines deleted  
+**Risk level**: 🟡 Medium risk (layout adjustment)
 
 ---
 
-#### Step 2.2: 修改 ContextSystemWorkspace.vue
+#### Step 2.2: Modify ContextSystemWorkspace.vue
 
-**文件**: `packages/ui/src/components/context-mode/ContextSystemWorkspace.vue`
+**File**: `packages/ui/src/components/context-mode/ContextSystemWorkspace.vue`
 
-**修改内容:**（与 ContextUserWorkspace.vue 类似）
+**Changes:** (similar to ContextUserWorkspace.vue)
 ```vue
 <template>
   <NFlex justify="space-between">
-    <!-- 左侧：优化区域 -->
+    <!-- Left: optimization area -->
     <NFlex vertical>
-      <!-- ❌ 移除快捷操作栏 -->
+      <!-- ❌ Remove the quick action bar -->
       
       <NCard><InputPanelUI ... /></NCard>
       <NCard><ConversationManager ... /></NCard>
       <NCard><PromptPanelUI ... /></NCard>
     </NFlex>
 
-    <!-- 右侧：测试区域 -->
+    <!-- Right: test area -->
     <NFlex vertical :style="{ gap: '12px' }">
-      <!-- ✅ 新增：测试区操作栏 -->
+      <!-- ✅ New: test area action bar -->
       <NCard size="small">
         <NSpace justify="space-between">
           <NSpace align="center">
@@ -536,12 +536,12 @@ const missingVariables = computed(() => {
               <span v-if="!isMobile">{{ t('contextMode.actions.contextVariables') }}</span>
             </NButton>
             
-            <!-- 系统模式不显示工具管理按钮 -->
+            <!-- System mode does not show the tool management button -->
           </NSpace>
         </NSpace>
       </NCard>
 
-      <!-- 测试区主内容 -->
+      <!-- Main test area content -->
       <NCard :style="{ flex: 1 }">
         <TestAreaPanel ... />
       </NCard>
@@ -550,255 +550,255 @@ const missingVariables = computed(() => {
 </template>
 ```
 
-**代码行数**: ~50 行新增，~10 行删除  
-**风险等级**: 🟡 中等风险
+**Lines of code**: ~50 lines added, ~10 lines deleted  
+**Risk level**: 🟡 Medium risk
 
 ---
 
-#### Step 2.3: 废弃或重构 ContextModeActions.vue
+#### Step 2.3: Deprecate or Refactor ContextModeActions.vue
 
-**选项 A**: 废弃组件（推荐）
-- 删除 `packages/ui/src/components/context-mode/ContextModeActions.vue`
-- 删除所有对该组件的引用
+**Option A**: Deprecate the component (recommended)
+- Delete `packages/ui/src/components/context-mode/ContextModeActions.vue`
+- Delete all references to the component
 
-**选项 B**: 重构为通用组件
-- 重命名为 `TestAreaActions.vue`
-- 作为测试区操作栏的独立组件
-- 支持更多配置选项
+**Option B**: Refactor into a generic component
+- Rename to `TestAreaActions.vue`
+- Make it a standalone component for the test area action bar
+- Support more configuration options
 
-**建议**: 选择选项 A，代码直接内嵌到 Workspace 组件中，减少组件层级
+**Recommendation**: Choose Option A and inline the code directly in the Workspace components to reduce the component hierarchy
 
-**代码行数**: ~50 行删除  
-**风险等级**: 🟢 低风险（废弃未使用组件）
+**Lines of code**: ~50 lines deleted  
+**Risk level**: 🟢 Low risk (deprecating an unused component)
 
 ---
 
-## 🧪 测试计划
+## 🧪 Test Plan
 
-### 功能测试
+### Functional Tests
 
-| 测试项 | 测试步骤 | 预期结果 |
+| Test item | Steps | Expected result |
 |-------|---------|---------|
-| **子模式选择器显示** | 1. 选择「基础模式」<br/>2. 选择「上下文模式」<br/>3. 选择「图像模式」 | 1. 不显示子模式选择器<br/>2. 显示「系统提示词\|用户提示词」<br/>3. 不显示子模式选择器 |
-| **子模式切换** | 1. 点击「系统提示词」<br/>2. 点击「用户提示词」 | 1. 切换到 ContextSystemWorkspace<br/>2. 切换到 ContextUserWorkspace |
-| **快捷操作栏位置** | 1. 打开用户模式<br/>2. 打开系统模式 | 1. 操作栏在右侧测试区顶部<br/>2. 操作栏在右侧测试区顶部 |
-| **快捷按钮功能** | 1. 点击「全局变量」<br/>2. 点击「会话变量」<br/>3. 点击「工具管理」 | 1. 打开全局变量管理器<br/>2. 打开上下文编辑器-变量标签<br/>3. 打开上下文编辑器-工具标签 |
-| **优化区空间** | 1. 对比改造前后优化区高度 | 改造后优化区垂直空间增加 |
+| **Sub-mode selector display** | 1. Select "Basic mode"<br/>2. Select "Context mode"<br/>3. Select "Image mode" | 1. The sub-mode selector is not shown<br/>2. Shows "System Prompt\|User Prompt"<br/>3. The sub-mode selector is not shown |
+| **Sub-mode switching** | 1. Click "System Prompt"<br/>2. Click "User Prompt" | 1. Switches to ContextSystemWorkspace<br/>2. Switches to ContextUserWorkspace |
+| **Quick action bar position** | 1. Open User mode<br/>2. Open System mode | 1. The action bar is at the top of the right test area<br/>2. The action bar is at the top of the right test area |
+| **Quick button functions** | 1. Click "Global Variables"<br/>2. Click "Conversation Variables"<br/>3. Click "Tool Management" | 1. Opens the global variable manager<br/>2. Opens the context editor - variables tab<br/>3. Opens the context editor - tools tab |
+| **Optimization area space** | 1. Compare the optimization area height before and after | The vertical space of the optimization area increases after the rework |
 
-### 视觉测试
+### Visual Tests
 
-| 测试项 | 检查点 |
+| Test item | Checkpoints |
 |-------|--------|
-| **导航栏布局** | ✅ 功能模式和子模式在同一行<br/>✅ 间距合适（12px）<br/>✅ 与操作按钮对齐良好 |
-| **测试区操作栏** | ✅ 区域标识清晰<br/>✅ 按钮组对齐<br/>✅ 与测试内容间距合适 |
-| **响应式适配** | ✅ 桌面端显示完整文字<br/>✅ 移动端仅显示图标<br/>✅ 小屏幕下不拥挤 |
+| **Navigation bar layout** | ✅ Function mode and sub-mode are on the same row<br/>✅ Spacing is appropriate (12px)<br/>✅ Well aligned with the action buttons |
+| **Test area action bar** | ✅ Area indicator is clear<br/>✅ Button group is aligned<br/>✅ Appropriate spacing from the test content |
+| **Responsive adaptation** | ✅ Desktop shows full text<br/>✅ Mobile shows icons only<br/>✅ Not crowded on small screens |
 
-### 兼容性测试
+### Compatibility Tests
 
-| 浏览器 | 分辨率 | 测试结果 |
+| Browser | Resolution | Test result |
 |-------|--------|---------|
-| Chrome 120+ | 1920x1080 | ✅ 通过 |
-| Chrome 120+ | 1366x768 | ✅ 通过 |
-| Chrome 120+ | 375x667 (Mobile) | ✅ 通过 |
-| Firefox 120+ | 1920x1080 | ✅ 通过 |
-| Safari 17+ | 1920x1080 | ✅ 通过 |
-| Edge 120+ | 1920x1080 | ✅ 通过 |
+| Chrome 120+ | 1920x1080 | ✅ Passed |
+| Chrome 120+ | 1366x768 | ✅ Passed |
+| Chrome 120+ | 375x667 (Mobile) | ✅ Passed |
+| Firefox 120+ | 1920x1080 | ✅ Passed |
+| Safari 17+ | 1920x1080 | ✅ Passed |
+| Edge 120+ | 1920x1080 | ✅ Passed |
 
 ---
 
-## 📅 实施计划
+## 📅 Implementation Plan
 
-### 里程碑规划 ✅ 已完成
+### Milestone Plan ✅ Completed
 
-| 阶段 | 任务 | 预计工时 | 实际工时 | 状态 | 完成日期 |
+| Phase | Task | Estimated hours | Actual hours | Status | Completion date |
 |------|------|---------|---------|------|---------|
-| **阶段 1** | 子模式选择器移到导航栏 | 4 小时 | ~3 小时 | ✅ | 2025-10-21 |
-| **阶段 2** | 快捷操作栏移到测试区 | 6 小时 | ~5 小时 | ✅ | 2025-10-22 |
-| **阶段 3** | 变量系统重构 | 8 小时 | ~12 小时 | ✅ | 2025-10-22 |
-| **阶段 4** | 测试验证 + Bug 修复 | 4 小时 | ~3 小时 | ✅ | 2025-10-23 |
-| **阶段 5** | 文档更新 + Code Review | 2 小时 | ~2 小时 | ✅ | 2025-10-23 |
+| **Phase 1** | Move the sub-mode selector to the navigation bar | 4 hours | ~3 hours | ✅ | 2025-10-21 |
+| **Phase 2** | Move the quick action bar to the test area | 6 hours | ~5 hours | ✅ | 2025-10-22 |
+| **Phase 3** | Variable system refactor | 8 hours | ~12 hours | ✅ | 2025-10-22 |
+| **Phase 4** | Test verification + bug fixes | 4 hours | ~3 hours | ✅ | 2025-10-23 |
+| **Phase 5** | Documentation update + Code Review | 2 hours | ~2 hours | ✅ | 2025-10-23 |
 
-**总工时**: 24 小时（3 个工作日）- 实际工时约 25 小时
+**Total hours**: 24 hours (3 working days) - actual hours about 25 hours
 
-### 详细时间表
+### Detailed Schedule
 
-**2025-10-21 (阶段1)**
-- ✅ 代码审查，明确改造范围
-- ✅ 实现子模式选择器移动
+**2025-10-21 (Phase 1)**
+- ✅ Code review, clarify the rework scope
+- ✅ Implement the sub-mode selector move
 
-**2025-10-22 (阶段2+3)**
-- ✅ 实现快捷操作栏移动
-- ✅ 完成变量系统重构
-- ✅ 移除会话变量相关代码
+**2025-10-22 (Phases 2+3)**
+- ✅ Implement the quick action bar move
+- ✅ Complete the variable system refactor
+- ✅ Remove the conversation-variable-related code
 
-**2025-10-23 (阶段4+5)**
-- ✅ 功能测试 + Bug 修复
-- ✅ 视觉测试 + 响应式调整
-- ✅ 兼容性测试
-- ✅ 更新文档
+**2025-10-23 (Phases 4+5)**
+- ✅ Functional testing + bug fixes
+- ✅ Visual testing + responsive adjustments
+- ✅ Compatibility testing
+- ✅ Update documentation
 - ✅ Code Review
 
 ---
 
-## ⚠️ 风险评估
+## ⚠️ Risk Assessment
 
-### 技术风险
+### Technical Risks
 
-| 风险项 | 风险等级 | 影响范围 | 缓解措施 |
+| Risk | Level | Scope of impact | Mitigation |
 |-------|---------|---------|---------|
-| **状态管理复杂** | 🟡 中 | 子模式切换可能导致状态丢失 | 1. 在切换前保存状态<br/>2. 提供恢复机制<br/>3. 充分测试各种切换场景 |
-| **布局兼容性** | 🟢 低 | 移动端可能显示不佳 | 1. 响应式设计<br/>2. 移动端测试<br/>3. 提供折叠选项 |
-| **组件依赖** | 🟢 低 | 废弃 ContextModeActions 可能影响其他模块 | 1. 全局搜索引用<br/>2. 确保无遗漏 |
+| **Complex state management** | 🟡 Medium | Sub-mode switching may cause state loss | 1. Save state before switching<br/>2. Provide a recovery mechanism<br/>3. Thoroughly test various switching scenarios |
+| **Layout compatibility** | 🟢 Low | May display poorly on mobile | 1. Responsive design<br/>2. Mobile testing<br/>3. Provide a collapse option |
+| **Component dependencies** | 🟢 Low | Deprecating ContextModeActions may affect other modules | 1. Search globally for references<br/>2. Make sure nothing is missed |
 
-### 业务风险
+### Business Risks
 
-| 风险项 | 风险等级 | 影响 | 缓解措施 |
+| Risk | Level | Impact | Mitigation |
 |-------|---------|------|---------|
-| **用户习惯改变** | 🟡 中 | 老用户可能不适应新布局 | 1. 提供新手引导<br/>2. 发布更新说明<br/>3. 收集用户反馈 |
-| **功能遗漏** | 🟢 低 | 可能遗漏某些边界场景 | 1. 详细测试计划<br/>2. Beta 测试<br/>3. 快速修复机制 |
+| **Change in user habits** | 🟡 Medium | Existing users may not adapt to the new layout | 1. Provide a beginner guide<br/>2. Publish release notes<br/>3. Collect user feedback |
+| **Missed functionality** | 🟢 Low | Some edge scenarios may be missed | 1. Detailed test plan<br/>2. Beta testing<br/>3. Quick-fix mechanism |
 
-### 回滚计划
+### Rollback Plan
 
-如果改造后出现严重问题，回滚步骤：
+If serious problems appear after the rework, rollback steps:
 
-1. **Git 回滚**
+1. **Git rollback**
    ```bash
    git revert <commit-hash>
    git push origin develop
    ```
 
-2. **版本降级**
-   - 发布回滚版本
-   - 通知用户刷新页面
+2. **Version downgrade**
+   - Release the rollback version
+   - Notify users to refresh the page
 
-3. **数据兼容**
-   - 确保新旧版本数据结构兼容
-   - 不涉及数据迁移，无需特殊处理
-
----
-
-## ✅ 验收标准
-
-> **状态**: 所有验收标准已通过 (2025-10-23)
-
-### 功能验收
-
-- ✅ 子模式选择器在导航栏正确显示和隐藏 - 已验证
-- ✅ 子模式切换功能正常 - 已验证
-- ✅ 快捷操作栏在测试区顶部显示 - 已验证
-- ✅ 所有快捷按钮功能正常 - 已验证
-- ✅ 优化区垂直空间增加 - 已验证
-- ✅ 测试变量输入和优先级正常 - 已验证
-- ✅ 会话变量已完全移除 - 已验证
-- ✅ 无功能退化，现有功能全部保留 - 已验证
-
-### 视觉验收
-
-- ✅ 导航栏布局整洁，层次清晰 - 已验证
-- ✅ 测试区操作栏与内容对齐良好 - 已验证
-- ✅ 变量输入UI清晰美观 - 已验证
-- ✅ 响应式适配完善（桌面端 + 移动端） - 已验证
-- ✅ 主题适配（深色/浅色模式） - 已验证
-- ✅ 无视觉错位或重叠 - 已验证
-
-### 性能验收
-
-- ✅ 页面加载时间无明显增加（< 100ms） - 已验证
-- ✅ 模式切换流畅（< 200ms） - 已验证
-- ✅ 变量合并性能良好（< 10ms） - 已验证
-- ✅ 内存占用无明显增加 - 已验证
-
-### 代码质量
-
-- ✅ TypeScript 类型检查通过 - 已验证
-- ✅ ESLint 检查通过 - 已验证
-- ✅ 代码注释完整 - 已验证
-- ✅ 无 console.log 遗留 - 已验证
-- ✅ Code Review 通过 - 已验证
+3. **Data compatibility**
+   - Ensure the data structures of the old and new versions are compatible
+   - No data migration is involved, so no special handling is needed
 
 ---
 
-## 📚 参考资料
+## ✅ Acceptance Criteria
 
-### 相关文档
+> **Status**: All acceptance criteria passed (2025-10-23)
 
-- [UI 设计分析报告](./ui-design-analysis.md)
-- [上下文模式设计文档](../.spec-workflow/specs/context-mode-redesign/design.md)
-- [上下文模式需求文档](../.spec-workflow/specs/context-mode-redesign/requirements.md)
+### Functional Acceptance
 
-### 相关组件
+- ✅ The sub-mode selector shows and hides correctly in the navigation bar - verified
+- ✅ Sub-mode switching works - verified
+- ✅ The quick action bar is shown at the top of the test area - verified
+- ✅ All quick buttons work - verified
+- ✅ The vertical space of the optimization area increased - verified
+- ✅ Test variable input and priority work - verified
+- ✅ Conversation variables are completely removed - verified
+- ✅ No functional regression; all existing features are retained - verified
 
-- `FunctionModeSelector.vue` - 功能模式选择器
-- `OptimizationModeSelector.vue` - 子模式选择器
-- `ContextUserWorkspace.vue` - 用户模式工作区
-- `ContextSystemWorkspace.vue` - 系统模式工作区
-- `TestAreaPanel.vue` - 测试区域面板
+### Visual Acceptance
 
----
+- ✅ The navigation bar layout is tidy with a clear hierarchy - verified
+- ✅ The test area action bar is well aligned with the content - verified
+- ✅ The variable input UI is clear and attractive - verified
+- ✅ Responsive adaptation is complete (desktop + mobile) - verified
+- ✅ Theme adaptation (dark/light mode) - verified
+- ✅ No visual misalignment or overlap - verified
 
-## 🔄 后续改进计划
+### Performance Acceptance
 
-### 短期（1-2 周）
+- ✅ No noticeable increase in page load time (< 100ms) - verified
+- ✅ Mode switching is smooth (< 200ms) - verified
+- ✅ Variable merging performs well (< 10ms) - verified
+- ✅ No noticeable increase in memory usage - verified
 
-1. **基础模式子模式选择器**
-   - 为基础模式也显示「系统提示词|用户提示词」
-   - 统一三个功能模式的子模式展示逻辑
+### Code Quality
 
-2. **图像模式子模式选择器**
-   - 显示「文生图|图生图」
-   - 实现图像模式的子模式切换
-
-3. **测试区操作栏增强**
-   - 添加变量统计徽章
-   - 实现缺失变量快速创建
-   - 添加快速切换测试模型功能
-
-### 中期（1 个月）
-
-1. **变量管理优化**
-   - 实现变量来源可视化
-   - 添加变量历史记录
-   - 智能变量建议
-
-2. **会话管理器优化**
-   - 实现展开/折叠编辑模式
-   - 添加快速定位功能
-   - 优化长文本编辑体验
-
-### 长期（季度级）
-
-1. **个性化布局**
-   - 支持用户自定义布局
-   - 保存布局偏好设置
-
-2. **工作区预设**
-   - 提供多种预设布局
-   - 快速切换工作区配置
+- ✅ TypeScript type checking passes - verified
+- ✅ ESLint checks pass - verified
+- ✅ Code comments are complete - verified
+- ✅ No leftover console.log - verified
+- ✅ Code Review passed - verified
 
 ---
 
-## 📝 变更日志
+## 📚 References
 
-| 版本 | 日期 | 变更内容 | 状态 |
+### Related Documents
+
+- [UI Design Analysis Report](./ui-design-analysis.md)
+- [Context Mode Design Document](../.spec-workflow/specs/context-mode-redesign/design.md)
+- [Context Mode Requirements Document](../.spec-workflow/specs/context-mode-redesign/requirements.md)
+
+### Related Components
+
+- `FunctionModeSelector.vue` - Function mode selector
+- `OptimizationModeSelector.vue` - Sub-mode selector
+- `ContextUserWorkspace.vue` - User mode workspace
+- `ContextSystemWorkspace.vue` - System mode workspace
+- `TestAreaPanel.vue` - Test area panel
+
+---
+
+## 🔄 Follow-up Improvement Plan
+
+### Short-term (1-2 weeks)
+
+1. **Basic mode sub-mode selector**
+   - Also show "System Prompt|User Prompt" for Basic mode
+   - Unify the sub-mode display logic of the three function modes
+
+2. **Image mode sub-mode selector**
+   - Show "Text to Image|Image to Image"
+   - Implement sub-mode switching for Image mode
+
+3. **Test area action bar enhancements**
+   - Add a variable count badge
+   - Implement quick creation of missing variables
+   - Add quick switching of the test model
+
+### Mid-term (1 month)
+
+1. **Variable management optimization**
+   - Visualize variable sources
+   - Add variable history
+   - Smart variable suggestions
+
+2. **Conversation manager optimization**
+   - Implement an expand/collapse editing mode
+   - Add quick navigation
+   - Optimize the long-text editing experience
+
+### Long-term (quarterly)
+
+1. **Personalized layout**
+   - Support user-customized layouts
+   - Save layout preferences
+
+2. **Workspace presets**
+   - Provide multiple preset layouts
+   - Quickly switch workspace configurations
+
+---
+
+## 📝 Changelog
+
+| Version | Date | Changes | Status |
 |------|------|---------|------|
-| v1.0 | 2025-10-21 | 初始版本，定义改造方案 | ✅ |
-| v1.1 | 2025-10-22 | 完成阶段1、2改造 | ✅ |
-| v2.0 | 2025-10-22 | 完成变量系统重构 | ✅ |
-| v2.1 | 2025-10-23 | 所有阶段完成并通过测试，更新文档状态 | ✅ |
+| v1.0 | 2025-10-21 | Initial version, defined the rework plan | ✅ |
+| v1.1 | 2025-10-22 | Completed the Phase 1 and 2 reworks | ✅ |
+| v2.0 | 2025-10-22 | Completed the variable system refactor | ✅ |
+| v2.1 | 2025-10-23 | All phases completed and tested; updated document status | ✅ |
 
 ---
 
-## 👥 相关人员
+## 👥 Related People
 
-| 角色 | 姓名 | 职责 | 状态 |
+| Role | Name | Responsibility | Status |
 |------|------|------|------|
-| **产品负责人** | - | 需求确认、验收 | ✅ 已完成 |
-| **开发负责人** | - | 技术实现、Code Review | ✅ 已完成 |
-| **测试负责人** | - | 测试计划、质量保证 | ✅ 已完成 |
-| **UI 设计师** | - | 视觉验收、设计指导 | ✅ 已完成 |
+| **Product owner** | - | Requirement confirmation, acceptance | ✅ Done |
+| **Development lead** | - | Technical implementation, Code Review | ✅ Done |
+| **Test lead** | - | Test plan, quality assurance | ✅ Done |
+| **UI designer** | - | Visual acceptance, design guidance | ✅ Done |
 
 ---
 
-**文档状态**: ✅ 已完成并归档  
-**最后更新**: 2025-10-23  
-**项目状态**: 所有改造已完成并通过测试
+**Document status**: ✅ Completed and archived  
+**Last updated**: 2025-10-23  
+**Project status**: All reworks completed and tested

@@ -1,128 +1,128 @@
-# 129-session-store-single-source-refactor - Session Store 单一真源架构重构
+# 129-session-store-single-source-refactor - Session Store Single Source of Truth Architecture Refactor
 
-## 概述
-完成 Session Store 架构重构，实现单一真源（Single Source of Truth）原则，解决跨模式状态污染问题，新增图像存储服务，优化代码分割。
+## Overview
+Completed the Session Store architecture refactor, implementing the Single Source of Truth principle, resolving cross-mode state pollution, adding an image storage service, and optimizing code splitting.
 
-## 状态
-✅ 已完成（迁移指南部分为长期规划）
+## Status
+✅ Completed (the migration guide is a long-term plan)
 
-## 关键成果
+## Key Results
 
-### 核心架构改进
-- ✅ 新增 ImageStorageService（独立 IndexedDB，支持 LRU 缓存）
-- ✅ 优化 Session Store 持久化防护，防止数据覆盖
-- ✅ 串行化恢复和保存流程，避免内存峰值
-- ✅ 拆分单体组件为细粒度工作区
+### Core Architecture Improvements
+- ✅ Added ImageStorageService (standalone IndexedDB, with LRU cache support)
+- ✅ Hardened Session Store persistence protection to prevent data overwrites
+- ✅ Serialized the restore and save flows to avoid memory peaks
+- ✅ Split monolithic components into fine-grained workspaces
 
-### 代码优化
-- ✅ 移除不必要的图像迁移逻辑
-- ✅ 清理废弃存储键，添加向后兼容注释
-- ✅ 移除 Basic 组件的静态导出，优化代码分割
-- ✅ 主 bundle 减少约 57KB，改善首屏加载
+### Code Optimization
+- ✅ Removed unnecessary image migration logic
+- ✅ Cleaned up deprecated storage keys and added backward-compatibility comments
+- ✅ Removed the static exports of Basic components to optimize code splitting
+- ✅ Main bundle reduced by about 57KB, improving first-screen loading
 
-### 组件重构
-- ✅ 删除 BasicModeWorkspace 单体组件（635 行）
-- ✅ 新增 BasicSystemWorkspace（680 行）
-- ✅ 新增 BasicUserWorkspace（685 行）
-- ✅ 删除 ImageWorkspace 单体组件（1606 行）
-- ✅ 新增 ImageText2ImageWorkspace（2205 行）
-- ✅ 新增 ImageImage2ImageWorkspace（2205 行）
+### Component Refactor
+- ✅ Deleted the BasicModeWorkspace monolithic component (635 lines)
+- ✅ Added BasicSystemWorkspace (680 lines)
+- ✅ Added BasicUserWorkspace (685 lines)
+- ✅ Deleted the ImageWorkspace monolithic component (1606 lines)
+- ✅ Added ImageText2ImageWorkspace (2205 lines)
+- ✅ Added ImageImage2ImageWorkspace (2205 lines)
 
-## 文档清单
+## Document List
 
-- [x] **bug-fix-testresults-display.md** - P0 Bug修复记录
-  - 问题：Basic 模式测试结果不显示
-  - 根因：ComputedRef 访问遗漏 `.value`
-  - 解决：优化响应式数据流
+- [x] **bug-fix-testresults-display.md** - P0 bug fix record
+  - Problem: Test results are not displayed in Basic mode
+  - Root cause: A missing `.value` on a ComputedRef access
+  - Fix: Optimize the reactive data flow
 
-- [x] **architecture-comparison.md** - 三种模式架构对比分析
-  - Basic 模式：Store → Logic → Component
-  - Context 模式：Tester composable → Component
-  - Image 模式：Store 直连 → Component
-  - 统一目标：Store + Operations
+- [x] **architecture-comparison.md** - Architecture comparison of the three modes
+  - Basic mode: Store → Logic → Component
+  - Context mode: Tester composable → Component
+  - Image mode: Direct Store connection → Component
+  - Unified goal: Store + Operations
 
-- [x] **test-plan.md** - Session 持久化测试计划
-  - 基础持久化测试
-  - 模式隔离测试
-  - 迁移逻辑测试
-  - 跨浏览器测试
+- [x] **test-plan.md** - Session persistence test plan
+  - Basic persistence test
+  - Mode isolation test
+  - Migration logic test
+  - Cross-browser test
 
-## 后续规划
+## Follow-up Plan
 
-Logic → Operations 迁移指南已移回 `docs/workspace/architecture-migration-guide.md`，包含：
-- Phase 1: 基础设施准备
-- Phase 2: Basic 模式迁移
-- Phase 3: Context 模式迁移
-- Phase 4: Image 模式对齐
-- Phase 5: 清理和优化
+The Logic → Operations migration guide has been moved back to `docs/workspace/architecture-migration-guide.md`, and includes:
+- Phase 1: Infrastructure preparation
+- Phase 2: Basic mode migration
+- Phase 3: Context mode migration
+- Phase 4: Image mode alignment
+- Phase 5: Cleanup and optimization
 
-## 技术亮点
+## Technical Highlights
 
-### ImageStorageService 设计
-- **表分离**：metadata 和 data 分表，避免查询时加载大量 base64
-- **数据库迁移**：提供完整的 v1 → v2 升级路径，分批处理避免内存尖峰
-- **配额管理**：LRU 策略 + 自动清理 + 可配置阈值
-- **事务保证**：使用 Dexie 事务确保数据一致性
+### ImageStorageService Design
+- **Table separation**: metadata and data live in separate tables, avoiding loading a lot of base64 during queries
+- **Database migration**: Provides a complete v1 → v2 upgrade path, processed in batches to avoid memory spikes
+- **Quota management**: LRU strategy + automatic cleanup + configurable thresholds
+- **Transaction guarantees**: Uses Dexie transactions to ensure data consistency
 
-### Session Store 防御性增强
-- **未恢复前禁止保存**：避免覆盖持久化数据
-- **串行化处理**：恢复和保存都采用串行化，避免并发导致内存峰值
-- **并发锁保护**：使用全局锁防止保存操作冲突
+### Session Store Defensive Hardening
+- **No saving before restore**: Avoids overwriting persisted data
+- **Serialized processing**: Both restore and save are serialized to avoid memory peaks caused by concurrency
+- **Concurrency lock protection**: Uses a global lock to prevent save operation conflicts
 
-### 代码分割优化
-- **移除静态导出**：Basic 组件改为 router 动态导入
-- **成功分割**：生成独立 chunk（23KB × 2）
-- **性能提升**：主 bundle 减少 57KB，首屏加载更快
+### Code Splitting Optimization
+- **Removed static exports**: Basic components are now dynamically imported through the router
+- **Successful splitting**: Generates standalone chunks (23KB × 2)
+- **Performance gain**: Main bundle reduced by 57KB, faster first-screen loading
 
-## 相关 Commits
+## Related Commits
 
-- `5ea1004` - fix(ui): 修复跨模式状态污染问题，实现单一真源架构
-- `a364799` - fix(ui): 增强图像模式模型选择的防御性
-- `687a4f1` - fix(ui): 修复 session 状态持久化的 P0 问题
-- `3ede3d8` - refactor(ui): 重构 ImageWorkspace 为 session store 单一真源并修复历史加载
-- `2b669b9` - refactor(ui): 完善单一真源架构并优化代码分割
+- `5ea1004` - fix(ui): fix the cross-mode state pollution problem and implement the single source of truth architecture
+- `a364799` - fix(ui): harden the defensiveness of image mode model selection
+- `687a4f1` - fix(ui): fix the P0 problem of session state persistence
+- `3ede3d8` - refactor(ui): refactor ImageWorkspace to use the session store as the single source of truth and fix history loading
+- `2b669b9` - refactor(ui): complete the single source of truth architecture and optimize code splitting
 
-## 代码统计
+## Code Statistics
 
-### 最终提交（2b669b9）
-- **总变更**: 91 个文件
-- **新增**: +13,757 行
-- **删除**: -4,989 行
-- **净增**: +8,768 行
+### Final Commit (2b669b9)
+- **Total changes**: 91 files
+- **Added**: +13,757 lines
+- **Deleted**: -4,989 lines
+- **Net increase**: +8,768 lines
 
-### 主要新增文件
-- `packages/core/src/services/image/storage.ts` (457 行)
-- `packages/core/src/services/image/index.ts` (47 行)
-- `packages/ui/src/components/basic-mode/BasicSystemWorkspace.vue` (680 行)
-- `packages/ui/src/components/basic-mode/BasicUserWorkspace.vue` (685 行)
-- `packages/ui/src/components/image-mode/ImageImage2ImageWorkspace.vue` (2,205 行)
+### Main Added Files
+- `packages/core/src/services/image/storage.ts` (457 lines)
+- `packages/core/src/services/image/index.ts` (47 lines)
+- `packages/ui/src/components/basic-mode/BasicSystemWorkspace.vue` (680 lines)
+- `packages/ui/src/components/basic-mode/BasicUserWorkspace.vue` (685 lines)
+- `packages/ui/src/components/image-mode/ImageImage2ImageWorkspace.vue` (2,205 lines)
 
-### 主要删除文件
-- `packages/ui/src/components/basic-mode/BasicModeWorkspace.vue` (-635 行)
-- `packages/ui/src/composables/image/useImageWorkspace.ts` (-927 行)
+### Main Deleted Files
+- `packages/ui/src/components/basic-mode/BasicModeWorkspace.vue` (-635 lines)
+- `packages/ui/src/composables/image/useImageWorkspace.ts` (-927 lines)
 
-## 相关架构文档
+## Related Architecture Documents
 
-- **前置重构**: [117-pinia-refactoring](../117-pinia-refactoring/) - Pinia 状态管理引入
-- **核心架构**: [docs/architecture/storage-key-architecture.md](../../architecture/storage-key-architecture.md)
-- **开发指南**: [docs/developer/technical-development-guide.md](../../developer/technical-development-guide.md)
+- **Preceding refactor**: [117-pinia-refactoring](../117-pinia-refactoring/) - Introduction of Pinia state management
+- **Core architecture**: [docs/architecture/storage-key-architecture.md](../../architecture/storage-key-architecture.md)
+- **Developer guide**: [docs/developer/technical-development-guide.md](../../developer/technical-development-guide.md)
 
-## 经验总结
+## Lessons Learned
 
-### 成功经验
-1. ✅ **单一真源原则**：Session Store 作为唯一数据源，避免状态分叉
-2. ✅ **防御性编程**：未恢复前禁止保存，避免数据覆盖
-3. ✅ **串行化处理**：大对象序列化采用串行，避免内存峰值
-4. ✅ **代码分割优先**：移除不必要的静态导出，让动态导入生效
+### What Worked
+1. ✅ **Single source of truth principle**: The Session Store is the sole data source, avoiding state divergence
+2. ✅ **Defensive programming**: No saving before restore, avoiding data overwrites
+3. ✅ **Serialized processing**: Large objects are serialized one at a time to avoid memory peaks
+4. ✅ **Code splitting first**: Remove unnecessary static exports so dynamic imports take effect
 
-### 注意事项
-1. ⚠️ ComputedRef 在 `<script setup>` 中需要显式 `.value`
-2. ⚠️ computed getter 不应返回临时对象（破坏依赖追踪）
-3. ⚠️ 并发保存需要全局锁保护
-4. ⚠️ 图像存储的清理策略应基于 `accessedAt`（LRU）
+### Things to Watch Out For
+1. ⚠️ A ComputedRef in `<script setup>` needs an explicit `.value`
+2. ⚠️ A computed getter should not return a temporary object (it breaks dependency tracking)
+3. ⚠️ Concurrent saves need global lock protection
+4. ⚠️ The cleanup strategy for image storage should be based on `accessedAt` (LRU)
 
-### 后续优化方向
-1. 完成 Logic → Operations 迁移（migration-guide.md）
-2. 补充自动化测试覆盖
-3. 性能监控和优化（流式 token 更新）
-4. 错误边界和异常处理增强
+### Future Optimization Directions
+1. Complete the Logic → Operations migration (migration-guide.md)
+2. Add automated test coverage
+3. Performance monitoring and optimization (streaming token updates)
+4. Strengthen error boundaries and exception handling

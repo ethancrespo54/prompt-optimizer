@@ -1,238 +1,238 @@
-# 开发经验总结
+# Development Lessons Learned
 
-## 🎯 核心经验
+## 🎯 Core Lessons
 
-### 代码质量修复经验 (2025-01-27)
+### Code Quality Fix Lessons (2025-01-27)
 
-#### 深度分析的价值
-1. **精准问题识别**
-   - 通过深度分析区分真正的Bug和合理的设计
-   - 避免了6个不必要的修复，专注于4个真正需要解决的问题
-   - 既提升了代码质量，又保持了系统稳定性
+#### The Value of In-depth Analysis
+1. **Precise problem identification**
+   - In-depth analysis distinguished real bugs from reasonable designs
+   - Avoided 6 unnecessary fixes and focused on the 4 problems that really needed solving
+   - Improved code quality while keeping the system stable
 
-2. **修复质量保证**
-   - 对所有修复进行深度Bug检查，确认无新Bug引入
-   - 验证修复的安全性、有效性和向后兼容性
-   - 建立了完整的质量保证流程
+2. **Fix quality assurance**
+   - Ran an in-depth bug check on all fixes and confirmed no new bugs were introduced
+   - Verified the safety, effectiveness and backward compatibility of the fixes
+   - Established a complete quality assurance process
 
-3. **防御性编程的平衡**
-   - 识别出某些"冗余"实际上是有价值的防御性编程
-   - 保持了错误隔离和系统健壮性
-   - 避免了过度优化导致的稳定性风险
+3. **Balancing defensive programming**
+   - Recognized that some "redundancy" is actually valuable defensive programming
+   - Preserved error isolation and system robustness
+   - Avoided stability risks caused by over-optimization
 
-#### 修复原则总结
-1. **单点验证原则**: 避免重复验证逻辑，集中管理验证规则
-2. **类型安全优先**: 通过类型定义确保编译时安全
-3. **向后兼容**: 所有修复都保持现有API的兼容性
-4. **文档驱动**: 详细记录分析过程和修复决策
+#### Summary of Fix Principles
+1. **Single-point validation principle**: avoid duplicated validation logic and manage validation rules centrally
+2. **Type safety first**: ensure compile-time safety through type definitions
+3. **Backward compatibility**: all fixes keep the existing API compatible
+4. **Documentation-driven**: record the analysis process and fix decisions in detail
 
-### 架构设计经验
-1. **统一接口设计**
-   - 多模块功能需要统一的扫描函数，确保各模块行为一致
-   - 避免每个模块重复实现相同逻辑，降低维护成本
-   - 通过共享工具函数提高代码复用性
+### Architecture Design Lessons
+1. **Unified interface design**
+   - Multi-module features need a unified scanning function to ensure consistent behavior across modules
+   - Avoid each module reimplementing the same logic, which lowers maintenance cost
+   - Improve code reuse through shared utility functions
 
-2. **向后兼容性原则**
-   - 新功能必须保持对现有配置的完全兼容
-   - 渐进式增强而非破坏性变更
-   - 在设计阶段就考虑兼容性，而非事后补救
+2. **Backward compatibility principle**
+   - New features must stay fully compatible with existing configuration
+   - Progressive enhancement rather than breaking changes
+   - Consider compatibility at the design stage rather than patching afterwards
 
-3. **简化设计原则**
-   - 避免过度设计和理论性优化
-   - 优先选择简单直接的实现方案
-   - 复杂性应该有明确的业务价值支撑
+3. **Simplicity principle**
+   - Avoid over-engineering and theoretical optimization
+   - Prefer simple and direct implementations
+   - Complexity should be backed by clear business value
 
-### 环境变量处理经验
-1. **多环境源处理**
-   - Web环境: `window.runtime_config`
-   - Node.js环境: `process.env`
-   - Electron环境: IPC同步机制
-   - 需要统一的抽象层处理不同环境
+### Environment Variable Handling Lessons
+1. **Handling multiple environment sources**
+   - Web environment: `window.runtime_config`
+   - Node.js environment: `process.env`
+   - Electron environment: IPC synchronization mechanism
+   - A unified abstraction layer is needed to handle the different environments
 
-2. **配置验证策略**
-   - 严格验证配置完整性，避免部分配置导致的问题
-   - 提供清晰的错误信息，帮助用户快速定位问题
-   - 跳过无效配置，不影响其他有效配置的处理
+2. **Configuration validation strategy**
+   - Strictly validate configuration completeness to avoid problems caused by partial configuration
+   - Provide clear error messages to help users locate problems quickly
+   - Skip invalid configuration without affecting the processing of other valid configuration
 
-3. **命名规范设计**
-   - 后缀名只支持安全字符集：`[a-zA-Z0-9_-]`
-   - 避免特殊字符（如点号）可能导致的解析问题
-   - 长度限制防止过长的配置名称
+3. **Naming convention design**
+   - The suffix only supports a safe character set: `[a-zA-Z0-9_-]`
+   - Avoid parsing problems that special characters (such as dots) may cause
+   - A length limit prevents overly long configuration names
 
-## 🛠️ 技术实现经验
+## 🛠️ Technical Implementation Lessons
 
-### 代码质量管理
-1. **多轮代码审查流程**
-   - 第一轮：功能实现审查
-   - 第二轮：安全性和边界条件审查
-   - 第三轮：架构设计和可维护性审查
-   - 第四轮：简化设计和去除过度工程
+### Code Quality Management
+1. **Multi-round code review process**
+   - Round 1: functional implementation review
+   - Round 2: security and boundary condition review
+   - Round 3: architecture design and maintainability review
+   - Round 4: simplified design and removing over-engineering
 
-2. **Bug修复经验**
-   - 环境变量检查逻辑：使用 `!== undefined` 而非 truthy 检查
-   - 字符转义问题：使用 `printf` 替代 `echo` 避免字符解释
-   - 代码重复问题：及时提取共享常量和函数
-   - 缩进一致性：保持代码格式的统一性
+2. **Bug fixing lessons**
+   - Environment variable check logic: use `!== undefined` rather than a truthy check
+   - Character escaping: use `printf` instead of `echo` to avoid character interpretation
+   - Code duplication: extract shared constants and functions promptly
+   - Indentation consistency: keep code formatting uniform
 
-3. **测试驱动开发**
-   - 先编写测试用例覆盖各种场景
-   - 使用真实环境变量进行集成测试
-   - 验证各模块间的一致性和兼容性
+3. **Test-driven development**
+   - Write test cases covering various scenarios first
+   - Use real environment variables for integration tests
+   - Verify consistency and compatibility across modules
 
-### 模块化设计经验
-1. **职责分离**
-   - 环境变量扫描：专门的扫描函数
-   - 模型生成：独立的生成逻辑
-   - 配置验证：单独的验证机制
-   - 错误处理：统一的错误处理策略
+### Modular Design Lessons
+1. **Separation of responsibilities**
+   - Environment variable scanning: a dedicated scanning function
+   - Model generation: independent generation logic
+   - Configuration validation: a separate validation mechanism
+   - Error handling: a unified error handling strategy
 
-2. **接口设计**
-   - 提供清晰的函数签名和返回值
-   - 使用TypeScript类型确保类型安全
-   - 文档化所有公共接口的行为
+2. **Interface design**
+   - Provide clear function signatures and return values
+   - Use TypeScript types to ensure type safety
+   - Document the behavior of all public interfaces
 
-3. **依赖管理**
-   - 避免循环依赖
-   - 明确模块间的依赖关系
-   - 使用依赖注入减少耦合
+3. **Dependency management**
+   - Avoid circular dependencies
+   - Make dependencies between modules explicit
+   - Use dependency injection to reduce coupling
 
-## 🚫 避坑指南
+## 🚫 Pitfall Guide
 
-### 设计陷阱
-1. **过度设计陷阱**
-   - 问题：为理论性能问题引入复杂的懒加载机制
-   - 解决：简单直接的实现更好，避免不必要的复杂性
-   - 教训：复杂性需要有明确的业务价值
+### Design Traps
+1. **Over-engineering trap**
+   - Problem: introducing a complex lazy-loading mechanism for a theoretical performance concern
+   - Solution: a simple and direct implementation is better; avoid unnecessary complexity
+   - Lesson: complexity needs clear business value
 
-2. **假设陷阱**
-   - 问题：假设需要自动处理docker-compose.yml文件
-   - 解决：docker-compose.yml是用户配置文件，用户自己决定
-   - 教训：不要为用户做过多假设，保持配置的灵活性
+2. **Assumption trap**
+   - Problem: assuming the docker-compose.yml file needs to be handled automatically
+   - Solution: docker-compose.yml is a user configuration file, and users decide for themselves
+   - Lesson: don't make too many assumptions for users; keep configuration flexible
 
-3. **时机问题陷阱**
-   - 问题：担心Electron环境中模块加载时机问题
-   - 解决：实际验证发现问题是理论性的
-   - 教训：先验证问题是否真实存在，再设计解决方案
+3. **Timing trap**
+   - Problem: worrying about module loading timing in the Electron environment
+   - Solution: actual verification showed the problem was theoretical
+   - Lesson: verify the problem really exists before designing a solution
 
-### 实现陷阱
-1. **环境变量检查陷阱**
-   - 问题：使用 `process.env[key]` 进行truthy检查会忽略空字符串
-   - 解决：使用 `process.env[key] !== undefined` 进行存在性检查
-   - 教训：理解JavaScript的truthy/falsy语义
+### Implementation Traps
+1. **Environment variable check trap**
+   - Problem: a truthy check with `process.env[key]` ignores empty strings
+   - Solution: use `process.env[key] !== undefined` for the existence check
+   - Lesson: understand JavaScript's truthy/falsy semantics
 
-2. **字符转义陷阱**
-   - 问题：`echo` 会解释控制字符，`sed` 匹配字面字符串
-   - 解决：使用 `printf '%s'` 保持字面值
-   - 教训：理解shell命令的字符处理机制
+2. **Character escaping trap**
+   - Problem: `echo` interprets control characters, and `sed` matches the literal string
+   - Solution: use `printf '%s'` to preserve literal values
+   - Lesson: understand how shell commands handle characters
 
-3. **代码重复陷阱**
-   - 问题：多个模块重复定义相同的常量和逻辑
-   - 解决：及时提取共享工具函数和常量
-   - 教训：遵循DRY原则，避免维护困难
+3. **Code duplication trap**
+   - Problem: multiple modules define the same constants and logic repeatedly
+   - Solution: extract shared utility functions and constants promptly
+   - Lesson: follow the DRY principle to avoid maintenance difficulty
 
-### 测试陷阱
-1. **测试覆盖陷阱**
-   - 问题：只测试正常流程，忽略边界条件
-   - 解决：编写边界条件和错误场景的测试用例
-   - 教训：全面的测试覆盖包括异常情况
+### Testing Traps
+1. **Test coverage trap**
+   - Problem: testing only the normal flow and ignoring boundary conditions
+   - Solution: write test cases for boundary conditions and error scenarios
+   - Lesson: comprehensive test coverage includes exceptional cases
 
-2. **环境差异陷阱**
-   - 问题：只在单一环境测试，忽略环境差异
-   - 解决：在Web、Desktop、Docker三种环境都进行测试
-   - 教训：多环境支持需要多环境验证
+2. **Environment difference trap**
+   - Problem: testing in a single environment and ignoring environment differences
+   - Solution: test in all three environments: Web, Desktop and Docker
+   - Lesson: multi-environment support needs multi-environment verification
 
-## 🔄 架构设计经验
+## 🔄 Architecture Design Lessons
 
-### 扩展性设计
-1. **开放封闭原则**
-   - 对扩展开放：支持无限数量的自定义模型
-   - 对修改封闭：不修改现有的静态模型配置
-   - 通过配置驱动实现功能扩展
+### Extensibility Design
+1. **Open/Closed Principle**
+   - Open for extension: supports an unlimited number of custom models
+   - Closed for modification: does not modify the existing static model configuration
+   - Feature extension is achieved through configuration-driven design
 
-2. **配置驱动设计**
-   - 通过环境变量配置驱动功能
-   - 避免硬编码的限制和假设
-   - 提供灵活的配置选项
+2. **Configuration-driven design**
+   - Features are driven by environment variable configuration
+   - Avoid hardcoded limits and assumptions
+   - Provide flexible configuration options
 
-3. **渐进式增强**
-   - 保持现有功能不变
-   - 新功能作为增强而非替换
-   - 用户可以选择使用新功能或保持现状
+3. **Progressive enhancement**
+   - Keep existing features unchanged
+   - New features are enhancements, not replacements
+   - Users can choose to use the new features or stay as they are
 
-### 性能考虑
-1. **启动时扫描**
-   - 环境变量扫描只在启动时执行一次
-   - 避免运行时重复扫描的性能开销
-   - 使用缓存机制提高访问效率
+### Performance Considerations
+1. **Scan at startup**
+   - Environment variable scanning runs only once at startup
+   - Avoids the performance overhead of repeated scanning at runtime
+   - Use a caching mechanism to improve access efficiency
 
-2. **内存使用**
-   - 合理的数据结构设计
-   - 避免不必要的数据复制
-   - 及时释放不需要的资源
+2. **Memory usage**
+   - Reasonable data structure design
+   - Avoid unnecessary data copying
+   - Release resources that are no longer needed promptly
 
-### 错误处理设计
-1. **容错机制**
-   - 单个配置错误不影响整体功能
-   - 提供清晰的错误信息和建议
-   - 优雅降级而非系统崩溃
+### Error Handling Design
+1. **Fault tolerance**
+   - A single configuration error does not affect the overall functionality
+   - Provide clear error messages and suggestions
+   - Degrade gracefully rather than crash the system
 
-2. **调试友好**
-   - 详细的日志输出
-   - 清晰的错误消息
-   - 便于问题定位和排查
+2. **Debug friendly**
+   - Detailed log output
+   - Clear error messages
+   - Easy problem location and troubleshooting
 
-## 📊 项目管理经验
+## 📊 Project Management Lessons
 
-### 开发流程
-1. **需求分析阶段**
-   - 详细分析用户需求和使用场景
-   - 识别技术约束和兼容性要求
-   - 制定清晰的功能边界
+### Development Process
+1. **Requirements analysis phase**
+   - Analyze user needs and usage scenarios in detail
+   - Identify technical constraints and compatibility requirements
+   - Define clear feature boundaries
 
-2. **设计阶段**
-   - 架构设计优先考虑简单性和可维护性
-   - 接口设计考虑扩展性和向后兼容性
-   - 错误处理设计考虑用户体验
+2. **Design phase**
+   - Architecture design prioritizes simplicity and maintainability
+   - Interface design considers extensibility and backward compatibility
+   - Error handling design considers the user experience
 
-3. **实现阶段**
-   - 渐进式开发，先核心功能再扩展
-   - 及时进行代码审查和重构
-   - 保持代码质量和一致性
+3. **Implementation phase**
+   - Incremental development: core features first, then extensions
+   - Conduct code review and refactoring promptly
+   - Maintain code quality and consistency
 
-4. **测试阶段**
-   - 全面的功能测试和边界测试
-   - 多环境兼容性测试
-   - 向后兼容性验证
+4. **Testing phase**
+   - Comprehensive functional and boundary testing
+   - Multi-environment compatibility testing
+   - Backward compatibility verification
 
-### 质量保证
-1. **代码审查**
-   - 多轮审查确保代码质量
-   - 关注功能、安全、架构、简化等不同维度
-   - 及时修复发现的问题
+### Quality Assurance
+1. **Code review**
+   - Multiple rounds of review ensure code quality
+   - Focus on different dimensions such as functionality, security, architecture and simplification
+   - Fix problems found promptly
 
-2. **文档同步**
-   - 及时更新用户文档和配置示例
-   - 保持文档与代码的一致性
-   - 提供清晰的使用指南
+2. **Documentation sync**
+   - Update user documentation and configuration examples promptly
+   - Keep documentation consistent with the code
+   - Provide clear usage guides
 
-3. **经验总结**
-   - 及时记录重要经验和教训
-   - 分类整理便于后续参考
-   - 持续改进开发流程
+3. **Lessons summary**
+   - Record important experience and lessons promptly
+   - Organize them by category for later reference
+   - Continuously improve the development process
 
-## 🎓 学习收获
+## 🎓 Learning Takeaways
 
-### 技术技能
-- 深入理解环境变量在不同环境中的处理机制
-- 掌握多模块架构的设计和实现方法
-- 提升代码质量管理和重构能力
+### Technical Skills
+- A deeper understanding of how environment variables are handled in different environments
+- Mastered the design and implementation of multi-module architectures
+- Improved code quality management and refactoring ability
 
-### 设计思维
-- 学会平衡功能需求和设计简洁性
-- 理解向后兼容性在产品设计中的重要性
-- 掌握渐进式增强的设计方法
+### Design Thinking
+- Learned to balance functional requirements and design simplicity
+- Understood the importance of backward compatibility in product design
+- Mastered the progressive enhancement design approach
 
-### 项目管理
-- 体验完整的功能开发生命周期
-- 学会通过多轮审查提升代码质量
-- 掌握文档和代码同步维护的方法
+### Project Management
+- Experienced the complete feature development lifecycle
+- Learned to improve code quality through multiple rounds of review
+- Mastered keeping documentation and code in sync

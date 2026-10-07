@@ -1,62 +1,62 @@
-# UI库迁移项目 - 功能设计文档
+# UI Library Migration Project - Functional Design Document
 
-**文档版本**: v1.0  
-**创建日期**: 2025-01-01  
-**最后更新**: 2025-01-01  
-**设计负责人**: 开发团队
+**Document version**: v1.0  
+**Created**: 2025-01-01  
+**Last updated**: 2025-01-01  
+**Design owner**: Development team
 
-## 🎯 设计概述
+## 🎯 Design Overview
 
-### 设计目标
-基于Naive UI构建现代化的组件系统，保持现有功能完整性的同时，大幅提升界面美观度和代码可维护性。
+### Design Goals
+Build a modern component system based on Naive UI that preserves the completeness of existing functionality while greatly improving visual appeal and code maintainability.
 
-### 核心原则
-1. **渐进式迁移**: 分阶段替换，确保系统稳定
-2. **功能对等**: 新组件完全覆盖现有功能
-3. **体验优化**: 提升交互流畅性和视觉美感
-4. **代码简化**: 减少自定义CSS，提升可维护性
+### Core Principles
+1. **Incremental migration**: replace in phases to keep the system stable
+2. **Functional parity**: the new components fully cover the existing functionality
+3. **Experience optimization**: improve interaction fluidity and visual appeal
+4. **Code simplification**: reduce custom CSS and improve maintainability
 
-## 🗺️ 组件迁移映射
+## 🗺️ Component Migration Mapping
 
-### Element Plus组件替换
+### Element Plus Component Replacement
 
-| 现有组件 | 目标组件 | 文件位置 | 迁移复杂度 |
+| Existing component | Target component | File location | Migration complexity |
 |----------|----------|----------|------------|
-| `el-button` | `n-button` | BasicTestMode.vue, TestPanel.vue | 简单 |
-| `el-input` | `n-input` | ModelManager.vue, InputPanel.vue | 简单 |
-| `el-select` | `n-select` | ModelManager.vue | 中等 |
-| `el-dialog` | `n-modal` | UpdaterModal.vue | 中等 |
-| `el-form` | `n-form` | ModelManager.vue | 复杂 |
+| `el-button` | `n-button` | BasicTestMode.vue, TestPanel.vue | Simple |
+| `el-input` | `n-input` | ModelManager.vue, InputPanel.vue | Simple |
+| `el-select` | `n-select` | ModelManager.vue | Medium |
+| `el-dialog` | `n-modal` | UpdaterModal.vue | Medium |
+| `el-form` | `n-form` | ModelManager.vue | Complex |
 
-### 自定义主题组件替换
+### Custom Theme Component Replacement
 
-#### 基础组件类
-| 现有类名 | 目标组件 | 使用频率 | 迁移策略 |
+#### Basic Component Classes
+| Existing class name | Target component | Usage frequency | Migration strategy |
 |----------|----------|----------|----------|
-| `theme-button-*` | `n-button` + 自定义主题 | 高 | 统一API，保持变体 |
-| `theme-input` | `n-input` + 主题变量 | 高 | CSS变量映射 |
-| `theme-card` | `n-card` + 自定义样式 | 高 | 保持现有布局 |
-| `theme-modal` | `n-modal` + 主题配置 | 中 | API适配 |
+| `theme-button-*` | `n-button` + custom theme | High | Unified API, keep variants |
+| `theme-input` | `n-input` + theme variables | High | CSS variable mapping |
+| `theme-card` | `n-card` + custom styles | High | Keep the existing layout |
+| `theme-modal` | `n-modal` + theme configuration | Medium | API adaptation |
 
-#### 管理界面组件类
-| 现有类名 | 目标方案 | 优化建议 |
+#### Management Interface Component Classes
+| Existing class name | Target approach | Optimization suggestion |
 |----------|----------|----------|
-| `theme-manager-*` | 简化为通用组件 | 减少特定场景类 |
-| `theme-dropdown-*` | `n-dropdown` + 主题 | 统一下拉组件 |
-| `theme-history-*` | `n-card` + `n-list` | 组合式设计 |
+| `theme-manager-*` | Simplify into generic components | Reduce scenario-specific classes |
+| `theme-dropdown-*` | `n-dropdown` + theme | Unified dropdown component |
+| `theme-history-*` | `n-card` + `n-list` | Composition-based design |
 
-## 🎨 主题系统设计
+## 🎨 Theme System Design
 
-### 主题架构重构
+### Theme Architecture Refactor
 
-#### 当前主题系统问题
-- 每个主题重复定义大量CSS规则
-- theme.css文件2600+行，难以维护
-- 缺乏统一的设计token概念
+#### Problems with the Current Theme System
+- Every theme repeats a large number of CSS rules
+- The theme.css file is 2600+ lines and hard to maintain
+- Lacks a unified design token concept
 
-#### 新主题系统设计
+#### New Theme System Design
 ```typescript
-// 主题配置接口
+// Theme configuration interface
 interface ThemeConfig {
   common: CommonTheme;
   light: LightTheme;
@@ -66,7 +66,7 @@ interface ThemeConfig {
   purple: PurpleTheme;
 }
 
-// 设计token结构
+// Design token structure
 interface DesignTokens {
   colors: {
     primary: string;
@@ -90,32 +90,32 @@ interface DesignTokens {
 }
 ```
 
-### 主题变体保持
+### Preserving Theme Variants
 
-#### 5种主题设计方案
-1. **Light Theme (默认)**
-   - 基础色调：石灰色系 (#f5f5f4, #78716c)
-   - 设计风格：简洁明亮，适合日间使用
+#### Design Plan for the 5 Themes
+1. **Light Theme (default)**
+   - Base palette: stone tones (#f5f5f4, #78716c)
+   - Design style: clean and bright, suited to daytime use
    
 2. **Dark Theme**
-   - 基础色调：板岩色系 (#0f172a, #64748b)
-   - 设计风格：深色背景，护眼舒适
+   - Base palette: slate tones (#0f172a, #64748b)
+   - Design style: dark background, easy on the eyes
 
 3. **Blue Theme**  
-   - 基础色调：天空蓝系 (#0ea5e9, #0284c7)
-   - 设计风格：清新专业，商务感强
+   - Base palette: sky blue tones (#0ea5e9, #0284c7)
+   - Design style: fresh and professional, with a strong business feel
 
 4. **Green Theme**
-   - 基础色调：青绿色系 (#14b8a6, #0d9488)
-   - 设计风格：自然沉稳，科技感足
+   - Base palette: teal tones (#14b8a6, #0d9488)
+   - Design style: natural and calm, with a strong tech feel
 
 5. **Purple Theme**
-   - 基础色调：紫色渐变 (#a855f7, #9333ea)
-   - 设计风格：优雅神秘，创意感强
+   - Base palette: purple gradient (#a855f7, #9333ea)
+   - Design style: elegant and mysterious, with a strong creative feel
 
-#### 主题实现策略
+#### Theme Implementation Strategy
 ```css
-/* 使用CSS变量实现主题 */
+/* Implement themes with CSS variables */
 :root {
   --n-primary-color: #0ea5e9;
   --n-primary-color-hover: #0284c7;
@@ -129,18 +129,18 @@ interface DesignTokens {
 }
 ```
 
-## 🧩 组件功能设计
+## 🧩 Component Functional Design
 
-### 按钮组件系统
+### Button Component System
 
-#### 设计目标
-- 统一现有的多种按钮变体
-- 保持视觉一致性和交互体验
-- 简化API，提升易用性
+#### Design Goals
+- Unify the existing button variants
+- Maintain visual consistency and interaction experience
+- Simplify the API and improve usability
 
-#### 组件变体映射
+#### Component Variant Mapping
 ```typescript
-// 现有按钮类 → Naive UI实现
+// Existing button classes → Naive UI implementation
 interface ButtonVariants {
   'theme-button-primary': 'primary' | 'default';
   'theme-button-secondary': 'default' | 'tertiary';
@@ -150,9 +150,9 @@ interface ButtonVariants {
 }
 ```
 
-#### 实现方案
+#### Implementation Plan
 ```vue
-<!-- 统一按钮组件 -->
+<!-- Unified button component -->
 <template>
   <n-button
     :type="buttonType"
@@ -169,16 +169,16 @@ interface ButtonVariants {
 </template>
 ```
 
-### 输入组件系统
+### Input Component System
 
-#### 设计目标
-- 保持现有输入框的功能和样式
-- 整合主题变量，减少自定义CSS
-- 增强可访问性和用户体验
+#### Design Goals
+- Keep the functionality and styling of the existing inputs
+- Integrate theme variables and reduce custom CSS
+- Enhance accessibility and user experience
 
-#### 实现方案
+#### Implementation Plan
 ```vue
-<!-- 主题化输入组件 -->
+<!-- Themed input component -->
 <template>
   <n-input
     v-model:value="modelValue"
@@ -199,11 +199,11 @@ interface ButtonVariants {
 </style>
 ```
 
-### 卡片组件系统
+### Card Component System
 
-#### 设计重构
+#### Design Refactor
 ```vue
-<!-- 现代化卡片组件 -->
+<!-- Modern card component -->
 <template>
   <n-card
     :title="title"
@@ -224,9 +224,9 @@ interface ButtonVariants {
 </template>
 ```
 
-## 📱 响应式设计
+## 📱 Responsive Design
 
-### 断点设计
+### Breakpoint Design
 ```typescript
 const breakpoints = {
   xs: '0px',
@@ -238,16 +238,16 @@ const breakpoints = {
 };
 ```
 
-### 响应式组件适配
-- **桌面端** (≥1024px): 完整功能展示
-- **平板端** (768px-1023px): 适当压缩间距
-- **移动端** (≤767px): 简化布局，优化触控
+### Responsive Component Adaptation
+- **Desktop** (≥1024px): full feature display
+- **Tablet** (768px-1023px): appropriately compressed spacing
+- **Mobile** (≤767px): simplified layout, optimized for touch
 
-## 🔧 国际化集成
+## 🔧 Internationalization Integration
 
-### 多语言支持设计
+### Multi-language Support Design
 ```typescript
-// Naive UI国际化配置
+// Naive UI internationalization configuration
 import { zhCN, enUS, jaJP } from 'naive-ui';
 
 const naiveUILocales = {
@@ -256,86 +256,86 @@ const naiveUILocales = {
   'ja-JP': jaJP,
 };
 
-// 与现有vue-i18n集成
+// Integration with the existing vue-i18n
 const setupNaiveUILocale = (locale: string) => {
   return naiveUILocales[locale] || enUS;
 };
 ```
 
-### 文本内容策略
-- 保持现有vue-i18n体系不变
-- 组件库内置文本使用Naive UI国际化
-- 自定义文本继续使用项目国际化系统
+### Text Content Strategy
+- Keep the existing vue-i18n system unchanged
+- Built-in component library text uses Naive UI internationalization
+- Custom text continues to use the project's internationalization system
 
-## ⚡ 性能优化设计
+## ⚡ Performance Optimization Design
 
-### 按需导入策略
+### On-demand Import Strategy
 ```typescript
-// vite.config.ts 配置
+// vite.config.ts configuration
 export default defineConfig({
   plugins: [
     vue(),
-    // Naive UI 自动导入
+    // Naive UI auto import
     NaiveUiResolver(),
   ],
 });
 ```
 
-### Tree-shaking优化
-- 确保所有组件支持tree-shaking
-- 移除未使用的CSS规则
-- 优化导入方式，减少包体积
+### Tree-shaking Optimization
+- Ensure all components support tree-shaking
+- Remove unused CSS rules
+- Optimize the import approach to reduce bundle size
 
-### 运行时性能
-- 利用Naive UI的虚拟滚动等性能特性
-- 优化主题切换动画性能
-- 减少不必要的DOM操作
+### Runtime Performance
+- Take advantage of Naive UI's performance features such as virtual scrolling
+- Optimize theme switching animation performance
+- Reduce unnecessary DOM operations
 
-## 🧪 测试设计
+## 🧪 Test Design
 
-### 组件测试策略
+### Component Testing Strategy
 ```typescript
-// 组件测试示例
+// Component test example
 describe('ThemeButton', () => {
   it('should render different variants correctly', () => {
-    // 测试各种按钮变体
+    // Test the various button variants
   });
   
   it('should handle theme switching', () => {
-    // 测试主题切换功能
+    // Test the theme switching feature
   });
   
   it('should maintain accessibility', () => {
-    // 测试可访问性
+    // Test accessibility
   });
 });
 ```
 
-### 视觉回归测试
-- 使用截图对比确保UI一致性
-- 测试各主题变体的视觉效果
-- 验证响应式布局在各设备的表现
+### Visual Regression Testing
+- Use screenshot comparison to ensure UI consistency
+- Test the visual effect of each theme variant
+- Verify the responsive layout on various devices
 
-## 📊 性能监控设计
+## 📊 Performance Monitoring Design
 
-### 关键指标监控
+### Key Metric Monitoring
 ```typescript
 interface PerformanceMetrics {
-  // 包体积变化
+  // Bundle size change
   bundleSize: {
     before: number;
     after: number;
     change: number;
   };
   
-  // 页面加载性能
+  // Page load performance
   pageLoad: {
     firstPaint: number;
     firstContentfulPaint: number;
     largestContentfulPaint: number;
   };
   
-  // 主题切换性能
+  // Theme switching performance
   themeSwitch: {
     duration: number;
     fps: number;
@@ -343,11 +343,11 @@ interface PerformanceMetrics {
 }
 ```
 
-## 🔄 迁移兼容性设计
+## 🔄 Migration Compatibility Design
 
-### 平滑过渡策略
+### Smooth Transition Strategy
 ```typescript
-// 兼容层设计
+// Compatibility layer design
 const LegacyButtonAdapter = {
   'theme-button-primary': (props: any) => ({
     type: 'primary',
@@ -357,38 +357,38 @@ const LegacyButtonAdapter = {
     type: 'default',
     ...props
   }),
-  // 其他映射...
+  // Other mappings...
 };
 ```
 
-### 回退机制
-- 每个迁移阶段都保留原有实现
-- 通过配置开关控制新旧组件
-- 确保任何时候都能快速回退
+### Rollback Mechanism
+- Keep the original implementation in every migration phase
+- Control old and new components through a configuration switch
+- Ensure a quick rollback is possible at any time
 
-## 📋 验收标准
+## 📋 Acceptance Criteria
 
-### 功能完整性检查
-- [ ] 所有Element Plus组件成功替换
-- [ ] 现有功能100%保留
-- [ ] 主题切换功能正常
-- [ ] 国际化功能正常
-- [ ] 响应式布局正常
+### Functional Completeness Check
+- [ ] All Element Plus components are replaced successfully
+- [ ] 100% of existing functionality is preserved
+- [ ] Theme switching works normally
+- [ ] Internationalization works normally
+- [ ] Responsive layout works normally
 
-### 性能指标检查
-- [ ] 包体积减少或持平
-- [ ] 页面加载性能不降低
-- [ ] 主题切换响应时间<100ms
-- [ ] 内存使用不增加
+### Performance Metrics Check
+- [ ] Bundle size is reduced or unchanged
+- [ ] Page load performance does not degrade
+- [ ] Theme switching response time <100ms
+- [ ] Memory usage does not increase
 
-### 代码质量检查
-- [ ] TypeScript类型覆盖100%
-- [ ] 组件API文档完善
-- [ ] 单元测试覆盖率>80%
-- [ ] 无ESLint和TypeScript错误
+### Code Quality Check
+- [ ] 100% TypeScript type coverage
+- [ ] Component API documentation is complete
+- [ ] Unit test coverage >80%
+- [ ] No ESLint or TypeScript errors
 
 ---
 
-**文档状态**: 设计完成  
-**版本历史**:
-- v1.0 (2025-01-01): 初始设计版本，包含完整功能设计方案
+**Document status**: Design complete  
+**Version history**:
+- v1.0 (2025-01-01): Initial design version, including the complete functional design plan

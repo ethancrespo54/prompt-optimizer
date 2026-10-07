@@ -1,31 +1,31 @@
-# 技术实现详解
+# Technical Implementation Details
 
-## 🔧 架构设计
+## 🔧 Architecture Design
 
-### 整体架构
+### Overall Architecture
 ```
-前端应用 → nginx (80) → Node Proxy (3001) → 外部LLM API
+Frontend app → nginx (80) → Node Proxy (3001) → external LLM API
 ```
 
-### 设计理念
-基于**Docker受信环境**假设，采用**简化优先**的设计原则：
-- 重点关注功能实现而非复杂安全防护
-- 避免nginx动态代理的复杂性
-- 零依赖实现，提高可维护性
+### Design Philosophy
+Based on the assumption of a **trusted Docker environment**, with a **simplicity-first** design principle:
+- Focus on functionality rather than complex security protection
+- Avoid the complexity of nginx dynamic proxying
+- Zero-dependency implementation for better maintainability
 
-### 架构优势
-- ✅ 避免nginx动态代理的DNS解析问题
-- ✅ 配置简单，易于维护
-- ✅ 适合Docker容器的受信环境
-- ✅ 职责清晰：nginx负责转发，Node.js负责代理逻辑
+### Architecture Advantages
+- ✅ Avoids the DNS resolution problems of nginx dynamic proxying
+- ✅ Simple configuration, easy to maintain
+- ✅ Suitable for the trusted environment of Docker containers
+- ✅ Clear responsibilities: nginx handles forwarding and Node.js handles the proxy logic
 
-## 🐛 问题诊断与解决
+## 🐛 Problem Diagnosis and Resolution
 
-### 核心技术挑战
+### Core Technical Challenges
 
-#### 1. nginx动态代理复杂性
-**问题**：nginx动态代理需要复杂的DNS解析和变量处理
-**解决方案**：采用nginx本地转发 + Node.js代理的简化架构
+#### 1. Complexity of nginx Dynamic Proxying
+**Problem**: nginx dynamic proxying requires complex DNS resolution and variable handling
+**Solution**: Use the simplified architecture of nginx local forwarding + a Node.js proxy
 ```nginx
 location /api/proxy {
     proxy_pass http://127.0.0.1:3001;
@@ -33,128 +33,128 @@ location /api/proxy {
 }
 ```
 
-#### 2. 流式响应透传
-**问题**：SSE流式响应需要实时透传，不能缓冲
-**解决方案**：
-- nginx配置：`proxy_buffering off`、`X-Accel-Buffering no`
-- Node.js实现：使用`Readable.fromWeb()`正确处理流
+#### 2. Streaming Response Passthrough
+**Problem**: SSE streaming responses must be passed through in real time and cannot be buffered
+**Solution**:
+- nginx configuration: `proxy_buffering off` and `X-Accel-Buffering no`
+- Node.js implementation: use `Readable.fromWeb()` to handle streams correctly
 
-#### 3. CORS头重复设置
-**问题**：nginx和Node.js同时设置CORS头导致重复
-**解决方案**：统一由Node.js处理CORS，nginx不设置
+#### 3. Duplicate CORS Headers
+**Problem**: Setting CORS headers in both nginx and Node.js causes duplicates
+**Solution**: Handle CORS uniformly in Node.js and do not set it in nginx
 
-#### 4. 超时策略优化
-**问题**：LLM流式请求可能需要很长时间，统一超时不合理
-**解决方案**：差异化超时策略
-- 流式请求：5分钟超时
-- 普通请求：2分钟超时
-- 支持环境变量配置
+#### 4. Timeout Strategy Optimization
+**Problem**: LLM streaming requests may take a long time, so a uniform timeout is unreasonable
+**Solution**: A differentiated timeout strategy
+- Streaming requests: 5-minute timeout
+- Regular requests: 2-minute timeout
+- Configurable via environment variables
 
-## 📝 实施步骤
+## 📝 Implementation Steps
 
-### 阶段1：基础代理功能实现
-1. **创建Node.js代理服务**
-   - 零依赖实现，只使用内置模块
-   - 支持所有HTTP方法
-   - 基础错误处理
+### Phase 1: Basic Proxy Functionality
+1. **Create the Node.js proxy service**
+   - Zero-dependency implementation using only built-in modules
+   - Supports all HTTP methods
+   - Basic error handling
 
-2. **配置nginx转发**
-   - 添加`/api/proxy`和`/api/stream`路径
-   - 本地转发到127.0.0.1:3001
-   - 基础CORS配置
+2. **Configure nginx forwarding**
+   - Add the `/api/proxy` and `/api/stream` paths
+   - Forward locally to 127.0.0.1:3001
+   - Basic CORS configuration
 
-3. **Docker集成**
-   - 修改supervisord.conf添加node-proxy进程
-   - 环境变量配置支持
+3. **Docker integration**
+   - Modify supervisord.conf to add the node-proxy process
+   - Environment variable configuration support
 
-### 阶段2：流式代理和UI集成
-1. **流式响应优化**
-   - nginx流式配置优化
-   - Node.js使用`Readable.fromWeb()`处理流
-   - 流式超时策略
+### Phase 2: Streaming Proxy and UI Integration
+1. **Streaming response optimization**
+   - Optimize the nginx streaming configuration
+   - Node.js uses `Readable.fromWeb()` to handle streams
+   - Streaming timeout strategy
 
-2. **前端UI集成**
-   - 环境检测逻辑
-   - ModelManager.vue添加Docker代理选项
-   - 国际化文本支持
+2. **Frontend UI integration**
+   - Environment detection logic
+   - Add a Docker proxy option to ModelManager.vue
+   - Internationalized text support
 
-3. **数据持久化**
-   - ModelConfig接口添加useDockerProxy
-   - 配置保存和加载逻辑
+3. **Data persistence**
+   - Add useDockerProxy to the ModelConfig interface
+   - Configuration save and load logic
 
-### 阶段3：错误处理与体验优化
-1. **增强错误处理**
-   - 智能错误分类：超时504、连接错误502、格式错误400
-   - 用户友好错误消息
-   - 请求追踪系统
+### Phase 3: Error Handling and Experience Optimization
+1. **Enhanced error handling**
+   - Smart error classification: timeout 504, connection error 502, format error 400
+   - User-friendly error messages
+   - Request tracing system
 
-2. **LLM服务集成**
-   - OpenAI服务添加Docker代理支持
-   - Gemini服务添加Docker代理支持
-   - 类型定义完善
+2. **LLM service integration**
+   - Add Docker proxy support to the OpenAI service
+   - Add Docker proxy support to the Gemini service
+   - Complete the type definitions
 
-3. **端到端验证**
-   - 功能测试：基础代理、错误处理、流式响应
-   - 性能测试：响应时间、内存使用、并发处理
-   - 集成测试：前端UI、LLM服务、构建系统
+3. **End-to-end verification**
+   - Functional tests: basic proxying, error handling, streaming responses
+   - Performance tests: response time, memory usage, concurrency handling
+   - Integration tests: frontend UI, LLM services, build system
 
-## 🔍 调试过程
+## 🔍 Debugging Process
 
-### 调试工具组合
-- **Nginx access_log**：记录/api/*专用日志
-- **Node Proxy日志**：详细的请求处理日志
-- **浏览器网络面板**：前端请求状态检查
+### Debugging Tool Combination
+- **Nginx access_log**: dedicated log for /api/*
+- **Node Proxy logs**: detailed request handling logs
+- **Browser network panel**: check the frontend request status
 
-### 关键调试点
-1. **CORS问题**：确保只有Node.js设置CORS头
-2. **流式响应**：检查nginx缓冲配置和Node.js流处理
-3. **超时处理**：验证不同类型请求的超时策略
-4. **错误分类**：确保错误码和消息的正确性
+### Key Debugging Points
+1. **CORS issues**: ensure only Node.js sets the CORS headers
+2. **Streaming responses**: check the nginx buffering configuration and Node.js stream handling
+3. **Timeout handling**: verify the timeout strategy for each request type
+4. **Error classification**: ensure error codes and messages are correct
 
-## 🧪 测试验证
+## 🧪 Test Verification
 
-### 功能测试用例
+### Functional Test Cases
 ```javascript
-// 基础代理测试
+// Basic proxy test
 GET /api/proxy?url=https://httpbin.org/get
-期望：200状态码，正确的JSON响应
+Expected: 200 status code, correct JSON response
 
-// 错误处理测试
+// Error handling test
 GET /api/proxy?url=https://nonexistent-domain.com
-期望：502状态码，友好错误消息
+Expected: 502 status code, friendly error message
 
-// 流式响应测试
+// Streaming response test
 GET /api/stream?url=https://httpbin.org/stream/5
-期望：实时流式数据，无缓冲延迟
+Expected: real-time streaming data with no buffering delay
 ```
 
-### 性能测试指标
-- **响应时间**：6-7秒（httpbin.org正常延迟）
-- **内存使用**：稳定，无内存泄漏
-- **并发处理**：支持多个同时请求
-- **资源清理**：定时器正确清理
+### Performance Test Metrics
+- **Response time**: 6-7 seconds (normal latency of httpbin.org)
+- **Memory usage**: stable, no memory leaks
+- **Concurrency handling**: supports multiple simultaneous requests
+- **Resource cleanup**: timers are cleaned up correctly
 
-### 集成测试验证
-- **前端UI**：代理选项正确显示和保存
-- **LLM服务**：Docker代理配置正确传递
-- **构建系统**：Core和UI包构建成功
-- **类型检查**：TypeScript检查通过
+### Integration Test Verification
+- **Frontend UI**: proxy options are displayed and saved correctly
+- **LLM services**: the Docker proxy configuration is passed correctly
+- **Build system**: the Core and UI packages build successfully
+- **Type checking**: TypeScript checks pass
 
-## 🔧 核心代码实现
+## 🔧 Core Code Implementation
 
-### Node.js代理服务核心逻辑
+### Core Logic of the Node.js Proxy Service
 ```javascript
-// 零依赖实现，只使用内置模块
+// Zero-dependency implementation using only built-in modules
 const http = require('http');
 const { Readable } = require('stream');
 
-// 流式响应处理
+// Streaming response handling
 if (upstreamRes.headers['content-type']?.includes('text/event-stream')) {
     const stream = Readable.fromWeb(upstreamRes.body);
     stream.pipe(res);
 }
 
-// 智能错误处理
+// Smart error handling
 const handleError = (error, res, requestId) => {
     if (error.code === 'ENOTFOUND') {
         return sendError(res, 502, 'DNS resolution failed', requestId);
@@ -166,15 +166,15 @@ const handleError = (error, res, requestId) => {
 };
 ```
 
-### nginx配置核心部分
+### Core Part of the nginx Configuration
 ```nginx
-# 基础代理配置
+# Basic proxy configuration
 location /api/proxy {
     proxy_pass http://127.0.0.1:3001;
     proxy_http_version 1.1;
 }
 
-# 流式响应配置
+# Streaming response configuration
 location /api/stream {
     proxy_pass http://127.0.0.1:3001;
     proxy_buffering off;
@@ -183,7 +183,7 @@ location /api/stream {
 }
 ```
 
-### 前端环境检测
+### Frontend Environment Detection
 ```typescript
 export const checkDockerApiAvailability = async (): Promise<boolean> => {
     try {
@@ -195,37 +195,37 @@ export const checkDockerApiAvailability = async (): Promise<boolean> => {
 };
 ```
 
-## 📊 性能优化
+## 📊 Performance Optimization
 
-### 关键优化点
-1. **流式透传**：nginx关闭缓冲，Node.js使用`Readable.fromWeb()`
-2. **超时策略**：差异化超时，流式5分钟，普通2分钟
-3. **错误处理**：快速失败，避免长时间等待
-4. **资源清理**：及时清理定时器和连接
+### Key Optimization Points
+1. **Streaming passthrough**: nginx turns off buffering and Node.js uses `Readable.fromWeb()`
+2. **Timeout strategy**: differentiated timeouts, 5 minutes for streaming and 2 minutes for regular requests
+3. **Error handling**: fail fast to avoid long waits
+4. **Resource cleanup**: clean up timers and connections promptly
 
-### 监控指标
-- **请求追踪**：唯一请求ID
-- **性能日志**：响应时间、状态码、错误率
-- **资源使用**：内存、CPU、连接数
+### Monitoring Metrics
+- **Request tracing**: unique request IDs
+- **Performance logs**: response time, status code, error rate
+- **Resource usage**: memory, CPU, connection count
 
-## 🔒 安全考虑
+## 🔒 Security Considerations
 
-### 当前安全措施
-- **受信环境假设**：基于Docker容器的受信环境
-- **基础CORS配置**：允许跨域访问
-- **错误信息过滤**：避免泄露敏感信息
+### Current Security Measures
+- **Trusted environment assumption**: based on the trusted environment of Docker containers
+- **Basic CORS configuration**: allows cross-origin access
+- **Error message filtering**: avoids leaking sensitive information
 
-### 可选安全增强
-- **URL白名单**：限制可访问的目标域名
-- **请求频率限制**：防止滥用
-- **请求大小限制**：防止大文件攻击
+### Optional Security Enhancements
+- **URL allowlist**: restrict the target domains that can be accessed
+- **Rate limiting**: prevent abuse
+- **Request size limits**: prevent large-file attacks
 
-## 🎯 技术亮点
+## 🎯 Technical Highlights
 
-1. **零依赖实现**：提高安全性和可维护性
-2. **架构简洁**：避免复杂的nginx动态代理配置
-3. **流式透传**：正确处理SSE流式响应
-4. **智能错误处理**：用户友好的错误分类和消息
-5. **完整集成**：前端UI、LLM服务、类型定义全面支持
+1. **Zero-dependency implementation**: improves security and maintainability
+2. **Concise architecture**: avoids complex nginx dynamic proxy configuration
+3. **Streaming passthrough**: correctly handles SSE streaming responses
+4. **Smart error handling**: user-friendly error classification and messages
+5. **Complete integration**: full support in the frontend UI, LLM services and type definitions
 
-这个实现为Docker部署环境提供了完整、可靠、易维护的API代理解决方案。
+This implementation provides a complete, reliable and easy-to-maintain API proxy solution for Docker deployment environments.

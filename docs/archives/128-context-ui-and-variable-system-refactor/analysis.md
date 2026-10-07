@@ -1,101 +1,101 @@
-# 📱 上下文模式重构 - UI 设计分析报告
+# 📱 Context Mode Refactor - UI Design Analysis Report
 
-> **文档版本**: v2.0  
-> **创建日期**: 2025-10-21  
-> **最后更新**: 2025-10-22  
-> **分析范围**: 上下文模式 (User/System) UI 组件设计 + 变量系统重构  
-> **状态**: ✅ v1.1改造已完成，📋 v2.0变量系统重构待实施
+> **Document version**: v2.0  
+> **Created**: 2025-10-21  
+> **Last updated**: 2025-10-22  
+> **Analysis scope**: Context mode (User/System) UI component design + variable system refactor  
+> **Status**: ✅ v1.1 rework completed, 📋 v2.0 variable system refactor pending implementation
 
 ---
 
-## 📢 重要更新
+## 📢 Important Updates
 
-### ✅ v1.1 UI改造 (已完成 - 2025-10-22)
+### ✅ v1.1 UI Rework (Completed - 2025-10-22)
 
-1. **子模式选择器位置调整** ✅ 已完成
-   - **问题**: 子模式选择器位于工作区内，层级混乱
-   - **方案**: 移动到导航栏，紧邻功能模式选择器右侧
-   - **状态**: ✅ 已完成
-   - **提交**: 之前已完成
+1. **Sub-mode selector position adjustment** ✅ Completed
+   - **Problem**: The sub-mode selector was inside the workspace, giving a confusing hierarchy
+   - **Solution**: Move it to the navigation bar, right next to the function mode selector
+   - **Status**: ✅ Completed
+   - **Commit**: completed earlier
 
-2. **快捷操作栏位置调整** ✅ 已完成
-   - **问题**: 快捷操作栏在左侧优化区，作用域不明确
-   - **方案**: 移动到右侧测试区顶部，贴近使用场景
-   - **状态**: ✅ 已完成
-   - **提交**: `ce90d47` - refactor(ui): 优化上下文模式快捷操作栏位置
+2. **Quick action bar position adjustment** ✅ Completed
+   - **Problem**: The quick action bar was in the left optimization area with an unclear scope
+   - **Solution**: Move it to the top of the right test area, closer to the usage scenario
+   - **Status**: ✅ Completed
+   - **Commit**: `ce90d47` - refactor(ui): optimize the position of the context mode quick action bar
 
-### 📋 v2.0 变量系统重构 (待实施)
+### 📋 v2.0 Variable System Refactor (Pending Implementation)
 
-3. **变量系统简化** 🔴 高优先级
-   - **问题**: "全局变量"和"会话变量"概念混淆，实际都是持久化变量
-   - **方案**: 移除会话变量，引入测试区临时变量
-   - **状态**: ✅ 已完成（作为归档记录）
-   - **详情**: 见 [变量系统重构设计文档](./design.md)
+3. **Variable system simplification** 🔴 High priority
+   - **Problem**: The concepts of "global variables" and "conversation variables" are confused; both are actually persistent variables
+   - **Solution**: Remove conversation variables and introduce temporary variables in the test area
+   - **Status**: ✅ Completed (as an archive record)
+   - **Details**: See [Variable System Refactor Design Document](./design.md)
 
-### 📊 改造预期效果
+### 📊 Expected Effect of the Rework
 
-**改造前:**
+**Before:**
 ```
 ┌────────────────────────────────────────────────────────┐
-│ Prompt Optimizer | [基础|上下文|图像] | 📝📜⚙️...     │
+│ Prompt Optimizer | [Basic|Context|Image] | 📝📜⚙️...  │
 ├────────────────────────┬───────────────────────────────┤
-│ [📊📝🔧]              │ 测试区                         │
+│ [📊📝🔧]              │ Test area                      │
 │ ──────────────────────  │                               │
-│ [系统|用户] [模型▾]    │                               │
-│ 输入框...              │                               │
+│ [System|User] [Model▾] │                               │
+│ Input box...           │                               │
 └────────────────────────┴───────────────────────────────┘
-      ↑ 问题1: 层级混乱         ↑ 问题2: 操作距离远
+      ↑ Problem 1: confusing hierarchy   ↑ Problem 2: actions are far away
 ```
 
-**改造后:**
+**After:**
 ```
 ┌────────────────────────────────────────────────────────┐
 │ Prompt Optimizer                                       │
-│ [基础|上下文|图像] [系统|用户] 📝📜⚙️...              │
-│    ↑ 功能模式           ↑ 子模式（动态显示）           │
+│ [Basic|Context|Image] [System|User] 📝📜⚙️...          │
+│    ↑ Function mode      ↑ Sub-mode (shown dynamically) │
 ├────────────────────────┬───────────────────────────────┤
-│ 优化区                 │ 测试区                         │
+│ Optimization area      │ Test area                      │
 │                        │ ┌───────────────────────────┐ │
-│ [模型▾] [模板▾]       │ │ 测试 📊全局 📝会话 🔧工具 │ │
-│ 输入框...              │ └───────────────────────────┘ │
-│ (空间增加)             │ 变量输入...                   │
+│ [Model▾] [Template▾]  │ │ Test 📊Global 📝Conv. 🔧Tools │ │
+│ Input box...           │ └───────────────────────────┘ │
+│ (more space)           │ Variable input...             │
 └────────────────────────┴───────────────────────────────┘
 ```
 
-**改进效果:**
-- ✅ 层级清晰：功能模式和子模式在同一导航栏
-- ✅ 作用域明确：快捷操作栏在测试区，贴近使用场景
-- ✅ 空间优化：优化区垂直空间增加
-- ✅ 操作便捷：测试时设置变量，操作路径最短
+**Improvements:**
+- ✅ Clear hierarchy: function mode and sub-mode are in the same navigation bar
+- ✅ Clear scope: the quick action bar is in the test area, close to the usage scenario
+- ✅ Space optimization: more vertical space in the optimization area
+- ✅ Convenient operation: variables are set during testing, with the shortest action path
 
 ---
 
-## 一、整体架构设计
+## 1. Overall Architecture Design
 
-### 1.1 组件层次结构
+### 1.1 Component Hierarchy
 
 ```
-App.vue (主应用)
-├── ContextUserWorkspace.vue (用户模式工作区)
-│   ├── ContextModeActions (快捷操作按钮)
-│   ├── InputPanelUI (提示词输入)
-│   ├── PromptPanelUI (优化结果)
-│   └── TestAreaPanel (测试区域)
+App.vue (main application)
+├── ContextUserWorkspace.vue (user mode workspace)
+│   ├── ContextModeActions (quick action buttons)
+│   ├── InputPanelUI (prompt input)
+│   ├── PromptPanelUI (optimization result)
+│   └── TestAreaPanel (test area)
 │
-└── ContextSystemWorkspace.vue (系统模式工作区)
-    ├── ContextModeActions (快捷操作按钮)
-    ├── InputPanelUI (提示词输入)
-    ├── ConversationManager (会话管理器) ← 系统模式专属
-    ├── PromptPanelUI (优化结果)
-    └── TestAreaPanel (测试区域)
+└── ContextSystemWorkspace.vue (system mode workspace)
+    ├── ContextModeActions (quick action buttons)
+    ├── InputPanelUI (prompt input)
+    ├── ConversationManager (conversation manager) ← system mode only
+    ├── PromptPanelUI (optimization result)
+    └── TestAreaPanel (test area)
 
-共享组件:
-├── ContextEditor.vue (上下文编辑器 - 模态框)
-├── PromptPreviewPanel.vue (预览面板 - 模态框)
-└── TestAreaPanel.vue (测试区域 - 复用)
+Shared components:
+├── ContextEditor.vue (context editor - modal)
+├── PromptPreviewPanel.vue (preview panel - modal)
+└── TestAreaPanel.vue (test area - reused)
 ```
 
-**组件文件位置:**
+**Component file locations:**
 ```
 packages/ui/src/components/
 ├── context-mode/
@@ -113,88 +113,88 @@ packages/ui/src/composables/
 └── usePromptPreview.ts
 ```
 
-### 1.2 设计模式
+### 1.2 Design Patterns
 
-✅ **采用了优秀的设计模式:**
+✅ **Excellent design patterns adopted:**
 
-1. **组合优于继承**
-   - User/System Workspace 是独立组件而非继承
-   - 避免了复杂的 if-else 条件判断
+1. **Composition over inheritance**
+   - User/System Workspace are independent components rather than inheriting
+   - Avoids complex if-else conditions
 
-2. **Props 单向数据流**
-   - 所有数据通过 props 传入
-   - 通过 emit 触发父组件更新
-   - 遵循 Vue 3 最佳实践
+2. **One-way props data flow**
+   - All data is passed in through props
+   - Parent component updates are triggered through emit
+   - Follows Vue 3 best practices
 
-3. **Composable 逻辑复用**
-   - `usePromptPreview` 提供可复用的预览逻辑
-   - 分离 UI 和业务逻辑
+3. **Composable logic reuse**
+   - `usePromptPreview` provides reusable preview logic
+   - Separates UI and business logic
 
-4. **Slot 插槽扩展**
-   - 模型选择、结果显示等使用插槽实现灵活性
-   - 支持不同场景的自定义渲染
+4. **Slot-based extension**
+   - Model selection, result display, etc. use slots for flexibility
+   - Supports custom rendering for different scenarios
 
 ---
 
-## 二、两种模式的 UI 差异
+## 2. UI Differences Between the Two Modes
 
-### 2.1 用户模式 (User Mode)
+### 2.1 User Mode
 
-**文件**: `packages/ui/src/components/context-mode/ContextUserWorkspace.vue`
+**File**: `packages/ui/src/components/context-mode/ContextUserWorkspace.vue`
 
-**布局结构:**
+**Layout structure:**
 ```
 ┌──────────────────────────────────────────────────────┐
-│ 📊 全局变量  📝 会话变量  🔧 工具管理               │ ← 快捷操作
+│ 📊 Global Variables  📝 Conversation Variables  🔧 Tool Management │ ← Quick actions
 ├──────────────────────────────────────────────────────┤
-│ 左侧优化区                │ 右侧测试区              │
+│ Left optimization area    │ Right test area          │
 │ ┌─────────────────────┐  │ ┌──────────────────────┐│
-│ │ 提示词输入面板       │  │ │ 变量值输入表单       ││
-│ │ "写一首{{style}}的歌"│  │ │ style: [欢快____]   ││
+│ │ Prompt input panel   │  │ │ Variable value form  ││
+│ │ "Write a {{style}} song"│  │ │ style: [Cheerful__]  ││
 │ └─────────────────────┘  │ └──────────────────────┘│
 │ ┌─────────────────────┐  │ ┌──────────────────────┐│
-│ │ 优化结果面板         │  │ │ 预览内容             ││
-│ │ "请创作一首风格为    │  │ │ "请创作一首风格为    ││
-│ │  {{style}}的歌..."  │  │ │  欢快的歌..."       ││
+│ │ Optimization result  │  │ │ Preview content      ││
+│ │ "Please compose a    │  │ │ "Please compose a    ││
+│ │  {{style}} song..." │  │ │  cheerful song..."   ││
 │ └─────────────────────┘  │ └──────────────────────┘│
 │                          │ ┌──────────────────────┐│
-│                          │ │ 测试结果             ││
-│                          │ │ (LLM 响应)          ││
+│                          │ │ Test result          ││
+│                          │ │ (LLM response)       ││
 │                          │ └──────────────────────┘│
 └──────────────────────────────────────────────────────┘
 ```
 
-**核心特点:**
-- ❌ **隐藏** 会话消息列表管理
-- ✅ **显示** 工具管理按钮
-- ✅ 单条用户消息优化
-- ✅ 两阶段变量处理（优化保留 → 测试替换）
-- ✅ 无需输入测试问题（提示词即测试内容）
+**Core characteristics:**
+- ❌ **Hides** the conversation message list management
+- ✅ **Shows** the tool management button
+- ✅ Single user message optimization
+- ✅ Two-phase variable handling (preserved during optimization → replaced during testing)
+- ✅ No need to enter a test question (the prompt is the test content)
 
-**代码特征:**
+**Code characteristics:**
 ```vue
-<!-- 用户模式工作区核心结构 -->
+<!-- Core structure of the user mode workspace -->
 <template>
   <NFlex justify="space-between">
-    <!-- 左侧优化区 -->
+    <!-- Left optimization area -->
     <NFlex vertical>
-      <!-- 快捷操作 (包含工具管理按钮) -->
+      <!-- Quick actions (including the tool management button) -->
       <NCard>
         <NButton @click="emit('open-global-variables')">📊</NButton>
         <NButton @click="emit('open-context-variables')">📝</NButton>
         <NButton @click="emit('open-tool-manager')">🔧</NButton>
       </NCard>
       
-      <!-- 提示词输入 -->
+      <!-- Prompt input -->
       <NCard><InputPanelUI /></NCard>
       
-      <!-- 无会话管理器 -->
+      <!-- No conversation manager -->
       
-      <!-- 优化结果 -->
+      <!-- Optimization result -->
       <NCard><PromptPanelUI /></NCard>
     </NFlex>
     
-    <!-- 右侧测试区 -->
+    <!-- Right test area -->
     <NCard>
       <TestAreaPanel 
         context-mode="user"
@@ -206,60 +206,60 @@ packages/ui/src/composables/
 </template>
 ```
 
-### 2.2 系统模式 (System Mode)
+### 2.2 System Mode
 
-**文件**: `packages/ui/src/components/context-mode/ContextSystemWorkspace.vue`
+**File**: `packages/ui/src/components/context-mode/ContextSystemWorkspace.vue`
 
-**布局结构:**
+**Layout structure:**
 ```
 ┌──────────────────────────────────────────────────────┐
-│ 📊 全局变量  📝 会话变量                             │ ← 快捷操作
+│ 📊 Global Variables  📝 Conversation Variables       │ ← Quick actions
 ├──────────────────────────────────────────────────────┤
-│ 左侧优化区                │ 右侧测试区              │
+│ Left optimization area    │ Right test area          │
 │ ┌─────────────────────┐  │ ┌──────────────────────┐│
-│ │ 提示词输入面板       │  │ │ 变量值输入表单       ││
-│ │ "优化以下对话..."   │  │ │ style: [欢快____]   ││
+│ │ Prompt input panel   │  │ │ Variable value form  ││
+│ │ "Optimize the following dialogue..."│  │ │ style: [Cheerful__]  ││
 │ └─────────────────────┘  │ └──────────────────────┘│
 │ ┌─────────────────────┐  │ ┌──────────────────────┐│
-│ │ 会话管理器 [折叠]   │  │ │ 测试输入 (用户问题) ││
-│ │ • system: 你是...   │  │ │ "请生成一首欢快的歌" ││
+│ │ Conversation manager [collapse]│  │ │ Test input (user question)││
+│ │ • system: You are...│  │ │ "Generate a cheerful song"││
 │ │ • user: {{style}}   │  │ └──────────────────────┘│
 │ │ • assistant: ...    │  │ ┌──────────────────────┐│
-│ │ [打开上下文编辑器]  │  │ │ 预览内容             ││
-│ └─────────────────────┘  │ │ system: 你是歌曲创作 ││
-│ ┌─────────────────────┐  │ │ user: 欢快          ││
-│ │ 优化结果面板         │  │ └──────────────────────┘│
-│ │ (优化后的对话上下文) │  │ ┌──────────────────────┐│
-│ └─────────────────────┘  │ │ 测试结果             ││
-│                          │ │ (LLM 响应)          ││
+│ │ [Open context editor]│  │ │ Preview content      ││
+│ └─────────────────────┘  │ │ system: You are a songwriter││
+│ ┌─────────────────────┐  │ │ user: Cheerful       ││
+│ │ Optimization result  │  │ └──────────────────────┘│
+│ │ (optimized dialogue context)│  │ ┌──────────────────────┐│
+│ └─────────────────────┘  │ │ Test result          ││
+│                          │ │ (LLM response)       ││
 │                          │ └──────────────────────┘│
 └──────────────────────────────────────────────────────┘
 ```
 
-**核心特点:**
-- ✅ **显示** 会话消息管理器（可折叠）
-- ❌ **隐藏** 工具管理按钮（系统模式不直接管理工具）
-- ✅ 多消息上下文编辑
-- ✅ 需要额外的测试输入 (`userQuestion`)
-- ✅ 支持 system/user/assistant/tool 多种角色
+**Core characteristics:**
+- ✅ **Shows** the conversation message manager (collapsible)
+- ❌ **Hides** the tool management button (system mode does not manage tools directly)
+- ✅ Multi-message context editing
+- ✅ Requires an additional test input (`userQuestion`)
+- ✅ Supports multiple roles: system/user/assistant/tool
 
-**代码特征:**
+**Code characteristics:**
 ```vue
-<!-- 系统模式工作区核心结构 -->
+<!-- Core structure of the system mode workspace -->
 <template>
   <NFlex justify="space-between">
-    <!-- 左侧优化区 -->
+    <!-- Left optimization area -->
     <NFlex vertical>
-      <!-- 快捷操作 (无工具管理按钮) -->
+      <!-- Quick actions (no tool management button) -->
       <NCard>
         <NButton @click="emit('open-global-variables')">📊</NButton>
         <NButton @click="emit('open-context-variables')">📝</NButton>
       </NCard>
       
-      <!-- 提示词输入 -->
+      <!-- Prompt input -->
       <NCard><InputPanelUI /></NCard>
       
-      <!-- 会话管理器 (系统模式专属) -->
+      <!-- Conversation manager (system mode only) -->
       <NCard>
         <ConversationManager
           :messages="optimizationContext"
@@ -267,11 +267,11 @@ packages/ui/src/composables/
           @update:messages="emit('update:optimizationContext', $event)" />
       </NCard>
       
-      <!-- 优化结果 -->
+      <!-- Optimization result -->
       <NCard><PromptPanelUI /></NCard>
     </NFlex>
     
-    <!-- 右侧测试区 -->
+    <!-- Right test area -->
     <NCard>
       <TestAreaPanel 
         context-mode="system"
@@ -284,17 +284,17 @@ packages/ui/src/composables/
 
 ---
 
-## 三、关键组件深度分析
+## 3. In-depth Analysis of Key Components
 
-### 3.1 `ContextModeActions.vue` - 快捷操作栏
+### 3.1 `ContextModeActions.vue` - Quick Action Bar
 
-**文件**: `packages/ui/src/components/context-mode/ContextModeActions.vue`
+**File**: `packages/ui/src/components/context-mode/ContextModeActions.vue`
 
-**设计亮点:**
+**Design highlights:**
 ```vue
 <template>
   <NFlex align="center" :wrap="false" :size="12">
-    <!-- 全局变量 - 两种模式都显示 -->
+    <!-- Global variables - shown in both modes -->
     <NButton
       size="small"
       type="default"
@@ -305,7 +305,7 @@ packages/ui/src/composables/
       {{ $t('contextMode.actions.globalVariables') }}
     </NButton>
 
-    <!-- 会话变量 - 两种模式都显示 -->
+    <!-- Conversation variables - shown in both modes -->
     <NButton
       size="small"
       @click="$emit('open-context-variables')"
@@ -314,7 +314,7 @@ packages/ui/src/composables/
       {{ $t('contextMode.actions.contextVariables') }}
     </NButton>
 
-    <!-- 工具管理 - 仅用户模式显示 -->
+    <!-- Tool management - shown in user mode only -->
     <NButton
       v-if="contextMode === 'user'"
       size="small"
@@ -341,34 +341,34 @@ defineEmits<{
 </script>
 ```
 
-**优点:**
-- ✅ 简洁的条件渲染 (`v-if="contextMode === 'user'"`)
-- ✅ 语义化的 emoji 图标
-- ✅ 国际化支持 (`$t()`)
-- ✅ 类型安全的 emit 定义
+**Advantages:**
+- ✅ Concise conditional rendering (`v-if="contextMode === 'user'"`)
+- ✅ Semantic emoji icons
+- ✅ Internationalization support (`$t()`)
+- ✅ Type-safe emit definitions
 
-**⚠️ 当前问题:**
+**⚠️ Current issue:**
 
-**问题**: 设计文档中提到"工具管理 - 两种模式都显示"，但实际代码是 `v-if="contextMode === 'user'"`
+**Issue**: The design document says "Tool management - shown in both modes", but the actual code is `v-if="contextMode === 'user'"`
 
-**影响**: 系统模式无法管理工具（如果需要的话）
+**Impact**: System mode cannot manage tools (if that is needed)
 
-**建议**: 
-1. 统一设计文档和实现，明确系统模式是否需要工具管理
-2. 如果系统模式也需要，移除 `v-if` 条件
-3. 如果确实只有用户模式需要，更新设计文档
+**Recommendation**: 
+1. Align the design document and the implementation, and clarify whether system mode needs tool management
+2. If system mode needs it too, remove the `v-if` condition
+3. If only user mode really needs it, update the design document
 
 ---
 
-### 3.2 `ConversationManager.vue` - 会话管理器
+### 3.2 `ConversationManager.vue` - Conversation Manager
 
-**文件**: `packages/ui/src/components/context-mode/ConversationManager.vue`
+**File**: `packages/ui/src/components/context-mode/ConversationManager.vue`
 
-**设计亮点:**
+**Design highlights:**
 
-#### 1️⃣ **性能优化**
+#### 1️⃣ **Performance Optimization**
 ```typescript
-// 使用防抖减少频繁更新
+// Use debouncing to reduce frequent updates
 const handleMessageUpdate = debounce(
   (index: number, message: ConversationMessage) => {
     const newMessages = [...props.messages];
@@ -377,41 +377,41 @@ const handleMessageUpdate = debounce(
     emit('messageChange', index, message, 'update');
     recordUpdate();
   },
-  150 // 150ms 平衡响应性和性能
+  150 // 150ms balances responsiveness and performance
 );
 
-// 批处理状态更新
+// Batch state updates
 const batchStateUpdate = batchExecute((updates: Array<() => void>) => {
   updates.forEach((update) => update());
   recordUpdate();
-}, 16); // 16ms 匹配 60fps
+}, 16); // 16ms matches 60fps
 ```
 
-#### 2️⃣ **模式化行为**
+#### 2️⃣ **Mode-specific Behavior**
 ```typescript
 const canEditMessages = computed(() => {
-  // readonly 优先级最高
+  // readonly has the highest priority
   if (props.readonly) return false;
   
-  // 用户模式不允许编辑消息
+  // User mode does not allow editing messages
   if (props.contextMode === 'user') return false;
   
-  // 系统模式允许编辑
+  // System mode allows editing
   return true;
 });
 ```
 
-#### 3️⃣ **紧凑布局设计**
+#### 3️⃣ **Compact Layout Design**
 ```vue
 <div class="cm-row">
-  <!-- 角色标签 (小号，下拉选择) -->
+  <!-- Role tag (small, dropdown selection) -->
   <NDropdown :options="roleOptions" @select="handleRoleSelect">
     <NTag :size="tagSize" clickable>
       {{ $t(`conversation.roles.${message.role}`) }}
     </NTag>
   </NDropdown>
 
-  <!-- 内容输入，单行自增高 -->
+  <!-- Content input, single-line auto-height -->
   <div class="content">
     <NInput
       v-model="message.content"
@@ -421,7 +421,7 @@ const canEditMessages = computed(() => {
     />
   </div>
 
-  <!-- 操作按钮 (hover 显示) -->
+  <!-- Action buttons (shown on hover) -->
   <NSpace class="actions">
     <NButton @click="moveUp" quaternary circle />
     <NButton @click="moveDown" quaternary circle />
@@ -443,7 +443,7 @@ const canEditMessages = computed(() => {
 }
 
 .cm-row:hover .actions {
-  opacity: 1; /* Hover 时显示操作按钮 */
+  opacity: 1; /* Show the action buttons on hover */
 }
 
 .cm-row .content {
@@ -453,30 +453,30 @@ const canEditMessages = computed(() => {
 </style>
 ```
 
-**优点:**
-- ✅ 单行布局节省空间
-- ✅ Hover 显示操作按钮减少视觉噪音
-- ✅ 下拉菜单添加消息支持多种角色 (system/user/assistant/tool)
-- ✅ 性能优化到位（防抖 + 批处理）
+**Advantages:**
+- ✅ Single-line layout saves space
+- ✅ Showing action buttons on hover reduces visual noise
+- ✅ The dropdown for adding messages supports multiple roles (system/user/assistant/tool)
+- ✅ Performance optimization is well done (debounce + batching)
 
-**⚠️ 潜在问题:**
+**⚠️ Potential issue:**
 
-**问题**: 单行输入限制 (`autosize: { minRows: 1, maxRows: 1 }`) 可能导致长文本难以编辑
+**Issue**: The single-line input limit (`autosize: { minRows: 1, maxRows: 1 }`) can make long text hard to edit
 
-**场景示例:**
+**Example scenario:**
 ```
-当消息内容较长时:
-system: "你是一个专业的歌曲创作助手，擅长创作各种风格的歌曲，包括流行、摇滚、民谣、说唱等..."
+When the message content is long:
+system: "You are a professional songwriting assistant, skilled at creating songs in all kinds of styles, including pop, rock, folk, rap, etc..."
 ```
 
-单行显示会导致:
-- ❌ 内容被截断，需要横向滚动
-- ❌ 难以看到完整上下文
-- ❌ 编辑体验差
+Single-line display causes:
+- ❌ The content is truncated and requires horizontal scrolling
+- ❌ Hard to see the full context
+- ❌ Poor editing experience
 
-**改进建议:**
+**Improvement suggestions:**
 
-#### 方案 1: 展开/折叠功能
+#### Option 1: Expand/Collapse Feature
 ```vue
 <script setup lang="ts">
 const expandedRows = ref(new Set<number>());
@@ -492,33 +492,33 @@ const toggleExpand = (index: number) => {
 
 <template>
   <div class="cm-row" :class="{ 'expanded': expandedRows.has(index) }">
-    <!-- 单行模式 -->
+    <!-- Single-line mode -->
     <NInput
       v-if="!expandedRows.has(index)"
       :autosize="{ minRows: 1, maxRows: 1 }"
       @dblclick="toggleExpand(index)"
-      placeholder="双击展开编辑"
+      placeholder="Double-click to expand and edit"
     />
     
-    <!-- 展开模式 -->
+    <!-- Expanded mode -->
     <NInput
       v-else
       :autosize="{ minRows: 3, maxRows: 20 }"
       @blur="toggleExpand(index)"
     />
     
-    <!-- 展开/折叠按钮 -->
+    <!-- Expand/collapse button -->
     <NButton @click="toggleExpand(index)" quaternary circle>
       <template #icon>
-        <svg v-if="!expandedRows.has(index)"><!-- 展开图标 --></svg>
-        <svg v-else><!-- 折叠图标 --></svg>
+        <svg v-if="!expandedRows.has(index)"><!-- Expand icon --></svg>
+        <svg v-else><!-- Collapse icon --></svg>
       </template>
     </NButton>
   </div>
 </template>
 ```
 
-#### 方案 2: 直接跳转到完整编辑器
+#### Option 2: Jump Directly to the Full Editor
 ```vue
 <NButton
   @click="emit('open-context-editor')"
@@ -526,7 +526,7 @@ const toggleExpand = (index: number) => {
   :loading="loading"
 >
   <template #icon>
-    <svg><!-- 编辑图标 --></svg>
+    <svg><!-- Edit icon --></svg>
   </template>
   {{ $t('conversation.management.openEditor') }}
 </NButton>
@@ -534,13 +534,13 @@ const toggleExpand = (index: number) => {
 
 ---
 
-### 3.3 `PromptPreviewPanel.vue` - 实时预览面板
+### 3.3 `PromptPreviewPanel.vue` - Live Preview Panel
 
-**文件**: `packages/ui/src/components/PromptPreviewPanel.vue`
+**File**: `packages/ui/src/components/PromptPreviewPanel.vue`
 
-**设计亮点:**
+**Design highlights:**
 
-#### 1️⃣ **变量统计可视化**
+#### 1️⃣ **Variable Statistics Visualization**
 ```vue
 <NCard size="small" :title="$t('contextMode.preview.stats')">
   <NFlex :size="12" :wrap="true">
@@ -557,7 +557,7 @@ const toggleExpand = (index: number) => {
 </NCard>
 ```
 
-#### 2️⃣ **缺失变量高亮**
+#### 2️⃣ **Missing Variable Highlighting**
 ```vue
 <NCard
   v-if="hasMissingVariables"
@@ -582,45 +582,45 @@ const toggleExpand = (index: number) => {
 </NCard>
 ```
 
-#### 3️⃣ **模式说明动态提示**
+#### 3️⃣ **Dynamic Mode Explanation Hints**
 ```vue
 <NCard size="small" :title="$t('contextMode.preview.modeExplanation')">
   <NText depth="2">
     <template v-if="contextMode === 'user' && renderPhase === 'optimize'">
       {{ $t('contextMode.preview.userOptimizeHint') }}
-      <!-- "用户优化模式：变量将在优化时保留，测试时替换为实际值" -->
+      <!-- "User optimization mode: variables are preserved during optimization and replaced with actual values during testing" -->
     </template>
     <template v-else-if="contextMode === 'system' && renderPhase === 'optimize'">
       {{ $t('contextMode.preview.systemOptimizeHint') }}
-      <!-- "系统优化模式：内置变量替换，自定义变量保留" -->
+      <!-- "System optimization mode: built-in variables are replaced, custom variables are preserved" -->
     </template>
     <template v-else>
       {{ $t('contextMode.preview.testPhaseHint') }}
-      <!-- "测试阶段：所有变量替换为实际值" -->
+      <!-- "Test phase: all variables are replaced with actual values" -->
     </template>
   </NText>
 </NCard>
 ```
 
-**优点:**
-- ✅ 信息层次清晰（统计 → 警告 → 内容 → 说明）
-- ✅ 颜色语义化（info/success/warning）
-- ✅ 教育用户理解两阶段处理
-- ✅ 响应式布局 (`:wrap="true"`)
+**Advantages:**
+- ✅ Clear information hierarchy (statistics → warning → content → explanation)
+- ✅ Semantic colors (info/success/warning)
+- ✅ Teaches users to understand the two-phase processing
+- ✅ Responsive layout (`:wrap="true"`)
 
-**💡 改进建议: 缺失变量快速操作**
+**💡 Improvement suggestion: quick actions for missing variables**
 
-**当前行为:**
+**Current behavior:**
 ```vue
-<!-- 缺失变量仅显示，无法快速操作 -->
+<!-- Missing variables are only displayed and cannot be acted on quickly -->
 <NTag v-for="varName in missingVariables" :key="varName" type="warning">
   {{{{ varName }}}}
 </NTag>
 ```
 
-**改进后:**
+**After the improvement:**
 ```vue
-<!-- 点击缺失变量快速创建/编辑 -->
+<!-- Click a missing variable to create/edit it quickly -->
 <NTag
   v-for="varName in missingVariables"
   :key="varName"
@@ -639,39 +639,39 @@ const emit = defineEmits<{
 }>()
 
 const handleQuickCreateVariable = (varName: string) => {
-  // 方案1: 触发事件让父组件处理
+  // Option 1: trigger an event and let the parent component handle it
   emit('create-variable', varName);
   
-  // 方案2: 直接打开变量管理器并聚焦该变量
+  // Option 2: open the variable manager directly and focus that variable
   // router.push({ name: 'variable-manager', query: { focus: varName } });
 };
 </script>
 ```
 
-**用户体验提升:**
+**User experience improvement:**
 ```
-之前: 看到缺失变量 → 关闭预览 → 手动打开变量管理器 → 找到变量 → 编辑
-现在: 看到缺失变量 → 点击 → 直接创建/编辑 ✅
+Before: see a missing variable → close the preview → manually open the variable manager → find the variable → edit
+Now: see a missing variable → click → create/edit directly ✅
 ```
 
 ---
 
-### 3.4 `usePromptPreview.ts` - 预览逻辑
+### 3.4 `usePromptPreview.ts` - Preview Logic
 
-**文件**: `packages/ui/src/composables/usePromptPreview.ts`
+**File**: `packages/ui/src/composables/usePromptPreview.ts`
 
-**设计亮点:**
+**Design highlights:**
 
-#### 1️⃣ **简化的变量替换**
+#### 1️⃣ **Simplified Variable Replacement**
 ```typescript
 /**
- * 渲染后的预览内容
+ * Rendered preview content
  *
- * 简化版本：统一使用简单替换逻辑
- * 注意：这里使用简单的正则替换而不是 Mustache，因为：
- * 1. UI 预览不需要 Mustache 的条件渲染等高级特性
- * 2. 简单替换性能更好，适合实时预览
- * 3. 与后端 Mustache 行为一致（都会保留值中的占位符）
+ * Simplified version: uniformly uses simple replacement logic
+ * Note: a simple regex replacement is used here instead of Mustache, because:
+ * 1. The UI preview does not need advanced Mustache features such as conditional rendering
+ * 2. Simple replacement performs better and suits live preview
+ * 3. It is consistent with the backend Mustache behavior (placeholders inside values are preserved)
  */
 const previewContent = computed(() => {
   if (!content.value) return "";
@@ -679,13 +679,13 @@ const previewContent = computed(() => {
   try {
     const vars = variables.value || {};
 
-    // 统一的变量替换逻辑
+    // Unified variable replacement logic
     const result = content.value.replace(
       /\{\{([^{}]+)\}\}/g,
       (match, varName) => {
         const trimmedName = varName.trim();
 
-        // 跳过 Mustache 特殊标签 (#, /, ^, !, >, &)
+        // Skip Mustache special tags (#, /, ^, !, >, &)
         if (
           trimmedName.startsWith("#") ||
           trimmedName.startsWith("/") ||
@@ -697,7 +697,7 @@ const previewContent = computed(() => {
           return match;
         }
 
-        // 如果变量存在且非空，替换；否则保留占位符
+        // If the variable exists and is non-empty, replace it; otherwise keep the placeholder
         if (vars[trimmedName] !== undefined && vars[trimmedName] !== "") {
           return vars[trimmedName];
         }
@@ -713,7 +713,7 @@ const previewContent = computed(() => {
 });
 ```
 
-#### 2️⃣ **变量统计**
+#### 2️⃣ **Variable Statistics**
 ```typescript
 const variableStats = computed(() => ({
   total: parsedVariables.value.allVars.size,
@@ -724,22 +724,22 @@ const variableStats = computed(() => ({
 }));
 ```
 
-**优点:**
-- ✅ 性能优于 Mustache（预览场景足够）
-- ✅ 与后端行为一致（都保留值中的占位符）
-- ✅ 跳过 Mustache 特殊标签
-- ✅ 错误处理完善
+**Advantages:**
+- ✅ Better performance than Mustache (sufficient for the preview scenario)
+- ✅ Consistent with the backend behavior (placeholders inside values are preserved)
+- ✅ Skips Mustache special tags
+- ✅ Thorough error handling
 
-**⚠️ 潜在问题:**
+**⚠️ Potential issue:**
 
-**问题**: 与后端 Mustache 可能存在不一致的风险
+**Issue**: There is a risk of inconsistency with the backend Mustache
 
-**场景**: 如果模板使用了 Mustache 的高级特性，预览可能不准确
+**Scenario**: If a template uses advanced Mustache features, the preview may be inaccurate
 
 ```mustache
-{{! 注释 }}
+{{! comment }}
 {{#if showTitle}}
-  标题：{{title}}
+  Title: {{title}}
 {{/if}}
 
 {{#each items}}
@@ -747,200 +747,200 @@ const variableStats = computed(() => ({
 {{/each}}
 ```
 
-当前简单正则替换无法处理:
-- ❌ 条件渲染 (`{{#if}}...{{/if}}`)
-- ❌ 循环渲染 (`{{#each}}...{{/each}}`)
-- ❌ 部分渲染 (`{{>partial}}`)
+The current simple regex replacement cannot handle:
+- ❌ Conditional rendering (`{{#if}}...{{/if}}`)
+- ❌ Loop rendering (`{{#each}}...{{/each}}`)
+- ❌ Partial rendering (`{{>partial}}`)
 
-**改进建议:**
+**Improvement suggestions:**
 
-#### 方案 1: 文档说明限制
+#### Option 1: Document the Limitations
 ```typescript
 /**
- * 提示词预览 Composable
+ * Prompt preview Composable
  *
- * 用于实时计算提示词渲染结果并检测缺失变量
+ * Used to compute the prompt rendering result in real time and detect missing variables
  *
- * ⚠️ 限制说明:
- * - 使用简单正则替换，不支持 Mustache 高级特性
- * - 不支持条件渲染 ({{#if}})、循环 ({{#each}})、部分模板 ({{>}})
- * - 仅用于基本变量预览，最终渲染以后端为准
- * - 如需完整 Mustache 渲染，请使用后端 API
+ * ⚠️ Limitations:
+ * - Uses simple regex replacement and does not support advanced Mustache features
+ * - Does not support conditional rendering ({{#if}}), loops ({{#each}}), or partial templates ({{>}})
+ * - Only for basic variable previews; the final rendering is determined by the backend
+ * - For full Mustache rendering, use the backend API
  */
 ```
 
-#### 方案 2: 集成 Mustache.js
+#### Option 2: Integrate Mustache.js
 ```typescript
 import Mustache from 'mustache';
 
 const previewContent = computed(() => {
   try {
-    // 使用 Mustache 完整渲染
+    // Use full Mustache rendering
     return Mustache.render(content.value, variables.value);
   } catch (error) {
-    // 降级到简单替换
+    // Fall back to simple replacement
     return content.value.replace(/\{\{([^{}]+)\}\}/g, ...);
   }
 });
 ```
 
-**权衡:**
-- **方案 1**: 简单，但功能有限，需要用户理解限制
-- **方案 2**: 功能完整，但增加依赖和复杂度
+**Trade-offs:**
+- **Option 1**: Simple, but with limited features; users need to understand the limitations
+- **Option 2**: Full-featured, but adds a dependency and complexity
 
-**建议**: 当前方案 1 足够，在文档中明确说明即可
+**Recommendation**: Option 1 is sufficient for now; just state it clearly in the documentation
 
 ---
 
-## 四、UI 交互流程分析
+## 4. UI Interaction Flow Analysis
 
-### 4.1 用户模式完整流程
+### 4.1 Complete User Mode Flow
 
 ```mermaid
 graph TD
-    A[用户输入提示词<br/>'写一首{{style}}的歌'] --> B{点击优化}
-    B --> C[AI 优化<br/>保留 {{style}} 占位符]
-    C --> D[优化结果显示<br/>'请创作一首风格为{{style}}的歌...']
-    D --> E[用户设置变量<br/>style = '欢快']
-    E --> F[实时预览更新<br/>'请创作一首风格为欢快的歌...']
-    F --> G{点击测试}
-    G --> H[替换所有变量]
-    H --> I[发送给 LLM]
-    I --> J[显示测试结果]
+    A[User enters a prompt<br/>'Write a {{style}} song'] --> B{Click optimize}
+    B --> C[AI optimizes<br/>keeps the {{style}} placeholder]
+    C --> D[Optimization result shown<br/>'Please compose a song in the style of {{style}}...']
+    D --> E[User sets a variable<br/>style = 'Cheerful']
+    E --> F[Live preview updates<br/>'Please compose a song in the style of Cheerful...']
+    F --> G{Click test}
+    G --> H[Replace all variables]
+    H --> I[Send to the LLM]
+    I --> J[Show the test result]
     
     style C fill:#e1f5e1
     style F fill:#fff3cd
     style H fill:#f8d7da
 ```
 
-**关键步骤说明:**
+**Key step descriptions:**
 
-1. **优化阶段** (绿色) - 占位符保留
-   - 用户输入: `"写一首{{style}}的歌"`
-   - 发送给 AI: 包含 `{{style}}` 字面文本
-   - AI 优化: 保留所有占位符
-   - 优化结果: `"请创作一首风格为{{style}}的歌..."`
+1. **Optimization phase** (green) - placeholders preserved
+   - User input: `"Write a {{style}} song"`
+   - Sent to the AI: contains the literal text `{{style}}`
+   - AI optimization: preserves all placeholders
+   - Optimization result: `"Please compose a song in the style of {{style}}..."`
 
-2. **预览阶段** (黄色) - 实时渲染
-   - 用户设置: `style = "欢快"`
-   - 预览显示: `"请创作一首风格为欢快的歌..."`
-   - 变量统计: 总数 1, 已提供 1, 缺失 0
+2. **Preview phase** (yellow) - live rendering
+   - User setting: `style = "Cheerful"`
+   - Preview shows: `"Please compose a song in the style of Cheerful..."`
+   - Variable statistics: total 1, provided 1, missing 0
 
-3. **测试阶段** (红色) - 完全替换
-   - 合并三层变量 (全局 ← 会话 ← 内置)
-   - 替换所有占位符
-   - 发送给 LLM: 不包含任何 `{{}}`
+3. **Test phase** (red) - complete replacement
+   - Merge the three variable layers (global ← conversation ← built-in)
+   - Replace all placeholders
+   - Sent to the LLM: contains no `{{}}`
 
-### 4.2 系统模式完整流程
+### 4.2 Complete System Mode Flow
 
 ```mermaid
 graph TD
-    A[编辑多条消息<br/>system/user/assistant] --> B[设置会话变量<br/>style = '欢快']
-    B --> C{点击优化}
-    C --> D[替换内置变量<br/>保留自定义变量]
-    D --> E[优化结果显示]
-    E --> F[输入测试问题<br/>'请生成一首歌']
-    F --> G[实时预览更新<br/>所有变量已替换]
-    G --> H{点击测试}
-    H --> I[替换所有变量<br/>包括测试问题]
-    I --> J[发送给 LLM]
-    J --> K[显示测试结果]
+    A[Edit multiple messages<br/>system/user/assistant] --> B[Set conversation variables<br/>style = 'Cheerful']
+    B --> C{Click optimize}
+    C --> D[Replace built-in variables<br/>keep custom variables]
+    D --> E[Optimization result shown]
+    E --> F[Enter a test question<br/>'Generate a song']
+    F --> G[Live preview updates<br/>all variables replaced]
+    G --> H{Click test}
+    H --> I[Replace all variables<br/>including the test question]
+    I --> J[Send to the LLM]
+    J --> K[Show the test result]
     
     style D fill:#e1f5e1
     style G fill:#fff3cd
     style I fill:#f8d7da
 ```
 
-**关键步骤说明:**
+**Key step descriptions:**
 
-1. **会话编辑** - 多消息管理
-   - system: `"你是歌曲创作助手"`
-   - user: `"创作{{style}}的歌"`
-   - assistant: `"好的，我会创作..."`
+1. **Conversation editing** - multi-message management
+   - system: `"You are a songwriting assistant"`
+   - user: `"Compose a {{style}} song"`
+   - assistant: `"Okay, I will compose..."`
 
-2. **优化阶段** (绿色) - 分层替换
-   - 替换内置变量: `{{originalPrompt}}`, `{{conversationContext}}`
-   - 保留自定义变量: `{{style}}`
+2. **Optimization phase** (green) - layered replacement
+   - Replace built-in variables: `{{originalPrompt}}`, `{{conversationContext}}`
+   - Keep custom variables: `{{style}}`
 
-3. **测试阶段** (黄色 → 红色) - 完全渲染
-   - 需要额外输入用户问题
-   - 预览显示所有变量替换后的效果
-   - 最终发送完全渲染的消息数组
+3. **Test phase** (yellow → red) - full rendering
+   - An extra user question must be entered
+   - The preview shows the effect after all variables are replaced
+   - The fully rendered message array is finally sent
 
 ---
 
-## 五、UI 设计优势
+## 5. UI Design Strengths
 
-### ✅ 做得好的地方
+### ✅ What Is Done Well
 
-#### 1. **模式化组件设计**
-- 清晰的 User/System Workspace 分离
-- 组件根据 `contextMode` 智能调整行为
-- 避免了复杂的 if-else 判断
+#### 1. **Mode-specific Component Design**
+- Clear separation of User/System Workspace
+- Components adjust their behavior intelligently according to `contextMode`
+- Avoids complex if-else logic
 
-**代码示例:**
+**Code example:**
 ```typescript
 // ConversationManager.vue
 const canEditMessages = computed(() => {
-  if (props.contextMode === 'user') return false; // 用户模式禁止编辑
-  return true; // 系统模式允许
+  if (props.contextMode === 'user') return false; // User mode forbids editing
+  return true; // System mode allows it
 });
 ```
 
-#### 2. **Naive UI 一致性**
-- 全面使用 Naive UI 组件 (NCard, NButton, NTag, NInput...)
-- 统一的 size/type/bordered 配置
-- 主题自适应 (dark/light mode)
+#### 2. **Naive UI Consistency**
+- Uses Naive UI components throughout (NCard, NButton, NTag, NInput...)
+- Unified size/type/bordered configuration
+- Theme adaptive (dark/light mode)
 
-**组件使用统计:**
+**Component usage statistics:**
 ```
-NCard: 主容器
-NButton: 所有按钮
-NTag: 标签、统计、角色标识
-NInput: 文本输入
-NDropdown: 角色选择、消息添加
-NScrollbar: 滚动区域
-NEmpty: 空状态提示
+NCard: main container
+NButton: all buttons
+NTag: tags, statistics, role indicators
+NInput: text input
+NDropdown: role selection, message adding
+NScrollbar: scroll area
+NEmpty: empty-state hint
 ```
 
-#### 3. **响应式适配**
+#### 3. **Responsive Adaptation**
 ```typescript
-// 响应式配置
+// Responsive configuration
 const buttonSize = computed(() => {
   const sizeMap = { small: 'tiny', medium: 'small', large: 'medium' };
   return sizeMap[props.size] || 'small';
 });
 
-// 移动端适配
+// Mobile adaptation
 <NGrid :cols="isMobile ? 1 : 2" :x-gap="12" :y-gap="12">
 ```
 
-#### 4. **性能优化**
-- 防抖处理高频更新 (150ms)
-- 批处理状态更新 (16ms)
-- `shallowRef` 优化大数据
-- 性能监控 (`usePerformanceMonitor`)
+#### 4. **Performance Optimization**
+- Debounce high-frequency updates (150ms)
+- Batch state updates (16ms)
+- `shallowRef` to optimize large data
+- Performance monitoring (`usePerformanceMonitor`)
 
-**性能优化代码:**
+**Performance optimization code:**
 ```typescript
-// 防抖
+// Debounce
 const handleMessageUpdate = debounce((index, message) => {
   emit('update:messages', newMessages);
 }, 150);
 
-// 批处理
+// Batching
 const batchStateUpdate = batchExecute((updates) => {
   updates.forEach(update => update());
 }, 16);
 ```
 
-#### 5. **可访问性 (a11y)**
-- 完整的 `role` 属性 (dialog, button, list...)
-- `aria-label`, `aria-describedby` 标注
-- 键盘导航支持 (`@keydown.enter`, `@keydown.space`)
-- `tabindex` 焦点管理
+#### 5. **Accessibility (a11y)**
+- Complete `role` attributes (dialog, button, list...)
+- `aria-label`, `aria-describedby` annotations
+- Keyboard navigation support (`@keydown.enter`, `@keydown.space`)
+- `tabindex` focus management
 
-**可访问性代码:**
+**Accessibility code:**
 ```vue
 <NModal
   role="dialog"
@@ -957,91 +957,91 @@ const batchStateUpdate = batchExecute((updates) => {
 </NModal>
 ```
 
-#### 6. **国际化完备**
-- 所有文案使用 `$t()` / `t()`
-- 支持中英文切换
-- 动态插值 (`$t('key', { count: 5 })`)
+#### 6. **Complete Internationalization**
+- All copy uses `$t()` / `t()`
+- Supports switching between languages
+- Dynamic interpolation (`$t('key', { count: 5 })`)
 
-**国际化示例:**
+**Internationalization example:**
 ```typescript
-// zh-CN.ts
+// en-US.ts
 export default {
   contextMode: {
-    user: { label: '用户模式' },
-    system: { label: '系统模式' },
+    user: { label: 'User Mode' },
+    system: { label: 'System Mode' },
     actions: {
-      globalVariables: '全局变量',
-      contextVariables: '会话变量',
-      tools: '工具管理'
+      globalVariables: 'Global Variables',
+      contextVariables: 'Conversation Variables',
+      tools: 'Tool Management'
     }
   }
 }
 
-// 使用
+// Usage
 <NTag>{{ $t('contextMode.user.label') }}</NTag>
 ```
 
 ---
 
-## 六、UI 设计问题与改进建议
+## 6. UI Design Problems and Improvement Suggestions
 
-### ⚠️ 当前问题汇总
+### ⚠️ Summary of Current Problems
 
-| 问题 | 位置 | 影响 | 优先级 | 改造状态 |
+| Problem | Location | Impact | Priority | Rework status |
 |------|------|------|--------|---------|
-| **子模式选择器位置不当** | `InputPanel.vue` + `ContextUserWorkspace.vue` | 层级混乱，作用域不明确 | P0 🔴 | ✅ 已规划 |
-| **快捷操作栏位置不当** | `ContextUserWorkspace.vue:11` | 作用域不明确，操作路径远 | P0 🔴 | ✅ 已规划 |
-| **工具管理按钮显示逻辑不一致** | `ContextModeActions.vue:18` | 文档说"两种模式都显示"，代码是 `v-if="user"` | P1 🔴 | 📋 待确认 |
-| **会话管理器单行输入限制** | `ConversationManager.vue:215` | 长消息难以编辑 | P2 🟡 | 📋 待规划 |
-| **缺失变量无快速操作** | `PromptPreviewPanel.vue:32` | 需要手动打开变量管理器，流程繁琐 | P2 🟡 | 📋 待规划 |
-| **预览与后端可能不一致** | `usePromptPreview.ts:85` | 不支持 Mustache 高级特性 | P3 🟢 | 📋 待规划 |
-| **变量来源未可视化** | `TestAreaPanel.vue` | 无法区分全局/会话/内置变量 | P2 🟡 | 📋 待规划 |
+| **Sub-mode selector in the wrong place** | `InputPanel.vue` + `ContextUserWorkspace.vue` | Confusing hierarchy, unclear scope | P0 🔴 | ✅ Planned |
+| **Quick action bar in the wrong place** | `ContextUserWorkspace.vue:11` | Unclear scope, long action path | P0 🔴 | ✅ Planned |
+| **Inconsistent tool management button display logic** | `ContextModeActions.vue:18` | The doc says "shown in both modes", the code is `v-if="user"` | P1 🔴 | 📋 To be confirmed |
+| **Single-line input limit in the conversation manager** | `ConversationManager.vue:215` | Long messages are hard to edit | P2 🟡 | 📋 To be planned |
+| **No quick action for missing variables** | `PromptPreviewPanel.vue:32` | Must manually open the variable manager; tedious flow | P2 🟡 | 📋 To be planned |
+| **Preview may be inconsistent with the backend** | `usePromptPreview.ts:85` | Advanced Mustache features not supported | P3 🟢 | 📋 To be planned |
+| **Variable sources not visualized** | `TestAreaPanel.vue` | Cannot distinguish global/conversation/built-in variables | P2 🟡 | 📋 To be planned |
 
-**图例:**
-- ✅ 已规划：已编写详细改造方案，等待实施
-- 📋 待规划：问题已识别，待制定详细方案
-- 🔴 P0/P1：高优先级，需要立即处理
-- 🟡 P2：中优先级，近期处理
-- 🟢 P3：低优先级，长期优化
+**Legend:**
+- ✅ Planned: a detailed rework plan has been written and awaits implementation
+- 📋 To be planned: the problem has been identified; a detailed plan is yet to be made
+- 🔴 P0/P1: high priority, needs immediate handling
+- 🟡 P2: medium priority, handle soon
+- 🟢 P3: low priority, long-term optimization
 
-### 💡 改进建议详解
+### 💡 Detailed Improvement Suggestions
 
-#### 改进 1: 统一工具管理按钮逻辑
+#### Improvement 1: Unify the Tool Management Button Logic
 
-**当前状态:**
+**Current state:**
 ```vue
 <!-- ContextModeActions.vue -->
 <NButton v-if="contextMode === 'user'" @click="emit('open-tool-manager')">
-  🔧 工具管理
+  🔧 Tool Management
 </NButton>
 ```
 
-**问题分析:**
-- 设计文档: "工具管理 - 两种模式都显示"
-- 实际代码: 仅用户模式显示
-- 不一致来源: 设计变更未同步到文档
+**Problem analysis:**
+- Design document: "Tool management - shown in both modes"
+- Actual code: shown only in user mode
+- Source of the inconsistency: a design change was not synced to the document
 
-**解决方案:**
+**Solutions:**
 
-**方案 A**: 移除条件，两种模式都显示
+**Option A**: Remove the condition and show it in both modes
 ```vue
 <NButton @click="emit('open-tool-manager')">
-  🔧 工具管理
+  🔧 Tool Management
 </NButton>
 ```
 
-**方案 B**: 保持当前实现，更新设计文档
+**Option B**: Keep the current implementation and update the design document
 ```markdown
-- 工具管理 - 仅用户模式显示 (系统模式通过上下文编辑器管理)
+- Tool management - shown in user mode only (system mode manages tools via the context editor)
 ```
 
-**建议**: 采用方案 B，因为系统模式工具管理应该在 ContextEditor 的 "工具调用" 标签页处理
+**Recommendation**: Adopt Option B, because tool management in system mode should be handled in the "Tool Calls" tab of ContextEditor
 
 ---
 
-#### 改进 2: 增强会话管理器编辑体验
+#### Improvement 2: Enhance the Conversation Manager Editing Experience
 
-**当前限制:**
+**Current limitation:**
 ```vue
 <NInput
   type="textarea"
@@ -1050,9 +1050,9 @@ export default {
 />
 ```
 
-**改进方案: 展开/折叠编辑模式**
+**Improvement: expand/collapse editing mode**
 
-**实现代码:**
+**Implementation code:**
 ```vue
 <script setup lang="ts">
 const expandedRows = ref(new Set<number>());
@@ -1065,17 +1065,17 @@ const toggleExpand = (index: number) => {
   }
 };
 
-// 自动保存并折叠
+// Auto-save and collapse
 const handleBlur = (index: number) => {
   setTimeout(() => {
     expandedRows.value.delete(index);
-  }, 200); // 延迟避免点击按钮时立即折叠
+  }, 200); // Delay to avoid collapsing immediately when a button is clicked
 };
 </script>
 
 <template>
   <div class="cm-row" :class="{ 'expanded': expandedRows.has(index) }">
-    <!-- 单行模式 (默认) -->
+    <!-- Single-line mode (default) -->
     <NInput
       v-if="!expandedRows.has(index)"
       :value="message.content"
@@ -1086,7 +1086,7 @@ const handleBlur = (index: number) => {
       :placeholder="$t('conversation.doubleClickToExpand')"
     />
     
-    <!-- 展开模式 (编辑) -->
+    <!-- Expanded mode (editing) -->
     <NInput
       v-else
       v-model="message.content"
@@ -1096,7 +1096,7 @@ const handleBlur = (index: number) => {
       @blur="handleBlur(index)"
     />
     
-    <!-- 展开/折叠按钮 -->
+    <!-- Expand/collapse button -->
     <NButton
       @click="toggleExpand(index)"
       quaternary
@@ -1104,11 +1104,11 @@ const handleBlur = (index: number) => {
       :title="expandedRows.has(index) ? $t('common.collapse') : $t('common.expand')"
     >
       <template #icon>
-        <!-- 展开图标 ↓ -->
+        <!-- Expand icon ↓ -->
         <svg v-if="!expandedRows.has(index)" width="14" height="14">
           <path d="M7 10l5-5H2z" fill="currentColor"/>
         </svg>
-        <!-- 折叠图标 ↑ -->
+        <!-- Collapse icon ↑ -->
         <svg v-else width="14" height="14">
           <path d="M7 4l5 5H2z" fill="currentColor"/>
         </svg>
@@ -1130,33 +1130,33 @@ const handleBlur = (index: number) => {
 </style>
 ```
 
-**用户体验:**
+**User experience:**
 ```
-当前: 单行显示，长文本被截断 ❌
-      "你是一个专业的歌曲创作助手，擅长创作..." [横向滚动]
+Currently: single-line display, long text is truncated ❌
+      "You are a professional songwriting assistant, skilled at creating..." [horizontal scroll]
 
-改进: 双击展开，3-20行自适应 ✅
-      "你是一个专业的歌曲创作助手，擅长创作各种风格的歌曲，
-       包括流行、摇滚、民谣、说唱等。你能够根据用户的需求，
-       创作出优秀的歌词和旋律建议。"
-       [失焦自动折叠]
+Improved: double-click to expand, adaptive 3-20 lines ✅
+      "You are a professional songwriting assistant, skilled at creating songs
+       in all kinds of styles, including pop, rock, folk, rap, etc. Based on the
+       user's needs, you can produce excellent lyrics and melody suggestions."
+       [collapses automatically on blur]
 ```
 
 ---
 
-#### 改进 3: 预览面板添加快速变量创建
+#### Improvement 3: Add Quick Variable Creation to the Preview Panel
 
-**当前体验:**
+**Current experience:**
 ```
-用户看到缺失变量 → 关闭预览 → 手动打开变量管理器 → 找到变量 → 编辑
-```
-
-**改进后体验:**
-```
-用户看到缺失变量 → 点击标签 → 直接创建/编辑 ✅
+User sees a missing variable → closes the preview → manually opens the variable manager → finds the variable → edits
 ```
 
-**实现代码:**
+**Experience after the improvement:**
+```
+User sees a missing variable → clicks the tag → creates/edits directly ✅
+```
+
+**Implementation code:**
 ```vue
 <!-- PromptPreviewPanel.vue -->
 <template>
@@ -1194,15 +1194,15 @@ const emit = defineEmits<{
 }>()
 
 const handleQuickCreateVariable = async (varName: string) => {
-  // 触发创建变量事件
+  // Trigger the create-variable event
   emit('create-variable', varName);
   
-  // 可选: 显示创建成功提示
+  // Optional: show a success message
   window.$message?.success(
     t('contextMode.preview.variableCreated', { name: varName })
   );
   
-  // 可选: 关闭预览面板
+  // Optional: close the preview panel
   // emit('update:show', false);
 };
 </script>
@@ -1214,24 +1214,24 @@ const handleQuickCreateVariable = async (varName: string) => {
 </style>
 ```
 
-**父组件处理:**
+**Parent component handling:**
 ```vue
-<!-- App.vue 或 ContextUserWorkspace.vue -->
+<!-- App.vue or ContextUserWorkspace.vue -->
 <PromptPreviewPanel
   @create-variable="handleQuickCreateVariable"
 />
 
 <script setup lang="ts">
 const handleQuickCreateVariable = async (varName: string) => {
-  // 方案1: 直接创建会话变量
+  // Option 1: create a conversation variable directly
   contextVariables.value[varName] = '';
   
-  // 方案2: 打开变量管理器并聚焦
+  // Option 2: open the variable manager and focus
   showVariableManager.value = true;
   await nextTick();
   focusVariable(varName);
   
-  // 方案3: 弹出快速输入框
+  // Option 3: pop up a quick input box
   const value = await showPrompt({
     title: t('variables.quickCreate'),
     message: t('variables.enterValue', { name: varName }),
@@ -1246,15 +1246,15 @@ const handleQuickCreateVariable = async (varName: string) => {
 
 ---
 
-#### 改进 4: 变量来源可视化
+#### Improvement 4: Variable Source Visualization
 
-**问题**: 当前无法直观区分变量来源（全局/会话/内置）
+**Problem**: Currently the variable source (global/conversation/built-in) cannot be told apart at a glance
 
-**改进方案: 变量输入表单增强**
+**Improvement: enhance the variable input form**
 
-**实现代码:**
+**Implementation code:**
 ```vue
-<!-- TestAreaPanel.vue - 变量输入表单 -->
+<!-- TestAreaPanel.vue - variable input form -->
 <template>
   <NSpace vertical :size="12">
     <div
@@ -1262,32 +1262,32 @@ const handleQuickCreateVariable = async (varName: string) => {
       :key="varName"
       class="variable-input-row"
     >
-      <!-- 变量名标签 (带来源标识) -->
+      <!-- Variable name tag (with source indicator) -->
       <NTag
         :size="tagSize"
         :type="getVariableSourceType(varName)"
         :bordered="false"
         :style="{ minWidth: '120px', flexShrink: 0 }"
       >
-        <!-- 来源图标 -->
+        <!-- Source icon -->
         <template #icon>
           <svg v-if="isPredefinedVariable(varName)" width="12" height="12">
-            <!-- 内置变量图标 (齿轮) -->
+            <!-- Built-in variable icon (gear) -->
             <path d="M10.325 4.317c.426-1.756..." fill="currentColor"/>
           </svg>
           <svg v-else-if="isContextVariable(varName)" width="12" height="12">
-            <!-- 会话变量图标 (文档) -->
+            <!-- Conversation variable icon (document) -->
             <path d="M9 2H5a2 2 0 00-2 2v12..." fill="currentColor"/>
           </svg>
           <svg v-else-if="isGlobalVariable(varName)" width="12" height="12">
-            <!-- 全局变量图标 (地球) -->
+            <!-- Global variable icon (globe) -->
             <circle cx="6" cy="6" r="5" stroke="currentColor"/>
           </svg>
         </template>
         
         <span v-text="`{{${varName}}}`"></span>
         
-        <!-- 来源提示 -->
+        <!-- Source tooltip -->
         <NTooltip>
           <template #trigger>
             <NIcon :size="12" style="margin-left: 4px;">
@@ -1306,7 +1306,7 @@ const handleQuickCreateVariable = async (varName: string) => {
         </NTooltip>
       </NTag>
       
-      <!-- 变量值输入 -->
+      <!-- Variable value input -->
       <NInput
         :value="getVariableDisplayValue(varName)"
         :placeholder="getVariablePlaceholder(varName)"
@@ -1336,10 +1336,10 @@ const handleQuickCreateVariable = async (varName: string) => {
 import { computed } from 'vue';
 
 const getVariableSourceType = (varName: string) => {
-  if (props.predefinedVariables[varName] !== undefined) return 'info';      // 内置 - 蓝色
-  if (props.contextVariables[varName] !== undefined) return 'success';      // 会话 - 绿色
-  if (props.globalVariables[varName] !== undefined) return 'warning';       // 全局 - 橙色
-  return 'default';                                                         // 未定义 - 灰色
+  if (props.predefinedVariables[varName] !== undefined) return 'info';      // Built-in - blue
+  if (props.contextVariables[varName] !== undefined) return 'success';      // Conversation - green
+  if (props.globalVariables[varName] !== undefined) return 'warning';       // Global - orange
+  return 'default';                                                         // Undefined - gray
 };
 
 const getVariableSourceLabel = (varName: string) => {
@@ -1390,28 +1390,28 @@ const isGlobalVariable = (varName: string) => {
 </style>
 ```
 
-**视觉效果:**
+**Visual effect:**
 ```
-🔧 {{originalPrompt}}      [内置 - 蓝色标签] (不可编辑)
-📄 {{style}}               [会话 - 绿色标签] [欢快_____] [×]
-🌍 {{tone}}                [全局 - 橙色标签] [正式_____] [×]
-⚠️ {{genre}}               [缺失 - 灰色标签] [_________] [×]
+🔧 {{originalPrompt}}      [Built-in - blue tag] (not editable)
+📄 {{style}}               [Conversation - green tag] [Cheerful_] [×]
+🌍 {{tone}}                [Global - orange tag] [Formal____] [×]
+⚠️ {{genre}}               [Missing - gray tag] [_________] [×]
 
-鼠标悬停显示:
+Hover tooltip:
 ┌─────────────────────┐
-│ 来源: 会话变量      │
-│ 优先级: 中          │
-│ 当前值: 欢快        │
+│ Source: Conversation variable │
+│ Priority: Medium     │
+│ Current value: Cheerful │
 └─────────────────────┘
 ```
 
 ---
 
-#### 改进 5: 变量历史记录和智能建议
+#### Improvement 5: Variable History and Smart Suggestions
 
-**功能描述**: 记录用户输入的变量值历史，提供智能建议
+**Feature description**: Record the history of values the user has entered for variables and provide smart suggestions
 
-**实现代码:**
+**Implementation code:**
 ```vue
 <!-- TestAreaPanel.vue -->
 <template>
@@ -1428,12 +1428,12 @@ const isGlobalVariable = (varName: string) => {
 import { ref, computed } from 'vue';
 import type { AutoCompleteOption } from 'naive-ui';
 
-// 变量历史记录存储 (localStorage)
+// Variable history storage (localStorage)
 const VARIABLE_HISTORY_KEY = 'prompt-optimizer:variable-history';
 
 const variableHistory = ref<Record<string, string[]>>({});
 
-// 加载历史记录
+// Load the history
 onMounted(() => {
   try {
     const stored = localStorage.getItem(VARIABLE_HISTORY_KEY);
@@ -1445,21 +1445,21 @@ onMounted(() => {
   }
 });
 
-// 保存历史记录
+// Save the history
 const saveVariableHistory = (varName: string, value: string) => {
   if (!value || value.trim() === '') return;
   
-  // 获取当前变量的历史记录
+  // Get the current variable's history
   const history = variableHistory.value[varName] || [];
   
-  // 去重并添加到开头
+  // Deduplicate and add to the front
   const filtered = history.filter(v => v !== value);
-  const updated = [value, ...filtered].slice(0, 10); // 最多保留10条
+  const updated = [value, ...filtered].slice(0, 10); // Keep at most 10 entries
   
-  // 更新记录
+  // Update the record
   variableHistory.value[varName] = updated;
   
-  // 持久化
+  // Persist
   try {
     localStorage.setItem(
       VARIABLE_HISTORY_KEY,
@@ -1470,229 +1470,229 @@ const saveVariableHistory = (varName: string, value: string) => {
   }
 };
 
-// 获取变量历史建议
+// Get variable history suggestions
 const getVariableHistorySuggestions = (varName: string): AutoCompleteOption[] => {
   const history = variableHistory.value[varName] || [];
   
   return history.map((value, index) => ({
     label: value,
     value: value,
-    // 显示使用频率
+    // Show usage recency
     extra: index === 0 ? t('variables.history.recent') : undefined
   }));
 };
 
-// 智能占位符
+// Smart placeholder
 const getSmartPlaceholder = (varName: string): string => {
-  // 1. 检查是否有历史记录
+  // 1. Check whether there is history
   const history = variableHistory.value[varName];
   if (history && history.length > 0) {
     return t('variables.placeholder.withHistory', { example: history[0] });
   }
   
-  // 2. 根据变量名推测类型
-  if (varName.includes('style') || varName.includes('风格')) {
-    return t('variables.placeholder.style'); // "如：流行、摇滚、民谣..."
+  // 2. Guess the type from the variable name
+  if (varName.includes('style') || varName.includes('genre')) {
+    return t('variables.placeholder.style'); // "e.g. pop, rock, folk..."
   }
-  if (varName.includes('tone') || varName.includes('语气')) {
-    return t('variables.placeholder.tone'); // "如：正式、轻松、幽默..."
+  if (varName.includes('tone') || varName.includes('mood')) {
+    return t('variables.placeholder.tone'); // "e.g. formal, relaxed, humorous..."
   }
-  if (varName.includes('language') || varName.includes('语言')) {
-    return t('variables.placeholder.language'); // "如：中文、英文、日语..."
+  if (varName.includes('language') || varName.includes('locale')) {
+    return t('variables.placeholder.language'); // "e.g. English, French, Japanese..."
   }
   
-  // 3. 默认占位符
-  return t('variables.placeholder.default'); // "请输入变量值"
+  // 3. Default placeholder
+  return t('variables.placeholder.default'); // "Enter a variable value"
 };
 
-// 处理变量值变化
+// Handle variable value changes
 const handleVariableValueChange = (varName: string, value: string) => {
-  // 保存到历史记录
+  // Save to the history
   saveVariableHistory(varName, value);
   
-  // 触发更新事件
+  // Trigger the update event
   emit('variable-change', varName, value);
 };
 </script>
 ```
 
-**用户体验:**
+**User experience:**
 ```
-输入框获得焦点时:
+When the input box gains focus:
 ┌─────────────────────────┐
 │ {{style}}               │
 │ ┌─────────────────────┐ │
-│ │ 欢快 (最近使用)     ↓│ │
+│ │ Cheerful (recent)  ↓│ │
 │ ├─────────────────────┤ │
-│ │ 流行                │ │
-│ │ 摇滚                │ │
-│ │ 民谣                │ │
+│ │ Pop                 │ │
+│ │ Rock                │ │
+│ │ Folk                │ │
 │ └─────────────────────┘ │
 └─────────────────────────┘
 
-智能占位符:
-- 有历史: "上次输入：欢快"
-- 无历史: "如：流行、摇滚、民谣..."
+Smart placeholder:
+- With history: "Last entered: Cheerful"
+- Without history: "e.g. pop, rock, folk..."
 ```
 
 ---
 
-## 七、与设计文档对比
+## 7. Comparison with the Design Document
 
-### ✅ 已实现的设计
+### ✅ Implemented Designs
 
-| 设计文档要求 | 实现状态 | 代码位置 | 备注 |
+| Design document requirement | Implementation status | Code location | Notes |
 |-------------|---------|---------|------|
-| 用户模式隐藏会话管理 | ✅ | `ContextUserWorkspace.vue` | 无 ConversationManager 组件 |
-| 系统模式显示会话管理 | ✅ | `ContextSystemWorkspace.vue` | 包含 ConversationManager |
-| 三层变量快捷按钮 | ✅ | `ContextModeActions.vue` | 全局/会话变量按钮 |
-| 实时预览面板 | ✅ | `PromptPreviewPanel.vue` | 支持变量替换预览 |
-| 变量统计展示 | ✅ | `usePromptPreview.ts:123` | `variableStats` 计算属性 |
-| 缺失变量警告 | ✅ | `PromptPreviewPanel.vue:32` | 高亮显示缺失变量 |
-| 模式说明提示 | ✅ | `PromptPreviewPanel.vue:48` | 动态模式说明 |
-| 防抖优化 | ✅ | `ConversationManager.vue:187` | 150ms 防抖 |
-| 批处理更新 | ✅ | `ConversationManager.vue:195` | 16ms 批处理 |
-| 国际化支持 | ✅ | 所有组件 | 完整 i18n 覆盖 |
-| 可访问性 | ✅ | 所有组件 | 完整 aria 属性 |
+| User mode hides conversation management | ✅ | `ContextUserWorkspace.vue` | No ConversationManager component |
+| System mode shows conversation management | ✅ | `ContextSystemWorkspace.vue` | Includes ConversationManager |
+| Three-layer variable quick buttons | ✅ | `ContextModeActions.vue` | Global/conversation variable buttons |
+| Live preview panel | ✅ | `PromptPreviewPanel.vue` | Supports variable replacement preview |
+| Variable statistics display | ✅ | `usePromptPreview.ts:123` | `variableStats` computed property |
+| Missing variable warning | ✅ | `PromptPreviewPanel.vue:32` | Highlights missing variables |
+| Mode explanation hint | ✅ | `PromptPreviewPanel.vue:48` | Dynamic mode explanation |
+| Debounce optimization | ✅ | `ConversationManager.vue:187` | 150ms debounce |
+| Batch updates | ✅ | `ConversationManager.vue:195` | 16ms batching |
+| Internationalization support | ✅ | All components | Complete i18n coverage |
+| Accessibility | ✅ | All components | Complete aria attributes |
 
-### ⚠️ 与文档不一致
+### ⚠️ Inconsistent with the Document
 
-| 设计文档 | 实际实现 | 差异说明 | 建议 |
+| Design document | Actual implementation | Difference | Recommendation |
 |---------|---------|---------|------|
-| "工具管理 - 两种模式都显示" | 仅用户模式显示 (`v-if="user"`) | 文档过期或设计变更 | 统一为"仅用户模式" |
-| "变量来源标注 (全局/会话/内置)" | UI 未显示来源标识 | 功能未实现 | 添加 `VariableSourceBadge` |
-| "快速添加变量按钮" | 仅提示无快速操作 | 交互未完善 | 实现点击创建变量 |
+| "Tool management - shown in both modes" | Shown only in user mode (`v-if="user"`) | Document outdated or design changed | Unify to "user mode only" |
+| "Variable source labels (global/conversation/built-in)" | UI does not show source indicators | Feature not implemented | Add a `VariableSourceBadge` |
+| "Quick add variable button" | Hint only, no quick action | Interaction incomplete | Implement click-to-create variable |
 
-### 📝 建议更新的文档
+### 📝 Documents Recommended for Update
 
-**设计文档需要更新的部分:**
+**Parts of the design document that need updating:**
 
-1. **`design.md` - 组件设计章节**
+1. **`design.md` - Component Design chapter**
    ```diff
-   - 工具管理 - 两种模式都显示
-   + 工具管理 - 仅用户模式显示 (系统模式通过上下文编辑器管理)
+   - Tool management - shown in both modes
+   + Tool management - shown in user mode only (system mode manages it via the context editor)
    ```
 
-2. **`design.md` - 变量管理 UI**
+2. **`design.md` - Variable Management UI**
    ```diff
-   + #### 变量来源可视化
+   + #### Variable Source Visualization
    + 
-   + 变量输入表单应显示变量来源标识:
-   + - 🔧 内置变量 (蓝色标签，不可编辑)
-   + - 📄 会话变量 (绿色标签)
-   + - 🌍 全局变量 (橙色标签)
-   + - ⚠️ 未定义变量 (灰色标签)
+   + The variable input form should show variable source indicators:
+   + - 🔧 Built-in variables (blue tag, not editable)
+   + - 📄 Conversation variables (green tag)
+   + - 🌍 Global variables (orange tag)
+   + - ⚠️ Undefined variables (gray tag)
    ```
 
-3. **`tasks.md` - 新增待完成任务**
+3. **`tasks.md` - Add new pending tasks**
    ```markdown
-   - [ ] 19. UI 细节优化
+   - [ ] 19. UI detail optimization
      - **Files**:
        - `packages/ui/src/components/context-mode/ConversationManager.vue`
        - `packages/ui/src/components/PromptPreviewPanel.vue`
        - `packages/ui/src/components/TestAreaPanel.vue`
      - **Description**:
-       - 会话管理器展开/折叠编辑功能
-       - 预览面板快速创建变量按钮
-       - 测试区域变量来源可视化
-       - 变量历史记录和智能建议
-     - **Requirements**: 需求4 (易用性提升)
+       - Expand/collapse editing for the conversation manager
+       - Quick create-variable button in the preview panel
+       - Variable source visualization in the test area
+       - Variable history and smart suggestions
+     - **Requirements**: Requirement 4 (usability improvements)
      - **Success Criteria**:
-       - ✅ 长消息可展开编辑
-       - ✅ 缺失变量点击创建
-       - ✅ 变量来源清晰标识
-       - ✅ 历史记录智能建议
+       - ✅ Long messages can be expanded for editing
+       - ✅ Missing variables can be created by clicking
+       - ✅ Variable sources are clearly indicated
+       - ✅ History-based smart suggestions
    ```
 
 ---
 
-## 八、总体评价
+## 8. Overall Evaluation
 
-### 🎯 设计质量评分
+### 🎯 Design Quality Scores
 
-| 维度 | 评分 | 说明 | 待改进点 |
+| Dimension | Score | Notes | Areas to improve |
 |------|------|------|---------|
-| **架构设计** | ⭐⭐⭐⭐⭐ | 组件分离清晰，模式化设计优秀 | - |
-| **代码质量** | ⭐⭐⭐⭐☆ | TypeScript 类型完善，防抖优化到位 | 部分类型可以更严格 |
-| **用户体验** | ⭐⭐⭐⭐☆ | 实时预览、统计信息清晰 | 缺少快捷操作、变量来源不明确 |
-| **可访问性** | ⭐⭐⭐⭐⭐ | 完整的 aria 属性，键盘导航支持 | - |
-| **国际化** | ⭐⭐⭐⭐⭐ | 全面使用 i18n | - |
-| **性能优化** | ⭐⭐⭐⭐☆ | 防抖/批处理到位 | 可考虑虚拟滚动 |
-| **文档一致性** | ⭐⭐⭐☆☆ | 部分实现与文档不一致 | 需同步更新文档 |
+| **Architecture design** | ⭐⭐⭐⭐⭐ | Clear component separation, excellent mode-specific design | - |
+| **Code quality** | ⭐⭐⭐⭐☆ | Well-typed TypeScript, good debounce optimization | Some types could be stricter |
+| **User experience** | ⭐⭐⭐⭐☆ | Live preview, clear statistics | Missing quick actions, unclear variable sources |
+| **Accessibility** | ⭐⭐⭐⭐⭐ | Complete aria attributes, keyboard navigation support | - |
+| **Internationalization** | ⭐⭐⭐⭐⭐ | i18n used throughout | - |
+| **Performance optimization** | ⭐⭐⭐⭐☆ | Debounce/batching in place | Consider virtual scrolling |
+| **Documentation consistency** | ⭐⭐⭐☆☆ | Some implementation differs from the docs | Docs need to be updated in sync |
 
-**总体评分: 4.6/5.0** ⭐⭐⭐⭐⭐
+**Overall score: 4.6/5.0** ⭐⭐⭐⭐⭐
 
-### 💪 核心优势
+### 💪 Core Strengths
 
-1. **模式化设计清晰** - User/System 组件完全分离，避免条件判断地狱
-2. **性能优化到位** - 防抖、批处理、浅拷贝等优化措施完善
-3. **类型安全完整** - TypeScript 类型定义严格，emit 类型完整
-4. **可访问性优秀** - 完整的 aria 属性和键盘导航支持
-5. **Naive UI 一致性** - 统一使用 Naive UI 组件，主题适配良好
+1. **Clear mode-specific design** - User/System components are completely separate, avoiding conditional hell
+2. **Performance optimization in place** - Debounce, batching, shallow copy, and other optimizations are thorough
+3. **Complete type safety** - Strict TypeScript type definitions and complete emit types
+4. **Excellent accessibility** - Complete aria attributes and keyboard navigation support
+5. **Naive UI consistency** - Naive UI components used uniformly, with good theme adaptation
 
-### 🔧 改进空间
+### 🔧 Room for Improvement
 
-1. **文档同步** - 设计文档与实现存在部分不一致，需要统一
-2. **快捷交互** - 缺失变量快速创建、会话消息展开编辑等细节交互待完善
-3. **变量可视化** - 变量来源（全局/会话/内置）未在 UI 清晰标识
-4. **智能建议** - 变量历史记录、智能占位符等 AI 辅助功能可增强
-
----
-
-## 九、下一步行动计划
-
-### 🚀 短期优化 (1-2 周)
-
-**优先级 P1 - 必须修复:**
-1. ✅ 统一工具管理按钮显示逻辑（代码或文档）
-2. ✅ 更新 `design.md` 和 `tasks.md` 使其与实现一致
-
-**优先级 P2 - 重要改进:**
-1. ✅ 实现缺失变量快速创建功能
-2. ✅ 优化会话管理器编辑体验（展开/折叠）
-3. ✅ 添加变量来源标注 UI
-
-### 📈 中期优化 (1 个月)
-
-1. ✅ 实现变量历史记录和智能建议
-2. ✅ 添加预览与实际渲染一致性检查
-3. ✅ 优化移动端响应式布局
-4. ✅ 完善无障碍测试（自动化 a11y 测试）
-
-### 🎯 长期优化 (季度级)
-
-1. ✅ 实现协同编辑（多人同时编辑上下文）
-2. ✅ 添加可视化变量依赖图谱
-3. ✅ 提供模板市场（分享优秀上下文配置）
-4. ✅ AI 辅助变量推荐（根据提示词内容智能推荐变量名和值）
+1. **Documentation sync** - The design document and implementation are partly inconsistent and need to be aligned
+2. **Quick interactions** - Detail interactions such as quick creation of missing variables and expanded editing of conversation messages remain to be completed
+3. **Variable visualization** - Variable sources (global/conversation/built-in) are not clearly marked in the UI
+4. **Smart suggestions** - AI-assisted features such as variable history and smart placeholders could be enhanced
 
 ---
 
-## 十、附录
+## 9. Next Action Plan
 
-### A. 组件文件清单
+### 🚀 Short-term Optimization (1-2 weeks)
+
+**Priority P1 - Must fix:**
+1. ✅ Unify the display logic of the tool management button (code or documentation)
+2. ✅ Update `design.md` and `tasks.md` to be consistent with the implementation
+
+**Priority P2 - Important improvements:**
+1. ✅ Implement quick creation of missing variables
+2. ✅ Optimize the conversation manager editing experience (expand/collapse)
+3. ✅ Add the variable source labeling UI
+
+### 📈 Mid-term Optimization (1 month)
+
+1. ✅ Implement variable history and smart suggestions
+2. ✅ Add a consistency check between the preview and the actual rendering
+3. ✅ Optimize the mobile responsive layout
+4. ✅ Improve accessibility testing (automated a11y tests)
+
+### 🎯 Long-term Optimization (quarterly)
+
+1. ✅ Implement collaborative editing (multiple people editing a context simultaneously)
+2. ✅ Add a visual variable dependency graph
+3. ✅ Provide a template marketplace (share excellent context configurations)
+4. ✅ AI-assisted variable recommendations (recommend variable names and values based on the prompt content)
+
+---
+
+## 10. Appendix
+
+### A. Component File List
 
 ```
 packages/ui/src/components/
 ├── context-mode/
-│   ├── ContextUserWorkspace.vue       (240 行)
-│   ├── ContextSystemWorkspace.vue     (280 行)
-│   ├── ContextModeActions.vue         (50 行)
-│   ├── ContextEditor.vue              (844+ 行)
-│   └── ConversationManager.vue        (520 行)
-├── PromptPreviewPanel.vue             (120 行)
-├── TestAreaPanel.vue                  (100+ 行)
-├── InputPanel.vue                     (150+ 行)
-└── PromptPanel.vue                    (200+ 行)
+│   ├── ContextUserWorkspace.vue       (240 lines)
+│   ├── ContextSystemWorkspace.vue     (280 lines)
+│   ├── ContextModeActions.vue         (50 lines)
+│   ├── ContextEditor.vue              (844+ lines)
+│   └── ConversationManager.vue        (520 lines)
+├── PromptPreviewPanel.vue             (120 lines)
+├── TestAreaPanel.vue                  (100+ lines)
+├── InputPanel.vue                     (150+ lines)
+└── PromptPanel.vue                    (200+ lines)
 
 packages/ui/src/composables/
-└── usePromptPreview.ts                (180 行)
+└── usePromptPreview.ts                (180 lines)
 ```
 
-### B. 关键常量定义
+### B. Key Constant Definitions
 
 ```typescript
-// 内置预定义变量
+// Built-in predefined variables
 const PREDEFINED_VARIABLES = [
   'originalPrompt',
   'lastOptimizedPrompt',
@@ -1703,87 +1703,87 @@ const PREDEFINED_VARIABLES = [
   'toolsContext'
 ];
 
-// 变量来源类型
+// Variable source types
 type VariableSource = 'predefined' | 'context' | 'global' | 'missing';
 
-// 上下文模式
+// Context mode
 type ContextMode = 'user' | 'system';
 
-// 渲染阶段
+// Render phase
 type RenderPhase = 'optimize' | 'test';
 ```
 
-### C. 国际化 Keys 清单
+### C. Internationalization Keys List
 
 ```typescript
-// 需要补充的 i18n keys
+// i18n keys that need to be added
 const I18N_KEYS = {
   contextMode: {
     actions: {
-      globalVariables: '全局变量',
-      contextVariables: '会话变量',
-      tools: '工具管理'
+      globalVariables: 'Global Variables',
+      contextVariables: 'Conversation Variables',
+      tools: 'Tool Management'
     },
     preview: {
-      title: '预览',
-      stats: '变量统计',
-      totalVars: '变量总数',
-      providedVars: '已提供',
-      missingVars: '缺失',
-      clickToCreateVariableHint: '点击变量标签快速创建'
+      title: 'Preview',
+      stats: 'Variable Statistics',
+      totalVars: 'Total Variables',
+      providedVars: 'Provided',
+      missingVars: 'Missing',
+      clickToCreateVariableHint: 'Click a variable tag to create it quickly'
     }
   },
   variables: {
     source: {
-      predefined: '内置变量',
-      context: '会话变量',
-      global: '全局变量',
-      missing: '未定义'
+      predefined: 'Built-in Variable',
+      context: 'Conversation Variable',
+      global: 'Global Variable',
+      missing: 'Undefined'
     },
     priority: {
-      highest: '最高',
-      medium: '中',
-      lowest: '最低'
+      highest: 'Highest',
+      medium: 'Medium',
+      lowest: 'Lowest'
     },
     placeholder: {
-      style: '如：流行、摇滚、民谣...',
-      tone: '如：正式、轻松、幽默...',
-      language: '如：中文、英文、日语...',
-      default: '请输入变量值'
+      style: 'e.g. pop, rock, folk...',
+      tone: 'e.g. formal, relaxed, humorous...',
+      language: 'e.g. English, French, Japanese...',
+      default: 'Enter a variable value'
     }
   }
 };
 ```
 
-### D. 性能基准参考
+### D. Performance Benchmark Reference
 
 ```typescript
-// 性能目标
+// Performance targets
 const PERFORMANCE_TARGETS = {
-  variableMerge: 5,        // 变量合并 < 5ms
-  previewRender: 50,       // 预览渲染 < 50ms
-  messageUpdate: 150,      // 消息更新防抖 150ms
-  batchUpdate: 16,         // 批处理 16ms (60fps)
-  maxVariables: 100,       // 最大变量数
-  maxMessages: 50          // 最大消息数
+  variableMerge: 5,        // Variable merge < 5ms
+  previewRender: 50,       // Preview render < 50ms
+  messageUpdate: 150,      // Message update debounce 150ms
+  batchUpdate: 16,         // Batching 16ms (60fps)
+  maxVariables: 100,       // Maximum number of variables
+  maxMessages: 50          // Maximum number of messages
 };
 ```
 
 ---
 
-## 结论
+## Conclusion
 
-这是一个**设计非常优秀的 UI 系统**，核心架构清晰，性能优化到位，用户体验良好。主要改进空间在于:
+This is a **very well designed UI system**: the core architecture is clear, performance optimization is in place, and the user experience is good. The main areas for improvement are:
 
-1. **文档一致性** - 同步设计文档和实现代码
-2. **细节交互** - 快捷操作、变量来源可视化等
-3. **智能辅助** - 历史记录、智能建议等 AI 增强功能
+1. **Documentation consistency** - Sync the design document with the implementation code
+2. **Detail interactions** - Quick actions, variable source visualization, etc.
+3. **Smart assistance** - AI-enhanced features such as history and smart suggestions
 
-通过实施本报告提出的改进建议，可以将 UI 质量从 4.6/5.0 提升至 4.9/5.0 ⭐⭐⭐⭐⭐
+By implementing the improvement suggestions in this report, the UI quality can be raised from 4.6/5.0 to 4.9/5.0 ⭐⭐⭐⭐⭐
 
 ---
 
-**文档维护:**
-- 最后更新: 2025-10-21
-- 下次审查: 实现改进建议后
-- 负责人: UI 团队
+**Document maintenance:**
+- Last updated: 2025-10-21
+- Next review: After the improvement suggestions are implemented
+- Owner: UI team

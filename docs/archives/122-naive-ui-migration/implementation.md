@@ -1,33 +1,33 @@
-# Naive UI 迁移技术实施方案
+# Naive UI Migration Technical Implementation Plan
 
-## 🚀 实施概述
+## 🚀 Implementation Overview
 
-本文档整合了项目实施指南和经验总结，提供完整的技术实施方案和最佳实践。
+This document consolidates the project implementation guide and lessons learned, providing a complete technical implementation plan and best practices.
 
-### 实施目标
-按照三阶段渐进式迁移策略，将当前自建主题系统安全、高效地迁移到Naive UI，确保项目稳定性的同时实现现代化升级。
+### Implementation Goals
+Following a three-phase incremental migration strategy, migrate the current in-house theme system to Naive UI safely and efficiently, achieving modernization while keeping the project stable.
 
-### 实施原则
-1. **安全第一**: 每个步骤都有回退方案
-2. **渐进迭代**: 小步快跑，分阶段验证  
-3. **质量保证**: 每个阶段都充分测试
-4. **文档同步**: 实时更新文档和经验总结
+### Implementation Principles
+1. **Safety first**: every step has a rollback plan
+2. **Incremental iteration**: small, fast steps with verification at each phase  
+3. **Quality assurance**: thorough testing in every phase
+4. **Documentation sync**: update documentation and lessons learned in real time
 
-## 📅 三阶段实施计划
+## 📅 Three-phase Implementation Plan
 
-### 🔧 阶段1: 基础迁移 (第1周)
+### 🔧 Phase 1: Basic Migration (Week 1)
 
-#### 环境搭建
+#### Environment Setup
 ```bash
-# 1. 安装Naive UI
+# 1. Install Naive UI
 cd packages/ui
 pnpm add naive-ui
 
-# 2. 安装自动导入插件（可选）
+# 2. Install the auto-import plugin (optional)
 pnpm add -D unplugin-auto-import unplugin-vue-components
 ```
 
-#### 核心配置
+#### Core Configuration
 ```typescript
 // packages/ui/src/main.ts
 import { createApp } from 'vue'
@@ -40,21 +40,21 @@ const naive = create({
 app.use(naive)
 ```
 
-#### 组件替换策略
-- **优先级**: 基础组件 → 布局组件 → 复杂组件
-- **验证**: 每个组件替换后立即功能测试
-- **回退**: 保持原组件文件备份
+#### Component Replacement Strategy
+- **Priority**: basic components → layout components → complex components
+- **Verification**: run functional tests immediately after each component is replaced
+- **Rollback**: keep a backup of the original component files
 
-### 🎨 阶段2: 主题集成 (第2周)
+### 🎨 Phase 2: Theme Integration (Week 2)
 
-#### 主题系统架构
-- **双层主题架构**: 自定义CSS变量层 + UI库主题提供者层
-- **响应式检测**: 使用MutationObserver监听主题变化
-- **5种主题**: light, dark, blue, green, purple
+#### Theme System Architecture
+- **Two-layer theme architecture**: custom CSS variable layer + UI library theme provider layer
+- **Responsive detection**: use MutationObserver to watch for theme changes
+- **5 themes**: light, dark, blue, green, purple
 
-#### 关键实现
+#### Key Implementation
 ```css
-/* 主题变量统一管理 */
+/* Unified management of theme variables */
 :root {
   --theme-surface-color: #ffffff;
   --theme-primary-color: #18a058;
@@ -66,60 +66,60 @@ app.use(naive)
 }
 ```
 
-### ✅ 阶段3: 优化验证 (第3-4周)
+### ✅ Phase 3: Optimization and Verification (Weeks 3-4)
 
-#### 跨平台测试
-- **Web版本**: 浏览器端完整功能验证
-- **桌面版本**: Electron环境兼容性测试
-- **扩展版本**: Chrome扩展popup界面测试
+#### Cross-platform Testing
+- **Web version**: verification of complete functionality in the browser
+- **Desktop version**: Electron environment compatibility testing
+- **Extension version**: Chrome extension popup interface testing
 
-#### 性能优化
-- 构建产物分析
-- 内存使用评估
-- 加载性能优化
+#### Performance Optimization
+- Build artifact analysis
+- Memory usage assessment
+- Loading performance optimization
 
-## 🔧 核心技术经验
+## 🔧 Core Technical Lessons
 
-### 1. 架构设计最佳实践
+### 1. Architecture Design Best Practices
 
-#### 技术选型方法论
-- **评分矩阵**: 技术栈匹配度、现代化程度、迁移成本、社区活跃度
-- **POC验证**: 关键组件prototype验证
-- **风险评估**: 识别潜在技术风险点
+#### Technology Selection Methodology
+- **Scoring matrix**: technology stack fit, degree of modernity, migration cost, community activity
+- **POC verification**: prototype verification of key components
+- **Risk assessment**: identify potential technical risks
 
-#### 渐进式迁移策略  
+#### Incremental Migration Strategy  
 ```
-Phase 1: 基础组件迁移 (低风险)
+Phase 1: Basic component migration (low risk)
     ↓
-Phase 2: 主题系统集成 (中等风险)  
+Phase 2: Theme system integration (medium risk)  
     ↓
-Phase 3: 性能优化验证 (低风险)
+Phase 3: Performance optimization verification (low risk)
 ```
 
-### 2. UI库选型经验
+### 2. UI Library Selection Lessons
 
-#### Naive UI优势确认
-- ✅ Vue 3原生支持，无兼容性问题
-- ✅ TypeScript友好，类型定义完整
-- ✅ 极简设计，定制性强
-- ✅ 性能优异，包体积合理
-- ✅ 与TailwindCSS完美配合
+#### Naive UI Advantages Confirmed
+- ✅ Native Vue 3 support with no compatibility problems
+- ✅ TypeScript friendly with complete type definitions
+- ✅ Minimalist design with strong customizability
+- ✅ Excellent performance with a reasonable bundle size
+- ✅ Works perfectly with TailwindCSS
 
-#### 与现有技术栈集成
-- **Vue 3 Composition API**: 完全兼容
-- **TypeScript**: 类型支持优秀  
-- **TailwindCSS**: 可以完美共存
-- **Vite**: 开发体验优秀
+#### Integration with the Existing Technology Stack
+- **Vue 3 Composition API**: fully compatible
+- **TypeScript**: excellent type support  
+- **TailwindCSS**: can coexist perfectly
+- **Vite**: excellent development experience
 
-### 3. 主题系统设计经验
+### 3. Theme System Design Lessons
 
-#### 响应式主题系统架构
+#### Responsive Theme System Architecture
 ```typescript
-// DOM-based主题检测 - 比Vue watch更可靠
+// DOM-based theme detection - more reliable than a Vue watch
 const observer = new MutationObserver((mutations) => {
   mutations.forEach((mutation) => {
     if (mutation.attributeName === 'class') {
-      // 同步主题状态
+      // Synchronize the theme state
       syncThemeState()
     }
   })
@@ -131,13 +131,13 @@ observer.observe(document.documentElement, {
 })
 ```
 
-#### 双层主题架构设计
-1. **CSS变量层**: 控制基础颜色和尺寸
-2. **UI库主题层**: 控制组件样式
+#### Two-layer Theme Architecture Design
+1. **CSS variable layer**: controls base colors and sizes
+2. **UI library theme layer**: controls component styles
 
-#### 组件样式覆盖策略
+#### Component Style Override Strategy
 ```css
-/* 使用选择器优先级确保样式正确应用 */
+/* Use selector specificity to make sure styles are applied correctly */
 .theme-blue .n-button--primary {
   background-color: var(--theme-primary-color) !important;
 }
@@ -148,55 +148,55 @@ observer.observe(document.documentElement, {
 }
 ```
 
-### 4. 布局组件优化经验
+### 4. Layout Component Optimization Lessons
 
-#### NFlex替代NSplit的成功案例
-**问题**: NSplit组件过于复杂，性能开销较大  
-**解决方案**: 使用NFlex实现相同布局效果
+#### A Successful Case of Replacing NSplit with NFlex
+**Problem**: The NSplit component is too complex and has a high performance overhead  
+**Solution**: Use NFlex to achieve the same layout effect
 
-**优化结果**:
-- 性能提升：无resize计算开销
-- 代码简化：移除复杂CSS布局代码  
-- 维护性改善：使用内置样式替代自定义样式
+**Optimization results**:
+- Performance improvement: no resize calculation overhead
+- Code simplification: removed complex CSS layout code  
+- Better maintainability: built-in styles replace custom styles
 
 ```vue
 <!-- Before: NSplit -->
 <n-split direction="horizontal" :default-size="0.6">
-  <template #1>左侧内容</template>
-  <template #2>右侧内容</template>
+  <template #1>Left content</template>
+  <template #2>Right content</template>
 </n-split>
 
 <!-- After: NFlex -->
 <n-flex>
-  <div class="flex-1">左侧内容</div>
-  <div class="flex-1">右侧内容</div>
+  <div class="flex-1">Left content</div>
+  <div class="flex-1">Right content</div>
 </n-flex>
 ```
 
-### 5. 构建和开发经验
+### 5. Build and Development Lessons
 
-#### 组件导入问题修复
-**常见问题**: 组件使用但未导入导致构建错误  
-**解决方案**: 使用自动导入插件或严格检查导入语句
+#### Fixing Component Import Problems
+**Common problem**: Components used but not imported cause build errors  
+**Solution**: Use the auto-import plugin or strictly check import statements
 
 ```typescript
-// 修复前：使用但未导入
-<NText>文本内容</NText>
+// Before the fix: used but not imported
+<NText>Text content</NText>
 
-// 修复后：正确导入
+// After the fix: imported correctly
 import { NText } from 'naive-ui'
 ```
 
-#### 开发环境稳定性
-- **缓存清理**: `pnpm dev:fresh` 解决大多数构建问题
-- **HMR稳定性**: Vite + Naive UI的HMR工作稳定
-- **类型检查**: TypeScript严格模式帮助发现潜在问题
+#### Development Environment Stability
+- **Cache cleaning**: `pnpm dev:fresh` solves most build problems
+- **HMR stability**: HMR works stably with Vite + Naive UI
+- **Type checking**: TypeScript strict mode helps find potential problems
 
-### 6. CSS架构经验
+### 6. CSS Architecture Lessons
 
-#### 主题变量管理策略
+#### Theme Variable Management Strategy
 ```css
-/* 语义化变量命名 */
+/* Semantic variable naming */
 :root {
   --theme-primary-color: #18a058;
   --theme-surface-color: #ffffff;
@@ -204,7 +204,7 @@ import { NText } from 'naive-ui'
   --theme-border-color: #e0e0e6;
 }
 
-/* 主题特定变量 */
+/* Theme-specific variables */
 .dark {
   --theme-surface-color: #1a1a1a;
   --theme-text-color: #ffffff;
@@ -212,76 +212,76 @@ import { NText } from 'naive-ui'
 }
 ```
 
-#### 样式作用域控制
-- 使用主题类名作为选择器前缀
-- 避免全局样式污染
-- 确保样式优先级正确
+#### Style Scope Control
+- Use the theme class name as a selector prefix
+- Avoid polluting global styles
+- Ensure style specificity is correct
 
-## ⚡ 关键成功因素
+## ⚡ Key Success Factors
 
-### 技术层面
-1. **渐进式迁移**: 分阶段降低风险
-2. **充分测试**: 每个阶段都有验证标准
-3. **文档驱动**: 详细记录决策和经验
-4. **工具链稳定**: Vite + TypeScript + pnpm的可靠组合
+### Technical Aspects
+1. **Incremental migration**: phasing reduces risk
+2. **Thorough testing**: every phase has verification criteria
+3. **Documentation-driven**: record decisions and lessons in detail
+4. **Stable toolchain**: the reliable combination of Vite + TypeScript + pnpm
 
-### 管理层面
-1. **明确目标**: 每个阶段都有清晰的交付物
-2. **风险控制**: 每个步骤都有回退方案
-3. **经验沉淀**: 实时记录问题和解决方案
-4. **团队协作**: 保持充分的沟通和知识分享
+### Management Aspects
+1. **Clear goals**: every phase has clear deliverables
+2. **Risk control**: every step has a rollback plan
+3. **Knowledge capture**: record problems and solutions in real time
+4. **Team collaboration**: maintain thorough communication and knowledge sharing
 
-## 🛠️ 问题解决经验
+## 🛠️ Problem-solving Lessons
 
-### 常见问题及解决方案
+### Common Problems and Solutions
 
-#### 1. 主题切换不生效
-**问题**: 主题变量更新但组件样式未更新
-**原因**: 组件样式优先级不够或选择器不正确
-**解决**: 使用!important或提高选择器权重
+#### 1. Theme Switching Has No Effect
+**Problem**: Theme variables update but component styles do not
+**Cause**: Component style specificity is insufficient or the selector is incorrect
+**Solution**: Use !important or increase selector weight
 
-#### 2. 构建时组件解析错误
-**问题**: Vue组件解析警告，影响构建
-**原因**: 组件未正确导入或配置
-**解决**: 检查导入语句，配置自动导入插件
+#### 2. Component Resolution Errors During the Build
+**Problem**: Vue component resolution warnings affect the build
+**Cause**: Components are not imported or configured correctly
+**Solution**: Check the import statements and configure the auto-import plugin
 
-#### 3. 布局不一致
-**问题**: 不同平台下布局表现不一致
-**原因**: CSS兼容性或计算逻辑差异
-**解决**: 使用统一的布局组件，避免复杂的自定义布局
+#### 3. Inconsistent Layout
+**Problem**: The layout behaves differently on different platforms
+**Cause**: CSS compatibility or differences in calculation logic
+**Solution**: Use unified layout components and avoid complex custom layouts
 
-#### 4. 性能回归
-**问题**: 迁移后页面加载变慢
-**原因**: 组件导入方式不当或主题计算开销
-**解决**: 按需导入，优化主题切换逻辑
+#### 4. Performance Regression
+**Problem**: Page loading becomes slower after the migration
+**Cause**: Improper component import or theme calculation overhead
+**Solution**: Import on demand and optimize the theme switching logic
 
-### 调试技巧
-1. **使用Vue DevTools**: 检查组件props和事件
-2. **Chrome DevTools**: 分析样式应用情况
-3. **Network面板**: 检查资源加载情况
-4. **Performance面板**: 分析渲染性能
+### Debugging Tips
+1. **Use Vue DevTools**: inspect component props and events
+2. **Chrome DevTools**: analyze how styles are applied
+3. **Network panel**: check resource loading
+4. **Performance panel**: analyze rendering performance
 
-## 📈 后续改进方向
+## 📈 Future Improvement Directions
 
-### 技术债务清理
-1. TypeScript类型问题修复（196个待修复）
-2. ESLint规则配置和代码规范统一  
-3. 未使用代码清理和优化
+### Technical Debt Cleanup
+1. Fix TypeScript type problems (196 remaining)
+2. Configure ESLint rules and unify code style  
+3. Clean up and optimize unused code
 
-### 功能增强
-1. 更多主题变体支持
-2. 主题自定义界面开发
-3. 组件库文档完善
-4. 自动化测试覆盖增加
+### Feature Enhancements
+1. Support more theme variants
+2. Develop a theme customization interface
+3. Complete the component library documentation
+4. Increase automated test coverage
 
-### 架构演进
-1. 组件设计系统建立
-2. 设计tokens标准化
-3. 跨平台样式一致性改善
-4. 性能监控和优化自动化
+### Architecture Evolution
+1. Establish a component design system
+2. Standardize design tokens
+3. Improve cross-platform style consistency
+4. Automate performance monitoring and optimization
 
 ---
 
-**实施指导**: 本方案基于实际项目经验，提供了详细的实施路径和问题解决方案，适用于类似的UI框架迁移项目。  
-**风险等级**: 中等，通过分阶段实施可有效控制风险  
-**成功率**: 高，已通过完整项目验证
+**Implementation guidance**: This plan is based on real project experience and provides a detailed implementation path and solutions to problems. It applies to similar UI framework migration projects.  
+**Risk level**: Medium; risk can be controlled effectively through phased implementation  
+**Success rate**: High, validated by a complete project

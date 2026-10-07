@@ -1,86 +1,86 @@
-# Session Store 持久化验证方案
+# Session Store Persistence Verification Plan
 
-## 修复内容
+## Fix Summary
 
-Codex 已实现"Session Store 作为模型选择唯一真源"的架构：
+Codex has implemented the architecture of "Session Store as the single source of truth for model selection":
 
-- 模型选择持久化以 Session Store 为唯一真源
-- PromptOptimizerApp 直接读写当前激活的 Session Store
-- 移除 BasicWorkspaceContainer 的全局同步桥接
-- 已清理旧的模型选择全局键（不再存在迁移逻辑）
+- Model selection persistence uses the Session Store as the single source of truth
+- PromptOptimizerApp reads and writes the currently active Session Store directly
+- Removed the global sync bridge of BasicWorkspaceContainer
+- The old global keys for model selection have been cleaned up (migration logic no longer exists)
 
-## 测试目标
+## Test Goal
 
-验证用户报告的 P0 级 Bug 是否已修复：
-- **现象**：在 Basic 模式下将优化模型和测试模型都改为 deepseek，刷新页面后模型选择又回到了 siliconflow 和 openai
-- **预期**：刷新后模型选择保持为 deepseek
+Verify whether the P0-level bug reported by users has been fixed:
+- **Symptom**: In Basic mode, the optimization model and test model were both changed to deepseek, but after refreshing the page the model selection went back to siliconflow and openai
+- **Expected**: After a refresh, the model selection stays as deepseek
 
-## 测试步骤
+## Test Steps
 
-### 1. 基础持久化测试
+### 1. Basic Persistence Test
 
-1. 访问 http://localhost:18181
-2. 进入 Basic/System 模式（/basic/system）
-3. **当前状态**：左侧优化模型显示 `siliconflow`，右侧测试模型显示 `openai`
-4. **操作**：将左侧和右侧模型都改为 `deepseek`
-5. **验证**：刷新页面（F5），确认两个模型下拉框都保持 `deepseek` ✅
+1. Visit http://localhost:18181
+2. Enter Basic/System mode (/basic/system)
+3. **Current state**: The optimization model on the left shows `siliconflow`, and the test model on the right shows `openai`
+4. **Action**: Change both the left and right models to `deepseek`
+5. **Verify**: Refresh the page (F5) and confirm both model dropdowns still show `deepseek` ✅
 
-### 2. 模式隔离测试
+### 2. Mode Isolation Test
 
-验证不同模式的模型选择是否独立：
+Verify whether the model selection of different modes is independent:
 
-1. 在 Basic/System 模式选择 `deepseek` 作为优化模型
-2. 切换到 Basic/User 模式，选择 `gemini` 作为优化模型
-3. 切换到 Pro 模式，选择 `openai` 作为优化模型
-4. **验证**：
-   - 返回 Basic/System，优化模型应为 `deepseek` ✅
-   - 返回 Basic/User，优化模型应为 `gemini` ✅
-   - 返回 Pro，优化模型应为 `openai` ✅
+1. In Basic/System mode, select `deepseek` as the optimization model
+2. Switch to Basic/User mode and select `gemini` as the optimization model
+3. Switch to Pro mode and select `openai` as the optimization model
+4. **Verify**:
+   - Back in Basic/System, the optimization model should be `deepseek` ✅
+   - Back in Basic/User, the optimization model should be `gemini` ✅
+   - Back in Pro, the optimization model should be `openai` ✅
 
-### 3. 迁移逻辑测试
+### 3. Migration Logic Test
 
-验证 Session Store 的恢复：
+Verify Session Store restoration:
 
-1. **现有用户场景**：
-   - 打开应用
-   - **验证**：Session Store 中的模型选择应正确恢复 ✅
+1. **Existing user scenario**:
+   - Open the app
+   - **Verify**: The model selection in the Session Store should be restored correctly ✅
 
-### 4. 跨浏览器测试
+### 4. Cross-browser Test
 
-如果使用 Electron 桌面应用：
-1. 关闭应用
-2. 重新打开
-3. **验证**：模型选择应正确恢复 ✅
+If using the Electron desktop app:
+1. Close the app
+2. Reopen it
+3. **Verify**: The model selection should be restored correctly ✅
 
-## 测试记录
+## Test Record
 
-### 测试执行人
-- 日期：2025-01-07
-- 执行人：
+### Tester
+- Date: 2025-01-07
+- Tester:
 
-### 测试结果
+### Test Results
 
-| 测试项 | 预期结果 | 实际结果 | 状态 |
+| Test item | Expected result | Actual result | Status |
 |--------|---------|---------|------|
-| 基础持久化测试 | deepseek 保持 | | ⏳ |
-| 模式隔离测试 | 各模式独立 | | ⏳ |
-| 迁移逻辑测试 | 正确恢复 | | ⏳ |
-| 跨浏览器测试 | Electron 正常 | | ⏳ |
+| Basic persistence test | deepseek retained | | ⏳ |
+| Mode isolation test | Each mode independent | | ⏳ |
+| Migration logic test | Restored correctly | | ⏳ |
+| Cross-browser test | Electron works | | ⏳ |
 
-### 备注
+### Notes
 
-## 相关文件
+## Related Files
 
-- `packages/ui/src/composables/model/useModelManager.ts` - 模型管理器（不再负责模型选择持久化）
+- `packages/ui/src/composables/model/useModelManager.ts` - Model manager (no longer responsible for model selection persistence)
 - `packages/ui/src/stores/session/useBasicSystemSession.ts` - Basic/System Session Store
 - `packages/ui/src/stores/session/useBasicUserSession.ts` - Basic/User Session Store
 - `packages/ui/src/stores/session/useProMultiMessageSession.ts` - Pro Session Store
-- `packages/ui/src/components/workspaces/BasicWorkspaceContainer.vue` - Basic 容器（已移除同步）
-- `packages/ui/src/components/app-layout/PromptOptimizerApp.vue` - 主应用（直接读写 Session）
+- `packages/ui/src/components/workspaces/BasicWorkspaceContainer.vue` - Basic container (sync removed)
+- `packages/ui/src/components/app-layout/PromptOptimizerApp.vue` - Main app (reads and writes the Session directly)
 
-## 下一步计划
+## Next Steps
 
-如果测试通过：
-1. 确认 Electron 端必须继续使用 PreferenceService（而非 localStorage）
-2. 逐步扩展迁移逻辑覆盖其他配置项（主题、语言等）
-3. 补齐自动化回归用例（模式隔离、快速切换、刷新恢复）
+If the tests pass:
+1. Confirm the Electron side must keep using PreferenceService (rather than localStorage)
+2. Gradually extend the migration logic to cover other configuration items (theme, language, etc.)
+3. Complete automated regression cases (mode isolation, rapid switching, restore after refresh)
