@@ -3,7 +3,7 @@ import { templateSchema } from '../../../src/services/template/types'
 
 const base = {
   id: 'test-id',
-  name: '测试模板',
+  name: 'Test template',
   content: 'Hello',
   metadata: {
     version: '1.0.0',

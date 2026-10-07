@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { mergeOverrides } from '../../../src/services/model/parameter-utils'
 import type { UnifiedParameterDefinition } from '../../../src/services/model/parameter-schema'
 
-describe('自定义参数迁移测试', () => {
+describe('Custom parameter migration test', () => {
   const schema: UnifiedParameterDefinition[] = [
     {
       name: 'temperature',
@@ -19,9 +19,9 @@ describe('自定义参数迁移测试', () => {
     }
   ]
 
-  describe('向后兼容旧格式的 customParamOverrides', () => {
-    it('应该合并 customParamOverrides 和 paramOverrides', () => {
-      // 模拟旧数据格式：内置参数在 paramOverrides，自定义参数在 customParamOverrides
+  describe('Backward compatibility with the legacy customParamOverrides format', () => {
+    it('should merge customParamOverrides and paramOverrides', () => {
+      // Simulate the legacy data format: built-in params in paramOverrides, custom params in customParamOverrides
       const paramOverrides = { temperature: 0.7 }
       const customParamOverrides = { custom_flag: 'test_value', api_version: '2024-01' }
 
@@ -32,15 +32,15 @@ describe('自定义参数迁移测试', () => {
         requestOverrides: paramOverrides
       })
 
-      // 验证内置参数被正确处理
+      // Verify the built-in params are handled correctly
       expect(merged.temperature).toBe(0.7)
 
-      // 验证自定义参数没有丢失
+      // Verify the custom params are not lost
       expect(merged.custom_flag).toBe('test_value')
       expect(merged.api_version).toBe('2024-01')
     })
 
-    it('requestOverrides 应该覆盖 customOverrides', () => {
+    it('requestOverrides should override customOverrides', () => {
       const customParamOverrides = { custom_flag: 'old_value' }
       const paramOverrides = { custom_flag: 'new_value', temperature: 0.8 }
 
@@ -51,12 +51,12 @@ describe('自定义参数迁移测试', () => {
         requestOverrides: paramOverrides
       })
 
-      // requestOverrides 优先级更高
+      // requestOverrides has higher priority
       expect(merged.custom_flag).toBe('new_value')
       expect(merged.temperature).toBe(0.8)
     })
 
-    it('应该过滤掉空值的自定义参数', () => {
+    it('should filter out custom params with empty values', () => {
       const customParamOverrides = {
         valid_param: 'value',
         empty_string: '',
@@ -70,14 +70,14 @@ describe('自定义参数迁移测试', () => {
         customOverrides: customParamOverrides as any
       })
 
-      // 只有非空值应该被保留
+      // Only non-empty values should be kept
       expect(merged.valid_param).toBe('value')
       expect(merged.empty_string).toBeUndefined()
       expect(merged.null_value).toBeUndefined()
       expect(merged.undefined_value).toBeUndefined()
     })
 
-    it('应该拒绝危险的自定义参数键名', () => {
+    it('should reject dangerous custom param key names', () => {
       const customParamOverrides = {
         '__proto__': 'dangerous',
         'apiKey': 'should_reject',
@@ -90,18 +90,18 @@ describe('自定义参数迁移测试', () => {
         customOverrides: customParamOverrides
       })
 
-      // 危险参数应该被过滤（不会作为自己的属性存在）
+      // Dangerous params should be filtered (they do not exist as own properties)
       expect(Object.hasOwn(merged, '__proto__')).toBe(false)
       expect(Object.hasOwn(merged, 'apiKey')).toBe(false)
 
-      // 安全参数应该保留
+      // Safe params should be kept
       expect(merged.safe_param).toBe('ok')
     })
   })
 
-  describe('LLM Service 运行时配置准备', () => {
-    it('应该模拟 prepareRuntimeConfig 的行为', () => {
-      // 模拟一个旧格式的 TextModelConfig
+  describe('LLM Service runtime config preparation', () => {
+    it('should simulate the behavior of prepareRuntimeConfig', () => {
+      // Simulate a legacy-format TextModelConfig
       const modelConfig = {
         id: 'test',
         name: 'Test Model',
@@ -122,7 +122,7 @@ describe('自定义参数迁移测试', () => {
         }
       }
 
-      // 模拟 prepareRuntimeConfig 逻辑
+      // Simulate the prepareRuntimeConfig logic
       const mergedOverrides = mergeOverrides({
         schema: modelConfig.modelMeta.parameterDefinitions,
         includeDefaults: false,
@@ -130,15 +130,15 @@ describe('自定义参数迁移测试', () => {
         requestOverrides: modelConfig.paramOverrides
       })
 
-      // 验证运行时配置包含所有参数
+      // Verify the runtime config contains all params
       expect(mergedOverrides.temperature).toBe(0.7)
       expect(mergedOverrides.max_tokens).toBe(1000)
       expect(mergedOverrides.custom_header).toBe('X-Custom-Value')
       expect(mergedOverrides.extra_param).toBe('important_value')
     })
 
-    it('应该处理已经迁移的新格式配置', () => {
-      // 模拟已经迁移的配置：所有参数都在 paramOverrides
+    it('should handle an already-migrated new-format config', () => {
+      // Simulate an already-migrated config: all params are in paramOverrides
       const modelConfig = {
         id: 'test',
         name: 'Test Model',
@@ -158,7 +158,7 @@ describe('自定义参数迁移测试', () => {
           custom_header: 'X-Custom-Value',
           extra_param: 'important_value'
         },
-        customParamOverrides: undefined // 已迁移
+        customParamOverrides: undefined // Migrated
       }
 
       const mergedOverrides = mergeOverrides({
@@ -168,7 +168,7 @@ describe('自定义参数迁移测试', () => {
         requestOverrides: modelConfig.paramOverrides
       })
 
-      // 新格式也应该正常工作
+      // The new format should also work correctly
       expect(mergedOverrides.temperature).toBe(0.7)
       expect(mergedOverrides.max_tokens).toBe(1000)
       expect(mergedOverrides.custom_header).toBe('X-Custom-Value')

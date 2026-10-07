@@ -1,5 +1,5 @@
 /**
- * VCR 系统单元测试
+ * VCR system unit test
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
@@ -9,7 +9,7 @@ import { StreamSimulator } from '../../../tests/utils/stream-simulator'
 import { existsSync, unlinkSync } from 'fs'
 import { join } from 'path'
 
-describe('VCR 类', () => {
+describe('VCR class', () => {
   const testFixtureDir = join(process.cwd(), 'test-fixtures-temp')
   const testRequest: LLMRequest = {
     provider: 'test',
@@ -29,20 +29,20 @@ describe('VCR 类', () => {
   })
 
   afterEach(() => {
-    // 清理测试 fixtures
+    // Clean up test fixtures
     const fixturePath = vcr['getFixturePath']('test', 'test-scenario')
     if (existsSync(fixturePath)) {
       unlinkSync(fixturePath)
     }
   })
 
-  describe('构造函数', () => {
-    it('应该使用默认配置', () => {
+  describe('Constructor', () => {
+    it('should use the default config', () => {
       const defaultVCR = new VCR()
       expect(defaultVCR).toBeDefined()
     })
 
-    it('应该使用自定义配置', () => {
+    it('should use a custom config', () => {
       const customVCR = new VCR({
         fixtureDir: './custom-fixtures',
         mode: 'record'
@@ -51,8 +51,8 @@ describe('VCR 类', () => {
     })
   })
 
-  describe('intercept 方法', () => {
-    it('off 模式应该直接调用真实函数', async () => {
+  describe('intercept method', () => {
+    it('off mode should call the real function directly', async () => {
       const offVCR = new VCR({ mode: 'off' })
       const realFn = vi.fn().mockResolvedValue({ result: 'real' })
 
@@ -62,7 +62,7 @@ describe('VCR 类', () => {
       expect(result).toEqual({ result: 'real' })
     })
 
-    it('auto 模式且 fixture 不存在应该录制（如果启用真实 LLM）', async () => {
+    it('auto mode with a missing fixture should record (if the real LLM is enabled)', async () => {
       const vcrWithReal = new VCR({
         fixtureDir: testFixtureDir,
         mode: 'auto',
@@ -82,17 +82,17 @@ describe('VCR 类', () => {
         usage: { prompt_tokens: 10, completion_tokens: 20, total_tokens: 30 }
       })
 
-      // 验证 fixture 已保存
+      // Verify the fixture was saved
       const fixturePath = vcrWithReal['getFixturePath']('test', 'test-scenario')
       expect(existsSync(fixturePath)).toBe(true)
 
-      // 清理
+      // Clean up
       if (existsSync(fixturePath)) {
         unlinkSync(fixturePath)
       }
     })
 
-    it('auto 模式且 fixture 不存在但未启用真实 LLM 应该抛出错误', async () => {
+    it('auto mode with a missing fixture and the real LLM not enabled should throw an error', async () => {
       const realFn = vi.fn().mockResolvedValue({ result: 'real' })
 
       await expect(
@@ -101,23 +101,23 @@ describe('VCR 类', () => {
     })
   })
 
-  describe('getFixturePath 方法', () => {
-    it('应该生成正确的 fixture 路径', () => {
+  describe('getFixturePath method', () => {
+    it('should generate the correct fixture path', () => {
       const path = vcr['getFixturePath']('openai', 'test-scenario')
       expect(path).toContain('openai')
       expect(path).toContain('test-scenario.json')
     })
   })
 
-  describe('listFixtures 方法', () => {
-    it('空目录应该返回空数组', () => {
+  describe('listFixtures method', () => {
+    it('an empty directory should return an empty array', () => {
       const fixtures = vcr.listFixtures()
       expect(fixtures).toEqual([])
     })
   })
 })
 
-describe('StreamSimulator 类', () => {
+describe('StreamSimulator class', () => {
   const chunks: StreamChunk[] = [
     { content: 'Hello', timestamp: 0 },
     { content: ' ', timestamp: 50 },
@@ -125,48 +125,48 @@ describe('StreamSimulator 类', () => {
     { content: '!', timestamp: 150 }
   ]
 
-  describe('构造函数', () => {
-    it('应该使用默认配置', () => {
+  describe('Constructor', () => {
+    it('should use the default config', () => {
       const simulator = new StreamSimulator(chunks)
       expect(simulator).toBeDefined()
     })
 
-    it('应该使用自定义配置', () => {
+    it('should use a custom config', () => {
       const simulator = new StreamSimulator(chunks, { timeScale: 0.5 })
       expect(simulator).toBeDefined()
     })
   })
 
-  describe('getFullContent 方法', () => {
-    it('应该拼接所有 chunks', () => {
+  describe('getFullContent method', () => {
+    it('should concatenate all chunks', () => {
       const simulator = new StreamSimulator(chunks)
       const content = simulator.getFullContent()
       expect(content).toBe('Hello World!')
     })
   })
 
-  describe('getTotalDuration 方法', () => {
-    it('应该返回总时长', () => {
+  describe('getTotalDuration method', () => {
+    it('should return the total duration', () => {
       const simulator = new StreamSimulator(chunks)
       const duration = simulator.getTotalDuration()
       expect(duration).toBe(150)
     })
 
-    it('空 chunks 应该返回 0', () => {
+    it('empty chunks should return 0', () => {
       const simulator = new StreamSimulator([])
       expect(simulator.getTotalDuration()).toBe(0)
     })
   })
 
-  describe('getChunkCount 方法', () => {
-    it('应该返回 chunks 数量', () => {
+  describe('getChunkCount method', () => {
+    it('should return the number of chunks', () => {
       const simulator = new StreamSimulator(chunks)
       expect(simulator.getChunkCount()).toBe(4)
     })
   })
 
-  describe('generate 方法', () => {
-    it('应该异步生成所有 chunks', async () => {
+  describe('generate method', () => {
+    it('should generate all chunks asynchronously', async () => {
       const simulator = new StreamSimulator(chunks, { timeScale: 0.01 })
       const generatedChunks: StreamChunk[] = []
 
@@ -177,23 +177,23 @@ describe('StreamSimulator 类', () => {
       expect(generatedChunks).toEqual(chunks)
     })
 
-    it('应该正确应用时间缩放', async () => {
+    it('should apply time scaling correctly', async () => {
       const simulator = new StreamSimulator(chunks, { timeScale: 0.5 })
       const startTime = Date.now()
 
       for await (const _ of simulator.generate()) {
-        // 等待所有 chunks
+        // Wait for all chunks
       }
 
       const duration = Date.now() - startTime
-      // 原始 150ms，缩放后应该是 ~75ms
+      // Originally 150ms, should be ~75ms after scaling
       expect(duration).toBeGreaterThan(50)
       expect(duration).toBeLessThan(150)
     })
   })
 
-  describe('generateCallback 方法', () => {
-    it('应该使用回调函数处理 chunks', async () => {
+  describe('generateCallback method', () => {
+    it('should process chunks with a callback function', async () => {
       const simulator = new StreamSimulator(chunks, { timeScale: 0.01 })
       const results: string[] = []
 
@@ -209,7 +209,7 @@ describe('StreamSimulator 类', () => {
       expect(results).toEqual(['Hello', ' ', 'World', '!', 'DONE'])
     })
 
-    it('应该处理错误', async () => {
+    it('should handle errors', async () => {
       const simulator = new StreamSimulator(chunks, { timeScale: 0.01 })
       const error = new Error('Test error')
 
@@ -230,16 +230,16 @@ describe('StreamSimulator 类', () => {
   })
 })
 
-describe('getVCR 单例函数', () => {
-  it('应该返回同一个实例', () => {
+describe('getVCR singleton function', () => {
+  it('should return the same instance', () => {
     const vcr1 = getVCR()
     const vcr2 = getVCR()
     expect(vcr1).toBe(vcr2)
   })
 })
 
-describe('withVCR 便捷函数', () => {
-  it('应该正确调用 VCR.intercept', async () => {
+describe('withVCR convenience function', () => {
+  it('should call VCR.intercept correctly', async () => {
     const testRequest: LLMRequest = {
       provider: 'test',
       model: 'test-model',
@@ -249,7 +249,7 @@ describe('withVCR 便捷函数', () => {
 
     const realFn = vi.fn().mockResolvedValue({ result: 'mock' })
 
-    // 使用 off 模式避免真实录制
+    // Use off mode to avoid real recording
     const result = await withVCR(
       'test-scenario',
       testRequest,
@@ -262,8 +262,8 @@ describe('withVCR 便捷函数', () => {
   })
 })
 
-describe('性能测试', () => {
-  it('流式响应应该在合理时间内完成', async () => {
+describe('Performance test', () => {
+  it('streaming responses should complete within a reasonable time', async () => {
     const chunks: StreamChunk[] = Array.from({ length: 100 }, (_, i) => ({
       content: `chunk-${i}`,
       timestamp: i * 10
@@ -280,7 +280,7 @@ describe('性能测试', () => {
     const duration = Date.now() - startTime
 
     expect(count).toBe(100)
-    // 原始 990ms，缩放后应该是 ~10ms
+    // Originally 990ms, should be ~10ms after scaling
     expect(duration).toBeLessThan(100)
   })
 })

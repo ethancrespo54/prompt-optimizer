@@ -1,11 +1,11 @@
 /**
- * LLM Mock 服务
+ * LLM Mock service
  *
- * 集成 MSW（Mock Service Worker）提供 LLM API mocking：
- * - 拦截真实的 fetch/XMLHttpRequest 调用
- * - 基于 VCR fixtures 返回预录制的响应
- * - 模拟流式响应
- * - 模拟错误场景
+ * Integrates MSW (Mock Service Worker) to provide LLM API mocking:
+ * - Intercepts real fetch/XMLHttpRequest calls
+ * - Returns pre-recorded responses based on VCR fixtures
+ * - Simulates streaming responses
+ * - Simulates error scenarios
  *
  * @module tests/utils/llm-mock-service
  */
@@ -17,7 +17,7 @@ import { createStreamFromFixture } from './stream-simulator.js'
 import { createHash } from 'crypto'
 
 /**
- * LLM 提供商配置
+ * LLM provider config
  */
 interface LLMProviderConfig {
   baseURL: string
@@ -29,7 +29,7 @@ interface LLMProviderConfig {
 }
 
 /**
- * 支持的 LLM 提供商
+ * Supported LLM providers
  */
 const LLM_PROVIDERS: Record<string, LLMProviderConfig> = {
   openai: {
@@ -60,7 +60,7 @@ const LLM_PROVIDERS: Record<string, LLMProviderConfig> = {
 }
 
 /**
- * 错误场景类型
+ * Error scenario types
  */
 export type ErrorScenario =
   | 'timeout'
@@ -71,35 +71,35 @@ export type ErrorScenario =
   | 'insufficient_quota'
 
 /**
- * LLM Mock 服务选项
+ * LLM Mock service options
  */
 export interface LLMMockServiceOptions {
   /**
-   * 是否使用 VCR fixtures
+   * Whether to use VCR fixtures
    * @default true
    */
   useVCR?: boolean
 
   /**
-   * 错误场景模拟（用于测试错误处理）
+   * Error scenario simulation (for testing error handling)
    */
   errorScenario?: ErrorScenario | null
 
   /**
-   * 基础延迟（毫秒）
+   * Base delay (milliseconds)
    * @default 100
    */
   baseDelay?: number
 
   /**
-   * 是否启用详细日志
+   * Whether to enable verbose logging
    * @default false
    */
   debug?: boolean
 }
 
 /**
- * LLM Mock 服务类
+ * LLM Mock service class
  */
 export class LLMMockService {
   private options: Required<LLMMockServiceOptions>
@@ -114,12 +114,12 @@ export class LLMMockService {
   }
 
   /**
-   * 生成 MSW handlers
+   * Generate MSW handlers
    */
   getHandlers(): HttpHandler[] {
     const handlers: HttpHandler[] = []
 
-    // 为每个提供商生成 handlers
+    // Generate handlers for each provider
     for (const [provider, config] of Object.entries(LLM_PROVIDERS)) {
       handlers.push(...this.createProviderHandlers(provider, config))
     }
@@ -128,7 +128,7 @@ export class LLMMockService {
   }
 
   /**
-   * 为特定提供商创建 handlers
+   * Create handlers for a specific provider
    */
   private createProviderHandlers(provider: string, config: LLMProviderConfig): HttpHandler[] {
     const handlers: HttpHandler[] = []
@@ -138,49 +138,49 @@ export class LLMMockService {
       http.post(`${config.baseURL}${config.endpoints.chat}`, async ({ request }) => {
         this.log(`[LLM Mock] Intercepted ${provider} chat request`)
 
-        // 错误场景模拟
+        // Error scenario simulation
         if (this.options.errorScenario) {
           return this.simulateError(this.options.errorScenario)
         }
 
-        // 解析请求（提供商原始格式）
+        // Parse the request (provider-native format)
         const rawBody = await request.json()
         const normalizedRequest = this.normalizeRequest(provider, rawBody)
         const wantsStream = Boolean((rawBody as any)?.stream ?? normalizedRequest.stream)
 
-        // 尝试从 VCR 获取响应
+        // Try to get the response from VCR
         if (this.options.useVCR) {
           try {
             const scenarioName = this.deriveScenarioName(normalizedRequest)
             const vcr = getVCR()
             const fixture = await vcr.intercept(scenarioName, normalizedRequest, async () => {
-              // 如果没有 fixture，返回默认 mock 响应
+              // If there is no fixture, return the default mock response
               return this.getDefaultMockResponse(provider, normalizedRequest)
             })
 
-            // 模拟延迟
+            // Simulate latency
             await delay(this.options.baseDelay)
 
-            // 如果是流式响应，返回 SSE 格式
+            // For streaming responses, return the SSE format
             if (wantsStream) {
               return this.createStreamingResponse(fixture as unknown as LLMResponse)
             }
 
-            // 否则返回 JSON
+            // Otherwise return JSON
             return HttpResponse.json(this.transformToAPIFormat(provider, fixture as unknown as LLMResponse))
           } catch (error) {
             this.log(`[LLM Mock] VCR error: ${(error as Error).message}`)
             if (process.env.VCR_MODE === 'replay') {
               throw error
             }
-            // 降级到默认 mock
+            // Fall back to the default mock
             return HttpResponse.json(
               this.transformToAPIFormat(provider, this.getDefaultMockResponse(provider, normalizedRequest))
             )
           }
         }
 
-        // 不使用 VCR，直接返回默认 mock
+        // Without VCR, return the default mock directly
         await delay(this.options.baseDelay)
         return HttpResponse.json(
           this.transformToAPIFormat(provider, this.getDefaultMockResponse(provider, normalizedRequest))
@@ -192,7 +192,7 @@ export class LLMMockService {
   }
 
   /**
-   * 从请求推导场景名称
+   * Derive the scenario name from the request
    */
   private deriveScenarioName(request: LLMRequest): string {
     const userMessage = request.messages.find(m => m.role === 'user')
@@ -217,7 +217,7 @@ export class LLMMockService {
   }
 
   /**
-   * 将提供商 API 请求归一化为内部 LLMRequest（用于 fixture key 和默认 mock）
+   * Normalize a provider API request into an internal LLMRequest (used for the fixture key and the default mock)
    */
   private normalizeRequest(provider: string, raw: unknown): LLMRequest {
     const base: LLMRequest = {
@@ -268,14 +268,14 @@ export class LLMMockService {
   }
 
   /**
-   * 获取默认 mock 响应
+   * Get the default mock response
    */
   private getDefaultMockResponse(provider: string, request: LLMRequest): LLMResponse {
     const userMessage = request.messages.find(m => m.role === 'user')
 
     return {
       type: 'single',
-      content: `[Mock Response] 基于 "${userMessage?.content}" 的优化结果。这是一个模拟响应，用于测试目的。`,
+      content: `[Mock Response] Optimized result based on "${userMessage?.content}". This is a mock response for testing purposes.`,
       model: request.model,
       usage: {
         prompt_tokens: 10,
@@ -287,7 +287,7 @@ export class LLMMockService {
   }
 
   /**
-   * 转换为 API 特定格式
+   * Convert to the API-specific format
    */
   private transformToAPIFormat(provider: string, response: LLMResponse): any {
     const content = response.content ?? (response as any).finalResult?.content ?? ''
@@ -295,7 +295,7 @@ export class LLMMockService {
     const usage = response.usage ?? (response as any).finalResult?.usage
     const finishReason = response.finish_reason ?? (response as any).finalResult?.finish_reason ?? 'stop'
 
-    // OpenAI 格式
+    // OpenAI format
     if (provider === 'openai' || provider === 'deepseek') {
       return {
         id: `chatcmpl-${Date.now()}`,
@@ -316,7 +316,7 @@ export class LLMMockService {
       }
     }
 
-    // Gemini 格式
+    // Gemini format
     if (provider === 'gemini') {
       return {
         candidates: [
@@ -331,7 +331,7 @@ export class LLMMockService {
       }
     }
 
-    // Anthropic 格式（最小实现）
+    // Anthropic format (minimal implementation)
     if (provider === 'anthropic') {
       return {
         id: `msg_${Date.now()}`,
@@ -344,18 +344,18 @@ export class LLMMockService {
       }
     }
 
-    // 默认使用 OpenAI 格式
+    // Use the OpenAI format by default
     return response
   }
 
   /**
-   * 创建流式响应（SSE 格式）
+   * Create a streaming response (SSE format)
    */
   private createStreamingResponse(fixture: LLMResponse): Response {
     const content = fixture.content ?? (fixture as any).finalResult?.content ?? ''
     const model = fixture.model ?? (fixture as any).finalResult?.model
 
-    // 使用 StreamSimulator 生成流；非流式 fixture 则退化为单 chunk
+    // Generate the stream with StreamSimulator; a non-streaming fixture degrades to a single chunk
     const simulator =
       createStreamFromFixture(fixture, { timeScale: 0.1 }) ||
       createStreamFromFixture(
@@ -363,14 +363,14 @@ export class LLMMockService {
         { timeScale: 0.1 }
       )!
 
-    // 创建 SSE 流
+    // Create the SSE stream
     const stream = new ReadableStream({
       async start(controller) {
         const encoder = new TextEncoder()
 
         try {
           for await (const chunk of simulator.generate()) {
-            // SSE 格式
+            // SSE format
             const sseData = JSON.stringify({
               id: `chatcmpl-${Date.now()}`,
               object: 'chat.completion.chunk',
@@ -388,7 +388,7 @@ export class LLMMockService {
             controller.enqueue(encoder.encode(`data: ${sseData}\n\n`))
           }
 
-          // 发送结束 chunk
+          // Send the end chunk
           const endChunk = JSON.stringify({
             choices: [{ finish_reason: 'stop' }]
           })
@@ -412,14 +412,14 @@ export class LLMMockService {
   }
 
   /**
-   * 模拟错误场景
+   * Simulate an error scenario
    */
   private simulateError(scenario: ErrorScenario): Response {
     this.log(`[LLM Mock] Simulating error: ${scenario}`)
 
     switch (scenario) {
       case 'timeout':
-        // 不返回响应，让请求超时
+        // Return no response so the request times out
         return new Response(null, { status: 408 })
 
       case 'rate_limit':
@@ -482,7 +482,7 @@ export class LLMMockService {
   }
 
   /**
-   * 日志输出
+   * Log output
    */
   private log(message: string): void {
     if (this.options.debug) {
@@ -492,7 +492,7 @@ export class LLMMockService {
 }
 
 /**
- * 创建 LLM Mock 服务实例（便捷函数）
+ * Create an LLM Mock service instance (convenience function)
  *
  * @example
  * ```typescript
@@ -510,7 +510,7 @@ export function createLLMMockService(options?: LLMMockServiceOptions): LLMMockSe
 }
 
 /**
- * 预定义的 handlers（可直接用于 MSW）
+ * Predefined handlers (can be used directly with MSW)
  *
  * @example
  * ```typescript
@@ -522,12 +522,12 @@ export function createLLMMockService(options?: LLMMockServiceOptions): LLMMockSe
 export const llmHandlers = createLLMMockService().getHandlers()
 
 /**
- * 测试工具：启用特定错误场景
+ * Test utility: enable a specific error scenario
  *
  * @example
  * ```typescript
  * const { cleanup } = withLLMErrorScenario('rate_limit')
- * // ... 执行测试
+ * // ... run the test
  * cleanup()
  * ```
  */
@@ -540,7 +540,7 @@ export function withLLMErrorScenario(scenario: ErrorScenario): {
   return {
     service,
     cleanup: () => {
-      // 清理逻辑（如果需要）
+      // Cleanup logic (if needed)
     }
   }
 }

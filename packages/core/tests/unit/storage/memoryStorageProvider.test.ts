@@ -8,26 +8,26 @@ describe('MemoryStorageProvider', () => {
     storage = new MemoryStorageProvider();
   });
 
-  describe('基本存储操作', () => {
-    it('应该能设置和获取数据', async () => {
+  describe('Basic storage operations', () => {
+    it('should be able to set and get data', async () => {
       await storage.setItem('test-key', 'test-value');
       const value = await storage.getItem('test-key');
       expect(value).toBe('test-value');
     });
 
-    it('应该在键不存在时返回null', async () => {
+    it('should return null when the key does not exist', async () => {
       const value = await storage.getItem('non-existent-key');
       expect(value).toBeNull();
     });
 
-    it('应该能删除数据', async () => {
+    it('should be able to delete data', async () => {
       await storage.setItem('test-key', 'test-value');
       await storage.removeItem('test-key');
       const value = await storage.getItem('test-key');
       expect(value).toBeNull();
     });
 
-    it('应该能清空所有数据', async () => {
+    it('should be able to clear all data', async () => {
       await storage.setItem('key1', 'value1');
       await storage.setItem('key2', 'value2');
       await storage.clearAll();
@@ -39,8 +39,8 @@ describe('MemoryStorageProvider', () => {
     });
   });
 
-  describe('高级操作', () => {
-    it('应该能更新数据', async () => {
+  describe('Advanced operations', () => {
+    it('should be able to update data', async () => {
       await storage.setItem('counter', '5');
       
       await storage.updateData<number>('counter', (current) => {
@@ -51,7 +51,7 @@ describe('MemoryStorageProvider', () => {
       expect(JSON.parse(result!)).toBe(6);
     });
 
-    it('应该能处理不存在键的更新', async () => {
+    it('should be able to handle updates for a non-existent key', async () => {
       await storage.updateData<number>('new-counter', (current) => {
         return (current || 0) + 10;
       });
@@ -60,7 +60,7 @@ describe('MemoryStorageProvider', () => {
       expect(JSON.parse(result!)).toBe(10);
     });
 
-    it('应该能批量操作', async () => {
+    it('should be able to perform batch operations', async () => {
       await storage.batchUpdate([
         { key: 'key1', operation: 'set', value: 'value1' },
         { key: 'key2', operation: 'set', value: 'value2' },
@@ -76,7 +76,7 @@ describe('MemoryStorageProvider', () => {
       expect(value3).toBe('value3');
     });
 
-    it('应该能批量删除', async () => {
+    it('should be able to delete in batch', async () => {
       await storage.setItem('key1', 'value1');
       await storage.setItem('key2', 'value2');
       
@@ -93,8 +93,8 @@ describe('MemoryStorageProvider', () => {
     });
   });
 
-  describe('工具方法', () => {
-    it('应该返回正确的存储能力', () => {
+  describe('Utility methods', () => {
+    it('should return the correct storage capabilities', () => {
       const capabilities = storage.getCapabilities();
       expect(capabilities).toEqual({
         supportsAtomic: true,
@@ -103,7 +103,7 @@ describe('MemoryStorageProvider', () => {
       });
     });
 
-    it('应该正确报告存储大小', async () => {
+    it('should report the storage size correctly', async () => {
       expect(storage.size).toBe(0);
       
       await storage.setItem('key1', 'value1');
@@ -116,7 +116,7 @@ describe('MemoryStorageProvider', () => {
       expect(storage.size).toBe(1);
     });
 
-    it('应该正确检查键是否存在', async () => {
+    it('should check whether a key exists correctly', async () => {
       expect(storage.has('test-key')).toBe(false);
       
       await storage.setItem('test-key', 'test-value');
@@ -126,7 +126,7 @@ describe('MemoryStorageProvider', () => {
       expect(storage.has('test-key')).toBe(false);
     });
 
-    it('应该返回所有键', async () => {
+    it('should return all keys', async () => {
       await storage.setItem('key1', 'value1');
       await storage.setItem('key2', 'value2');
       await storage.setItem('key3', 'value3');
@@ -139,8 +139,8 @@ describe('MemoryStorageProvider', () => {
     });
   });
 
-  describe('数据序列化', () => {
-    it('应该正确处理复杂对象', async () => {
+  describe('Data serialization', () => {
+    it('should handle complex objects correctly', async () => {
       const complexObject = {
         name: 'test',
         nested: {
@@ -156,7 +156,7 @@ describe('MemoryStorageProvider', () => {
       expect(parsed).toEqual(complexObject);
     });
 
-    it('应该通过updateData正确处理JSON数据', async () => {
+    it('should handle JSON data correctly via updateData', async () => {
       const initialData = { count: 0, items: [] };
       await storage.setItem('data', JSON.stringify(initialData));
       

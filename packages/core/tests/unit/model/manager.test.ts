@@ -43,12 +43,12 @@ describe('ModelManager', () => {
     registry = new TextAdapterRegistry();
     // Clean up the storage state
     await storageProvider.clearAll();
-    // 使用工厂函数创建 ModelManager 实例,注入Registry
+    // Create a ModelManager instance with the factory function, injecting the Registry
     modelManager = new ModelManager(storageProvider, registry);
   });
 
   afterEach(async () => {
-    // 清理存储状态
+    // Clean up the storage state
     await storageProvider.clearAll();
   });
 
@@ -89,10 +89,10 @@ describe('ModelManager', () => {
 
     it('should return default models after initialization', async () => {
       const result = await modelManager.getAllModels();
-      // 检查是否包含默认模型
+      // Check that default models are included
       expect(result.length).toBeGreaterThan(0);
 
-      // 检查是否包含一个已知的默认模型
+      // Check that a known default model is included
       const defaultKeys = Object.keys(defaultModels);
       if (defaultKeys.length > 0) {
         const firstDefaultKey = defaultKeys[0];

@@ -1,10 +1,10 @@
 /**
  * VCR (Video Cassette Recorder) for LLM API testing
  *
- * 自动化录制-回放系统：
- * - 首次运行：调用真实 LLM API 并保存响应为 fixture
- * - 后续运行：自动回放 fixture（无需真实 API）
- * - 支持流式响应的完整时序模拟
+ * Automated record-and-replay system:
+ * - First run: call the real LLM API and save the response as a fixture
+ * - Subsequent runs: replay the fixture automatically (no real API needed)
+ * - Supports full timing simulation of streaming responses
  *
  * @module tests/utils/vcr
  */
@@ -17,12 +17,12 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
 /**
- * VCR 模式
+ * VCR mode
  */
 export type VCRMode = 'auto' | 'record' | 'replay' | 'off'
 
 /**
- * LLM 请求接口
+ * LLM request interface
  */
 export interface LLMRequest {
   provider: string
@@ -35,7 +35,7 @@ export interface LLMRequest {
 }
 
 /**
- * 流式响应 chunk
+ * Streaming response chunk
  */
 export interface StreamChunk {
   content: string
@@ -44,7 +44,7 @@ export interface StreamChunk {
 }
 
 /**
- * LLM 响应接口
+ * LLM response interface
  */
 export interface LLMResponse {
   type: 'streaming' | 'single'
@@ -61,7 +61,7 @@ export interface LLMResponse {
 }
 
 /**
- * Fixture 元数据
+ * Fixture metadata
  */
 export interface FixtureMetadata {
   recordedAt: string
@@ -73,7 +73,7 @@ export interface FixtureMetadata {
 }
 
 /**
- * 完整 Fixture 文件
+ * Complete fixture file
  */
 export interface Fixture {
   request: LLMRequest
@@ -82,34 +82,34 @@ export interface Fixture {
 }
 
 /**
- * VCR 配置选项
+ * VCR configuration options
  */
 export interface VCROptions {
   /**
-   * Fixtures 存储目录
+   * Fixtures storage directory
    * @default packages/core/tests/fixtures
    */
   fixtureDir?: string
 
   /**
-   * VCR 模式
-   * - auto: 自动检测（有 fixture 则回放，无则录制）
-   * - record: 强制录制（覆盖已有 fixtures）
-   * - replay: 强制回放（无 fixture 时失败）
-   * - off: 禁用 VCR（始终调用真实 API）
+   * VCR mode
+   * - auto: auto-detect (replay if a fixture exists, otherwise record)
+   * - record: force recording (overwrites existing fixtures)
+   * - replay: force replay (fails when there is no fixture)
+   * - off: disable VCR (always call the real API)
    * @default process.env.VCR_MODE || 'auto'
    */
   mode?: VCRMode
 
   /**
-   * 是否启用真实 LLM（录制模式需要）
+   * Whether to enable the real LLM (required for record mode)
    * @default process.env.ENABLE_REAL_LLM === 'true' || process.env.RUN_REAL_API === '1'
    */
   enableRealLLM?: boolean
 }
 
 /**
- * VCR 类
+ * VCR class
  */
 export class VCR {
   private fixtureDir: string
@@ -117,20 +117,20 @@ export class VCR {
   private enableRealLLM: boolean
 
   constructor(options: VCROptions = {}) {
-    // 默认 fixtures 目录：packages/core/tests/fixtures
+    // Default fixtures directory: packages/core/tests/fixtures
     this.fixtureDir = options.fixtureDir || join(__dirname, '..', 'fixtures')
 
-    // 是否启用真实 LLM
+    // Whether to enable the real LLM
     const envEnableReal =
       process.env.ENABLE_REAL_LLM === 'true' ||
       process.env.RUN_REAL_API === '1'
     this.enableRealLLM = options.enableRealLLM ?? envEnableReal
 
-    // 从环境变量读取模式
+    // Read the mode from the environment variable
     const envMode = process.env.VCR_MODE as VCRMode
 
-    // core 模块默认策略：启用真实 LLM 时，默认使用 'off' 模式（始终调用真实 API）
-    // 这样可以确保 core 模块的集成测试真正测试 API，而不是回放 fixtures
+    // Default strategy for the core module: when the real LLM is enabled, use 'off' mode by default (always call the real API)
+    // This ensures the core module's integration tests actually exercise the API instead of replaying fixtures
     if (this.enableRealLLM && !options.mode && !envMode) {
       this.mode = 'off'
     } else {
@@ -139,11 +139,11 @@ export class VCR {
   }
 
   /**
-   * 拦截并处理 LLM API 调用
+   * Intercept and handle LLM API calls
    *
-   * @param scenarioName - 场景名称（用于生成 fixture 文件名）
-   * @param request - LLM 请求对象
-   * @param realFn - 真实 API 调用函数
+   * @param scenarioName - Scenario name (used to generate the fixture file name)
+   * @param request - LLM request object
+   * @param realFn - Function that calls the real API
    * @returns Promise<LLMResponse>
    *
    * @example
@@ -159,14 +159,14 @@ export class VCR {
     request: LLMRequest,
     realFn: () => Promise<T>
   ): Promise<T> {
-    // 模式判断
+    // Mode determination
     if (this.mode === 'off') {
       return realFn()
     }
 
     const fixturePath = this.getFixturePath(request.provider, scenarioName)
 
-    // Replay 模式：强制回放
+    // Replay mode: force replay
     if (this.mode === 'replay') {
       if (!existsSync(fixturePath)) {
         throw new Error(
@@ -177,24 +177,24 @@ export class VCR {
       return this.replayFixture(fixturePath) as T
     }
 
-    // Record 模式：强制录制
+    // Record mode: force recording
     if (this.mode === 'record') {
       return this.recordAndSave(scenarioName, fixturePath, request, realFn)
     }
 
-    // Auto 模式：自动检测
+    // Auto mode: auto-detect
     if (existsSync(fixturePath)) {
-      // Fixture 存在：回放
+      // Fixture exists: replay
       return this.replayFixture(fixturePath) as T
     } else {
-      // Fixture 不存在：录制
+      // Fixture does not exist: record
       console.log(`[VCR] Recording new fixture: ${scenarioName}`)
       return this.recordAndSave(scenarioName, fixturePath, request, realFn)
     }
   }
 
   /**
-   * 回放 fixture
+   * Replay a fixture
    */
   private replayFixture(fixturePath: string): LLMResponse {
     const raw = JSON.parse(readFileSync(fixturePath, 'utf-8')) as Partial<Fixture>
@@ -217,7 +217,7 @@ export class VCR {
 
     const response = raw.response
 
-    // 如果是流式响应，需要模拟延迟
+    // For streaming responses, the delay needs to be simulated
     if (response.type === 'streaming' && response.chunks) {
       return this.simulateStreamingResponse(response)
     }
@@ -226,7 +226,7 @@ export class VCR {
   }
 
   /**
-   * 录制并保存 fixture
+   * Record and save a fixture
    */
   private async recordAndSave<T>(
     scenarioName: string,
@@ -234,7 +234,7 @@ export class VCR {
     request: LLMRequest,
     realFn: () => Promise<T>
   ): Promise<T> {
-    // 检查是否启用真实 LLM
+    // Check whether the real LLM is enabled
     if (!this.enableRealLLM) {
       throw new Error(
         `Real LLM is disabled. Cannot record fixture.\n` +
@@ -245,7 +245,7 @@ export class VCR {
 
     const startTime = Date.now()
 
-    // 调用真实 API
+    // Call the real API
     const result = await realFn()
     if (result === undefined) {
       throw new Error(
@@ -257,7 +257,7 @@ export class VCR {
 
     const duration = Date.now() - startTime
 
-    // 构造 fixture
+    // Build the fixture
     const fixture: Fixture = {
       request,
       response: result as any,
@@ -269,13 +269,13 @@ export class VCR {
       }
     }
 
-    // 确保目录存在
+    // Make sure the directory exists
     const dir = dirname(fixturePath)
     if (!existsSync(dir)) {
       mkdirSync(dir, { recursive: true })
     }
 
-    // 保存 fixture
+    // Save the fixture
     writeFileSync(fixturePath, JSON.stringify(fixture, null, 2), 'utf-8')
     console.log(`[VCR] Fixture saved: ${fixturePath}`)
 
@@ -283,23 +283,23 @@ export class VCR {
   }
 
   /**
-   * 模拟流式响应（包含延迟）
+   * Simulate a streaming response (including delays)
    */
   private simulateStreamingResponse(response: LLMResponse): LLMResponse {
-    // 注意：这里只返回原始数据，实际的延迟模拟应该在调用方实现
-    // 可以配合 StreamSimulator 类使用
+    // Note: this only returns the raw data; the actual delay simulation should be implemented by the caller
+    // Can be used together with the StreamSimulator class
     return response
   }
 
   /**
-   * 获取 fixture 文件路径
+   * Get the fixture file path
    */
   private getFixturePath(provider: string, scenarioName: string): string {
     return join(this.fixtureDir, 'llm', provider.toLowerCase(), `${scenarioName}.json`)
   }
 
   /**
-   * 删除指定 fixture
+   * Delete the specified fixture
    */
   deleteFixture(provider: string, scenarioName: string): boolean {
     const fixturePath = this.getFixturePath(provider, scenarioName)
@@ -312,7 +312,7 @@ export class VCR {
   }
 
   /**
-   * 列出所有 fixtures
+   * List all fixtures
    */
   listFixtures(provider?: string): string[] {
     const fixturesDir = provider
@@ -342,12 +342,12 @@ export class VCR {
 }
 
 /**
- * 全局 VCR 实例（单例）
+ * Global VCR instance (singleton)
  */
 let globalVCR: VCR | null = null
 
 /**
- * 获取全局 VCR 实例
+ * Get the global VCR instance
  */
 export function getVCR(options?: VCROptions): VCR {
   if (options && Object.keys(options).length > 0) {
@@ -362,7 +362,7 @@ export function getVCR(options?: VCROptions): VCR {
 }
 
 /**
- * 便捷函数：使用 VCR 拦截 LLM 调用
+ * Convenience function: intercept LLM calls with VCR
  *
  * @example
  * ```typescript

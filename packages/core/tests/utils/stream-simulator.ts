@@ -1,11 +1,11 @@
 /**
- * 流式响应模拟器
+ * Streaming response simulator
  *
- * 用于模拟 LLM API 的流式响应行为，包括：
- * - 按时序逐个返回 chunks
- * - 模拟网络延迟
- * - 模拟网络抖动
- * - 支持 AsyncGenerator 接口
+ * Simulates the streaming response behavior of an LLM API, including:
+ * - Returning chunks one by one in sequence
+ * - Simulating network latency
+ * - Simulating network jitter
+ * - Supports the AsyncGenerator interface
  *
  * @module tests/utils/stream-simulator
  */
@@ -14,33 +14,33 @@ import type { StreamChunk } from './vcr.js'
 import { Readable } from 'stream'
 
 /**
- * 流式响应模拟器选项
+ * Streaming response simulator options
  */
 export interface StreamSimulatorOptions {
   /**
-   * 时间缩放因子（加速/减速测试）
-   * - 1.0: 正常速度
-   * - 0.5: 加速 2 倍
-   * - 2.0: 减速 2 倍
+   * Time scaling factor (speed up/slow down tests)
+   * - 1.0: normal speed
+   * - 0.5: 2x faster
+   * - 2.0: 2x slower
    * @default 1.0
    */
   timeScale?: number
 
   /**
-   * 是否添加随机网络抖动（0-1 之间的概率）
+   * Whether to add random network jitter (probability between 0 and 1)
    * @default 0
    */
   jitterProbability?: number
 
   /**
-   * 抖动最大延迟（毫秒）
+   * Maximum jitter delay (milliseconds)
    * @default 100
    */
   jitterMaxDelay?: number
 }
 
 /**
- * 流式响应模拟器
+ * Streaming response simulator
  */
 export class StreamSimulator {
   private chunks: StreamChunk[]
@@ -59,7 +59,7 @@ export class StreamSimulator {
   }
 
   /**
-   * 生成流式响应（AsyncGenerator）
+   * Generate a streaming response (AsyncGenerator)
    *
    * @example
    * ```typescript
@@ -73,14 +73,14 @@ export class StreamSimulator {
     let lastTimestamp = 0
 
     for (const chunk of this.chunks) {
-      // 计算延迟（考虑时间缩放）
+      // Calculate the delay (taking time scaling into account)
       const delay = (chunk.timestamp - lastTimestamp) * this.timeScale
 
       if (delay > 0) {
-        // 应用延迟
+        // Apply the delay
         await this.sleep(delay)
 
-        // 随机添加网络抖动
+        // Randomly add network jitter
         if (Math.random() < this.jitterProbability) {
           const jitterDelay = Math.random() * this.jitterMaxDelay
           await this.sleep(jitterDelay)
@@ -93,7 +93,7 @@ export class StreamSimulator {
   }
 
   /**
-   * 生成回调式流（兼容旧式 API）
+   * Generate a callback-style stream (compatible with the legacy API)
    *
    * @example
    * ```typescript
@@ -119,7 +119,7 @@ export class StreamSimulator {
   }
 
   /**
-   * 转换为 ReadableStream（Web Streams API）
+   * Convert to a ReadableStream (Web Streams API)
    *
    * @example
    * ```typescript
@@ -145,7 +145,7 @@ export class StreamSimulator {
   }
 
   /**
-   * 转换为 Node.js Readable stream
+   * Convert to a Node.js Readable stream
    */
   toNodeReadableStream(): NodeJS.ReadableStream {
     const simulatorIterator = this.generate()[Symbol.asyncIterator]()
@@ -164,7 +164,7 @@ export class StreamSimulator {
   }
 
   /**
-   * 等待指定毫秒数
+   * Wait for the specified number of milliseconds
    */
   private sleep(ms: number): Promise<void> {
     if (ms <= 0) return Promise.resolve()
@@ -173,14 +173,14 @@ export class StreamSimulator {
   }
 
   /**
-   * 获取完整内容（所有 chunks 拼接）
+   * Get the full content (all chunks concatenated)
    */
   getFullContent(): string {
     return this.chunks.map(chunk => chunk.content).join('')
   }
 
   /**
-   * 获取总时长
+   * Get the total duration
    */
   getTotalDuration(): number {
     if (this.chunks.length === 0) return 0
@@ -188,7 +188,7 @@ export class StreamSimulator {
   }
 
   /**
-   * 获取 chunks 数量
+   * Get the number of chunks
    */
   getChunkCount(): number {
     return this.chunks.length
@@ -196,7 +196,7 @@ export class StreamSimulator {
 }
 
 /**
- * 创建流式响应模拟器的便捷函数
+ * Convenience function to create a streaming response simulator
  *
  * @example
  * ```typescript
@@ -214,7 +214,7 @@ export function createStreamSimulator(
 }
 
 /**
- * 从 fixture 创建流式模拟器
+ * Create a streaming simulator from a fixture
  *
  * @example
  * ```typescript
@@ -236,7 +236,7 @@ export function createStreamFromFixture(
 }
 
 /**
- * 批量测试辅助：验证流式响应的完整性
+ * Batch test helper: verify the integrity of a streaming response
  *
  * @example
  * ```typescript
@@ -258,7 +258,7 @@ export async function validateStreamResponse(
 }
 
 /**
- * 性能测试：测量流式响应的生成速度
+ * Performance test: measure the generation speed of a streaming response
  *
  * @example
  * ```typescript

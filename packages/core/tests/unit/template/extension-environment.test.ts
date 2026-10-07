@@ -198,7 +198,7 @@ describe('TemplateProcessor with Mustache (Universal CSP-safe)', () => {
     }).toThrow('Template content is missing or invalid');
   });
 
-  // 注：TemplateProcessor 不再负责迭代上下文检查
-  // 该检查已移至 PromptService.iteratePrompt/iteratePromptStream 入口处
-  // 相关测试已移至 prompt service 测试文件
+  // Note: TemplateProcessor no longer checks the iteration context
+  // That check has moved to the entry of PromptService.iteratePrompt/iteratePromptStream
+  // Related tests have moved to the prompt service test file
 });

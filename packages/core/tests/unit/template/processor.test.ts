@@ -74,8 +74,8 @@ describe('TemplateProcessor (Simplified)', () => {
       });
     });
 
-    // 注：TemplateProcessor 不再负责迭代上下文检查
-    // 该检查已移至 PromptService.iteratePrompt/iteratePromptStream 入口处
+    // Note: TemplateProcessor no longer checks the iteration context
+    // That check has moved to the entry of PromptService.iteratePrompt/iteratePromptStream
 
     it('should handle iteration context with advanced template', () => {
       const template: Template = {

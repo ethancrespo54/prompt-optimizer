@@ -40,7 +40,7 @@ describe('TemplateManager list by context types', () => {
     const tm = new TemplateManager(new MemoryStorage(), new StubLang())
     const list = await tm.listTemplatesByType('conversationMessageOptimize')
     expect(Array.isArray(list)).toBe(true)
-    // 允许为空（取决于内置模板语言），但如存在则类型必须匹配
+    // May be empty (depends on the built-in template language), but if present the type must match
     for (const t of list) expect(t.metadata.templateType).toBe('conversationMessageOptimize')
   })
 

@@ -11,7 +11,7 @@ describe('PreferenceService', () => {
     preferenceService = new PreferenceService(mockStorage);
   });
 
-  describe('基本功能', () => {
+  describe('Basic functionality', () => {
     it('should set and get preference', async () => {
       await preferenceService.set('test-key', 'test-value');
       const value = await preferenceService.get('test-key', null);
@@ -47,7 +47,7 @@ describe('PreferenceService', () => {
     });
   });
 
-  describe('批量操作', () => {
+  describe('Batch operations', () => {
     it('should get all preferences', async () => {
       await preferenceService.set('app:settings:ui:theme-id', 'dark');
       await preferenceService.set('app:settings:ui:preferred-language', 'zh-CN');
@@ -69,22 +69,22 @@ describe('PreferenceService', () => {
     });
 
     it('should handle errors gracefully in getAll', async () => {
-      // 设置一些正常的偏好
+      // Set some normal preferences
       await preferenceService.set('valid-key', 'valid-value');
       
-      // 模拟存储中有损坏的数据
+      // Simulate corrupted data in storage
       await mockStorage.setItem('pref:invalid-key', 'invalid-json{');
       
       const allPreferences = await preferenceService.getAll();
       
-      // 应该返回有效的偏好，跳过无效的
+      // Should return the valid preferences and skip the invalid ones
       expect(allPreferences).toEqual({
         'valid-key': 'valid-value'
       });
     });
   });
 
-  describe('键名管理', () => {
+  describe('Key management', () => {
     it('should list all preference keys', async () => {
       await preferenceService.set('key1', 'value1');
       await preferenceService.set('key2', 'value2');
@@ -99,18 +99,18 @@ describe('PreferenceService', () => {
     it('should handle prefix correctly in storage', async () => {
       await preferenceService.set('test-key', 'test-value');
       
-      // 直接检查存储中的键名应该带有前缀
+      // Keys checked directly in storage should have the prefix
       const storageValue = await mockStorage.getItem('pref:test-key');
       expect(storageValue).toBe('"test-value"');
       
-      // 但是keys()方法应该返回不带前缀的键名
+      // But the keys() method should return keys without the prefix
       const keys = await preferenceService.keys();
       expect(keys).toContain('test-key');
       expect(keys).not.toContain('pref:test-key');
     });
   });
 
-  describe('数据类型处理', () => {
+  describe('Data type handling', () => {
     it('should handle different data types', async () => {
       await preferenceService.set('string-key', 'string-value');
       await preferenceService.set('number-key', 42);
@@ -138,7 +138,7 @@ describe('PreferenceService', () => {
     });
   });
 
-  describe('错误处理', () => {
+  describe('Error handling', () => {
     it('should handle storage errors in get', async () => {
       const mockStorageWithError = {
         getItem: vi.fn().mockRejectedValue(new Error('Storage error')),

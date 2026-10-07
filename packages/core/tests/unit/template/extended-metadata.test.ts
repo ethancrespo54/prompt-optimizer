@@ -20,21 +20,21 @@ describe('Extended Metadata Fields Support', () => {
   it('should save and retrieve template with custom metadata fields', async () => {
     const templateWithExtraFields = {
       id: 'test-extended-template',
-      name: '扩展字段测试模板',
-      content: '这是一个测试扩展字段的模板',
+      name: 'Extended fields test template',
+      content: 'This is a template for testing extended fields',
       metadata: {
         version: '1.0.0',
         lastModified: Date.now(),
         templateType: 'optimize' as const,
-        // 基础可选字段
-        author: '测试作者',
-        description: '测试描述',
+        // Basic optional fields
+        author: 'Test author',
+        description: 'Test description',
         language: 'zh' as const,
-        // 额外自定义字段
-        customField: '自定义内容',
-        tags: ['测试', '扩展', '元数据'],
+        // Extra custom fields
+        customField: 'Custom content',
+        tags: ['test', 'extension', 'metadata'],
         priority: 5,
-        category: '实验性',
+        category: 'Experimental',
         isExperimental: true,
         config: {
           maxTokens: 1000,
@@ -43,26 +43,26 @@ describe('Extended Metadata Fields Support', () => {
       }
     };
 
-    // 保存模板
+    // Save the template
     await templateManager.saveTemplate(templateWithExtraFields);
 
-    // 获取模板
+    // Get the template
     const savedTemplate = await templateManager.getTemplate('test-extended-template');
 
-    // 验证基础字段
+    // Verify the basic fields
     expect(savedTemplate.id).toBe('test-extended-template');
-    expect(savedTemplate.name).toBe('扩展字段测试模板');
+    expect(savedTemplate.name).toBe('Extended fields test template');
     expect(savedTemplate.metadata.version).toBe('1.0.0');
     expect(savedTemplate.metadata.templateType).toBe('optimize');
-    expect(savedTemplate.metadata.author).toBe('测试作者');
-    expect(savedTemplate.metadata.description).toBe('测试描述');
+    expect(savedTemplate.metadata.author).toBe('Test author');
+    expect(savedTemplate.metadata.description).toBe('Test description');
     expect(savedTemplate.metadata.language).toBe('zh');
 
-    // 验证额外字段
-    expect(savedTemplate.metadata.customField).toBe('自定义内容');
-    expect(savedTemplate.metadata.tags).toEqual(['测试', '扩展', '元数据']);
+    // Verify the extra fields
+    expect(savedTemplate.metadata.customField).toBe('Custom content');
+    expect(savedTemplate.metadata.tags).toEqual(['test', 'extension', 'metadata']);
     expect(savedTemplate.metadata.priority).toBe(5);
-    expect(savedTemplate.metadata.category).toBe('实验性');
+    expect(savedTemplate.metadata.category).toBe('Experimental');
     expect(savedTemplate.metadata.isExperimental).toBe(true);
     expect(savedTemplate.metadata.config).toEqual({
       maxTokens: 1000,
@@ -73,8 +73,8 @@ describe('Extended Metadata Fields Support', () => {
   it('should export and import template with custom metadata fields', async () => {
     const templateWithExtraFields = {
       id: 'test-export-import',
-      name: '导出导入测试',
-      content: '测试导出导入功能',
+      name: 'Export/import test',
+      content: 'Test export/import functionality',
       metadata: {
         version: '1.0.0',
         lastModified: Date.now(),
@@ -90,19 +90,19 @@ describe('Extended Metadata Fields Support', () => {
       }
     };
 
-    // 保存原始模板
+    // Save the original template
     await templateManager.saveTemplate(templateWithExtraFields);
 
-    // 导出模板
+    // Export the template
     const exportedJson = await templateManager.exportTemplate('test-export-import');
     
-    // 删除原模板
+    // Delete the original template
     await templateManager.deleteTemplate('test-export-import');
 
-    // 导入模板
+    // Import the template
     await templateManager.importTemplate(exportedJson);
 
-    // 验证导入的模板
+    // Verify the imported template
     const importedTemplate = await templateManager.getTemplate('test-export-import');
     
     expect(importedTemplate.metadata.customData).toEqual({
@@ -116,16 +116,16 @@ describe('Extended Metadata Fields Support', () => {
   });
 
   it('should maintain core field validation while allowing extra fields', async () => {
-    // 测试缺少必需字段时仍然会报错
+    // Test that a missing required field still errors
     const invalidTemplate = {
       id: 'invalid-template',
-      name: '无效模板',
-      content: '测试内容',
+      name: 'Invalid template',
+      content: 'Test content',
       metadata: {
-        // 缺少必需的 version 字段
+        // Missing the required version field
         lastModified: Date.now(),
         templateType: 'optimize' as const,
-        customField: '这个自定义字段应该被忽略'
+        customField: 'This custom field should be ignored'
       }
     };
 
@@ -136,13 +136,13 @@ describe('Extended Metadata Fields Support', () => {
   it('should handle templates with mixed field types in metadata', async () => {
     const mixedFieldsTemplate = {
       id: 'mixed-fields-test',
-      name: '混合字段测试',
-      content: '测试各种数据类型',
+      name: 'Mixed fields test',
+      content: 'Test various data types',
       metadata: {
         version: '2.0.0',
         lastModified: Date.now(),
         templateType: 'userOptimize' as const,
-        // 不同类型的自定义字段
+        // Custom fields of different types
         stringField: 'string value',
         numberField: 123,
         booleanField: true,
@@ -162,6 +162,6 @@ describe('Extended Metadata Fields Support', () => {
     expect(savedTemplate.metadata.arrayField).toEqual(['a', 'b', 'c']);
     expect(savedTemplate.metadata.objectField).toEqual({ nested: 'value' });
     expect(savedTemplate.metadata.nullField).toBe(null);
-    // undefined 字段在JSON序列化后通常会被忽略
+    // undefined fields are usually ignored after JSON serialization
   });
 }); 

@@ -28,7 +28,7 @@ describe('PromptService', () => {
   beforeEach(async () => {
     storageProvider = new MemoryStorageProvider();
 
-    // 清理存储状态
+    // Clean up the storage state
     await storageProvider.clearAll();
 
     // Create all required services
@@ -66,8 +66,8 @@ describe('PromptService', () => {
   });
 
   describe('optimizePrompt', () => {
-    it('应该成功优化提示词', async () => {
-      vi.spyOn(llmService, 'sendMessage').mockResolvedValue('优化后的提示词');
+    it('should optimize a prompt successfully', async () => {
+      vi.spyOn(llmService, 'sendMessage').mockResolvedValue('Optimized prompt');
 
       const request: OptimizationRequest = {
         optimizationMode: 'system',
@@ -75,11 +75,11 @@ describe('PromptService', () => {
         modelKey: 'test-model',
       };
       const result = await promptService.optimizePrompt(request);
-      expect(result).toBe('优化后的提示词');
+      expect(result).toBe('Optimized prompt');
       expect(llmService.sendMessage).toHaveBeenCalled();
     });
 
-    it('当模型不存在时应抛出错误', async () => {
+    it('should throw an error when the model does not exist', async () => {
       const request: OptimizationRequest = {
         optimizationMode: 'system',
         targetPrompt: 'test prompt',
@@ -90,18 +90,18 @@ describe('PromptService', () => {
   });
 
   describe('testPrompt', () => {
-    it('应该成功测试提示词', async () => {
-      vi.spyOn(llmService, 'sendMessage').mockResolvedValue('测试结果');
+    it('should test a prompt successfully', async () => {
+      vi.spyOn(llmService, 'sendMessage').mockResolvedValue('Test result');
 
       const result = await promptService.testPrompt(
         'system prompt',
         'user prompt',
         'test-model',
       );
-      expect(result).toBe('测试结果');
+      expect(result).toBe('Test result');
     });
 
-    it('当模型不存在时应抛出错误', async () => {
+    it('should throw an error when the model does not exist', async () => {
       await expect(
         promptService.testPrompt(
           'system prompt',
@@ -113,7 +113,7 @@ describe('PromptService', () => {
   });
 
   describe('getHistory', () => {
-    it('应该返回历史记录', async () => {
+    it('should return history records', async () => {
       const history = await promptService.getHistory();
       expect(Array.isArray(history)).toBe(true);
     });

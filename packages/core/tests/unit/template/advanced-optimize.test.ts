@@ -12,8 +12,8 @@ import { createTemplateLanguageService } from '../../../src/services/template/la
 const RUN_REAL_API = process.env.RUN_REAL_API === '1'
 
 describe.skipIf(!RUN_REAL_API)('Advanced Optimize Template Real API Test', () => {
-  it('should optimize "你是一个诗人" with real API', async () => {
-    // 检查是否有可用的API密钥
+  it('should optimize "You are a poet" with real API', async () => {
+    // Check whether an API key is available
     const hasApiKey = process.env.GEMINI_API_KEY || process.env.DEEPSEEK_API_KEY ||
                      process.env.OPENAI_API_KEY || process.env.CUSTOM_API_KEY ||
                      process.env.VITE_GEMINI_API_KEY || process.env.VITE_DEEPSEEK_API_KEY ||
@@ -23,9 +23,9 @@ describe.skipIf(!RUN_REAL_API)('Advanced Optimize Template Real API Test', () =>
       return;
     }
 
-    // 1. 创建所有依赖
+    // 1. Create all dependencies
     const storageProvider = new LocalStorageProvider();
-    await storageProvider.clearAll(); // 确保干净的环境
+    await storageProvider.clearAll(); // Ensure a clean environment
 
     const modelManager = createModelManager(storageProvider);
     const languageService = createTemplateLanguageService(storageProvider);
@@ -33,10 +33,10 @@ describe.skipIf(!RUN_REAL_API)('Advanced Optimize Template Real API Test', () =>
     const historyManager = createHistoryManager(storageProvider, modelManager);
     const llmService = createLLMService(modelManager);
 
-    // 2. 初始化服务 (ModelManager会自动初始化)
+    // 2. Initialize services (ModelManager initializes automatically)
 
 
-    // 3. 创建被测试的服务
+    // 3. Create the service under test
     const promptService = createPromptService(
       modelManager,
       llmService,
@@ -44,7 +44,7 @@ describe.skipIf(!RUN_REAL_API)('Advanced Optimize Template Real API Test', () =>
       historyManager
     );
 
-    // 获取可用的模型
+    // Get the available models
     const models = await modelManager.getAllModels();
     const availableModel = models.find(m => m.enabled);
 
@@ -55,7 +55,7 @@ describe.skipIf(!RUN_REAL_API)('Advanced Optimize Template Real API Test', () =>
 
     const result = await promptService.optimizePrompt({
       optimizationMode: 'system',
-      targetPrompt: '你是一个诗人',
+      targetPrompt: 'You are a poet',
       templateId: 'analytical-optimize',
       modelKey: availableModel.id
     });
@@ -63,5 +63,5 @@ describe.skipIf(!RUN_REAL_API)('Advanced Optimize Template Real API Test', () =>
 
     expect(result).toBeDefined();
     expect(result.length).toBeGreaterThan(0);
-  }, 300000); // 300秒超时
+  }, 300000); // 300-second timeout
 }); 

@@ -17,15 +17,15 @@ describe('PreferenceService Import/Export', () => {
 
   describe('exportData', () => {
     it('should export all preferences', async () => {
-      // 设置一些偏好设置
+      // Set some preferences
       await preferenceService.set('app:settings:ui:theme-id', 'dark');
       await preferenceService.set('app:settings:ui:preferred-language', 'zh-CN');
       await preferenceService.set('app:selected-optimize-model', 'openai');
 
-      // 导出数据
+      // Export data
       const exportedData = await preferenceService.exportData();
 
-      // 验证导出的数据
+      // Verify the exported data
       expect(typeof exportedData).toBe('object');
       expect(exportedData).toEqual({
         'app:settings:ui:theme-id': 'dark',
@@ -40,7 +40,7 @@ describe('PreferenceService Import/Export', () => {
     });
 
     it('should handle export error gracefully', async () => {
-      // 模拟getAll错误
+      // Simulate a getAll error
       vi.spyOn(preferenceService, 'getAll').mockRejectedValue(new Error('Storage error'));
 
       await expect(preferenceService.exportData()).rejects.toThrow('Failed to export preference data');
@@ -57,7 +57,7 @@ describe('PreferenceService Import/Export', () => {
 
       await preferenceService.importData(importData);
 
-      // 验证偏好设置已被导入
+      // Verify the preferences were imported
       expect(await preferenceService.get('app:settings:ui:theme-id', null)).toBe('light');
       expect(await preferenceService.get('app:settings:ui:preferred-language', null)).toBe('en-US');
       expect(await preferenceService.get('app:selected-optimize-model', null)).toBe('anthropic');
@@ -65,14 +65,14 @@ describe('PreferenceService Import/Export', () => {
 
     it('should handle legacy key conversion', async () => {
       const importData = {
-        'theme-id': 'dark', // 旧版本键名
-        'preferred-language': 'zh-CN', // 旧版本键名
-        'app:selected-optimize-model': 'openai' // 新版本键名
+        'theme-id': 'dark', // Legacy key name
+        'preferred-language': 'zh-CN', // Legacy key name
+        'app:selected-optimize-model': 'openai' // New key name
       };
 
       await preferenceService.importData(importData);
 
-      // 验证旧版本键名被转换为新版本
+      // Verify legacy key names were converted to the new ones
       expect(await preferenceService.get('app:settings:ui:theme-id', null)).toBe('dark');
       expect(await preferenceService.get('app:settings:ui:preferred-language', null)).toBe('zh-CN');
       expect(await preferenceService.get('app:selected-optimize-model', null)).toBe('openai');
@@ -80,67 +80,67 @@ describe('PreferenceService Import/Export', () => {
 
     it('should skip invalid keys (not in whitelist)', async () => {
       const importData = {
-        'app:settings:ui:theme-id': 'dark', // 有效键
-        'malicious-key': 'malicious-value', // 无效键
-        'app:settings:ui:preferred-language': 'zh-CN' // 有效键
+        'app:settings:ui:theme-id': 'dark', // Valid key
+        'malicious-key': 'malicious-value', // Invalid key
+        'app:settings:ui:preferred-language': 'zh-CN' // Valid key
       };
 
-      // 应该不抛出错误，只是跳过无效键
+      // Should not throw, just skip invalid keys
       await expect(preferenceService.importData(importData)).resolves.not.toThrow();
 
-      // 验证有效键被导入
+      // Verify the valid keys were imported
       expect(await preferenceService.get('app:settings:ui:theme-id', null)).toBe('dark');
       expect(await preferenceService.get('app:settings:ui:preferred-language', null)).toBe('zh-CN');
 
-      // 验证无效键被跳过
+      // Verify the invalid keys were skipped
       expect(await preferenceService.get('malicious-key', null)).toBe(null);
     });
 
     it('should skip invalid values', async () => {
       const importData = {
-        'app:settings:ui:theme-id': 'dark', // 有效值
-        'app:settings:ui:preferred-language': 123, // 无效值（非字符串）
-        'app:selected-optimize-model': 'openai' // 有效值
+        'app:settings:ui:theme-id': 'dark', // Valid value
+        'app:settings:ui:preferred-language': 123, // Invalid value (not a string)
+        'app:selected-optimize-model': 'openai' // Valid value
       };
 
       await expect(preferenceService.importData(importData)).resolves.not.toThrow();
 
-      // 验证有效值被导入
+      // Verify the valid values were imported
       expect(await preferenceService.get('app:settings:ui:theme-id', null)).toBe('dark');
       expect(await preferenceService.get('app:selected-optimize-model', null)).toBe('openai');
 
-      // 验证无效值被跳过
+      // Verify the invalid values were skipped
       expect(await preferenceService.get('app:settings:ui:preferred-language', null)).toBe(null);
     });
 
     it('should skip keys with dangerous characters', async () => {
       const importData = {
-        'app:settings:ui:theme-id': 'dark', // 有效键
-        'app<script>alert("xss")</script>': 'malicious', // 包含危险字符的键
-        'app:settings:ui:preferred-language': 'zh-CN' // 有效键
+        'app:settings:ui:theme-id': 'dark', // Valid key
+        'app<script>alert("xss")</script>': 'malicious', // Key containing dangerous characters
+        'app:settings:ui:preferred-language': 'zh-CN' // Valid key
       };
 
       await expect(preferenceService.importData(importData)).resolves.not.toThrow();
 
-      // 验证有效键被导入
+      // Verify the valid keys were imported
       expect(await preferenceService.get('app:settings:ui:theme-id', null)).toBe('dark');
       expect(await preferenceService.get('app:settings:ui:preferred-language', null)).toBe('zh-CN');
     });
 
     it('should skip values with control characters', async () => {
       const importData = {
-        'app:settings:ui:theme-id': 'dark', // 有效值
-        'app:settings:ui:preferred-language': 'zh-CN\x00\x01', // 包含控制字符的值
-        'app:selected-optimize-model': 'openai' // 有效值
+        'app:settings:ui:theme-id': 'dark', // Valid value
+        'app:settings:ui:preferred-language': 'zh-CN\x00\x01', // Value containing control characters
+        'app:selected-optimize-model': 'openai' // Valid value
       };
 
       await expect(preferenceService.importData(importData)).resolves.not.toThrow();
 
-      // 验证有效值被导入
+      // Verify the valid values were imported
       expect(await preferenceService.get('app:settings:ui:theme-id', null)).toBe('dark');
       expect(await preferenceService.get('app:selected-optimize-model', null)).toBe('openai');
 
-      // 验证包含控制字符的值被跳过
+      // Verify values containing control characters were skipped
       expect(await preferenceService.get('app:settings:ui:preferred-language', null)).toBe(null);
     });
 
@@ -149,10 +149,10 @@ describe('PreferenceService Import/Export', () => {
         'app:settings:ui:theme-id': 'dark'
       };
 
-      // 模拟set错误
+      // Simulate a set error
       vi.spyOn(preferenceService, 'set').mockRejectedValue(new Error('Set error'));
 
-      // 应该不抛出错误，只是记录失败
+      // Should not throw, just record the failure
       await expect(preferenceService.importData(importData)).resolves.not.toThrow();
     });
   });
@@ -179,12 +179,12 @@ describe('PreferenceService Import/Export', () => {
     });
 
     it('should reject invalid data formats', async () => {
-      // 非对象
+      // Not an object
       expect(await preferenceService.validateData([])).toBe(false);
       expect(await preferenceService.validateData('string')).toBe(false);
       expect(await preferenceService.validateData(null)).toBe(false);
 
-      // 数组
+      // Array
       expect(await preferenceService.validateData(['item1', 'item2'])).toBe(false);
     });
   });
@@ -197,37 +197,37 @@ describe('PreferenceService Import/Export', () => {
 
   describe('security validation', () => {
     it('should reject keys that are too long', async () => {
-      const longKey = 'a'.repeat(51); // 超过50字符限制
+      const longKey = 'a'.repeat(51); // Exceeds the 50-character limit
       const importData = {
         [longKey]: 'value'
       };
 
       await expect(preferenceService.importData(importData)).resolves.not.toThrow();
 
-      // 验证长键名被跳过
+      // Verify the long key was skipped
       expect(await preferenceService.get(longKey, null)).toBe(null);
     });
 
     it('should reject values that are too long', async () => {
-      const longValue = 'a'.repeat(1001); // 超过1000字符限制
+      const longValue = 'a'.repeat(1001); // Exceeds the 1000-character limit
       const importData = {
         'app:settings:ui:theme-id': longValue
       };
 
       await expect(preferenceService.importData(importData)).resolves.not.toThrow();
 
-      // 验证长值被跳过
+      // Verify the long value was skipped
       expect(await preferenceService.get('app:settings:ui:theme-id', null)).toBe(null);
     });
 
     it('should reject empty keys', async () => {
       const importData = {
-        '': 'value' // 空键名
+        '': 'value' // Empty key
       };
 
       await expect(preferenceService.importData(importData)).resolves.not.toThrow();
 
-      // 验证空键名被跳过
+      // Verify the empty key was skipped
       expect(await preferenceService.get('', null)).toBe(null);
     });
   });
